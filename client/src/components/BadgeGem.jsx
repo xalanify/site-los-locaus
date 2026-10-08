@@ -1,13 +1,18 @@
 /* ============================================================
    Distinções do site — caras de diabo em estilo diamante
    (joia facetada com chifres e olhos irados), cada distinção
-   com a sua cor. Arte própria.
-   - DEV ............. vermelho brilhante (legenda branca→vermelha)
-   - TOP 1 KILL ...... laranja (CS2)
-   - MAIS GOSTOS ..... cinzento (em breve)
-   - JOGADOR DO CANAL roxo
+   com a sua cor e um efeito animado. Arte própria.
+
+   - DEV .............. vermelho brilhante (legenda branca→vermelha)
+   - TOP 1 KILL DE CS . laranja com brilho a passar
+   - JOGADOR DO CANAL . roxo a flutuar
+   - MODERADOR ........ azul com halo a pulsar
+   - MEMBRO OG ........ dourado com brilho a passar
+   - LENDA DO CANAL ... verde a flutuar
+
+   Sem cadeados e sem estados (desbloqueada/por ganhar): só o
+   nome e uma descrição curta do que significa.
    ============================================================ */
-import { Lock } from 'lucide-react'
 
 export const BADGES = [
   {
@@ -17,7 +22,7 @@ export const BADGES = [
     color: '#FF1F3D',
     light: '#FF8A9C',
     dark: '#6E0014',
-    locked: false,
+    anim: 'pulse',
   },
   {
     id: 'top1',
@@ -26,16 +31,7 @@ export const BADGES = [
     color: '#F97316',
     light: '#FFC084',
     dark: '#7A2A08',
-    locked: false,
-  },
-  {
-    id: 'clip',
-    label: 'MAIS GOSTOS',
-    desc: 'Clip com mais gostos da comunidade',
-    color: '#64748B',
-    light: '#A8B6C8',
-    dark: '#263243',
-    locked: true,
+    anim: 'shine',
   },
   {
     id: 'jogador',
@@ -44,7 +40,34 @@ export const BADGES = [
     color: '#8B5CF6',
     light: '#CBB7FF',
     dark: '#3B1480',
-    locked: false,
+    anim: 'float',
+  },
+  {
+    id: 'mod',
+    label: 'MODERADOR',
+    desc: 'Ajuda a cuidar da comunidade',
+    color: '#3B82F6',
+    light: '#A5CCFF',
+    dark: '#0B2E63',
+    anim: 'pulse',
+  },
+  {
+    id: 'og',
+    label: 'MEMBRO OG',
+    desc: 'No site desde o primeiro dia',
+    color: '#FBBF24',
+    light: '#FFE7A3',
+    dark: '#7A4A02',
+    anim: 'shine',
+  },
+  {
+    id: 'lenda',
+    label: 'LENDA DO CANAL',
+    desc: 'Marcou a história do canal',
+    color: '#10B981',
+    light: '#A7F3E0',
+    dark: '#04543C',
+    anim: 'float',
   },
 ]
 
@@ -52,21 +75,33 @@ export const BADGES = [
 export const devLabelClass =
   'bg-gradient-to-r from-white via-red-100 to-red-500 bg-clip-text text-transparent drop-shadow-[0_0_9px_rgba(255,31,61,.95)]'
 
+const ANIM_CLASS = {
+  pulse: 'gem-anim-pulse',
+  shine: 'gem-anim-shine',
+  float: 'gem-anim-float',
+}
+
 /* A cara de diabo em si (joia facetada + chifres + olhos irados) */
 export function BadgeGem({ badge, size = 56 }) {
   const dev = badge.id === 'dev'
   const uid = badge.id
+  const anim = ANIM_CLASS[badge.anim] || ''
   return (
     <div
-      className={`relative shrink-0 ${dev ? 'animate-pulse' : ''}`}
+      className={`relative shrink-0 ${anim}`}
       style={{
         width: size,
         height: size,
+        // eslint-disable-next-line react/forbid-dom-props
+        ['--gem']: badge.color,
         filter: `drop-shadow(0 0 ${dev ? 18 : 9}px ${badge.color}BB)`,
       }}
       title={badge.desc}
     >
-      <svg viewBox="0 0 100 100" className="h-full w-full">
+      {/* halo a pulsar (distinções "pulse") */}
+      {badge.anim === 'pulse' && <span className="gem-halo" aria-hidden="true" />}
+
+      <svg viewBox="0 0 100 100" className="relative h-full w-full">
         <defs>
           <radialGradient id={`fg-${uid}`} cx="50%" cy="38%" r="75%">
             <stop offset="0%" stopColor={badge.light} />
@@ -129,30 +164,27 @@ export function BadgeGem({ badge, size = 56 }) {
         <polygon points="74,50 52,60 54,67 72,60" fill="#08080e" />
       </svg>
 
-      {/* cadeado para as distinções "em breve" */}
-      {badge.locked && (
-        <span className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full bg-black/85 ring-1 ring-white/20">
-          <Lock className="h-3 w-3 text-gray-400" />
+      {/* brilho a passar (distinções "shine") */}
+      {badge.anim === 'shine' && (
+        <span className="absolute inset-0 overflow-hidden rounded-full" aria-hidden="true">
+          <span className="gem-sheen" />
         </span>
       )}
     </div>
   )
 }
 
-/* Cartão da distinção (joia + legenda + estado) */
-export function BadgeTile({ badge, earned = false, size = 54 }) {
-  const status = badge.locked ? 'Em breve' : earned ? 'Desbloqueada' : 'Por ganhar'
+/* Cartão da distinção (joia + legenda + descrição curta) */
+export function BadgeTile({ badge, size = 54 }) {
   const dev = badge.id === 'dev'
   return (
     <div
       className="flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all"
       title={badge.desc}
       style={{
-        borderColor: earned ? `${badge.color}66` : 'rgba(255,255,255,.08)',
-        background: earned
-          ? `radial-gradient(130% 110% at 50% 0%, ${badge.color}26, rgba(10,10,13,.92) 72%)`
-          : 'rgba(11,11,14,.9)',
-        boxShadow: earned ? `0 0 26px ${badge.color}40, inset 0 0 24px ${badge.color}14` : 'none',
+        borderColor: `${badge.color}66`,
+        background: `radial-gradient(130% 110% at 50% 0%, ${badge.color}26, rgba(10,10,13,.92) 72%)`,
+        boxShadow: `0 0 26px ${badge.color}40, inset 0 0 24px ${badge.color}14`,
       }}
     >
       <BadgeGem badge={badge} size={size} />
@@ -164,9 +196,7 @@ export function BadgeTile({ badge, earned = false, size = 54 }) {
       >
         {badge.label}
       </span>
-      <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-500">
-        {status}
-      </span>
+      <span className="text-[10px] font-semibold leading-tight text-gray-400">{badge.desc}</span>
     </div>
   )
 }

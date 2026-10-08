@@ -8,9 +8,11 @@ import {
   Send,
   Lock,
   X,
+  Gamepad2,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import { authHeaders, mmss } from '../lib/auth'
+import { gameLabel } from '../data/clipGames'
 
 const fmtDate = (iso) => {
   if (!iso) return ''
@@ -251,8 +253,8 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
 
   return (
     <div className="glass overflow-hidden rounded-2xl">
-      {/* Autor + data */}
-      <div className="flex items-center gap-3 px-4 pt-4">
+      {/* Autor + jogo + data */}
+      <div className="flex flex-wrap items-center gap-3 px-4 pt-4">
         <button
           onClick={() => onProfile && onProfile(c.author)}
           className="group flex items-center gap-2.5"
@@ -262,6 +264,11 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
             {c.author}
           </span>
         </button>
+        {c.game && (
+          <span className="flex items-center gap-1.5 rounded-full bg-orange-500/15 px-2.5 py-1 text-[11px] font-bold text-orange-300 ring-1 ring-orange-500/30">
+            <Gamepad2 className="h-3 w-3" /> {gameLabel(c.game)}
+          </span>
+        )}
         <span className="text-xs text-gray-500">{fmtDate(c.created_at)}</span>
         {c.visibility === 'private' && (
           <span className="ml-auto flex items-center gap-1 rounded-full bg-yellow-500/15 px-2 py-0.5 text-[11px] font-bold text-yellow-400">

@@ -7,16 +7,13 @@ import {
   LogOut,
   LayoutDashboard,
   RefreshCcw,
-  Sparkles,
-  Users,
-  MessageCircle,
-  Trophy,
   Camera,
   Loader2,
   Check,
   Upload,
 } from 'lucide-react'
 import { BadgeGem, BADGES, devLabelClass } from '../components/BadgeGem'
+import ClipCard from '../components/ClipCard'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -42,6 +39,7 @@ export default function ProfilePage({
   onPanelClick,
   onAuthClick,
   onUserUpdate,
+  onProfile,
 }) {
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(false)
@@ -51,6 +49,7 @@ export default function ProfilePage({
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  const [myClips, setMyClips] = useState([]) // publicações desta conta
   const fileRef = useRef(null)
 
   /* Sempre que o perfil abre: dados frescos (distinções atribuídas
@@ -65,6 +64,18 @@ export default function ProfilePage({
           if (onUserUpdate) onUserUpdate(d)
         }
       })
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [])
+
+  /* Clips/publicações desta conta */
+  useEffect(() => {
+    let vivo = true
+    fetch('/api/clips?mine=1', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list) => vivo && setMyClips(Array.isArray(list) ? list : []))
       .catch(() => {})
     return () => {
       vivo = false
@@ -178,12 +189,6 @@ export default function ProfilePage({
       setSaving(false)
     }
   }
-
-  const EM_BREVE = [
-    { icon: Users, text: 'Perfis públicos — podes ver o perfil de outros membros' },
-    { icon: Clapperboard, text: 'Clips de cada utilizador, com gostos e comentários' },
-    { icon: Trophy, text: 'Ranking de distinções e estatísticas da conta' },
-  ]
 
   const inputCls =
     'w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15'
@@ -404,40 +409,42 @@ export default function ProfilePage({
 
         {/* ---------------- Os meus clips ---------------- */}
         <div className="mb-8">
-          <h2 className="mb-3 font-display text-2xl font-black uppercase sm:text-3xl">
-            Os meus clips
-          </h2>
-          <div className="rounded-3xl border border-dashed border-orange-500/40 bg-orange-500/5 p-6 text-center">
-            <Clapperboard className="mx-auto mb-2 h-7 w-7 text-orange-400" />
-            <p className="font-bold text-white">Ainda sem clips</p>
-            <p className="mx-auto max-w-md text-sm text-gray-400">
-              Assim que a publicação abrir, os teus clips aparecem aqui — com gostos e
-              comentários.
-            </p>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-2xl font-black uppercase sm:text-3xl">
+              Os meus clips
+            </h2>
+            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
+              {myClips.length}
+            </span>
           </div>
-        </div>
 
-        {/* ---------------- Em breve ---------------- */}
-        <div className="glass mb-8 rounded-3xl p-5 sm:p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-orange-400" />
-            <h3 className="font-display text-base font-black uppercase tracking-wide sm:text-lg">
-              Em breve no perfil
-            </h3>
-          </div>
-          <ul className="space-y-3">
-            {EM_BREVE.map((it, i) => {
-              const Icon = it.icon
-              return (
-                <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-orange-500/15">
-                    <Icon className="h-4 w-4 text-orange-400" />
-                  </span>
-                  {it.text}
-                </li>
-              )
-            })}
-          </ul>
+          {myClips.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-orange-500/40 bg-orange-500/5 p-6 text-center">
+              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-orange-400" />
+              <p className="font-bold text-white">Ainda sem clips</p>
+              <p className="mx-auto max-w-md text-sm text-gray-400">
+                Publica o teu primeiro clip na aba{' '}
+                <span className="font-bold text-white">Clips e Publicações</span> e ele aparece
+                aqui, no teu perfil, com gostos e comentários.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {myClips.map((c) => (
+                <ClipCard
+                  key={c.id}
+                  clip={c}
+                  user={me}
+                  onRequestAuth={onAuthClick}
+                  onProfile={onProfile}
+                  onUpdate={(next) =>
+                    setMyClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
+                  }
+                  onDelete={(id) => setMyClips((prev) => prev.filter((x) => x.id !== id))}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ---------------- Ações da conta ---------------- */}
@@ -473,12 +480,6 @@ export default function ProfilePage({
             Terminar sessão
           </button>
         </div>
-
-        {/* nota: comentários futuros */}
-        <p className="mt-6 flex items-center justify-center gap-2 text-[11px] uppercase tracking-widest text-gray-600">
-          <MessageCircle className="h-3.5 w-3.5" />
-          Perfis públicos e comentários chegam em breve
-        </p>
       </div>
     </section>
   )

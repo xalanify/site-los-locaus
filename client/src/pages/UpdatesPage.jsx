@@ -7,7 +7,6 @@ import {
   Wrench,
   Trash2,
   Calendar,
-  Globe,
   Gamepad2,
   Monitor,
   Users,
@@ -612,13 +611,6 @@ function GameScope() {
    Página de Atualizações — Site ou Jogos
    ============================================================ */
 export default function UpdatesPage() {
-  const [scope, setScope] = useState('site')
-
-  const scopes = [
-    { id: 'site', label: 'Site', icon: Globe },
-    { id: 'jogos', label: 'Jogos', icon: Gamepad2 },
-  ]
-
   return (
     <section className="min-h-screen px-4 pb-20 pt-28 sm:px-6">
       <div className="mx-auto max-w-4xl">
@@ -637,31 +629,9 @@ export default function UpdatesPage() {
             Atualizações
           </h1>
           <p className="mx-auto max-w-2xl text-base text-gray-400 sm:text-lg">
-            Tudo o que mudou — do site e dos jogos — com mês/ano, tipo e fonte.
+            As notícias dos jogos com fonte e as distinções do site — cada uma com a sua cor.
           </p>
         </motion.div>
-
-        {/* Seletor: Site | Jogos */}
-        <div className="mb-8 flex justify-center">
-          <div className="glass inline-flex rounded-full p-1.5">
-            {scopes.map((s) => {
-              const Icon = s.icon
-              const on = scope === s.id
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setScope(s.id)}
-                  className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
-                    on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  {s.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
 
         {/* Distinções existentes — para todos verem quais há */}
         <motion.div
@@ -681,22 +651,22 @@ export default function UpdatesPage() {
             </div>
             <Trophy className="h-6 w-6 shrink-0 text-orange-400" />
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {BADGES.map((b) => (
-              <BadgeTile key={b.id} badge={b} earned={b.id === 'dev'} size={48} />
+              <BadgeTile key={b.id} badge={b} size={48} />
             ))}
           </div>
         </motion.div>
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={scope}
+            key="jogos"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            {scope === 'site' ? <SiteScope /> : <GameScope />}
+            <GameScope />
           </motion.div>
         </AnimatePresence>
       </div>

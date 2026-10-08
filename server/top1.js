@@ -41,10 +41,26 @@ function computeLeader() {
   return { key: ranked[0][0], kills: ranked[0][1].kills, name: ranked[0][1].name };
 }
 
-/* Lider -> conta (nick no CS2 primeiro, depois username) */
+/* Lider -> conta (ligação oficial do admin primeiro, depois
+   nick no CS2 do perfil, depois username) */
 async function matchAccount(key) {
   const k = String(key || '').toLowerCase();
   const db = getDb();
+  // 1) user_game_accounts — ligação feita no painel admin
+  try {
+    const hit = await db
+      .prepare(
+        "SELECT user_id FROM user_game_accounts WHERE LOWER(game) = 'cs2' AND LOWER(TRIM(nick)) = ?",
+      )
+      .get(k);
+    if (hit) {
+      const u = await store.findById(hit.user_id);
+      if (u) return u;
+    }
+  } catch {
+    /* tabela ainda não existe */
+  }
+  // 2) nick no CS2 do perfil
   try {
     const rows = await db
       .prepare(

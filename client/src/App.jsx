@@ -9,13 +9,13 @@ import HomeFeed from './components/HomeFeed'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
-import RecoveryScreen from './components/RecoveryScreen'
 import Footer from './components/Footer'
 import GamesPage from './pages/GamesPage'
 import UpdatesPage from './pages/UpdatesPage'
+import ClipsPage from './pages/ClipsPage'
+import RecentClip from './components/RecentClip'
 import BootScreen, { BackToMenu } from './components/BootScreen'
 import ProfilePage from './pages/ProfilePage'
-import ClipNotice from './components/ClipNotice'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 
 function App() {
@@ -27,14 +27,9 @@ function App() {
   const [sessionChecked, setSessionChecked] = useState(
     () => !localStorage.getItem('userToken'),
   )
+  const [showRecent, setShowRecent] = useState(true) // último clip público na home
   const location = useLocation()
   const navigate = useNavigate()
-
-  // Link de recuperação que chegou por email: /recuperar?token=...
-  const recoveryToken =
-    location.pathname === '/recuperar'
-      ? new URLSearchParams(location.search).get('token')
-      : null
 
   // Sessão de utilizador guardada — obrigatória para entrar no site
   useEffect(() => {
@@ -51,6 +46,16 @@ function App() {
       .catch(() => {})
       .finally(() => setSessionChecked(true))
   }, [])
+
+  // Presença — sinal online/offline na lista de membros
+  useEffect(() => {
+    if (!sessionChecked || !user) return
+    const ping = () =>
+      fetch('/api/users/presence', { method: 'POST', headers: authHeaders() }).catch(() => {})
+    ping()
+    const t = setInterval(ping, 30000)
+    return () => clearInterval(t)
+  }, [sessionChecked, user])
 
   // Volta ao topo ao mudar de página
   useEffect(() => {
@@ -72,14 +77,19 @@ function App() {
   const authed = sessionChecked && Boolean(user)
   // Admin = conta de utilizador com is_admin (marcada no servidor)
   const isAdmin = Boolean(user?.is_admin)
+  // Modo recuperação ligado pelo admin -> obriga ao ecrã de nova pass
+  const needsRecovery = authed && Boolean(user?.recovery)
+
+  // Ver o perfil público de um membro (a partir de um clip)
+  const openMember = (name) => navigate('/clips', { state: { member: name } })
 
   return (
     <div className="min-h-screen bg-dark">
       {/* Ecrã de carregamento — mantém-se montado para a seta voltar */}
       <BootScreen visible={!entered} onEnter={() => setEntered(true)} />
 
-      {/* Seta de voltar */}
-      {entered && <BackToMenu onClick={() => setEntered(false)} />}
+      {/* Seta de voltar — só na página inicial */}
+      {entered && location.pathname === '/' && <BackToMenu onClick={() => setEntered(false)} />}
 
       {/* Site */}
       <AnimatePresence>
@@ -102,15 +112,16 @@ function App() {
               </div>
             )}
 
-            {/* Link do email -> ecrã de nova palavra-passe */}
-            {recoveryToken ? (
-              <RecoveryScreen token={recoveryToken} onAuthed={handleAuthed} />
-            ) : (
-              sessionChecked && !user && <AuthScreen onAuthed={handleAuthed} />
+            {/* Link de recuperação -> ecrã de nova palavra-passe */}
+            {sessionChecked && !user && <AuthScreen onAuthed={handleAuthed} />}
+
+            {/* Conta em modo recuperação -> sempre no ecrã de nova pass */}
+            {needsRecovery && (
+              <AuthScreen forceReset forceUsername={user.username} onAuthed={handleAuthed} />
             )}
 
             {/* Com conta -> site completo */}
-            {authed && (
+            {authed && !needsRecovery && (
               <>
                 <Navbar isAdmin={isAdmin} user={user} />
                 <main>
@@ -119,8 +130,31 @@ function App() {
                       path="/"
                       element={
                         <>
-                          <ClipNotice />
                           <Hero />
+                          {/* Último clip público + botão para a aba de clips */}
+                          {showRecent && (
+                            <section className="mx-auto max-w-6xl px-4 pb-6 pt-10 sm:px-6">
+                              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                                <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
+                                  Último clip publicado
+                                </h2>
+                                <button
+                                  onClick={() => navigate('/clips')}
+                                  className="rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-orange-600 sm:text-sm"
+                                >
+                                  Ver todos os clips
+                                </button>
+                              </div>
+                              <div className="mx-auto max-w-2xl">
+                                <RecentClip
+                                  user={user}
+                                  onRequestAuth={() => setShowAuth(true)}
+                                  onProfile={openMember}
+                                  onEmptyChange={(empty) => setShowRecent(!empty)}
+                                />
+                              </div>
+                            </section>
+                          )}
                           <HomeFeed />
                           <VideosSection />
                         </>
@@ -128,6 +162,16 @@ function App() {
                     />
                     <Route path="/jogos" element={<GamesPage />} />
                     <Route path="/atualizacoes" element={<UpdatesPage />} />
+                    <Route
+                      path="/clips"
+                      element={
+                        <ClipsPage
+                          user={user}
+                          onRequestAuth={() => setShowAuth(true)}
+                          onProfile={openMember}
+                        />
+                      }
+                    />
                     <Route
                       path="/perfil"
                       element={
@@ -138,6 +182,7 @@ function App() {
                           onPanelClick={() => setShowAdminPanel(true)}
                           onAuthClick={() => setShowAuth(true)}
                           onUserUpdate={setUser}
+                          onProfile={openMember}
                         />
                       }
                     />

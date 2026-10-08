@@ -208,16 +208,7 @@ function GameChooser({ onPick }) {
       color: 'text-red-400',
       ring: 'hover:border-red-500',
       bg: 'bg-red-500/10',
-      desc: 'R6 Siege — esquadrão, partidas, modos e ranks (tracker.gg).',
-    },
-    {
-      id: 'bf',
-      name: 'Battlefield',
-      icon: Swords,
-      color: 'text-sky-400',
-      ring: 'hover:border-sky-500',
-      bg: 'bg-sky-500/10',
-      desc: 'BF1, BFV e BF6 — perfil, modos, kits e partidas (tracker.gg).',
+      desc: 'R6 Siege — só o esquadrão, com nível, rank e números de cada um (tracker.gg).',
     },
   ]
 
@@ -960,6 +951,29 @@ function Cs2Page() {
         </div>
       </motion.div>
 
+      {/* Aviso: o futuro das partidas (só FACEIT) */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass rounded-2xl p-4 border-l-4 border-yellow-500/50 bg-yellow-500/5"
+      >
+        <div className="flex items-start gap-3">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
+          <div>
+            <p className="font-bold text-yellow-400">Mudança a caminho</p>
+            <p className="text-sm text-gray-300">
+              Mais à frente, aqui só vai dar para ver partidas{' '}
+              <span className="font-bold text-white">FACEIT</span> — as partidas e o placar do
+              histórico Steam deixam de ser vistos.
+            </p>
+            <p className="mt-2 text-sm text-gray-300">
+              As <span className="font-bold text-white">estatísticas mantêm-se</span>: vêm do
+              CS:GO até hoje, por modos, exatamente como estão.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Aviso: dados vêm todos da conta do xalanix */}
       <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm text-gray-300">
         <Info className="h-4 w-4 shrink-0 text-blue-400" />
@@ -1302,110 +1316,6 @@ function Cs2Page() {
   )
 }
 
-/* ============================================================
-   Rainbow Six — agregação no cliente (mesma forma do aggregate)
-   ============================================================ */
-function r6Aggregate(list) {
-  let matches = 0
-  let wins = 0
-  let losses = 0
-  let draws = 0
-  let roundsFor = 0
-  let roundsAgainst = 0
-  const players = {}
-
-  for (const m of list) {
-    matches++
-    if (m.result === 'win') wins++
-    else if (m.result === 'loss') losses++
-    else if (m.result === 'draw') draws++
-    if (typeof m.rw === 'number') roundsFor += m.rw
-    if (typeof m.rl === 'number') roundsAgainst += m.rl
-
-    // Quem teve mais score conta como "MVP da squad" nesta partida
-    const roster = m.players || []
-    let topKey = null
-    let topScore = -1
-    for (const p of roster) {
-      if ((p.sc || 0) > topScore) {
-        topScore = p.sc || 0
-        topKey = p.key
-      }
-    }
-
-    for (const p of roster) {
-      const ps =
-        players[p.key] ||
-        (players[p.key] = {
-          matches: 0,
-          wins: 0,
-          losses: 0,
-          draws: 0,
-          kills: 0,
-          deaths: 0,
-          assists: 0,
-          hs: 0,
-          mvps: 0,
-          scoreSum: 0,
-        })
-      ps.matches++
-      if (m.result === 'win') ps.wins++
-      else if (m.result === 'loss') ps.losses++
-      else ps.draws++
-      ps.kills += p.k || 0
-      ps.deaths += p.d || 0
-      ps.assists += p.a || 0
-      ps.hs += p.hs || 0
-      ps.scoreSum += p.sc || 0
-      if (p.key === topKey) ps.mvps++
-    }
-  }
-
-  const finished = {}
-  for (const [k, p] of Object.entries(players)) {
-    const n = p.matches || 1
-    finished[k] = {
-      matches: p.matches,
-      wins: p.wins,
-      losses: p.losses,
-      draws: p.draws,
-      winRate: p.matches
-        ? Math.round(((p.wins + p.draws * 0.5) / p.matches) * 100)
-        : 0,
-      kills: p.kills,
-      deaths: p.deaths,
-      assists: p.assists,
-      mvps: p.mvps,
-      kd: p.deaths ? Math.round((p.kills / p.deaths) * 100) / 100 : p.kills,
-      avgScore: Math.round(p.scoreSum / n),
-      avgHsp: p.kills ? Math.round((p.hs / p.kills) * 1000) / 10 : 0,
-    }
-  }
-
-  return {
-    matches,
-    wins,
-    losses,
-    draws,
-    winRate: matches ? Math.round(((wins + draws * 0.5) / matches) * 100) : 0,
-    roundsFor,
-    roundsAgainst,
-    players: finished,
-  }
-}
-
-/* Todos os selecionados têm de estar na MESMA partida */
-function r6MatchHasAll(m, keys) {
-  if (!keys.length) return true
-  const roster = m.players || []
-  return keys.every((k) => roster.some((p) => p.key === k))
-}
-
-const fmtMs = (ms) => {
-  const min = Math.round((Number(ms) || 0) / 60000)
-  if (min < 60) return `${min} min`
-  return `${Math.floor(min / 60)}h ${String(min % 60).padStart(2, '0')}m`
-}
 
 const fmtSecs = (sec) => {
   const s = Number(sec) || 0
@@ -1415,162 +1325,11 @@ const fmtSecs = (sec) => {
   return `${Math.round(s / 60)} min`
 }
 
-/* ============================================================
-   Rainbow Six — linha de partida (esquadrão, sem equipas)
-   ============================================================ */
-function R6MatchRow({ m, open, onToggle }) {
-  const date = m.ts ? new Date(m.ts) : null
-  const dateLabel = date
-    ? date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
-    : ''
-  const timeLabel = date
-    ? date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
-    : ''
-  const res = m.result || null
-  const hasScore = typeof m.rw === 'number' && typeof m.rl === 'number'
-  const roster = [...(m.players || [])].sort((a, b) => (b.sc || 0) - (a.sc || 0))
-
-  return (
-    <div className="overflow-hidden rounded-xl bg-white/5">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <span
-            className={`shrink-0 rounded-md px-2 py-1 text-xs font-black ${
-              res ? resultBadge[res] : 'bg-white/10 text-gray-400'
-            }`}
-          >
-            {res ? resultLabel[res] : 'Sem resultado'}
-          </span>
-          {m.mapImg && (
-            <img
-              src={m.mapImg}
-              alt=""
-              className="hidden h-10 w-16 shrink-0 rounded-md object-cover sm:block"
-            />
-          )}
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-semibold text-gray-200">
-                {m.map || m.mode || 'Partida'}
-              </span>
-              <span className="shrink-0 rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] font-black text-red-400">
-                {m.mode || '—'}
-              </span>
-              {m.surrender && (
-                <span className="shrink-0 rounded bg-yellow-500/20 px-1.5 py-0.5 text-[10px] font-black text-yellow-400">
-                  Desistência
-                </span>
-              )}
-              {roster.length > 0 && (
-                <span className="flex shrink-0 items-center gap-1">
-                  {roster.map((p, i) => (
-                    <span
-                      key={i}
-                      title={p.key}
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: PLAYER_COLORS[p.key] || '#f97316' }}
-                    />
-                  ))}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-gray-500">
-              {dateLabel && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {dateLabel} {timeLabel}
-                </span>
-              )}
-              {m.dur && (
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {fmtMs(m.dur)}
-                </span>
-              )}
-              {m.dc && <span className="truncate">{m.dc}</span>}
-            </div>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <span className={`text-base font-black ${res ? resultColor[res] : 'text-gray-400'}`}>
-            {hasScore ? `${m.rw} - ${m.rl}` : '—'}
-          </span>
-          {open ? (
-            <ChevronUp className="h-4 w-4 text-gray-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          )}
-        </div>
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-white/5"
-          >
-            <div className="space-y-1 p-3">
-              {roster.map((p, i) => {
-                const color = PLAYER_COLORS[p.key] || '#f97316'
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs"
-                    style={{ backgroundColor: `${color}22` }}
-                  >
-                    <span
-                      className="flex min-w-0 items-center gap-1.5 font-bold"
-                      style={{ color }}
-                    >
-                      <span
-                        className="h-1.5 w-1.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="truncate">{p.key}</span>
-                    </span>
-                    <span className="flex shrink-0 gap-2 pl-2 text-gray-400">
-                      <span>
-                        <span className="font-bold text-green-400">{p.k}</span>K
-                      </span>
-                      <span>
-                        <span className="font-bold text-blue-400">{p.a}</span>A
-                      </span>
-                      <span>
-                        <span className="font-bold text-red-400">{p.d}</span>D
-                      </span>
-                      <span className="hidden sm:inline">
-                        <span className="font-bold text-purple-400">{p.hs}</span>HS
-                      </span>
-                      <span className="font-bold text-white">{p.sc}</span>
-                    </span>
-                  </div>
-                )
-              })}
-              {roster.length === 0 && (
-                <p className="py-2 text-center text-xs text-gray-500">
-                  Sem jogadores acompanhados registados nesta partida.
-                </p>
-              )}
-            </div>
-            <p className="px-4 pb-3 text-[11px] text-gray-500">
-              Só os jogadores acompanhados nesta partida · K / A / D · HS = headshots · Score
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
 
 /* ============================================================
    Rainbow Six — cartões do esquadrão (rank, nível, carreira)
    ============================================================ */
-function R6Squad({ players }) {
+function R6Squad({ players, maxRp = {} }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
@@ -1661,12 +1420,21 @@ function R6Squad({ players }) {
                 {rank ? rank.name : 'Sem rank'}
                 {rank && rank.season ? ` · ${rank.season}` : ''}
               </div>
+              <div className="mt-0.5 text-center text-[11px] font-black text-orange-300">
+                Rank máx. ·{' '}
+                {p.maxRank
+                  ? p.maxRank
+                  : maxRp[p.key] > 0
+                    ? `${fmt(maxRp[p.key])} RP`
+                    : '—'}
+              </div>
             </motion.div>
           )
         })}
       </div>
       <p className="mt-4 text-xs text-gray-500">
-        Perfil tracker.gg de cada membro — nível, rank da temporada e números de carreira.
+        Nível, rank da temporada, rank máximo e números de carreira de cada membro — só o
+        esquadrão.
       </p>
     </div>
   )
@@ -1675,13 +1443,12 @@ function R6Squad({ players }) {
 /* ============================================================
    Rainbow Six — página principal
    ============================================================ */
+/* ============================================================
+   Rainbow Six — só o esquadrão
+   (sem secções, modos, partidas nem filtros)
+   ============================================================ */
 function R6Page() {
   const [state, setState] = useState({ loading: true, data: null, error: '' })
-  const [view, setView] = useState('global')
-  const [section, setSection] = useState('stats')
-  const [selected, setSelected] = useState([])
-  const [expanded, setExpanded] = useState(null)
-  const [showAll, setShowAll] = useState(false)
 
   const load = () => {
     setState({ loading: true, data: null, error: '' })
@@ -1716,47 +1483,19 @@ function R6Page() {
 
   const d = state.data
 
-  const r6Players = useMemo(
-    () => (d?.players || []).map((p) => ({ key: p.key, name: p.handle })),
-    [d],
-  )
-
-  const r6Modes = useMemo(() => {
-    if (!d?.matches) return []
-    const map = new Map()
-    for (const m of d.matches) {
-      const id = m.modeKey || m.mode || 'outro'
-      if (!map.has(id)) map.set(id, { id, label: m.mode || id, game: 'R6', count: 0 })
-      map.get(id).count++
+  /* Rank máximo de cada um: maior RP atingido nas partidas ranked
+     (se o campo manual `maxRank` existir no r6.json, esse manda) */
+  const maxRp = useMemo(() => {
+    const map = {}
+    for (const m of d?.matches || []) {
+      if (m.modeKey !== 'ranked') continue
+      for (const p of m.players || []) {
+        const rp = Number(p.rp) || 0
+        if (rp > (map[p.key] || 0)) map[p.key] = rp
+      }
     }
-    return [...map.values()].sort((a, b) => b.count - a.count)
+    return map
   }, [d])
-
-  const perMode = useMemo(() => {
-    const out = {}
-    for (const mo of r6Modes) {
-      out[mo.id] = r6Aggregate(
-        (d?.matches || []).filter((m) => (m.modeKey || m.mode) === mo.id),
-      )
-    }
-    return out
-  }, [r6Modes, d])
-
-  const modeMatches = useMemo(() => {
-    if (!d?.matches) return []
-    return view === 'global'
-      ? d.matches
-      : d.matches.filter((m) => (m.modeKey || m.mode) === view)
-  }, [d, view])
-
-  const matches = useMemo(() => {
-    const list = modeMatches.filter((m) => r6MatchHasAll(m, selected))
-    return [...list].sort((a, b) => (b.ts || '').localeCompare(a.ts || ''))
-  }, [modeMatches, selected])
-
-  const stats = useMemo(() => r6Aggregate(matches), [matches])
-
-  const visible = showAll ? matches : matches.slice(0, 15)
 
   if (state.loading) {
     return (
@@ -1779,11 +1518,9 @@ function R6Page() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
             <KeyRound className="h-8 w-8 text-orange-500" />
           </div>
-          <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
-            Snapshot do tracker em falta
-          </h3>
+          <h2 className="mb-2 text-xl font-black text-white">Falta o snapshot do tracker.gg</h2>
           <p className="text-sm text-gray-400">
-            Ainda não há dados colhidos do Rainbow Six. Gera o ficheiro no projeto:
+            Falta gerar o ficheiro com os dados do esquadrão:
           </p>
         </div>
         <ul className="space-y-2">
@@ -1827,894 +1564,34 @@ function R6Page() {
     )
   }
 
-  const mode = view === 'global' ? null : r6Modes.find((m) => m.id === view)
-
-  const togglePlayer = (key) => {
-    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
-    setExpanded(null)
-    setShowAll(false)
-  }
-
-  const clearPlayers = () => {
-    setSelected([])
-    setExpanded(null)
-    setShowAll(false)
-  }
-
-  const playersSubtitle = selected.length
-    ? '— com filtro'
-    : view === 'global'
-      ? '— todas'
-      : '— só deste modo'
-
   return (
     <div className="space-y-6">
-      {/* Aviso: fonte dos dados */}
+      {/* Aviso: fonte dos dados — só o esquadrão */}
       <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm text-gray-300">
         <Info className="h-4 w-4 shrink-0 text-blue-400" />
         <p>
-          <span className="font-bold text-orange-400">tracker.gg</span> —{' '}
-          <span className="font-bold text-white">{d.players?.length || 0}</span> jogadores do
-          esquadrão e <span className="font-bold text-white">{fmt(d.matches?.length || 0)}</span>{' '}
-          partidas onde pelo menos um deles jogou.
+          <span className="font-bold text-orange-400">tracker.gg</span> — só o{' '}
+          <span className="font-bold text-white">Esquadrão</span>:{' '}
+          <span className="font-bold text-white">{d.players?.length || 0}</span> jogadores, com
+          nível, rank da temporada, rank máximo e números de carreira.
         </p>
       </div>
 
-      {/* Título da vista */}
-      <div className="text-center">
-        <h2 className="text-2xl font-black text-white sm:text-3xl">
-          {mode ? mode.label : 'Todas as partidas'}
-        </h2>
-        <p className="mt-1 text-sm text-gray-400">
-          {mode ? (
-            <>
-              <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] font-black text-red-400">
-                R6
-              </span>{' '}
-              {fmt(modeMatches.length)} partidas
-            </>
-          ) : (
-            <>
-              {fmt(d.matches?.length || 0)} partidas · {r6Modes.length} modos
-            </>
-          )}
-        </p>
-      </div>
-
-      {/* Controlos — o que ver (secção) e por onde filtrar (modo) */}
-      <div className="glass rounded-2xl p-3 sm:p-4">
-        <div className="mb-2.5 flex items-center gap-3 px-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
-            Secção
-          </span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-1">
-          {[
-            { id: 'stats', label: 'Estatísticas', icon: BarChart3 },
-            { id: 'players', label: 'Jogadores', icon: Users },
-            { id: 'matches', label: 'Partidas', icon: Swords },
-          ].map((s) => {
-            const Icon = s.icon
-            const on = section === s.id
-            return (
-              <button
-                key={s.id}
-                onClick={() => setSection(s.id)}
-                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-5 ${
-                  on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {s.label}
-                {s.id === 'matches' && (
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
-                      on ? 'bg-white/20' : 'bg-white/10 text-gray-400'
-                    }`}
-                  >
-                    {fmt(matches.length)}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="mt-3.5 flex items-center gap-3 border-t border-white/5 px-1 pt-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
-            Modo
-          </span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-
-        <div className="-mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 py-1 sm:flex-wrap sm:justify-center sm:overflow-visible">
-          <button
-            onClick={() => {
-              setView('global')
-              setExpanded(null)
-              setShowAll(false)
-            }}
-            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
-              view === 'global'
-                ? 'bg-orange-500 text-white glow-orange scale-105'
-                : 'glass text-gray-300 hover:text-white'
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            Global
-          </button>
-          {r6Modes.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => {
-                setView(m.id)
-                setExpanded(null)
-                setShowAll(false)
-              }}
-              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
-                view === m.id
-                  ? 'bg-orange-500 text-white glow-orange scale-105'
-                  : 'glass text-gray-300 hover:text-white'
-              }`}
-            >
-              <Crosshair className="h-4 w-4" />
-              <span className="whitespace-nowrap">{m.label}</span>
-              <span
-                className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
-                  view === m.id ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-400'
-                }`}
-              >
-                {m.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Filtro de jogadores (afeta as 3 secções) */}
-      <PlayerFilters
-        players={r6Players}
-        selected={selected}
-        onToggle={togglePlayer}
-        onClear={clearPlayers}
-        shown={matches.length}
-        total={modeMatches.length}
-      />
-
-      {/* Conteúdo da secção ativa */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={section}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.25 }}
-          className="space-y-6"
-        >
-          {/* -------- Estatísticas -------- */}
-          {section === 'stats' && (
-            <>
-              <SummaryCards s={stats} />
-              {view === 'global' && <ModeCards modes={r6Modes} perMode={perMode} onSelect={setView} />}
-              <R6Squad players={d.players || []} />
-            </>
-          )}
-
-          {/* -------- Jogadores -------- */}
-          {section === 'players' && (
-            <PlayersTable
-              players={r6Players}
-              stats={stats.players}
-              subtitle={playersSubtitle}
-            />
-          )}
-
-          {/* -------- Partidas -------- */}
-          {section === 'matches' && (
-            <div className="glass rounded-2xl p-5 sm:p-6">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
-                  <Swords className="h-5 w-5 text-orange-400" />
-                  {mode ? `Partidas — ${mode.label}` : 'Todas as partidas'}
-                </h4>
-                <span className="text-xs text-gray-500">mais recentes primeiro</span>
-              </div>
-
-              {matches.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-500">
-                  Não há partidas com este filtro nesta seleção.
-                </p>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    {visible.map((m) => (
-                      <R6MatchRow
-                        key={m.id}
-                        m={m}
-                        open={expanded === m.id}
-                        onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
-                      />
-                    ))}
-                  </div>
-
-                  {matches.length > visible.length && (
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setShowAll(true)}
-                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-500"
-                      >
-                        Mostrar todas ({fmt(matches.length)})
-                      </button>
-                    </div>
-                  )}
-                  {showAll && matches.length > 15 && (
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setShowAll(false)}
-                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-gray-300 transition-colors hover:bg-white/20"
-                      >
-                        Mostrar menos
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <R6Squad players={d.players || []} maxRp={maxRp} />
 
       <p className="text-center text-xs text-gray-500">
-        <Star className="mb-1 mr-1 inline h-3 w-3 text-orange-400" />
-        Dados lidos no tracker.gg (snapshot no projeto)
-        {d.updatedAt && (
-          <>
-            {' '}
-            · atualizado a{' '}
-            {new Date(d.updatedAt).toLocaleString('pt-PT', {
+        <Star className="mr-1 inline h-3 w-3 text-orange-400" />
+        Dados lidos no snapshot do tracker.gg guardado no projeto
+        {d.updatedAt
+          ? ' · atualizado a ' +
+            new Date(d.updatedAt).toLocaleString('pt-PT', {
               day: '2-digit',
               month: '2-digit',
               year: 'numeric',
               hour: '2-digit',
               minute: '2-digit',
-            })}
-          </>
-        )}
-      </p>
-    </div>
-  )
-}
-
-/* ============================================================
-   Battlefield — cartões de estatísticas gerais
-   ============================================================ */
-const BF_STAT_CARDS = [
-  { keys: ['wins'], label: 'Vitórias', icon: Trophy, color: 'text-green-400' },
-  { keys: ['losses'], label: 'Derrotas', icon: Skull, color: 'text-red-400' },
-  { keys: ['draws'], label: 'Empates', icon: Target, color: 'text-yellow-400' },
-  { keys: ['winPercentage', 'wlPercentage'], label: 'Taxa Vitória', icon: Flame, pct: true },
-  { keys: ['matchesPlayed'], label: 'Partidas', icon: Swords },
-  { keys: ['kills'], label: 'Kills', icon: Crosshair, color: 'text-orange-400' },
-  { keys: ['deaths'], label: 'Mortes', icon: Skull, color: 'text-red-400' },
-  { keys: ['kdRatio'], label: 'K/D', icon: Star, color: 'text-yellow-400', dec: true },
-  { keys: ['scorePerMinute'], label: 'Score / min', icon: BarChart3, color: 'text-blue-400' },
-  { keys: ['timePlayed'], label: 'Tempo jogado', icon: Clock, time: true },
-  { keys: ['headshotPercentage', 'headshotsPercentage'], label: 'HSP', icon: Target, color: 'text-purple-400', pct: true },
-  { keys: ['headshots', 'headshotKills'], label: 'Headshots', icon: Target, color: 'text-purple-400' },
-]
-
-function BfOverview({ ov }) {
-  const cards = []
-  for (const c of BF_STAT_CARDS) {
-    const v = c.keys.map((k) => ov[k]).find((x) => typeof x === 'number')
-    if (v === undefined) continue
-    let value
-    if (c.time) value = fmtSecs(v)
-    else if (c.pct) value = `${Math.round((v <= 1 ? v * 100 : v) * 10) / 10}%`
-    else if (c.dec) value = Math.round(v * 100) / 100
-    else value = fmt(v)
-    cards.push({ ...c, value })
-  }
-  if (!cards.length) return null
-  return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 sm:gap-4">
-      {cards.map((c, i) => (
-        <StatCard
-          key={c.label}
-          icon={c.icon}
-          label={c.label}
-          value={c.value}
-          color={c.color}
-          delay={0.04 * i}
-        />
-      ))}
-    </div>
-  )
-}
-
-/* ============================================================
-   Battlefield — tabela por modo
-   ============================================================ */
-function BfModes({ modes }) {
-  if (!modes?.length) return null
-  return (
-    <div className="glass rounded-2xl p-5 sm:p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <BarChart3 className="h-5 w-5 text-orange-400" />
-        <h4 className="text-lg font-bold text-white sm:text-xl">Por modo de jogo</h4>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-sm">
-          <thead>
-            <tr className="border-b border-white/10 text-xs uppercase text-gray-500">
-              <th className="pb-3 pr-3">Modo</th>
-              <th className="pb-3 pr-3 text-right">Partidas</th>
-              <th className="pb-3 pr-3 text-right">V</th>
-              <th className="pb-3 pr-3 text-right">D</th>
-              <th className="pb-3 pr-3 text-right">Taxa</th>
-              <th className="pb-3 text-right">Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {modes.map((m) => {
-              const st = m.stats || {}
-              const wins = st.wins ?? st.matchesWon ?? 0
-              const losses = st.losses ?? st.matchesLost ?? 0
-              const rawPct = st.winPercentage ?? st.wlPercentage ?? null
-              const pct =
-                rawPct !== null
-                  ? Math.round((rawPct <= 1 ? rawPct * 100 : rawPct) * 10) / 10
-                  : wins + losses
-                    ? Math.round((wins / (wins + losses)) * 100)
-                    : 0
-              const mp = st.matchesPlayed
-              return (
-                <tr key={m.key || m.name} className="border-b border-white/5">
-                  <td className="py-3 pr-3 font-bold text-white">{m.name}</td>
-                  <td className="py-3 pr-3 text-right text-gray-300">
-                    {typeof mp === 'number' ? fmt(mp) : '—'}
-                  </td>
-                  <td className="py-3 pr-3 text-right font-bold text-green-400">{fmt(wins)}</td>
-                  <td className="py-3 pr-3 text-right font-bold text-red-400">{fmt(losses)}</td>
-                  <td className="py-3 pr-3 text-right font-black text-orange-400">{pct}%</td>
-                  <td className="py-3 text-right text-gray-300">
-                    {typeof st.score === 'number' ? fmt(st.score) : '—'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   Battlefield — cartões por classe/kit
-   ============================================================ */
-function BfKits({ kits }) {
-  if (!kits?.length) return null
-  return (
-    <div className="glass rounded-2xl p-5 sm:p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <Users className="h-5 w-5 text-orange-400" />
-        <h4 className="text-lg font-bold text-white sm:text-xl">Por classe</h4>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {kits.map((k, i) => {
-          const st = k.stats || {}
-          return (
-            <motion.div
-              key={k.key || k.name}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.04 * i }}
-              className="rounded-xl bg-white/5 p-4"
-            >
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="truncate font-bold uppercase text-white">{k.name}</span>
-                {typeof st.killsPerMinute === 'number' && (
-                  <span className="shrink-0 text-xs font-black text-orange-400">
-                    {st.killsPerMinute}/min
-                  </span>
-                )}
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div>
-                  <div className="font-black text-yellow-400">
-                    {typeof st.kills === 'number' ? fmt(st.kills) : '—'}
-                  </div>
-                  <div className="text-gray-500">Kills</div>
-                </div>
-                <div>
-                  <div className="font-black text-orange-400">
-                    {typeof st.score === 'number' ? fmt(st.score) : '—'}
-                  </div>
-                  <div className="text-gray-500">Score</div>
-                </div>
-                <div>
-                  <div className="font-black text-blue-400">
-                    {typeof st.timePlayed === 'number' ? fmtSecs(st.timePlayed) : '—'}
-                  </div>
-                  <div className="text-gray-500">Tempo</div>
-                </div>
-              </div>
-              {typeof st.kdRatio === 'number' && (
-                <div className="mt-2 text-center text-[11px] text-gray-400">
-                  K/D <span className="font-bold text-yellow-400">{st.kdRatio}</span>
-                  {typeof st.scorePerMinute === 'number' && (
-                    <>
-                      {' · '}Score/min{' '}
-                      <span className="font-bold text-orange-400">{st.scorePerMinute}</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   Battlefield — linha de partida (+ detalhe por modo)
-   ============================================================ */
-function BfMatchRow({ m, open, onToggle }) {
-  const date = m.ts ? new Date(m.ts) : null
-  const dateLabel = date
-    ? date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
-    : ''
-  const timeLabel = date
-    ? date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
-    : ''
-  const gms = m.gamemodes || []
-  const expandable = gms.length > 0
-
-  const body = (
-    <>
-      <div className="flex min-w-0 items-center gap-3">
-        {m.mapImg && (
-          <img
-            src={m.mapImg}
-            alt=""
-            className="hidden h-10 w-16 shrink-0 rounded-md object-cover sm:block"
-          />
-        )}
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-semibold text-gray-200">
-              {m.map || m.mode || 'Partida'}
-            </span>
-            {m.mode && (
-              <span className="shrink-0 rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-black text-sky-400">
-                {m.mode}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-[11px] text-gray-500">
-            {dateLabel && (
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {dateLabel} {timeLabel}
-              </span>
-            )}
-            {m.server && <span className="truncate">{m.server}</span>}
-          </div>
-        </div>
-      </div>
-      <div className="flex shrink-0 items-center gap-3">
-        {expandable &&
-          (open ? (
-            <ChevronUp className="h-4 w-4 text-gray-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          ))}
-      </div>
-    </>
-  )
-
-  return (
-    <div className="overflow-hidden rounded-xl bg-white/5">
-      {expandable ? (
-        <button
-          onClick={onToggle}
-          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
-        >
-          {body}
-        </button>
-      ) : (
-        <div className="flex w-full items-center justify-between gap-3 px-4 py-3">{body}</div>
-      )}
-
-      <AnimatePresence>
-        {open && expandable && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-white/5"
-          >
-            <div className="space-y-1 p-3">
-              {gms.map((g, i) => {
-                const st = g.stats || {}
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-lg bg-white/5 px-2 py-1.5 text-xs"
-                  >
-                    <span className="truncate font-bold text-white">{g.name}</span>
-                    <span className="flex shrink-0 gap-2 pl-2 text-gray-400">
-                      {typeof st.kills === 'number' && (
-                        <span>
-                          <span className="font-bold text-green-400">{fmt(st.kills)}</span>K
-                        </span>
-                      )}
-                      {typeof st.deaths === 'number' && (
-                        <span>
-                          <span className="font-bold text-red-400">{fmt(st.deaths)}</span>D
-                        </span>
-                      )}
-                      {typeof st.kdRatio === 'number' && (
-                        <span className="font-bold text-yellow-400">{st.kdRatio}</span>
-                      )}
-                      {typeof st.score === 'number' && (
-                        <span className="font-bold text-white">{fmt(st.score)}</span>
-                      )}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            <p className="px-4 pb-3 text-[11px] text-gray-500">
-              Progresso registado por modo (instantâneo delta do tracker.gg)
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-/* ============================================================
-   Battlefield — página principal (BF1 / BFV / BF6)
-   ============================================================ */
-function BFPage() {
-  const [game, setGame] = useState('bf1')
-  const [state, setState] = useState({ loading: true, data: null, error: '' })
-  const [section, setSection] = useState('stats')
-  const [expanded, setExpanded] = useState(null)
-  const [showAll, setShowAll] = useState(false)
-
-  const bfGames = [
-    { id: 'bf1', label: 'BF1' },
-    { id: 'bfv', label: 'BFV' },
-    { id: 'bf6', label: 'BF6' },
-  ]
-
-  useEffect(() => {
-    let cancel = false
-    setState({ loading: true, data: null, error: '' })
-    fetch(`/api/games/bf?g=${game}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (cancel) return
-        if (d?.error) setState({ loading: false, data: d, error: d.error })
-        else setState({ loading: false, data: d, error: '' })
-      })
-      .catch(() => {
-        if (!cancel)
-          setState({ loading: false, data: null, error: 'Erro ao carregar. Tenta novamente.' })
-      })
-    return () => {
-      cancel = true
-    }
-  }, [game])
-
-  const d = state.data
-
-  const retry = () => {
-    setState((s) => ({ ...s, loading: true, error: '' }))
-    fetch(`/api/games/bf?g=${game}`)
-      .then((r) => r.json())
-      .then((nd) => {
-        if (nd?.error) setState({ loading: false, data: nd, error: nd.error })
-        else setState({ loading: false, data: nd, error: '' })
-      })
-      .catch(() => setState({ loading: false, data: null, error: 'Erro ao carregar.' }))
-  }
-
-  if (state.loading) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-16">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
-        <p className="text-sm text-gray-400">A ler os dados do tracker.gg...</p>
-      </div>
-    )
-  }
-
-  // ---------- Snapshot em falta ----------
-  if (d?.configured === false && d?.missing?.length) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
-      >
-        <div className="mb-5 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
-            <KeyRound className="h-8 w-8 text-orange-500" />
-          </div>
-          <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
-            Snapshot do tracker em falta
-          </h3>
-          <p className="text-sm text-gray-400">
-            Ainda não há dados colhidos deste Battlefield. Gera o ficheiro no projeto:
-          </p>
-        </div>
-        <ul className="space-y-2">
-          {d.missing.map((f) => (
-            <li
-              key={f}
-              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-orange-400"
-            >
-              {f}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-center text-xs text-gray-500">
-          Depois reinicia com o <code className="text-orange-500">INICIAR.bat</code> e os dados
-          aparecem aqui.
-        </p>
-        <div className="mt-5 text-center">
-          <button
-            onClick={retry}
-            className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      </motion.div>
-    )
-  }
-
-  // ---------- Erro ----------
-  if (state.error || !d) {
-    return (
-      <div className="glass mx-auto max-w-xl rounded-2xl p-6 text-center">
-        <p className="mb-4 text-sm text-red-400">{state.error || 'Erro ao carregar.'}</p>
-        <button
-          onClick={retry}
-          className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
-        >
-          Tentar novamente
-        </button>
-      </div>
-    )
-  }
-
-  const supportsMatches = d.matchesSupported !== false && Array.isArray(d.matches)
-  const matchList = supportsMatches
-    ? [...d.matches].sort((a, b) => (b.ts || '').localeCompare(a.ts || ''))
-    : []
-  const visible = showAll ? matchList : matchList.slice(0, 15)
-  const gameLabel = (bfGames.find((g) => g.id === game) || {}).label || game
-
-  const pickGame = (id) => {
-    setGame(id)
-    setSection('stats')
-    setExpanded(null)
-    setShowAll(false)
-  }
-
-  const sections = [
-    { id: 'stats', label: 'Estatísticas', icon: BarChart3 },
-    { id: 'modes', label: 'Modos e classes', icon: Filter },
-    ...(supportsMatches ? [{ id: 'matches', label: 'Partidas', icon: Swords, count: matchList.length }] : []),
-  ]
-
-  return (
-    <div className="space-y-6">
-      {/* Controlos — jogo (dados) */}
-      <div className="glass rounded-2xl p-3 sm:p-4">
-        <div className="mb-2.5 flex items-center gap-3 px-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
-            Jogo
-          </span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-          {bfGames.map((g) => (
-            <button
-              key={g.id}
-              onClick={() => pickGame(g.id)}
-              className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
-                game === g.id
-                  ? 'bg-orange-500 text-white glow-orange scale-105'
-                  : 'glass text-gray-300 hover:text-white'
-              }`}
-            >
-              <Gamepad2 className="h-4 w-4" />
-              {g.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Cabeçalho do perfil */}
-      <div className="text-center">
-        <h2 className="text-2xl font-black text-white sm:text-3xl">
-          {gameLabel}
-          <span className="ml-2 text-base font-bold text-gray-400">{d.handle}</span>
-        </h2>
-        <p className="mt-1 text-sm text-gray-400">
-          <span className="rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-black text-sky-400">
-            tracker.gg
-          </span>{' '}
-          {fmt(d.modes?.length || 0)} modos · {fmt(d.kits?.length || 0)} classes
-          {supportsMatches ? ` · ${fmt(matchList.length)} partidas` : ''}
-        </p>
-      </div>
-
-      {/* Controlos — o que ver (secção) */}
-      <div className="glass rounded-2xl p-3 sm:p-4">
-        <div className="mb-2.5 flex items-center gap-3 px-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
-            Secção
-          </span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-        <div className="flex flex-wrap justify-center gap-1">
-          {sections.map((s) => {
-            const Icon = s.icon
-            const on = section === s.id
-            return (
-              <button
-                key={s.id}
-                onClick={() => setSection(s.id)}
-                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-5 ${
-                  on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {s.label}
-                {s.count !== undefined && (
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
-                      on ? 'bg-white/20' : 'bg-white/10 text-gray-400'
-                    }`}
-                  >
-                    {fmt(s.count)}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={section}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.25 }}
-          className="space-y-6"
-        >
-          {/* -------- Estatísticas -------- */}
-          {section === 'stats' && (
-            <>
-              <BfOverview ov={d.overview || {}} />
-              {d.avatar && (
-                <div className="glass flex items-center gap-4 rounded-2xl p-5">
-                  <img src={d.avatar} alt="" className="h-16 w-16 rounded-full object-cover" />
-                  <div className="min-w-0">
-                    <div className="truncate text-lg font-bold text-white">{d.handle}</div>
-                    <div className="text-xs text-gray-400">
-                      {gameLabel} · tempo jogado{' '}
-                      {typeof d.overview?.timePlayed === 'number'
-                        ? fmtSecs(d.overview.timePlayed)
-                        : '—'}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* -------- Modos e classes -------- */}
-          {section === 'modes' && (
-            <>
-              <BfModes modes={d.modes} />
-              <BfKits kits={d.kits} />
-            </>
-          )}
-
-          {/* -------- Partidas -------- */}
-          {section === 'matches' && (
-            <div className="glass rounded-2xl p-5 sm:p-6">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
-                  <Swords className="h-5 w-5 text-orange-400" />
-                  Histórico de partidas — {gameLabel}
-                </h4>
-                <span className="text-xs text-gray-500">mais recentes primeiro</span>
-              </div>
-
-              {!supportsMatches ? (
-                <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-gray-300">
-                  <span className="font-bold text-yellow-400">Nota:</span> o {gameLabel} não
-                  devolve histórico de partidas na tracker.gg — aqui ficam só as estatísticas de
-                  perfil.
-                </div>
-              ) : matchList.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-500">Sem partidas registadas.</p>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    {visible.map((m) => (
-                      <BfMatchRow
-                        key={m.id}
-                        m={m}
-                        open={expanded === m.id}
-                        onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
-                      />
-                    ))}
-                  </div>
-
-                  {matchList.length > visible.length && (
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setShowAll(true)}
-                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-500"
-                      >
-                        Mostrar todas ({fmt(matchList.length)})
-                      </button>
-                    </div>
-                  )}
-                  {showAll && matchList.length > 15 && (
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setShowAll(false)}
-                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-gray-300 transition-colors hover:bg-white/20"
-                      >
-                        Mostrar menos
-                      </button>
-                    </div>
-                  )}
-                  <p className="mt-4 text-[11px] text-gray-500">
-                    {game === 'bf1'
-                      ? 'Só metadados por partida — data, mapa, modo e servidor.'
-                      : 'Instantâneos de progresso (delta) da tracker.gg — não é o detalhe de uma partida isolada.'}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      <p className="text-center text-xs text-gray-500">
-        <Star className="mb-1 mr-1 inline h-3 w-3 text-orange-400" />
-        Dados lidos no tracker.gg (snapshot no projeto)
-        {d.updated && (
-          <>
-            {' '}
-            · atualizado a{' '}
-            {new Date(d.updated).toLocaleString('pt-PT', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </>
-        )}
+            })
+          : ''}
       </p>
     </div>
   )
@@ -2779,17 +1656,6 @@ export default function GamesPage() {
                 Rainbow Six
               </button>
               <button
-                onClick={() => setTab('bf')}
-                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
-                  tab === 'bf'
-                    ? 'bg-orange-500 text-white glow-orange scale-105'
-                    : 'glass text-gray-300 hover:text-white'
-                }`}
-              >
-                <Swords className="h-5 w-5" />
-                Battlefield
-              </button>
-              <button
                 onClick={() => setTab(null)}
                 title="Escolher outro jogo"
                 className="flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-bold text-gray-400 transition-all duration-300 hover:border-orange-500 hover:text-orange-400 sm:px-6 sm:text-base"
@@ -2811,8 +1677,6 @@ export default function GamesPage() {
                   <EafcPage />
                 ) : tab === 'r6' ? (
                   <R6Page />
-                ) : tab === 'bf' ? (
-                  <BFPage />
                 ) : (
                   <Cs2Page />
                 )}

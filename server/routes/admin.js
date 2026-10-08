@@ -7,7 +7,10 @@ const { validateEmail } = require('../emailValidate');
 const router = express.Router();
 
 /* Distinções possíveis (tem de coincidir com o cliente) */
-const VALID_BADGES = ['dev', 'top1', 'clip', 'jogador'];
+const VALID_BADGES = ['dev', 'top1', 'jogador', 'mod', 'og', 'lenda'];
+
+/* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
+const { CLIP_GAME_IDS } = require('../clipGames');
 
 const count = async (db, sql) => {
   try {
@@ -60,10 +63,21 @@ router.get('/users', requireAdmin, async (req, res) => {
     } catch {
       /* tabela ainda não existe */
     }
+    let gameAccounts = [];
+    try {
+      gameAccounts = await db.prepare('SELECT id, user_id, game, nick FROM user_game_accounts').all();
+    } catch {
+      /* tabela ainda não existe */
+    }
     const byUser = {};
     for (const g of grants) {
       if (!byUser[g.user_id]) byUser[g.user_id] = [];
       byUser[g.user_id].push(g.badge);
+    }
+    const accByUser = {};
+    for (const a of gameAccounts) {
+      if (!accByUser[a.user_id]) accByUser[a.user_id] = [];
+      accByUser[a.user_id].push({ id: Number(a.id), game: a.game, nick: a.nick });
     }
     const profByUser = {};
     for (const p of profiles) profByUser[p.user_id] = p;
@@ -73,8 +87,10 @@ router.get('/users', requireAdmin, async (req, res) => {
         username: u.username,
         email: u.email || null,
         is_admin: Boolean(u.is_admin),
+        recovery: Boolean(u.recovery),
         created_at: u.created_at,
         badges: byUser[u.id] || [],
+        game_accounts: accByUser[u.id] || [],
         avatar_url: (profByUser[u.id] && profByUser[u.id].avatar_url) || null,
         game_nick: (profByUser[u.id] && profByUser[u.id].game_nick) || null,
       }))
@@ -169,17 +185,98 @@ router.put('/users/:id/email', requireAdmin, async (req, res) => {
   }
 });
 
-/* ---------- Pedidos de recuperação (visibilidade) ---------- */
-// GET /api/admin/recovery -> pedidos ativos (enviados por email)
+/* ---------- Pedidos de recuperação (admin ativa o modo) ---------- */
+// GET /api/admin/recovery -> quem pediu "esqueci a pass" + estado da conta
 router.get('/recovery', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     const rows = await db
-      .prepare(`SELECT * FROM pass_recovery WHERE status IN ('sent','locked') ORDER BY created_at DESC`)
+      .prepare(
+        `SELECT pr.username, pr.created_at, u.id AS user_id, u.recovery
+         FROM pass_recovery pr
+         LEFT JOIN users u ON u.id = pr.user_id
+         WHERE pr.status IN ('requested', 'active')
+         ORDER BY pr.created_at DESC`,
+      )
       .all();
     res.json({ requests: rows });
   } catch {
     res.status(500).json({ error: 'Erro ao carregar pedidos de recuperação.' });
+  }
+});
+
+/* ---------- Modo recuperação de uma conta (on/off) ---------- */
+// PATCH /api/admin/users/:id/recovery  { enabled }
+router.patch('/users/:id/recovery', requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const enabled = Boolean(req.body && req.body.enabled);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Conta inválida.' });
+
+    const db = getDb();
+    const upd = await db.prepare('UPDATE users SET recovery = ? WHERE id = ?').run(enabled, id);
+    if (!upd.changes) return res.status(404).json({ error: 'Conta não encontrada.' });
+    await db
+      .prepare(
+        `UPDATE pass_recovery SET status = ?, updated_at = now()
+         WHERE user_id = ? AND status IN ('requested', 'sent')`,
+      )
+      .run(enabled ? 'active' : 'handled', id);
+
+    res.json({ ok: true, recovery: enabled });
+  } catch (error) {
+    console.error('Erro admin recovery:', error.message);
+    res.status(500).json({ error: 'Erro ao alterar o modo de recuperação.' });
+  }
+});
+
+/* ---------- Ligações user <-> contas de jogo ---------- */
+// POST /api/admin/users/:id/game-accounts  { game, nick }
+router.post('/users/:id/game-accounts', requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const game = String((req.body && req.body.game) || '').trim().toLowerCase();
+    const nick = String((req.body && req.body.nick) || '').trim().slice(0, 40);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Conta inválida.' });
+    if (!CLIP_GAME_IDS.has(game)) return res.status(400).json({ error: 'Jogo inválido.' });
+    if (!nick) return res.status(400).json({ error: 'Escreve o nick nesse jogo.' });
+
+    const db = getDb();
+    await db
+      .prepare(
+        `INSERT INTO user_game_accounts (user_id, game, nick) VALUES (?, ?, ?)
+         ON CONFLICT (user_id, game, nick) DO NOTHING`,
+      )
+      .run(id, game, nick);
+    const rows = await db
+      .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
+      .all(id);
+    res.json({ ok: true, accounts: rows });
+  } catch (error) {
+    console.error('Erro game-accounts:', error.message);
+    res.status(500).json({ error: 'Erro ao ligar a conta de jogo.' });
+  }
+});
+
+// DELETE /api/admin/users/:id/game-accounts/:accId
+router.delete('/users/:id/game-accounts/:accId', requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const acc = Number(req.params.accId);
+    if (!Number.isFinite(id) || !Number.isFinite(acc)) {
+      return res.status(400).json({ error: 'Pedido inválido.' });
+    }
+    const db = getDb();
+    await db
+      .prepare('DELETE FROM user_game_accounts WHERE id = ? AND user_id = ?')
+      .run(acc, id);
+    const rows = await db
+      .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
+      .all(id);
+    res.json({ ok: true, accounts: rows });
+  } catch (error) {
+    console.error('Erro game-accounts delete:', error.message);
+    res.status(500).json({ error: 'Erro ao retirar a conta de jogo.' });
   }
 });
 

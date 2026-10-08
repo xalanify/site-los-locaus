@@ -112,6 +112,72 @@ h4 {
   animation: slideIn 0.5s ease-out forwards;
 }
 
+/* ---------- Distinções (joias de diabo) ---------- */
+/* halo a pulsar à volta da gema */
+.gem-halo {
+  position: absolute;
+  inset: -14%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--gem) 70%, transparent) 0%, transparent 65%);
+  opacity: 0.4;
+  animation: gemHalo 2.2s ease-in-out infinite;
+}
+
+@keyframes gemHalo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+/* brilho a passar por cima da gema */
+.gem-sheen {
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  left: -70%;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  filter: blur(4px);
+  animation: gemSheen 2.6s ease-in-out infinite;
+}
+
+@keyframes gemSheen {
+  0% {
+    left: -70%;
+  }
+  60%,
+  100% {
+    left: 130%;
+  }
+}
+
+/* gema a flutuar */
+.gem-anim-float {
+  animation: gemFloat 3s ease-in-out infinite;
+}
+
+@keyframes gemFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+
 /* Hover effects */
 .hover-scale {
   transition: transform 0.3s ease;

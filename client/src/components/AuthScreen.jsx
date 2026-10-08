@@ -1,30 +1,41 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { LogIn, UserPlus, Loader2, ShieldCheck, MailCheck, MailWarning } from 'lucide-react'
+import {
+  LogIn,
+  UserPlus,
+  Loader2,
+  ShieldCheck,
+  MailCheck,
+  KeyRound,
+} from 'lucide-react'
 
 /* ============================================================
    Ecrã de entrada obrigatório — para entrar no site é preciso
    conta (nome, email e palavra-passe).
 
-   "Esqueci a pass" envia um link por email; ao abri-lo o site
-   mostra o ecrã de nova palavra-passe (ver RecoveryScreen).
+   "Esqueci a pass" NÃO envia email: regista um pedido que o admin
+   vê no painel. Quando o admin liga o "modo recuperação", ao entrar
+   no site aparece sempre o ecrã de criar nova palavra-passe
+   (forceReset).
    ============================================================ */
 
-export default function AuthScreen({ onAuthed }) {
-  const [mode, setMode] = useState('login') // login | register | forgot
-  const [username, setUsername] = useState('')
+export default function AuthScreen({ onAuthed, forceReset = false, forceUsername = '' }) {
+  const [mode, setMode] = useState(forceReset ? 'reset' : 'login') // login | register | forgot | reset
+  const [username, setUsername] = useState(forceUsername)
   const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
   // Estado do pedido de recuperação
-  const [sentInfo, setSentInfo] = useState(null) // { masked, dev, devUrl }
+  const [sentInfo, setSentInfo] = useState(null) // { ok: true }
 
   const [showExists, setShowExists] = useState(false)
   const existsTimer = useRef(null)
 
-  // Só mostra "Esqueci a pass" se o nome escrito existir na BD
+  // Só mostra "Esqueci a pass" se o nome escrito existir na BD.
+  // Se a conta estiver em modo recuperação, salta logo ao ecrã de nova pass.
   useEffect(() => {
     if (mode !== 'login') return
     const u = username.trim()
@@ -38,6 +49,7 @@ export default function AuthScreen({ onAuthed }) {
         const r = await fetch(`/api/users/exists?username=${encodeURIComponent(u)}`)
         const d = await r.json()
         setShowExists(!!d.exists)
+        if (d.exists && d.recovery) setMode('reset')
       } catch {
         setShowExists(false)
       }
@@ -48,15 +60,20 @@ export default function AuthScreen({ onAuthed }) {
   }, [username, mode])
 
   const switchMode = (m) => {
+    if (forceReset && m !== 'reset') return
     setMode(m)
     setError('')
     setSentInfo(null)
+    if (m !== 'reset') {
+      setPassword('')
+      setConfirm('')
+    }
   }
 
   const submit = async (e) => {
     e.preventDefault()
     if (busy) return
-    if (mode === 'forgot') return
+    if (mode === 'forgot' || mode === 'reset') return
     setBusy(true)
     setError('')
     try {
@@ -89,7 +106,41 @@ export default function AuthScreen({ onAuthed }) {
     }
   }
 
-  // Envia o link de recuperação por email
+  // Cria a nova palavra-passe (modo de recuperação ligado pelo admin)
+  const submitReset = async (e) => {
+    e.preventDefault()
+    if (busy) return
+    const u = username.trim()
+    if (!u) return setError('Escreve o teu nome.')
+    if (password.length < 6) {
+      return setError('A nova palavra-passe precisa de pelo menos 6 caracteres.')
+    }
+    if (password !== confirm) return setError('As palavras-passe não coincidem.')
+
+    setBusy(true)
+    setError('')
+    try {
+      const res = await fetch('/api/users/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, new_password: password }),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(d.error || 'Não foi possível criar a nova palavra-passe.')
+        return
+      }
+      setPassword('')
+      setConfirm('')
+      if (onAuthed) onAuthed(d)
+    } catch {
+      setError('Sem ligação ao servidor.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Regista o pedido "esqueci a pass" para o admin ver no painel
   const sendRecovery = async () => {
     const u = username.trim()
     if (!u) {
@@ -107,10 +158,10 @@ export default function AuthScreen({ onAuthed }) {
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.ok) {
-        setError(d.error || 'Não foi possível enviar o email.')
+        setError(d.error || 'Não foi possível registar o pedido.')
         return
       }
-      setSentInfo({ masked: d.masked, dev: !!d.dev, devUrl: d.devUrl })
+      setSentInfo({ ok: true })
     } catch {
       setError('Sem ligação ao servidor.')
     } finally {
@@ -127,6 +178,13 @@ export default function AuthScreen({ onAuthed }) {
     }`
 
   const isForgot = mode === 'forgot'
+  const isReset = mode === 'reset'
+
+  const subtitle = isForgot
+    ? 'Recuperar palavra-passe'
+    : isReset
+      ? 'Criar nova palavra-passe'
+      : 'Conta para entrar'
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black px-4 py-8">
@@ -150,12 +208,12 @@ export default function AuthScreen({ onAuthed }) {
             Ashow e Jazer
           </h1>
           <p className="mt-1.5 text-[11px] uppercase tracking-[0.3em] text-gray-500">
-            {isForgot ? 'Recuperar palavra-passe' : 'Conta para entrar'}
+            {subtitle}
           </p>
         </div>
 
         <div className="glass rounded-2xl p-6">
-          {/* ------------- "Esqueci a pass" ------------- */}
+          {/* ------------- "Esqueci a pass" (pedido ao admin) ------------- */}
           {isForgot ? (
             sentInfo ? (
               <div className="space-y-4 text-center">
@@ -163,26 +221,13 @@ export default function AuthScreen({ onAuthed }) {
                   <MailCheck className="h-6 w-6 text-orange-400" />
                 </span>
                 <p className="text-sm leading-relaxed text-gray-300">
-                  Enviámos um link para
+                  O teu pedido foi <b className="text-white">enviado ao admin</b>.
                   <br />
-                  <b className="text-white">{sentInfo.masked}</b>
+                  Assim que ele ativar a recuperação da conta
                   <br />
-                  Abre o email para escolher a nova palavra-passe.
+                  <b className="text-white">{username.trim()}</b>, ao entrares no site aparece o
+                  ecrã de criar uma nova palavra-passe.
                 </p>
-
-                {sentInfo.dev && sentInfo.devUrl && (
-                  <div className="rounded-xl bg-orange-500/10 p-3 text-left ring-1 ring-orange-500/25">
-                    <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-orange-300">
-                      <MailWarning className="h-3.5 w-3.5" /> Modo local (sem SMTP)
-                    </p>
-                    <a
-                      href={sentInfo.devUrl}
-                      className="block break-all text-xs text-orange-400 underline"
-                    >
-                      {sentInfo.devUrl}
-                    </a>
-                  </div>
-                )}
 
                 <button
                   type="button"
@@ -201,7 +246,7 @@ export default function AuthScreen({ onAuthed }) {
                 className="space-y-3"
               >
                 <p className="text-xs leading-relaxed text-gray-400">
-                  Escreve o teu nome e enviamos um link para o email da tua conta.
+                  Escreve o teu nome — o pedido fica registado e o admin aprova-o no painel.
                 </p>
                 <input
                   value={username}
@@ -223,7 +268,7 @@ export default function AuthScreen({ onAuthed }) {
                   disabled={busy || !username.trim()}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                 >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar link por email'}
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Pedir recuperação'}
                 </button>
 
                 <button
@@ -235,6 +280,69 @@ export default function AuthScreen({ onAuthed }) {
                 </button>
               </form>
             )
+          ) : isReset ? (
+            /* ------------- Nova palavra-passe (modo recuperação) ------------- */
+            <form onSubmit={submitReset} className="space-y-3">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 ring-1 ring-orange-500/30">
+                <KeyRound className="h-6 w-6 text-orange-400" />
+              </span>
+              <p className="text-center text-xs leading-relaxed text-gray-400">
+                A recuperação foi aprovada pelo admin — cria já a tua nova palavra-passe.
+              </p>
+
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="O teu nome"
+                maxLength={20}
+                autoComplete="username"
+                readOnly={forceReset}
+                className={`${inputCls} ${forceReset ? 'opacity-70' : ''}`}
+              />
+
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Nova palavra-passe (mín. 6)"
+                maxLength={100}
+                autoComplete="new-password"
+                className={inputCls}
+              />
+              <input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Repete a nova palavra-passe"
+                maxLength={100}
+                autoComplete="new-password"
+                className={inputCls}
+              />
+
+              {error && (
+                <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={busy || !username.trim() || !password || !confirm}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar nova palavra-passe'}
+              </button>
+
+              {!forceReset && (
+                <button
+                  type="button"
+                  onClick={() => switchMode('login')}
+                  className="w-full py-1 text-xs font-semibold text-gray-400 transition-colors hover:text-white"
+                >
+                  Voltar
+                </button>
+              )}
+            </form>
           ) : (
             <>
               {/* Entrar / Criar conta */}

@@ -22,9 +22,12 @@ import {
   MessageSquare,
   Eye,
   Award,
+  Gamepad2,
+  KeyRound,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import { BADGES, BadgeGem } from './BadgeGem'
+import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 
 /* Data simples das contas (dd mmm aaaa) */
 const fmtUserDate = (iso) => {
@@ -135,6 +138,14 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const [usersLoading, setUsersLoading] = useState(true)
   const [usersError, setUsersError] = useState('')
 
+  // Pedidos de recuperação de palavra-passe ("esqueci a pass")
+  const [requests, setRequests] = useState([])
+
+  // Contas de jogo (ligação user <-> jogador) por conta aberta
+  const [openUser, setOpenUser] = useState(null)
+  const [accForm, setAccForm] = useState({ game: 'cs2', nick: '' })
+  const [accBusy, setAccBusy] = useState(false)
+
   // Anúncios (publicações do admin)
   const [posts, setPosts] = useState([])
   const [title, setTitle] = useState('')
@@ -197,6 +208,13 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       })
   }
 
+  const fetchRequests = () => {
+    fetch('/api/admin/recovery', { headers: adminHeaders() })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d) => setRequests(d && Array.isArray(d.requests) ? d.requests : []))
+      .catch(() => {})
+  }
+
   const fetchPosts = () => {
     fetch('/api/posts')
       .then((res) => (res.ok ? res.json() : []))
@@ -219,7 +237,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
   useEffect(() => {
     if (tab === 'painel') fetchOverview()
-    if (tab === 'utilizadores') fetchUsers()
+    if (tab === 'utilizadores') {
+      fetchUsers()
+      fetchRequests()
+    }
     if (tab === 'anuncios') fetchPosts()
     if (tab === 'clips') fetchClips()
   }, [tab])
@@ -254,6 +275,85 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               }
             : x,
         ),
+      )
+    } catch {
+      setUsersError('Sem ligação ao servidor.')
+    }
+  }
+
+  /* ---------- modo recuperação (nova pass pedido pelo user) ---------- */
+  const toggleRecovery = async (u) => {
+    const next = !u.recovery
+    setUsersError('')
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/recovery`, {
+        method: 'PATCH',
+        headers: adminHeaders(),
+        body: JSON.stringify({ enabled: next }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setUsersError(data.error || 'Erro ao alterar o modo de recuperação.')
+        return
+      }
+      setUserList((prev) => prev.map((x) => (x.id === u.id ? { ...x, recovery: next } : x)))
+      setRequests((prev) =>
+        next
+          ? prev.map((r) =>
+              Number(r.user_id) === Number(u.id) ? { ...r, recovery: true } : r,
+            )
+          : prev.filter((r) => Number(r.user_id) !== Number(u.id)),
+      )
+    } catch {
+      setUsersError('Sem ligação ao servidor.')
+    }
+  }
+
+  /* ---------- ligações user <-> contas de jogo ---------- */
+  const addGameAccount = async (u) => {
+    const nick = accForm.nick.trim()
+    if (!nick) {
+      setUsersError('Escreve o nick nesse jogo.')
+      return
+    }
+    setAccBusy(true)
+    setUsersError('')
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/game-accounts`, {
+        method: 'POST',
+        headers: adminHeaders(),
+        body: JSON.stringify({ game: accForm.game, nick }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setUsersError(data.error || 'Erro ao ligar a conta de jogo.')
+        return
+      }
+      setUserList((prev) =>
+        prev.map((x) => (x.id === u.id ? { ...x, game_accounts: data.accounts } : x)),
+      )
+      setAccForm((f) => ({ ...f, nick: '' }))
+    } catch {
+      setUsersError('Sem ligação ao servidor.')
+    } finally {
+      setAccBusy(false)
+    }
+  }
+
+  const removeGameAccount = async (u, accId) => {
+    setUsersError('')
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/game-accounts/${accId}`, {
+        method: 'DELETE',
+        headers: adminHeaders(),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setUsersError(data.error || 'Erro ao retirar a conta de jogo.')
+        return
+      }
+      setUserList((prev) =>
+        prev.map((x) => (x.id === u.id ? { ...x, game_accounts: data.accounts } : x)),
       )
     } catch {
       setUsersError('Sem ligação ao servidor.')
@@ -596,6 +696,63 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </p>
             )}
 
+            {/* ----- Pedidos de recuperação de palavra-passe ----- */}
+            <div className="glass mb-5 rounded-xl p-4">
+              <h3 className="mb-2 flex items-center gap-2 font-bold text-white">
+                <KeyRound className="h-4 w-4 text-orange-400" /> Pedidos de recuperação
+              </h3>
+              {requests.length === 0 ? (
+                <p className="text-xs text-gray-500">
+                  Ninguém pediu recuperação de palavra-passe. Quando alguém clicar em "Esqueci a
+                  pass", o nome aparece aqui.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {requests.map((r) => (
+                    <li
+                      key={`${r.user_id}-${r.created_at}`}
+                      className="flex flex-wrap items-center gap-3 rounded-lg bg-white/5 px-3 py-2"
+                    >
+                      <span className="text-sm font-bold text-white">{r.username}</span>
+                      <span className="text-[11px] text-gray-500">
+                        pedido a {fmtUserDate(r.created_at)}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${
+                          r.recovery
+                            ? 'bg-green-500/15 text-green-400'
+                            : 'bg-yellow-500/15 text-yellow-400'
+                        }`}
+                      >
+                        {r.recovery ? 'modo recovery ativo' : 'por aprovar'}
+                      </span>
+                      <button
+                        onClick={() =>
+                          toggleRecovery(
+                            userList.find((x) => Number(x.id) === Number(r.user_id)) || {
+                              id: r.user_id,
+                              recovery: r.recovery,
+                            },
+                          )
+                        }
+                        className={`ml-auto rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                          r.recovery
+                            ? 'border border-red-500/40 text-red-400 hover:bg-red-500/15'
+                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                        }`}
+                      >
+                        {r.recovery ? 'Desativar recovery' : 'Ativar modo recovery'}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-2 text-[11px] leading-relaxed text-gray-500">
+                Com o modo recovery ativo, ao entrar no site essa conta aparece sempre no ecrã de
+                criar nova palavra-passe — sem email nenhum.
+              </p>
+            </div>
+
             {usersLoading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
@@ -633,6 +790,11 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                           {u.is_admin && (
                             <span className="flex items-center gap-1 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-red-400">
                               <ShieldCheck className="h-3 w-3" /> admin
+                            </span>
+                          )}
+                          {u.recovery && (
+                            <span className="flex items-center gap-1 rounded-full border border-yellow-500/50 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-yellow-400">
+                              <KeyRound className="h-3 w-3" /> recovery
                             </span>
                           )}
                         </p>
@@ -688,6 +850,74 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                           </button>
                         )
                       })}
+                    </div>
+
+                    {/* Contas de jogo ligadas a esta conta */}
+                    <div className="mt-3 border-t border-white/10 pt-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                          Contas de jogo
+                        </span>
+                        {(u.game_accounts || []).map((a) => (
+                          <span
+                            key={a.id}
+                            className="flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-gray-200"
+                          >
+                            <Gamepad2 className="h-3 w-3 text-orange-400" />
+                            {gameLabel(a.game)} · {a.nick}
+                            <button
+                              onClick={() => removeGameAccount(u, a.id)}
+                              title="Retirar esta ligação"
+                              className="ml-0.5 text-gray-500 transition-colors hover:text-red-400"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                        <button
+                          onClick={() => {
+                            setOpenUser(openUser === u.id ? null : u.id)
+                            setAccForm({ game: 'cs2', nick: '' })
+                          }}
+                          className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-gray-300 hover:bg-white/20"
+                        >
+                          {openUser === u.id ? 'Fechar' : 'Ligar conta'}
+                        </button>
+                      </div>
+
+                      {openUser === u.id && (
+                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                          <select
+                            value={accForm.game}
+                            onChange={(e) => setAccForm((f) => ({ ...f, game: e.target.value }))}
+                            className="rounded-lg bg-white/10 px-2 py-1.5 text-xs text-white outline-none"
+                          >
+                            {CLIP_GAMES.map((g) => (
+                              <option key={g.id} value={g.id} className="bg-[#131316]">
+                                {g.label}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            value={accForm.nick}
+                            onChange={(e) => setAccForm((f) => ({ ...f, nick: e.target.value }))}
+                            maxLength={40}
+                            placeholder="Nick nesse jogo"
+                            className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white outline-none placeholder:text-gray-600"
+                          />
+                          <button
+                            onClick={() => addGameAccount(u)}
+                            disabled={accBusy}
+                            className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                          >
+                            {accBusy && <Loader2 className="h-3 w-3 animate-spin" />} Ligar
+                          </button>
+                        </div>
+                      )}
+                      <p className="mt-1.5 text-[10px] text-gray-500">
+                        Estas ligações ligam o jogador ao membro — é assim que o TOP 1 KILL muda
+                        sozinho quando o líder muda.
+                      </p>
                     </div>
                   </div>
                 ))}

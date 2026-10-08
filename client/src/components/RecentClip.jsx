@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Clapperboard, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import ClipCard from './ClipCard'
 import { authHeaders } from '../lib/auth'
 
@@ -38,11 +38,6 @@ export default function RecentClip({ user, onRequestAuth, onProfile, onPublish, 
 
   return (
     <div>
-      <h2 className="mb-4 flex items-center gap-2 text-lg font-black text-white">
-        <Clapperboard className="h-5 w-5 text-orange-400" />
-        Clips recentes
-      </h2>
-
       <ClipCard
         clip={clip}
         user={user}

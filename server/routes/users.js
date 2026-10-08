@@ -1,13 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const { getDb } = require('../database');
 const store = require('../usersStore');
 const storage = require('../storage');
 const { validateEmail } = require('../emailValidate');
-const { sendRecoveryEmail } = require('../mailer');
-const { JWT_SECRET, attachAuth } = require('../middleware/auth');
+const { JWT_SECRET, attachAuth, requireUser } = require('../middleware/auth');
 const { decorateClips } = require('./clips');
 
 const router = express.Router();
@@ -69,6 +67,8 @@ const publicUser = async (u) => {
     username: u.username,
     email: u.email || null,
     is_admin: Boolean(u.is_admin),
+    // Modo de recuperação ativo pelo admin -> o ecrã de nova pass aparece sempre
+    recovery: Boolean(u.recovery),
     created_at: u.created_at,
     ...prof,
     badges,
@@ -280,19 +280,12 @@ router.put('/me/profile', attachAuth, async (req, res) => {
   }
 });
 
-// ===================== Recuperação de palavra-passe (por email) =====================
-const RECOVERY_TTL_MIN = 60;
+// ===================== Recuperação de palavra-passe (via admin) =====================
+/* Sem emails por agora: o pedido fica registado, o admin vê-o no
+   painel e ativa o "modo recuperação" da conta. Enquanto esse modo
+   estiver ligado, ao entrar no site aparece o ecrã de criar nova pass. */
 
-// Esconde parte do email: xalanix@gmail.com -> xa***@gmail.com
-function maskEmail(email) {
-  const [user, domain] = String(email).split('@');
-  const head = user.slice(0, Math.min(2, user.length));
-  return `${head}${'*'.repeat(Math.max(3, user.length - head.length))}@${domain}`;
-}
-
-const EXPIRED_SQL = `CASE WHEN now() > expires_at THEN 1 ELSE 0 END AS expired`;
-
-// POST /api/users/forgot   { username }  -> envia link de recuperação por email
+// POST /api/users/forgot   { username }  -> regista o pedido para o admin
 router.post('/forgot', async (req, res) => {
   try {
     const username = String(req.body.username || '').trim();
@@ -301,147 +294,130 @@ router.post('/forgot', async (req, res) => {
     const user = await store.findByUsername(username);
     if (!user) return res.status(404).json({ error: 'Não existe nenhuma conta com esse nome.' });
 
-    const email = String(user.email || '').trim();
-    if (!email) {
-      return res.status(400).json({
-        error: 'Esta conta ainda não tem email associado. Pede ao admin para adicionar um no painel.',
-      });
-    }
-
-    // Token de uso único (64 hex) — nunca volta ao browser em produção
-    const token = crypto.randomBytes(32).toString('hex');
     const db = getDb();
     await db
       .prepare(
         `INSERT INTO pass_recovery
-           (user_id, username, email, status, token, expires_at, attempts, created_at, updated_at)
-         VALUES (?, ?, ?, 'sent', ?, now() + interval '60 minutes', 0, now(), now())
+           (user_id, username, email, status, attempts, created_at, updated_at)
+         VALUES (?, ?, ?, 'requested', 0, now(), now())
          ON CONFLICT(username) DO UPDATE SET
-           email = excluded.email,
-           status = 'sent',
-           token = excluded.token,
-           expires_at = excluded.expires_at,
+           status = 'requested',
+           token = NULL,
+           expires_at = NULL,
            attempts = 0,
            updated_at = now()`,
       )
-      .run(user.id, user.username, email, token);
+      .run(user.id, user.username, String(user.email || '').trim());
 
-    const sent = await sendRecoveryEmail({
-      to: email,
-      username: user.username,
-      token,
-      expiresInMin: RECOVERY_TTL_MIN,
-    });
-    if (!sent.ok) return res.status(500).json({ error: sent.error || 'Não foi possível enviar o email.' });
-
-    res.json({
-      ok: true,
-      masked: maskEmail(email),
-      // Só existe em modo local (sem SMTP) — para poderes testar sem email real
-      ...(sent.dev ? { dev: true, devUrl: sent.url } : {}),
-    });
+    res.json({ ok: true });
   } catch (error) {
     console.error('Erro forgot:', error.message);
     res.status(500).json({ error: 'Erro interno' });
   }
 });
 
-// GET /api/users/recovery?token=x -> valida o link e devolve a conta (ecrã de nova pass)
-router.get('/recovery', async (req, res) => {
+// GET /api/users/exists?username=x -> existe a conta? + modo de recuperação
+// (para mostrar "Esqueci a pass" e para saltar direto ao ecrã de nova pass)
+router.get('/exists', async (req, res) => {
   try {
-    const token = String(req.query.token || '').trim();
-    if (!/^[a-f0-9]{32,128}$/i.test(token)) {
-      return res.status(400).json({ error: 'Link inválido.' });
-    }
-
-    const db = getDb();
-    const row = await db
-      .prepare(`SELECT *, ${EXPIRED_SQL} FROM pass_recovery WHERE token = ?`)
-      .get(token);
-
-    if (!row) return res.status(404).json({ error: 'Link inválido ou já foi usado.' });
-    if (row.status === 'used') return res.status(410).json({ error: 'Este link já foi usado. Pede um novo.' });
-    if (Number(row.expired) === 1) {
-      await db.prepare(`UPDATE pass_recovery SET status = 'locked', token = NULL WHERE id = ?`).run(row.id);
-      return res.status(410).json({ error: 'O link expirou (60 min). Pede um novo.' });
-    }
-
-    res.json({ ok: true, username: row.username, email: maskEmail(row.email || '') });
-  } catch (error) {
-    console.error('Erro recovery link:', error.message);
-    res.status(500).json({ error: 'Erro interno' });
+    const username = String(req.query.username || '').trim();
+    if (!username) return res.json({ exists: false, recovery: false });
+    const user = await store.findByUsername(username);
+    res.json({ exists: !!user, recovery: !!(user && user.recovery) });
+  } catch {
+    res.json({ exists: false, recovery: false });
   }
 });
 
-// POST /api/users/recovery/reset  { token, new_password }
-router.post('/recovery/reset', async (req, res) => {
+// POST /api/users/reset  { username, new_password }
+// Só funciona com o "modo recuperação" ligado pelo admin.
+router.post('/reset', async (req, res) => {
   try {
-    const token = String((req.body && req.body.token) || '').trim();
+    const username = String((req.body && req.body.username) || '').trim();
     const pwdIn = String((req.body && req.body.new_password) || '');
 
-    if (!/^[a-f0-9]{32,128}$/i.test(token)) {
-      return res.status(400).json({ error: 'Link inválido.' });
-    }
+    if (!username) return res.status(400).json({ error: 'Escreve o teu nome.' });
     if (pwdIn.length < 6) {
       return res.status(400).json({ error: 'A nova palavra-passe precisa de pelo menos 6 caracteres.' });
     }
     if (pwdIn.length > 100) return res.status(400).json({ error: 'Palavra-passe demasiado longa.' });
 
-    const db = getDb();
-    const row = await db
-      .prepare(`SELECT *, ${EXPIRED_SQL} FROM pass_recovery WHERE token = ?`)
-      .get(token);
-
-    if (!row) return res.status(404).json({ error: 'Link inválido ou já foi usado.' });
-    if (row.status === 'used') return res.status(410).json({ error: 'Este link já foi usado. Pede um novo.' });
-    if (Number(row.expired) === 1) {
-      await db.prepare(`UPDATE pass_recovery SET status = 'locked', token = NULL WHERE id = ?`).run(row.id);
-      return res.status(410).json({ error: 'O link expirou (60 min). Pede um novo.' });
-    }
-
-    const user = await store.findByUsername(row.username);
+    const user = await store.findByUsername(username);
     if (!user) return res.status(404).json({ error: 'Conta não encontrada.' });
-
-    // Consome o token ANTES de alterar (só pode ser usado uma vez)
-    const consumed = await db
-      .prepare(
-        `UPDATE pass_recovery SET status = 'used', token = NULL, updated_at = now() WHERE id = ? AND status = 'sent'`,
-      )
-      .run(row.id);
-    if (!consumed.changes) {
-      return res.status(410).json({ error: 'Este link já foi usado. Pede um novo.' });
+    if (!user.recovery) {
+      return res
+        .status(403)
+        .json({ error: 'A recuperação ainda não foi aprovada pelo admin.' });
     }
 
     const hash = bcrypt.hashSync(pwdIn, 10);
-    try {
-      await store.updatePassword(user.id, hash);
-    } catch (e) {
-      // Devolve o token para não bloquear a conta se a BD falhar
-      await db
-        .prepare(`UPDATE pass_recovery SET status = 'sent', token = ?, updated_at = now() WHERE id = ?`)
-        .run(token, row.id);
-      console.error('Erro updatePassword:', e.message);
-      return res.status(500).json({ error: 'Não foi possível atualizar a palavra-passe.' });
-    }
+    await store.updatePassword(user.id, hash);
 
-    const fresh = await store.findByUsername(row.username);
-    const who = fresh || user;
-    res.json({ ok: true, token: signUser(who), user: await publicUser(who) });
+    const db = getDb();
+    await db.prepare('UPDATE users SET recovery = false WHERE id = ?').run(user.id);
+    await db
+      .prepare(
+        `UPDATE pass_recovery SET status = 'handled', token = NULL, updated_at = now()
+         WHERE user_id = ? AND status IN ('requested', 'active', 'sent')`,
+      )
+      .run(user.id);
+
+    const fresh = (await store.findById(user.id)) || { ...user, recovery: false };
+    res.json({ token: signUser(fresh), user: await publicUser(fresh) });
   } catch (error) {
-    console.error('Erro recovery reset:', error.message);
+    console.error('Erro reset:', error.message);
     res.status(500).json({ error: 'Erro interno' });
   }
 });
 
-// GET /api/users/exists?username=x -> existe a conta? (para mostrar "Esqueci a pass")
-router.get('/exists', async (req, res) => {
+// ===================== Presença + lista de membros =====================
+// POST /api/users/presence — o cliente "pinga" de 30 em 30 segundos
+router.post('/presence', requireUser, async (req, res) => {
   try {
-    const username = String(req.query.username || '').trim();
-    if (!username) return res.json({ exists: false });
-    const user = await store.findByUsername(username);
-    res.json({ exists: !!user });
-  } catch {
-    res.json({ exists: false });
+    const db = getDb();
+    await db
+      .prepare(
+        `INSERT INTO user_presence (user_id, last_seen) VALUES (?, now())
+         ON CONFLICT (user_id) DO UPDATE SET last_seen = now()`,
+      )
+      .run(req.auth.uid);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro presence:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// GET /api/users/list — todos os membros + sinal online/offline
+router.get('/list', attachAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    const rows = await db
+      .prepare(
+        `SELECT u.id, u.username, p.avatar_url,
+                (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online
+         FROM users u
+         LEFT JOIN user_profiles p ON p.user_id = u.id
+         LEFT JOIN user_presence p2 ON p2.user_id = u.id
+         WHERE u.password_hash NOT LIKE '!%'
+         ORDER BY u.username`,
+      )
+      .all();
+    const badges = await db.prepare('SELECT user_id, badge FROM user_badges').all();
+    const byUser = {};
+    for (const b of badges) (byUser[b.user_id] = byUser[b.user_id] || []).push(b.badge);
+    res.json({
+      users: rows.map((r) => ({
+        id: Number(r.id),
+        username: r.username,
+        avatar_url: r.avatar_url || null,
+        online: Boolean(r.online),
+        badges: byUser[r.id] || [],
+      })),
+    });
+  } catch (error) {
+    console.error('Erro users list:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
   }
 });
 
@@ -475,7 +451,14 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
-    const [badges, prof] = await Promise.all([badgesOf(user.id), profileOf(user.id)]);
+    const [badges, prof, gameAccounts] = await Promise.all([
+      badgesOf(user.id),
+      profileOf(user.id),
+      getDb()
+        .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
+        .all(user.id)
+        .catch(() => []),
+    ]);
 
     res.json({
       found: true,
@@ -485,6 +468,11 @@ router.get('/:username', attachAuth, async (req, res) => {
         created_at: user.created_at,
         badges,
         ...prof,
+        game_accounts: gameAccounts.map((a) => ({
+          id: Number(a.id),
+          game: a.game,
+          nick: a.nick,
+        })),
       },
       isOwner: isOwnerOrAdmin,
       stats,

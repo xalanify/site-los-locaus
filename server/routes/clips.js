@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { getDb } = require('../database');
 const { requireUser, requireUserOrAdmin, attachAuth } = require('../middleware/auth');
 const storage = require('../storage');
+const { CLIP_GAME_IDS } = require('../clipGames');
 
 const router = express.Router();
 
@@ -72,6 +73,7 @@ async function decorate(db, rows, auth) {
   return visible.map((c) => ({
     id: Number(c.id),
     title: c.title,
+    game: c.game || null,
     url: clipUrl(c),
     start: Number(c.start_sec) || 0,
     end: c.end_sec == null ? null : Number(c.end_sec),
@@ -141,6 +143,10 @@ router.get('/', attachAuth, async (req, res) => {
       where.push('LOWER(u.username) = ?');
       params.push(String(req.query.user).toLowerCase().slice(0, 30));
     }
+    if (req.query.game) {
+      where.push('c.game = ?');
+      params.push(String(req.query.game).toLowerCase().slice(0, 20));
+    }
 
     const sql =
       SELECT_SQL +
@@ -195,6 +201,17 @@ router.post(
   async (req, res) => {
     try {
       const db = getDb();
+
+      // Metadados primeiro (assim o erro certo chega antes do vídeo)
+      const title = String(req.query.title || '').trim().slice(0, 100);
+      if (!title) return res.status(400).json({ error: 'Título em falta' });
+
+      // Jogo do clip — obrigatório (lista fechada)
+      const game = String(req.query.game || '').trim().toLowerCase();
+      if (!CLIP_GAME_IDS.has(game)) {
+        return res.status(400).json({ error: 'Escolhe o jogo do clip.' });
+      }
+
       const ct = String(req.headers['content-type'] || '')
         .split(';')[0]
         .trim()
@@ -211,9 +228,6 @@ router.post(
       if (req.body.length > MAX_BYTES) {
         return res.status(413).json({ error: 'Vídeo demasiado grande (máx. 150 MB).' });
       }
-
-      const title = String(req.query.title || '').trim().slice(0, 100);
-      if (!title) return res.status(400).json({ error: 'Título em falta' });
 
       // utilizador normal → o próprio; admin → conta interna "admin"
       let uid = req.auth && req.auth.uid;
@@ -234,9 +248,9 @@ router.post(
 
       const result = await db
         .prepare(
-          'INSERT INTO clips (user_id, title, file, start_sec, end_sec, visibility) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+          'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
         )
-        .run(uid, title, file, start, end, visibility);
+        .run(uid, title, game, file, start, end, visibility);
 
       const row = await db
         .prepare(SELECT_SQL + ' WHERE c.id = ?')

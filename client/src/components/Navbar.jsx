@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Youtube, Gamepad2, Home, History, User } from 'lucide-react'
+import { Youtube, Clapperboard, Gamepad2, Home, History, User } from 'lucide-react'
 
 /* ============================================================
    Barra de topo (só a marca) + barra de navegação flutuante
@@ -27,15 +27,21 @@ export default function Navbar({ isAdmin = false, user = null }) {
   const isUpdates = location.pathname === '/atualizacoes'
   const isHome = location.pathname === '/'
   const isProfile = location.pathname === '/perfil'
+  const isClips = location.pathname === '/clips'
 
   const links = [
     {
-      name: 'Início',
+      name: 'Home',
       icon: Home,
       action: () => goTo('#home'),
       active: isHome && !location.hash,
     },
-    { name: 'Vídeos', icon: Youtube, action: () => goTo('#videos'), active: false },
+    {
+      name: 'Clips e Publicações',
+      icon: Clapperboard,
+      action: () => navigate('/clips'),
+      active: isClips,
+    },
     {
       name: 'Jogos',
       icon: Gamepad2,
@@ -70,9 +76,9 @@ export default function Navbar({ isAdmin = false, user = null }) {
       {/* ---------------- Barra flutuante (pílula) ---------------- */}
       <nav
         aria-label="Navegação principal"
-        className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2"
+        className="fixed bottom-4 left-1/2 z-40 w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2"
       >
-        <div className="flex items-center gap-1 rounded-full border border-white/10 bg-[#131316]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-center gap-1 rounded-3xl border border-white/10 bg-[#131316]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:rounded-full sm:gap-1.5">
           {links.map((link) => {
             const Icon = link.icon
             return (
@@ -82,13 +88,16 @@ export default function Navbar({ isAdmin = false, user = null }) {
                 title={link.name}
                 aria-label={link.name}
                 aria-current={link.active ? 'page' : undefined}
-                className={`flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300 sm:h-12 sm:w-12 ${
+                className={`flex h-10 items-center gap-1.5 rounded-full px-3 transition-all duration-300 sm:h-12 sm:px-4 ${
                   link.active
                     ? 'bg-orange-500 text-white glow-orange'
                     : 'text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <Icon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+                <span className="whitespace-nowrap text-[11px] font-bold sm:text-sm">
+                  {link.name}
+                </span>
               </button>
             )
           })}
@@ -99,13 +108,14 @@ export default function Navbar({ isAdmin = false, user = null }) {
             title={user ? `Conta: ${user.username}` : 'Conta'}
             aria-label="Conta"
             aria-current={isProfile ? 'page' : undefined}
-            className={`flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300 sm:h-12 sm:w-12 ${
+            className={`flex h-10 items-center gap-1.5 rounded-full px-3 transition-all duration-300 sm:h-12 sm:px-4 ${
               isProfile
                 ? 'bg-orange-500 text-white glow-orange'
                 : 'text-gray-400 hover:bg-white/10 hover:text-white'
             }`}
           >
-            <User className="h-5 w-5 sm:h-6 sm:w-6" />
+            <User className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+            <span className="whitespace-nowrap text-[11px] font-bold sm:text-sm">Conta</span>
           </button>
         </div>
       </nav>
