@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 // O .env vive em server/ — o cwd pode ser a raiz (na Vercel), por isso
 // dizemos a expressão onde procurar.
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -55,6 +56,36 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+// ---------- MODO "EM BREVE" (só na Vercel) ----------
+// Enquanto existir o marcador vercel-site/EM_BREVE no repositório,
+// a produção devolve a página de placeholder em todos os pedidos
+// (páginas e API). O site real continua a correr em localhost.
+// Para publicar: apagar o marcador e fazer push.
+let emBreveHtml = null;
+if (IS_VERCEL) {
+  try {
+    const marcador = path.join(__dirname, '../vercel-site/EM_BREVE');
+    const pagina = path.join(__dirname, '../vercel-site/index.html');
+    if (fs.existsSync(marcador) && fs.existsSync(pagina)) {
+      emBreveHtml = fs.readFileSync(pagina, 'utf8');
+      console.log('Modo EM BREVE ativo: produção serve só a página de placeholder.');
+    }
+  } catch (err) {
+    console.error('EM_BREVE (a ignorar):', err.message);
+  }
+}
+if (emBreveHtml) {
+  app.use((req, res, next) => {
+    // clientes que esperam JSON (a API) recebem 503; o resto vê a página
+    const wantsHtml = String(req.headers.accept || '').includes('text/html');
+    if (!wantsHtml && req.path.startsWith('/api')) {
+      return res.status(503).json({ error: 'Site em desenvolvimento — em breve.' });
+    }
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    res.status(200).type('html').send(emBreveHtml);
+  });
+}
 
 app.use(express.json({ limit: '32kb' }));
 

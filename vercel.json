@@ -14,7 +14,7 @@
 
   "functions": {
     "api/index.js": {
-      "includeFiles": "{historico-*.html,server/data/*.json}"
+      "includeFiles": "{historico-*.html,server/data/*.json,vercel-site/*}"
     }
   },
 

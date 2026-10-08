@@ -1,0 +1,7 @@
+Modo "em breve" ATIVO.
+
+Enquanto este ficheiro existir no repositório, a Vercel (produção) serve a
+página de placeholder (vercel-site/index.html) em vez do site real — o site
+real só corre em localhost.
+
+Para publicar o site aberto e completo: apagar este ficheiro e fazer push.

@@ -5,7 +5,7 @@
   "description": "Site Los Locaus — a API Express corre como função da Vercel",
   "scripts": {
     "start": "node server/index.js",
-    "build": "cd client && npm install && npm run build"
+    "build": "node scripts/build.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
