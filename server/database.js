@@ -1,200 +1,187 @@
-const { DatabaseSync } = require('node:sqlite');
-const path = require('path');
+// ============================================================
+//  Camada de dados — PostgreSQL (Supabase)
+//
+//  Mantém a MESMA API de sempre para não ter de reescrever as
+//  rotas todas:
+//
+//      const db  = getDb();
+//      const row = await db.prepare('SELECT ... WHERE id = ?').get(id);
+//      const all = await db.prepare('SELECT ...').all();
+//      const res = await db.prepare('INSERT ...').run(a, b);
+//
+//  Diferenças em relação ao SQLite antigo:
+//    - todos os métodos passam a ser ASSÍNCRONOS (=> `await`)
+//    - os placeholders `?` são convertidos automaticamente
+//      para $1, $2, ... do PostgreSQL
+//    - um INSERT que precise do id novo deve terminar em
+//      `RETURNING id` (o `run()` devolve-o em lastInsertRowid)
+// ============================================================
+const { Pool, types } = require('pg');
 
-const DB_PATH = path.join(__dirname, 'database.sqlite');
+// int8 e numeric voltam como número (os ids são pequenos;
+// sem isto o pg devolve strings e os `===` às vezes falham).
+types.setTypeParser(20, (v) => (v === null ? null : Number(v)));
+types.setTypeParser(1700, (v) => (v === null ? null : Number(v)));
 
-let db;
+let pool = null;
+let info = 'não configurado';
 
-function initDatabase() {
-  db = new DatabaseSync(DB_PATH);
-  
-  // Tabela de visitantes
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS visitors (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      ip TEXT,
-      user_agent TEXT,
-      visited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      is_online INTEGER DEFAULT 1
-    )
-  `);
+function dbConfig() {
+  const url = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+  const ref = url.replace(/^https?:\/\//, '').split('.')[0];
+  return {
+    host: process.env.SUPABASE_DB_HOST || (ref ? `db.${ref}.supabase.co` : ''),
+    port: Number(process.env.SUPABASE_DB_PORT || 6543), // pooler (transaction mode)
+    database: process.env.SUPABASE_DB_NAME || 'postgres',
+    user: process.env.SUPABASE_DB_USER || 'postgres',
+    password: process.env.SUPABASE_DB_PASSWORD || '',
+    ssl: { rejectUnauthorized: false },
+    max: 3,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 15_000,
+    allowExitOnIdle: true,
+  };
+}
 
-  // Tabela de publicações
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      content TEXT NOT NULL,
-      image_url TEXT,
-      likes INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+const isConfigured = () =>
+  Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_DB_PASSWORD);
 
-  // Tabela de likes (para evitar likes duplicados)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS post_likes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      post_id INTEGER,
-      ip TEXT,
-      liked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (post_id) REFERENCES posts(id)
-    )
-  `);
+/**
+ * Converte os placeholders `?` do SQLite em $1, $2, ... do PostgreSQL,
+ * ignorando o que estiver dentro de literais ('...', "...") e comentários.
+ */
+function toPg(sql) {
+  let n = 0;
+  let out = '';
+  let inStr = false;
+  let quote = '';
 
-  // Tabela de comentários das publicações
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS post_comments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      post_id INTEGER,
-      author TEXT,
-      content TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (post_id) REFERENCES posts(id)
-    )
-  `);
+  for (let i = 0; i < sql.length; i++) {
+    const ch = sql[i];
 
-  // Tabela de sessões admin
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS admin_sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      token TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // ---------- Contas de utilizador (clips) ----------
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  // Coluna de admin (adicionada nesta versão; ignora se já existir)
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0`);
-  } catch {
-    /* já existe */
-  }
-  // Email da conta (obrigatório no registo; usado na recuperação de pass)
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN email TEXT`);
-  } catch {
-    /* já existe */
-  }
-  try {
-    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL`);
-  } catch {
-    /* já existe */
-  }
-
-  // Distinções atribuídas manualmente pelo admin (joias do perfil)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS user_badges (
-      user_id INTEGER NOT NULL,
-      badge TEXT NOT NULL,
-      granted_by INTEGER,
-      granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (user_id, badge)
-    )
-  `);
-
-  // Dados extras do perfil (foto por link + nick no CS2)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS user_profiles (
-      user_id INTEGER PRIMARY KEY,
-      avatar_url TEXT,
-      game_nick TEXT,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-// Pedidos de recuperação de palavra-passe (link enviado por email)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS pass_recovery (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      username TEXT NOT NULL,
-      email TEXT,
-      status TEXT NOT NULL DEFAULT 'pending',   -- 'pending' | 'sent' | 'used' | 'locked'
-      token TEXT,
-      expires_at DATETIME,
-      code TEXT,
-      attempts INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(username)
-    )
-  `);
-  // Colunas novas do fluxo por email (ignora se a tabela já as tiver)
-  for (const alter of [
-    `ALTER TABLE pass_recovery ADD COLUMN email TEXT`,
-    `ALTER TABLE pass_recovery ADD COLUMN token TEXT`,
-    `ALTER TABLE pass_recovery ADD COLUMN expires_at DATETIME`,
-  ]) {
-    try {
-      db.exec(alter);
-    } catch {
-      /* já existe */
+    if (inStr) {
+      out += ch;
+      if (ch === quote) {
+        if (sql[i + 1] === quote) {
+          out += sql[++i]; // aspas escapadas
+        } else {
+          inStr = false;
+        }
+      }
+      continue;
     }
+
+    if (ch === "'" || ch === '"') {
+      inStr = true;
+      quote = ch;
+      out += ch;
+      continue;
+    }
+
+    if (ch === '-' && sql[i + 1] === '-') {
+      const nl = sql.indexOf('\n', i);
+      const end = nl === -1 ? sql.length : nl;
+      out += sql.slice(i, end);
+      i = end - 1;
+      continue;
+    }
+
+    if (ch === '?') {
+      out += '$' + ++n;
+      continue;
+    }
+
+    out += ch;
   }
 
-  // Clips publicados (públicos ou privados)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS clips (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      title TEXT NOT NULL,
-      file TEXT NOT NULL,
-      start_sec REAL DEFAULT 0,
-      end_sec REAL,
-      visibility TEXT DEFAULT 'public',
-      likes INTEGER DEFAULT 0,
-      saves INTEGER DEFAULT 0,
-      downloads INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
+  return out;
+}
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS clip_likes (
-      clip_id INTEGER NOT NULL,
-      user_id INTEGER NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (clip_id, user_id)
-    )
-  `);
+/** O `undefined` não viaja bem no pg — tratamos como null. */
+const normalise = (params) => params.map((p) => (p === undefined ? null : p));
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS clip_saves (
-      clip_id INTEGER NOT NULL,
-      user_id INTEGER NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (clip_id, user_id)
-    )
-  `);
+function getPool() {
+  if (!pool) {
+    if (!isConfigured()) {
+      throw new Error(
+        'PostgreSQL não configurado: falta SUPABASE_URL / SUPABASE_DB_PASSWORD no .env'
+      );
+    }
+    pool = new Pool(dbConfig());
+    pool.on('error', (err) => {
+      // Não rebenta o processo: o pg repõe a ligação sozinho.
+      console.error('Erro na ligação à base de dados:', err.message);
+    });
+  }
+  return pool;
+}
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS clip_comments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      clip_id INTEGER NOT NULL,
-      user_id INTEGER NOT NULL,
-      parent_id INTEGER,
-      content TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (clip_id) REFERENCES clips(id),
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
+/**
+ * Objeto com a mesma cara do `DatabaseSync` do node:sqlite.
+ * Todos os métodos devolvem Promises — é preciso `await`.
+ */
+const db = {
+  prepare(sql) {
+    const query = toPg(sql);
+    return {
+      async get(...params) {
+        const r = await getPool().query(query, normalise(params));
+        return r.rows[0]; // undefined quando não há linha (como no SQLite)
+      },
+      async all(...params) {
+        const r = await getPool().query(query, normalise(params));
+        return r.rows;
+      },
+      async run(...params) {
+        const r = await getPool().query(query, normalise(params));
+        const first = r.rows[0];
+        return {
+          changes: r.rowCount,
+          lastInsertRowid:
+            first && first.id !== undefined && first.id !== null ? first.id : 0,
+        };
+      },
+    };
+  },
 
-  console.log('Base de dados inicializada');
+  /** Para SQL sem parâmetros (e múltiplas instruções separadas por ;). */
+  async exec(sql) {
+    await getPool().query(sql);
+  },
+};
+
+/** Arranca a ligação e confirma que responde. */
+async function initDatabase() {
+  if (!isConfigured()) {
+    info = 'SEM POSTGRES (falta SUPABASE_DB_PASSWORD no .env)';
+    console.log(`⚠ Base de dados: ${info}`);
+    return false;
+  }
+  const p = getPool();
+  await p.query('select 1');
+  const n = await p.query(
+    "select count(*)::int as n from information_schema.tables where table_schema = 'public'"
+  );
+  info = `Supabase (PostgreSQL) — ${n.rows[0].n} tabelas`;
+  console.log(`Base de dados: ${info}`);
+  return true;
 }
 
 function getDb() {
   return db;
 }
 
-module.exports = { initDatabase, getDb };
+function backendInfo() {
+  return info;
+}
+
+/** Fecha as ligações (útil em testes e no shutdown da Vercel). */
+async function closeDatabase() {
+  if (pool) {
+    const p = pool;
+    pool = null;
+    await p.end().catch(() => {});
+  }
+}
+
+module.exports = { initDatabase, getDb, backendInfo, closeDatabase, isConfigured };

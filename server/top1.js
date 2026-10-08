@@ -46,7 +46,7 @@ async function matchAccount(key) {
   const k = String(key || '').toLowerCase();
   const db = getDb();
   try {
-    const rows = db
+    const rows = await db
       .prepare(
         "SELECT user_id, game_nick FROM user_profiles WHERE game_nick IS NOT NULL AND TRIM(game_nick) != ''",
       )
@@ -71,10 +71,9 @@ async function syncTop1Badge() {
 
     const account = await matchAccount(leader.key);
     const db = getDb();
-    const holders = db
+    const holders = (await db
       .prepare("SELECT user_id FROM user_badges WHERE badge = 'top1'")
-      .all()
-      .map((r) => Number(r.user_id));
+      .all()).map((r) => Number(r.user_id));
 
     if (!account) {
       return { leader: leader.name, kills: leader.kills, conta: null };
@@ -82,13 +81,15 @@ async function syncTop1Badge() {
 
     const want = Number(account.id);
     if (!holders.includes(want)) {
-      db.prepare(
-        "INSERT OR IGNORE INTO user_badges (user_id, badge, granted_by) VALUES (?, 'top1', NULL)",
-      ).run(want);
+      await db
+        .prepare(
+          "INSERT INTO user_badges (user_id, badge, granted_by) VALUES (?, 'top1', NULL) ON CONFLICT (user_id, badge) DO NOTHING",
+        )
+        .run(want);
     }
     for (const uid of holders) {
       if (uid !== want) {
-        db.prepare("DELETE FROM user_badges WHERE user_id = ? AND badge = 'top1'").run(uid);
+        await db.prepare("DELETE FROM user_badges WHERE user_id = ? AND badge = 'top1'").run(uid);
       }
     }
     return { leader: leader.name, kills: leader.kills, conta: account.username };

@@ -1,11 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
 const { getDb } = require('../database');
 const store = require('../usersStore');
+const storage = require('../storage');
 const { validateEmail } = require('../emailValidate');
 const { sendRecoveryEmail } = require('../mailer');
 const { JWT_SECRET, attachAuth } = require('../middleware/auth');
@@ -17,17 +16,18 @@ const RESERVED = new Set(['me', 'admin', 'login', 'register', 'novo', 'publicaco
 const USER_RE = /^[\p{L}\p{N}_. -]{3,20}$/u;
 const NICK_RE = /^[\p{L}\p{N}_. -]{1,24}$/u;
 
-/* ---------- fotos de perfil (ficheiros escolhidos pelo user) ----------
-   O utilizador seleciona uma imagem no computador; o servidor guarda-a
-   em data/avatars/ e associa o link (/uploads/avatars/...) à conta. */
-const AVATARS_DIR = path.join(__dirname, '..', 'data', 'avatars');
+/* ---------- fotos de perfil ----------
+   O utilizador escolhe uma imagem; o servidor sobe-a para o
+   Supabase Storage e associa o link à conta. (O Vercel não tem disco.) */
+const BUCKET = 'avatars';
 const AVATAR_EXT = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
   'image/webp': '.webp',
   'image/gif': '.gif',
 };
-const MAX_AVATAR = 5 * 1024 * 1024; // 5 MB
+// 4 MB — acima disso ultrapassa o limite de corpo do Vercel (4,5 MB)
+const MAX_AVATAR = 4 * 1024 * 1024;
 
 const signUser = (u) =>
   jwt.sign(
@@ -36,11 +36,10 @@ const signUser = (u) =>
     { expiresIn: '30d' },
   );
 
-/* Dados extras do perfil (foto + nick no CS2) — guardados localmente,
-   ligados ao id da conta (Supabase ou local). */
-const profileOf = (userId) => {
+/* Dados extras do perfil (foto + nick no CS2) — guardados no Supabase. */
+const profileOf = async (userId) => {
   try {
-    const row = getDb()
+    const row = await getDb()
       .prepare('SELECT avatar_url, game_nick FROM user_profiles WHERE user_id = ?')
       .get(userId);
     return {
@@ -52,43 +51,42 @@ const profileOf = (userId) => {
   }
 };
 
-const badgesOf = (userId) => {
+const badgesOf = async (userId) => {
   try {
-    return getDb()
+    const rows = await getDb()
       .prepare('SELECT badge FROM user_badges WHERE user_id = ?')
-      .all(userId)
-      .map((r) => r.badge);
+      .all(userId);
+    return rows.map((r) => r.badge);
   } catch {
     return [];
   }
 };
 
-const publicUser = (u) => ({
-  id: u.id,
-  username: u.username,
-  email: u.email || null,
-  is_admin: Boolean(u.is_admin),
-  created_at: u.created_at,
-  ...profileOf(u.id),
-  badges: badgesOf(u.id),
-});
+const publicUser = async (u) => {
+  const [prof, badges] = await Promise.all([profileOf(u.id), badgesOf(u.id)]);
+  return {
+    id: u.id,
+    username: u.username,
+    email: u.email || null,
+    is_admin: Boolean(u.is_admin),
+    created_at: u.created_at,
+    ...prof,
+    badges,
+  };
+};
 
-/* apaga ficheiro de avatar nosso (best-effort) */
+/* apaga avatar nosso no Storage (best-effort) */
 function removeAvatarFile(url) {
-  if (typeof url !== 'string' || !url.startsWith('/uploads/avatars/')) return;
-  try {
-    const name = path.basename(url);
-    if (/^avatar-[\w-]+\.(jpg|png|webp|gif)$/.test(name)) {
-      fs.promises.unlink(path.join(AVATARS_DIR, name)).catch(() => {});
-    }
-  } catch {
-    /* ignorar */
-  }
+  if (typeof url !== 'string') return;
+  const m = url.match(/\/avatars\/(avatar-[\w-]+\.(?:jpg|png|webp|gif))$/);
+  if (!m) return;
+  storage.remove(BUCKET, m[1]).catch(() => {});
 }
 
-function ensureProfileRow(db, uid) {
-  db.prepare('INSERT OR IGNORE INTO user_profiles (user_id) VALUES (?)').run(uid);
-}
+const ensureProfileRow = (db, uid) =>
+  db
+    .prepare('INSERT INTO user_profiles (user_id) VALUES (?) ON CONFLICT (user_id) DO NOTHING')
+    .run(uid);
 
 function validate(username, password) {
   const name = String(username || '').trim();
@@ -122,16 +120,14 @@ router.post('/register', async (req, res) => {
 
     const hash = bcrypt.hashSync(String(req.body.password), 10);
     const user = await store.createUser(name, hash, emailCheck.email);
-    res.json({ token: signUser(user), user: publicUser(user) });
+    res.json({ token: signUser(user), user: await publicUser(user) });
   } catch (error) {
-    // Coluna "email" em falta no Supabase (setup por fazer)
     if (error.message === 'EMAIL_COLUMN_MISSING') {
       return res.status(503).json({
         error:
           'O email é obrigatório, mas falta na base de dados. O admin tem de correr no Supabase: ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email text;',
       });
     }
-    // Nome duplicado (corrida) — na base de dados local ou no Supabase
     if (/duplicate|unique|23505/i.test(error.message)) {
       return res.status(409).json({ error: 'Esse nome já está a ser usado.' });
     }
@@ -148,7 +144,7 @@ router.post('/login', async (req, res) => {
     if (!user || !bcrypt.compareSync(String(req.body.password || ''), user.password_hash)) {
       return res.status(401).json({ error: 'Nome ou palavra-passe incorretos.' });
     }
-    res.json({ token: signUser(user), user: publicUser(user) });
+    res.json({ token: signUser(user), user: await publicUser(user) });
   } catch (error) {
     console.error('Erro users login:', error.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -163,7 +159,7 @@ router.get('/me', attachAuth, async (req, res) => {
   try {
     const user = await store.findById(req.auth.uid);
     if (!user) return res.status(401).json({ error: 'Conta não encontrada' });
-    res.json(publicUser(user));
+    res.json(await publicUser(user));
   } catch (error) {
     console.error('Erro users me:', error.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -195,23 +191,26 @@ router.post(
       }
 
       const uid = Number(req.auth.uid);
-      await fs.promises.mkdir(AVATARS_DIR, { recursive: true });
       const name = `avatar-${uid}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
-      await fs.promises.writeFile(path.join(AVATARS_DIR, name), req.body);
+      await storage.upload(BUCKET, name, req.body, ct);
+      const url = storage.publicUrl(BUCKET, name);
 
       const db = getDb();
-      ensureProfileRow(db, uid);
-      const cur = db.prepare('SELECT avatar_url FROM user_profiles WHERE user_id = ?').get(uid);
-      const url = `/uploads/avatars/${name}`;
-      db.prepare(
-        'UPDATE user_profiles SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-      ).run(url, uid);
+      await ensureProfileRow(db, uid);
+      const cur = await db
+        .prepare('SELECT avatar_url FROM user_profiles WHERE user_id = ?')
+        .get(uid);
+      await db
+        .prepare(
+          'UPDATE user_profiles SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(url, uid);
       // ficheiro antigo (nosso) fica para trás
       if (cur && cur.avatar_url && cur.avatar_url !== url) removeAvatarFile(cur.avatar_url);
 
       const user = await store.findById(uid);
       if (!user) return res.status(401).json({ error: 'Conta não encontrada' });
-      res.json(publicUser(user));
+      res.json(await publicUser(user));
     } catch (error) {
       console.error('Erro avatar upload:', error.message);
       res.status(500).json({ error: 'Erro ao guardar a foto.' });
@@ -234,7 +233,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     }
 
     const db = getDb();
-    ensureProfileRow(db, uid);
+    await ensureProfileRow(db, uid);
 
     if (hasNick) {
       const nick = String(body.game_nick || '').trim();
@@ -244,9 +243,11 @@ router.put('/me/profile', attachAuth, async (req, res) => {
             'O nick no CS2 pode ter até 24 caracteres (letras, números, ponto, traço ou espaço).',
         });
       }
-      db.prepare(
-        'UPDATE user_profiles SET game_nick = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-      ).run(nick || null, uid);
+      await db
+        .prepare(
+          'UPDATE user_profiles SET game_nick = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(nick || null, uid);
     }
 
     if (hasAvatar) {
@@ -259,16 +260,20 @@ router.put('/me/profile', attachAuth, async (req, res) => {
           .status(400)
           .json({ error: 'O link da foto tem de começar por http:// ou https://.' });
       }
-      const cur = db.prepare('SELECT avatar_url FROM user_profiles WHERE user_id = ?').get(uid);
-      db.prepare(
-        'UPDATE user_profiles SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-      ).run(avatar || null, uid);
+      const cur = await db
+        .prepare('SELECT avatar_url FROM user_profiles WHERE user_id = ?')
+        .get(uid);
+      await db
+        .prepare(
+          'UPDATE user_profiles SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(avatar || null, uid);
       if (cur && cur.avatar_url && cur.avatar_url !== avatar) removeAvatarFile(cur.avatar_url);
     }
 
     const user = await store.findById(uid);
     if (!user) return res.status(401).json({ error: 'Conta não encontrada' });
-    res.json(publicUser(user));
+    res.json(await publicUser(user));
   } catch (error) {
     console.error('Erro users profile save:', error.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -284,6 +289,8 @@ function maskEmail(email) {
   const head = user.slice(0, Math.min(2, user.length));
   return `${head}${'*'.repeat(Math.max(3, user.length - head.length))}@${domain}`;
 }
+
+const EXPIRED_SQL = `CASE WHEN now() > expires_at THEN 1 ELSE 0 END AS expired`;
 
 // POST /api/users/forgot   { username }  -> envia link de recuperação por email
 router.post('/forgot', async (req, res) => {
@@ -304,18 +311,20 @@ router.post('/forgot', async (req, res) => {
     // Token de uso único (64 hex) — nunca volta ao browser em produção
     const token = crypto.randomBytes(32).toString('hex');
     const db = getDb();
-    db.prepare(
-      `INSERT INTO pass_recovery
-         (user_id, username, email, status, token, expires_at, attempts, created_at, updated_at)
-       VALUES (?, ?, ?, 'sent', ?, datetime('now', '+60 minutes'), 0, datetime('now'), datetime('now'))
-       ON CONFLICT(username) DO UPDATE SET
-         email = excluded.email,
-         status = 'sent',
-         token = excluded.token,
-         expires_at = excluded.expires_at,
-         attempts = 0,
-         updated_at = datetime('now')`,
-    ).run(user.id, user.username, email, token);
+    await db
+      .prepare(
+        `INSERT INTO pass_recovery
+           (user_id, username, email, status, token, expires_at, attempts, created_at, updated_at)
+         VALUES (?, ?, ?, 'sent', ?, now() + interval '60 minutes', 0, now(), now())
+         ON CONFLICT(username) DO UPDATE SET
+           email = excluded.email,
+           status = 'sent',
+           token = excluded.token,
+           expires_at = excluded.expires_at,
+           attempts = 0,
+           updated_at = now()`,
+      )
+      .run(user.id, user.username, email, token);
 
     const sent = await sendRecoveryEmail({
       to: email,
@@ -346,18 +355,14 @@ router.get('/recovery', async (req, res) => {
     }
 
     const db = getDb();
-    const row = db
-      .prepare(
-        `SELECT *,
-           CASE WHEN julianday('now') > julianday(expires_at) THEN 1 ELSE 0 END AS expired
-         FROM pass_recovery WHERE token = ?`,
-      )
+    const row = await db
+      .prepare(`SELECT *, ${EXPIRED_SQL} FROM pass_recovery WHERE token = ?`)
       .get(token);
 
     if (!row) return res.status(404).json({ error: 'Link inválido ou já foi usado.' });
     if (row.status === 'used') return res.status(410).json({ error: 'Este link já foi usado. Pede um novo.' });
     if (Number(row.expired) === 1) {
-      db.prepare(`UPDATE pass_recovery SET status = 'locked', token = NULL WHERE id = ?`).run(row.id);
+      await db.prepare(`UPDATE pass_recovery SET status = 'locked', token = NULL WHERE id = ?`).run(row.id);
       return res.status(410).json({ error: 'O link expirou (60 min). Pede um novo.' });
     }
 
@@ -383,18 +388,14 @@ router.post('/recovery/reset', async (req, res) => {
     if (pwdIn.length > 100) return res.status(400).json({ error: 'Palavra-passe demasiado longa.' });
 
     const db = getDb();
-    const row = db
-      .prepare(
-        `SELECT *,
-           CASE WHEN julianday('now') > julianday(expires_at) THEN 1 ELSE 0 END AS expired
-         FROM pass_recovery WHERE token = ?`,
-      )
+    const row = await db
+      .prepare(`SELECT *, ${EXPIRED_SQL} FROM pass_recovery WHERE token = ?`)
       .get(token);
 
     if (!row) return res.status(404).json({ error: 'Link inválido ou já foi usado.' });
     if (row.status === 'used') return res.status(410).json({ error: 'Este link já foi usado. Pede um novo.' });
     if (Number(row.expired) === 1) {
-      db.prepare(`UPDATE pass_recovery SET status = 'locked', token = NULL WHERE id = ?`).run(row.id);
+      await db.prepare(`UPDATE pass_recovery SET status = 'locked', token = NULL WHERE id = ?`).run(row.id);
       return res.status(410).json({ error: 'O link expirou (60 min). Pede um novo.' });
     }
 
@@ -402,8 +403,10 @@ router.post('/recovery/reset', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'Conta não encontrada.' });
 
     // Consome o token ANTES de alterar (só pode ser usado uma vez)
-    const consumed = db
-      .prepare(`UPDATE pass_recovery SET status = 'used', token = NULL, updated_at = datetime('now') WHERE id = ? AND status = 'sent'`)
+    const consumed = await db
+      .prepare(
+        `UPDATE pass_recovery SET status = 'used', token = NULL, updated_at = now() WHERE id = ? AND status = 'sent'`,
+      )
       .run(row.id);
     if (!consumed.changes) {
       return res.status(410).json({ error: 'Este link já foi usado. Pede um novo.' });
@@ -414,13 +417,16 @@ router.post('/recovery/reset', async (req, res) => {
       await store.updatePassword(user.id, hash);
     } catch (e) {
       // Devolve o token para não bloquear a conta se a BD falhar
-      db.prepare(`UPDATE pass_recovery SET status = 'sent', token = ?, updated_at = datetime('now') WHERE id = ?`).run(token, row.id);
+      await db
+        .prepare(`UPDATE pass_recovery SET status = 'sent', token = ?, updated_at = now() WHERE id = ?`)
+        .run(token, row.id);
       console.error('Erro updatePassword:', e.message);
       return res.status(500).json({ error: 'Não foi possível atualizar a palavra-passe.' });
     }
 
     const fresh = await store.findByUsername(row.username);
-    res.json({ ok: true, token: signUser(fresh || user), user: publicUser(fresh || user) });
+    const who = fresh || user;
+    res.json({ ok: true, token: signUser(who), user: await publicUser(who) });
   } catch (error) {
     console.error('Erro recovery reset:', error.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -452,7 +458,7 @@ router.get('/:username', attachAuth, async (req, res) => {
     );
 
     const db = getDb();
-    const rows = db
+    const rows = await db
       .prepare(
         `SELECT c.*, u.username FROM clips c
          JOIN users u ON u.id = c.user_id
@@ -461,7 +467,7 @@ router.get('/:username', attachAuth, async (req, res) => {
       )
       .all(user.id, isOwnerOrAdmin ? 1 : 0);
 
-    const clips = decorateClips(db, rows, auth);
+    const clips = await decorateClips(db, rows, auth);
     const stats = {
       clips: clips.length,
       likes: clips.reduce((s, c) => s + c.likes, 0),
@@ -469,14 +475,16 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
+    const [badges, prof] = await Promise.all([badgesOf(user.id), profileOf(user.id)]);
+
     res.json({
       found: true,
       profile: {
         id: user.id,
         username: user.username,
         created_at: user.created_at,
-        badges: badgesOf(user.id),
-        ...profileOf(user.id),
+        badges,
+        ...prof,
       },
       isOwner: isOwnerOrAdmin,
       stats,
@@ -491,7 +499,7 @@ router.get('/:username', attachAuth, async (req, res) => {
 // Erros próprios deste router (ex.: foto acima do limite)
 router.use((err, req, res, next) => {
   if (err && err.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'Foto demasiado grande (máx. 5 MB).' });
+    return res.status(413).json({ error: 'Foto demasiado grande (máx. 4 MB).' });
   }
   next(err);
 });

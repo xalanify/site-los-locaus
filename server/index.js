@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+// O .env vive em server/ — o cwd pode ser a raiz (na Vercel), por isso
+// dizemos a expressão onde procurar.
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const { initDatabase } = require('./database');
 const { youtubeRouter } = require('./routes/youtube');
@@ -16,27 +18,30 @@ const { backendInfo } = require('./usersStore');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+// Na Vercel a app é exportada e não faz listen; localmente escuta na porta.
+const IS_VERCEL = process.env.VERCEL === '1';
 
-// Inicializar base de dados
-initDatabase();
-console.log(`Contas de utilizador: ${backendInfo()}`);
-
-// TOP 1 KILL (CS2) automático — líder do ranking ganha a distinção
-const { syncTop1Badge } = require('./top1');
-syncTop1Badge().then((r) => {
-  if (r) {
-    console.log(
-      `Top 1 Kill (CS2): ${r.leader} com ${r.kills} kills${r.conta ? ` -> conta "${r.conta}"` : ' -> sem conta correspondente'}`,
-    );
-  }
-});
+// Inicializar base de dados (a ligação também é criada à 1.ª consulta)
+const ready = initDatabase()
+  .then(() => {
+    console.log(`Contas de utilizador: ${backendInfo()}`);
+    // TOP 1 KILL (CS2) automático — líder do ranking ganha a distinção
+    const { syncTop1Badge } = require('./top1');
+    return syncTop1Badge();
+  })
+  .then((r) => {
+    if (r) {
+      console.log(
+        `Top 1 Kill (CS2): ${r.leader} com ${r.kills} kills${r.conta ? ` -> conta "${r.conta}"` : ' -> sem conta correspondente'}`,
+      );
+    }
+  })
+  .catch((err) => console.error('Erro no arranque:', err.message));
 
 // ---------- SEGURANÇA ----------
-// Oculta tecnologias usadas
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
-// Cabeçalhos de segurança
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -45,15 +50,14 @@ app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://i.ytimg.com https://*.ytimg.com https://yt3.ggpht.com https://yt3.googleusercontent.com https://via.placeholder.com https:; connect-src 'self' https://www.googleapis.com; frame-ancestors 'none';"
+    // media-src: os vídeos dos clips vêm do Supabase Storage
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://*.supabase.co https://www.googleapis.com; frame-ancestors 'none';"
   );
   next();
 });
 
-// Limita o tamanho do corpo dos pedidos
 app.use(express.json({ limit: '32kb' }));
 
-// CORS restrito (apenas desenvolvimento local)
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -75,6 +79,7 @@ function makeRateLimit({ windowMs, max }) {
     }
   }, windowMs).unref();
 
+  // Na Vercel cada instância tem a sua memória — o limite é por instância.
   return (req, res, next) => {
     const key = req.ip || 'unknown';
     const now = Date.now();
@@ -91,14 +96,11 @@ function makeRateLimit({ windowMs, max }) {
   };
 }
 
-// Limita a API geral: 300 pedidos / min por IP
 const apiLimiter = makeRateLimit({ windowMs: 60 * 1000, max: 300 });
 
-// Rastrear visitantes
 app.use('/api', trackVisitor);
 app.use('/api', apiLimiter);
 
-// Rotas da API
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/posts', postsRouter);
@@ -107,26 +109,38 @@ app.use('/api/games', gamesRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/clips', clipsRouter);
 
-// 404 para APIs inexistentes
 app.use('/api', (req, res) => res.status(404).json({ error: 'Não encontrado' }));
 
-// Vídeos dos clips (ficheiros com nomes aleatórios)
-app.use('/clips', express.static(path.join(__dirname, 'data/clips')));
-// fotos de perfil escolhidas pelos utilizadores
-app.use('/uploads/avatars', express.static(path.join(__dirname, 'data/avatars')));
-
-// Servir o frontend (React build)
-app.use(express.static(path.join(__dirname, '../client/dist')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+// Em produção os ficheiros ficam no Supabase Storage; mantemos um
+// redirecionamento para que links antigos continuem a funcionar.
+app.use('/uploads/avatars', (req, res) => {
+  const name = String(req.params[0] || '').split('/').pop();
+  if (/^avatar-[\w-]+\.(jpg|png|webp|gif)$/.test(name || '')) {
+    return res.redirect(
+      `${process.env.SUPABASE_URL.replace(/\/+$/, '')}/storage/v1/object/public/avatars/${name}`
+    );
+  }
+  res.status(404).end();
 });
 
-// Handler de erros — não expõe detalhes internos
+// Localmente servimos o build do React; na Vercel isso é tratado
+// pelo próprio Vercel (outputDirectory = client/dist).
+if (!IS_VERCEL) {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
+
 app.use((err, req, res, next) => {
   console.error(err.message);
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor a correr em http://localhost:${PORT}`);
-});
+if (!IS_VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Servidor a correr em http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

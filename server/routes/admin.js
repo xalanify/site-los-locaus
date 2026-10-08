@@ -9,9 +9,10 @@ const router = express.Router();
 /* Distinções possíveis (tem de coincidir com o cliente) */
 const VALID_BADGES = ['dev', 'top1', 'clip', 'jogador'];
 
-const count = (db, sql) => {
+const count = async (db, sql) => {
   try {
-    return db.prepare(sql).get().n;
+    const row = await db.prepare(sql).get();
+    return row ? Number(row.n) : 0;
   } catch {
     return 0;
   }
@@ -22,14 +23,21 @@ router.get('/overview', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     const users = await store.listAll();
+    const [anuncios, comentarios, clips, visitas, distincoes] = await Promise.all([
+      count(db, 'SELECT COUNT(*) n FROM posts'),
+      count(db, 'SELECT COUNT(*) n FROM post_comments'),
+      count(db, 'SELECT COUNT(*) n FROM clips'),
+      count(db, 'SELECT COUNT(*) n FROM visitors'),
+      count(db, 'SELECT COUNT(*) n FROM user_badges'),
+    ]);
     res.json({
       contas: users.length,
       administradores: users.filter((u) => u.is_admin).length,
-      anuncios: count(db, 'SELECT COUNT(*) n FROM posts'),
-      comentarios: count(db, 'SELECT COUNT(*) n FROM post_comments'),
-      clips: count(db, 'SELECT COUNT(*) n FROM clips'),
-      visitas: count(db, 'SELECT COUNT(*) n FROM visitors'),
-      distincoes: count(db, 'SELECT COUNT(*) n FROM user_badges'),
+      anuncios,
+      comentarios,
+      clips,
+      visitas,
+      distincoes,
     });
   } catch {
     res.status(500).json({ error: 'Erro ao carregar o painel.' });
@@ -42,13 +50,13 @@ router.get('/users', requireAdmin, async (req, res) => {
     const db = getDb();
     let grants = [];
     try {
-      grants = db.prepare('SELECT user_id, badge FROM user_badges').all();
+      grants = await db.prepare('SELECT user_id, badge FROM user_badges').all();
     } catch {
       /* tabela ainda não existe */
     }
     let profiles = [];
     try {
-      profiles = db.prepare('SELECT user_id, avatar_url, game_nick FROM user_profiles').all();
+      profiles = await db.prepare('SELECT user_id, avatar_url, game_nick FROM user_profiles').all();
     } catch {
       /* tabela ainda não existe */
     }
@@ -78,7 +86,7 @@ router.get('/users', requireAdmin, async (req, res) => {
 });
 
 /* ---------- Atribuir distinção a uma conta ---------- */
-router.post('/users/:id/badges', requireAdmin, (req, res) => {
+router.post('/users/:id/badges', requireAdmin, async (req, res) => {
   const badge = String((req.body && req.body.badge) || '');
   const id = Number(req.params.id);
   if (!VALID_BADGES.includes(badge)) {
@@ -89,9 +97,11 @@ router.post('/users/:id/badges', requireAdmin, (req, res) => {
   }
   try {
     const db = getDb();
-    db.prepare(
-      'INSERT OR IGNORE INTO user_badges (user_id, badge, granted_by) VALUES (?, ?, ?)',
-    ).run(id, badge, req.auth && req.auth.uid ? req.auth.uid : null);
+    await db
+      .prepare(
+        'INSERT INTO user_badges (user_id, badge, granted_by) VALUES (?, ?, ?) ON CONFLICT (user_id, badge) DO NOTHING',
+      )
+      .run(id, badge, req.auth && req.auth.uid ? req.auth.uid : null);
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Erro ao atribuir a distinção.' });
@@ -99,7 +109,7 @@ router.post('/users/:id/badges', requireAdmin, (req, res) => {
 });
 
 /* ---------- Retirar distinção ---------- */
-router.delete('/users/:id/badges/:badge', requireAdmin, (req, res) => {
+router.delete('/users/:id/badges/:badge', requireAdmin, async (req, res) => {
   const badge = String(req.params.badge || '');
   const id = Number(req.params.id);
   if (!VALID_BADGES.includes(badge)) {
@@ -107,7 +117,7 @@ router.delete('/users/:id/badges/:badge', requireAdmin, (req, res) => {
   }
   try {
     const db = getDb();
-    db.prepare('DELETE FROM user_badges WHERE user_id = ? AND badge = ?').run(id, badge);
+    await db.prepare('DELETE FROM user_badges WHERE user_id = ? AND badge = ?').run(id, badge);
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Erro ao retirar a distinção.' });
@@ -164,7 +174,9 @@ router.put('/users/:id/email', requireAdmin, async (req, res) => {
 router.get('/recovery', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
-    const rows = db.prepare(`SELECT * FROM pass_recovery WHERE status IN ('sent','locked') ORDER BY created_at DESC`).all();
+    const rows = await db
+      .prepare(`SELECT * FROM pass_recovery WHERE status IN ('sent','locked') ORDER BY created_at DESC`)
+      .all();
     res.json({ requests: rows });
   } catch {
     res.status(500).json({ error: 'Erro ao carregar pedidos de recuperação.' });

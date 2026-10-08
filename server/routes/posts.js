@@ -5,24 +5,35 @@ const { requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // Obter todas as publicações (com gostos e comentários)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const db = getDb();
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
-    const posts = db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
 
-    const commentStmt = db.prepare(
-      'SELECT id, author, content, created_at FROM post_comments WHERE post_id = ? ORDER BY created_at ASC'
-    );
-    const likedStmt = db.prepare('SELECT id FROM post_likes WHERE post_id = ? AND ip = ?');
+    const posts = await db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
+
+    // Tudo numa só passagem (antes eram N+1 consultas)
+    const comments = await db
+      .prepare(
+        'SELECT id, post_id, author, content, created_at FROM post_comments ORDER BY created_at ASC'
+      )
+      .all();
+    const liked = await db.prepare('SELECT DISTINCT post_id FROM post_likes WHERE ip = ?').all(ip);
+
+    const byPost = new Map();
+    for (const c of comments) {
+      if (!byPost.has(c.post_id)) byPost.set(c.post_id, []);
+      byPost.get(c.post_id).push(c);
+    }
+    const likedSet = new Set(liked.map((r) => Number(r.post_id)));
 
     const withExtras = posts.map((p) => {
-      const comments = commentStmt.all(p.id);
+      const cs = byPost.get(p.id) || [];
       return {
         ...p,
-        liked: !!likedStmt.get(p.id, ip),
-        comments,
-        comments_count: comments.length,
+        liked: likedSet.has(p.id),
+        comments: cs,
+        comments_count: cs.length,
       };
     });
 
@@ -34,7 +45,7 @@ router.get('/', (req, res) => {
 });
 
 // Criar nova publicação (SÓ ADMIN)
-router.post('/', requireAdmin, (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const title = String(req.body.title || '').trim().slice(0, 150);
     const content = String(req.body.content || '').trim().slice(0, 5000);
@@ -48,13 +59,11 @@ router.post('/', requireAdmin, (req, res) => {
     }
 
     const db = getDb();
-    const result = db
-      .prepare('INSERT INTO posts (title, content, image_url) VALUES (?, ?, ?)')
+    const result = await db
+      .prepare('INSERT INTO posts (title, content, image_url) VALUES (?, ?, ?) RETURNING id')
       .run(title, content, image_url || null);
 
-    const post = db
-      .prepare('SELECT * FROM posts WHERE id = ?')
-      .get(result.lastInsertRowid);
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(result.lastInsertRowid);
 
     res.json(post);
   } catch (error) {
@@ -64,7 +73,7 @@ router.post('/', requireAdmin, (req, res) => {
 });
 
 // Dar like numa publicação
-router.post('/:id/like', (req, res) => {
+router.post('/:id/like', async (req, res) => {
   try {
     const db = getDb();
     const postId = Number(req.params.id);
@@ -74,7 +83,7 @@ router.post('/:id/like', (req, res) => {
       return res.status(400).json({ error: 'ID inválido' });
     }
 
-    const existingLike = db
+    const existingLike = await db
       .prepare('SELECT id FROM post_likes WHERE post_id = ? AND ip = ?')
       .get(postId, ip);
 
@@ -82,10 +91,10 @@ router.post('/:id/like', (req, res) => {
       return res.status(400).json({ error: 'Já deste like nesta publicação' });
     }
 
-    db.prepare('INSERT INTO post_likes (post_id, ip) VALUES (?, ?)').run(postId, ip);
-    db.prepare('UPDATE posts SET likes = likes + 1 WHERE id = ?').run(postId);
+    await db.prepare('INSERT INTO post_likes (post_id, ip) VALUES (?, ?)').run(postId, ip);
+    await db.prepare('UPDATE posts SET likes = likes + 1 WHERE id = ?').run(postId);
 
-    const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
     if (!post) return res.status(404).json({ error: 'Publicação não encontrada' });
     res.json(post);
   } catch (error) {
@@ -95,12 +104,12 @@ router.post('/:id/like', (req, res) => {
 });
 
 // Comentários de uma publicação
-router.get('/:id/comments', (req, res) => {
+router.get('/:id/comments', async (req, res) => {
   try {
     const postId = Number(req.params.id);
     if (!Number.isInteger(postId)) return res.status(400).json({ error: 'ID inválido' });
     const db = getDb();
-    const comments = db
+    const comments = await db
       .prepare(
         'SELECT id, author, content, created_at FROM post_comments WHERE post_id = ? ORDER BY created_at ASC'
       )
@@ -113,7 +122,7 @@ router.get('/:id/comments', (req, res) => {
 });
 
 // Comentar numa publicação (visitantes)
-router.post('/:id/comments', (req, res) => {
+router.post('/:id/comments', async (req, res) => {
   try {
     const postId = Number(req.params.id);
     if (!Number.isInteger(postId)) return res.status(400).json({ error: 'ID inválido' });
@@ -126,14 +135,14 @@ router.post('/:id/comments', (req, res) => {
     }
 
     const db = getDb();
-    const post = db.prepare('SELECT id FROM posts WHERE id = ?').get(postId);
+    const post = await db.prepare('SELECT id FROM posts WHERE id = ?').get(postId);
     if (!post) return res.status(404).json({ error: 'Publicação não encontrada' });
 
-    const result = db
-      .prepare('INSERT INTO post_comments (post_id, author, content) VALUES (?, ?, ?)')
+    const result = await db
+      .prepare('INSERT INTO post_comments (post_id, author, content) VALUES (?, ?, ?) RETURNING id')
       .run(postId, author, content);
 
-    const comment = db
+    const comment = await db
       .prepare('SELECT id, author, content, created_at FROM post_comments WHERE id = ?')
       .get(result.lastInsertRowid);
 
@@ -145,12 +154,12 @@ router.post('/:id/comments', (req, res) => {
 });
 
 // Eliminar um comentário (SÓ ADMIN)
-router.delete('/:id/comments/:commentId', requireAdmin, (req, res) => {
+router.delete('/:id/comments/:commentId', requireAdmin, async (req, res) => {
   try {
     const commentId = Number(req.params.commentId);
     if (!Number.isInteger(commentId)) return res.status(400).json({ error: 'ID inválido' });
     const db = getDb();
-    db.prepare('DELETE FROM post_comments WHERE id = ?').run(commentId);
+    await db.prepare('DELETE FROM post_comments WHERE id = ?').run(commentId);
     res.json({ success: true });
   } catch (error) {
     console.error('Erro comment DELETE:', error.message);
@@ -159,17 +168,17 @@ router.delete('/:id/comments/:commentId', requireAdmin, (req, res) => {
 });
 
 // Eliminar publicação (SÓ ADMIN)
-router.delete('/:id', requireAdmin, (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const postId = Number(req.params.id);
     if (!Number.isInteger(postId)) {
       return res.status(400).json({ error: 'ID inválido' });
     }
     const db = getDb();
-    // APAGAR PRIMEIRO likes e comentários (FK references posts) — senão dá FOREIGN KEY error
-    db.prepare('DELETE FROM post_likes WHERE post_id = ?').run(postId);
-    db.prepare('DELETE FROM post_comments WHERE post_id = ?').run(postId);
-    db.prepare('DELETE FROM posts WHERE id = ?').run(postId);
+    // As FKs têm ON DELETE CASCADE, mas apagamos por ordem por segurança.
+    await db.prepare('DELETE FROM post_likes WHERE post_id = ?').run(postId);
+    await db.prepare('DELETE FROM post_comments WHERE post_id = ?').run(postId);
+    await db.prepare('DELETE FROM posts WHERE id = ?').run(postId);
     res.json({ success: true });
   } catch (error) {
     console.error('Erro delete post:', error.message);
@@ -178,12 +187,11 @@ router.delete('/:id', requireAdmin, (req, res) => {
 });
 
 // Apagar TODAS as publicações (SÓ ADMIN) — limpar testes
-router.delete('/', requireAdmin, (req, res) => {
+router.delete('/', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
-    db.exec('DELETE FROM post_likes');
-    db.exec('DELETE FROM post_comments');
-    db.exec('DELETE FROM posts');
+    // As FKs têm ON DELETE CASCADE, mas apagamos por ordem por segurança.
+    await db.exec('DELETE FROM post_likes; DELETE FROM post_comments; DELETE FROM posts;');
     res.json({ success: true });
   } catch (error) {
     console.error('Erro clear posts:', error.message);

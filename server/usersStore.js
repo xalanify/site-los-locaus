@@ -13,9 +13,9 @@ async function findByUsername(username) {
   }
   const db = getDb();
   return (
-    db
+    (await db
       .prepare('SELECT * FROM users WHERE LOWER(username) = LOWER(?)')
-      .get(String(username || '')) || null
+      .get(String(username || ''))) || null
   );
 }
 
@@ -24,7 +24,7 @@ async function findById(id) {
     return supabase.findUserById(id);
   }
   const db = getDb();
-  return db.prepare('SELECT * FROM users WHERE id = ?').get(Number(id)) || null;
+  return (await db.prepare('SELECT * FROM users WHERE id = ?').get(Number(id))) || null;
 }
 
 async function createUser(username, passwordHash, email) {
@@ -32,8 +32,8 @@ async function createUser(username, passwordHash, email) {
     return supabase.createUser({ username, password_hash: passwordHash, email });
   }
   const db = getDb();
-  const result = db
-    .prepare('INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)')
+  const result = await db
+    .prepare('INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?) RETURNING id')
     .run(username, passwordHash, email ? String(email).toLowerCase() : null);
   return db.prepare('SELECT * FROM users WHERE id = ?').get(Number(result.lastInsertRowid));
 }
@@ -44,7 +44,8 @@ async function findByEmail(email) {
   if (supabase.isConfigured()) return supabase.findUserByEmail(email);
   const db = getDb();
   return (
-    db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(String(email)) || null
+    (await db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(String(email))) ||
+    null
   );
 }
 
@@ -52,7 +53,7 @@ async function findByEmail(email) {
 async function setEmail(id, email) {
   if (supabase.isConfigured()) return supabase.setEmail(id, email);
   const db = getDb();
-  const result = db
+  const result = await db
     .prepare('UPDATE users SET email = ? WHERE id = ?')
     .run(email ? String(email).toLowerCase() : null, Number(id));
   return result.changes > 0;
@@ -76,11 +77,11 @@ async function setAdmin(username, value) {
     return supabase.findUserById(user.id);
   }
   const db = getDb();
-  const row = db
+  const row = await db
     .prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?)')
     .get(String(username || ''));
   if (!row) return null;
-  db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(value ? 1 : 0, row.id);
+  await db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(value ? 1 : 0, row.id);
   return db.prepare('SELECT * FROM users WHERE id = ?').get(row.id);
 }
 
@@ -88,7 +89,7 @@ async function setAdmin(username, value) {
 async function updatePassword(id, passwordHash) {
   if (supabase.isConfigured()) {
     const baseUrl = () => String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
-    const serviceKey = () => String(process.env.SUPABASE_SERVICE_KEY || '');
+    const serviceKey = () => String(process.env.SUPABASE_SERVICE_KEY || '').trim();
     const res = await fetch(`${baseUrl()}/rest/v1/users?id=eq.${encodeURIComponent(Number(id))}`, {
       method: 'PATCH',
       headers: {
@@ -105,7 +106,9 @@ async function updatePassword(id, passwordHash) {
     return true;
   }
   const db = getDb();
-  const result = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, Number(id));
+  const result = await db
+    .prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+    .run(passwordHash, Number(id));
   return result.changes > 0;
 }
 

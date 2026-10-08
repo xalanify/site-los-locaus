@@ -25,7 +25,7 @@ server/data/clips/
 server/data/*.log
 
 # ================== Exportações da Steam (locais) ==================
-historico-*.html
+# os ficheiros historico-*.html são necessários ao site (ficam no repo)
 historico-*_files/
 
 # ================== Ficheiros de teste/meus ==================
@@ -42,3 +42,5 @@ Desktop.ini
 .vscode/
 *.swp
 *.tmp
+
+.vercel
