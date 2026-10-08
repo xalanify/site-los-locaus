@@ -1,0 +1,83 @@
+========================================
+  LOS LOCAUS - INSTRUÇÕES DE INSTALAÇÃO
+========================================
+
+O teu site está criado! Agora precisas de:
+
+========================================
+PASSO 1: CRIAR API KEY DO YOUTUBE
+========================================
+
+1. Vai a: https://console.cloud.google.com
+2. Clica em "Selecionar um projeto" → "Novo projeto"
+3. Dá um nome (ex: "Site Los Locaus") → Criar
+4. No menu lateral: "APIs e Serviços" → "Biblioteca"
+5. Procura "YouTube Data API v3" → clica → Ativar
+6. Vai a "APIs e Serviços" → "Credenciais" → "Criar credenciais" → "Chave de API"
+7. Copia a chave (começa com AIza...)
+
+========================================
+PASSO 2: ENCONTRAR O ID DO CANAL
+========================================
+
+1. Vai ao teu canal no YouTube
+2. Clica na tua foto de perfil → "O teu canal"
+3. No link aparece: youtube.com/channel/UCxxxxxxxx
+4. O que vem depois de "channel/" é o ID do canal
+
+========================================
+PASSO 3: CONFIGURAR O FICHEIRO .env
+========================================
+
+Abre o ficheiro: server/.env
+
+E altera estas linhas:
+  YOUTUBE_API_KEY=AQUI_COLOCA_A_TUA_API_KEY
+  YOUTUBE_CHANNEL_ID=AQUI_COLOCA_O_ID_DO_CANAL
+  ADMIN_PASSWORD=tuasenhaqui
+  ADMIN_KEY=tua_chave_secreta_aqui
+
+========================================
+PASSO 4: INSTALAR E CORRER
+========================================
+
+ABRE O PROMPT DE COMANDOS (CMD) na pasta do projeto:
+
+  cd "D:\execs\Site Los Locaus"
+
+Depois corre estes comandos:
+
+  cd server
+  npm install
+  cd ..
+  cd client
+  npm install
+  npm run build
+  cd ..
+  cd server
+  npm start
+
+========================================
+PASSO 5: ACEDER AO SITE
+========================================
+
+Abre o browser em: http://localhost:3001
+
+========================================
+LOGIN ADMIN
+========================================
+
+1. Clica no boneco no canto inferior direito
+2. Introduz a senha e chave que configuraste no .env
+3. Ao clicar novamente no boneco, abres o painel admin
+
+========================================
+SE TIVERES PROBLEMAS
+========================================
+
+- Verifica se a API Key está correta
+- Verifica se o ID do canal está correta
+- Verifica se a YouTube Data API v3 está ativada
+- Verifica se as portas 3000 e 3001 estão livres
+
+========================================

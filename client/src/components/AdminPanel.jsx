@@ -1,0 +1,975 @@
+import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import {
+  X,
+  Users,
+  Calendar,
+  TrendingUp,
+  Globe,
+  LogOut,
+  Activity,
+  StickyNote,
+  Plus,
+  Trash2,
+  BarChart3,
+  Film,
+  Lock,
+  Upload,
+  Loader2,
+  ExternalLink,
+  LayoutDashboard,
+  ShieldCheck,
+  MessageSquare,
+  Eye,
+  Award,
+} from 'lucide-react'
+import { mmss, parseTime } from '../lib/auth'
+import { BADGES, BadgeGem } from './BadgeGem'
+
+/* Data simples das contas (dd mmm aaaa) */
+const fmtUserDate = (iso) => {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+/* Email da conta — obrigatório para poder recuperar a palavra-passe.
+   O servidor valida o formato e o domínio (MX) antes de guardar. */
+function EmailRow({ user, onSaved }) {
+  const [value, setValue] = useState(user.email || '')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [ok, setOk] = useState(false)
+
+  const save = async () => {
+    const next = value.trim()
+    if (!next) {
+      setOk(false)
+      setMsg('Escreve um email.')
+      return
+    }
+    if (next === (user.email || '')) {
+      setOk(true)
+      setMsg('Sem alterações.')
+      return
+    }
+    setBusy(true)
+    setMsg('')
+    try {
+      const r = await fetch(`/api/admin/users/${user.id}/email`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('adminToken')}`,
+        },
+        body: JSON.stringify({ email: next }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.ok) {
+        setOk(false)
+        setMsg(d.error || 'Erro ao guardar o email.')
+        return
+      }
+      setOk(true)
+      setMsg('Email guardado.')
+      if (onSaved) onSaved(d.email)
+    } catch {
+      setOk(false)
+      setMsg('Sem ligação ao servidor.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const missing = !user.email
+
+  return (
+    <div className="mt-3 border-t border-white/10 pt-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email</span>
+        <input
+          type="email"
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value)
+            setMsg('')
+          }}
+          placeholder="nome@dominio.com"
+          maxLength={254}
+          className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white outline-none placeholder:text-gray-600 focus:bg-white/15 focus:ring-1 focus:ring-orange-500/40"
+        />
+        <button
+          onClick={save}
+          disabled={busy}
+          className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+        >
+          {busy && <Loader2 className="h-3 w-3 animate-spin" />}
+          Guardar
+        </button>
+      </div>
+      {missing && !msg && (
+        <p className="mt-1.5 text-[11px] text-amber-400">
+          Sem email — esta conta não pode recuperar a palavra-passe sozinha.
+        </p>
+      )}
+      {msg && (
+        <p className={`mt-1.5 text-[11px] font-semibold ${ok ? 'text-emerald-400' : 'text-red-400'}`}>
+          {msg}
+        </p>
+      )}
+    </div>
+  )
+}
+
+export default function AdminPanel({ onClose, onLogout, user = null }) {
+  const [tab, setTab] = useState('painel') // 'painel' | 'utilizadores' | 'anuncios' | 'clips'
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Painel: visão geral de tudo
+  const [overview, setOverview] = useState(null)
+
+  // Utilizadores: lista + distinções
+  const [userList, setUserList] = useState([])
+  const [usersLoading, setUsersLoading] = useState(true)
+  const [usersError, setUsersError] = useState('')
+
+  // Anúncios (publicações do admin)
+  const [posts, setPosts] = useState([])
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  // Clips de teste (publicados com a sessão do admin)
+  const [clips, setClips] = useState([])
+  const [clipTitle, setClipTitle] = useState('')
+  const [clipFile, setClipFile] = useState(null)
+  const [clipPreview, setClipPreview] = useState('')
+  const [clipDur, setClipDur] = useState(null)
+  const [clipStart, setClipStart] = useState('0:00')
+  const [clipEnd, setClipEnd] = useState('')
+  const [clipVis, setClipVis] = useState('public')
+  const [clipProg, setClipProg] = useState(-1)
+  const [clipMsg, setClipMsg] = useState('')
+  const [clipOk, setClipOk] = useState(false)
+  const clipInputRef = useRef(null)
+  const clipPreviewRef = useRef(null)
+
+  const adminHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('adminToken')}`,
+  })
+
+  const fetchStats = () => {
+    fetch('/api/stats/visitors')
+      .then((res) => res.json())
+      .then((data) => {
+        setStats(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }
+
+  const fetchOverview = () => {
+    fetch('/api/admin/overview', { headers: adminHeaders() })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setOverview(data)
+      })
+      .catch(() => {})
+  }
+
+  const fetchUsers = () => {
+    setUsersLoading(true)
+    setUsersError('')
+    fetch('/api/admin/users', { headers: adminHeaders() })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('res'))))
+      .then((data) => {
+        setUserList(Array.isArray(data.users) ? data.users : [])
+        setUsersLoading(false)
+      })
+      .catch(() => {
+        setUsersError('Não foi possível carregar as contas.')
+        setUsersLoading(false)
+      })
+  }
+
+  const fetchPosts = () => {
+    fetch('/api/posts')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setPosts(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }
+
+  const fetchClips = () => {
+    fetch('/api/clips', { headers: adminHeaders() })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setClips(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }
+
+  useEffect(() => {
+    fetchStats()
+    const interval = setInterval(fetchStats, 30000) // Atualizar a cada 30 segundos
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'painel') fetchOverview()
+    if (tab === 'utilizadores') fetchUsers()
+    if (tab === 'anuncios') fetchPosts()
+    if (tab === 'clips') fetchClips()
+  }, [tab])
+
+  const handleLogout = () => {
+    onLogout()
+  }
+
+  /* ---------- distinções (atribuir / retirar) ---------- */
+  const toggleBadge = async (u, badgeId) => {
+    const has = u.badges.includes(badgeId)
+    setUsersError('')
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/badges${has ? `/${badgeId}` : ''}`, {
+        method: has ? 'DELETE' : 'POST',
+        headers: adminHeaders(),
+        body: has ? undefined : JSON.stringify({ badge: badgeId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setUsersError(data.error || 'Erro ao atualizar a distinção.')
+        return
+      }
+      setUserList((prev) =>
+        prev.map((x) =>
+          x.id === u.id
+            ? {
+                ...x,
+                badges: has
+                  ? x.badges.filter((b) => b !== badgeId)
+                  : [...x.badges, badgeId],
+              }
+            : x,
+        ),
+      )
+    } catch {
+      setUsersError('Sem ligação ao servidor.')
+    }
+  }
+
+  /* ---------- tornar / retirar admin ---------- */
+  const toggleAdminUser = async (u) => {
+    const value = !u.is_admin
+    setUsersError('')
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/admin`, {
+        method: 'PATCH',
+        headers: adminHeaders(),
+        body: JSON.stringify({ is_admin: value }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setUsersError(data.error || 'Erro ao alterar as permissões.')
+        return
+      }
+      setUserList((prev) => prev.map((x) => (x.id === u.id ? { ...x, is_admin: value } : x)))
+    } catch {
+      setUsersError('Sem ligação ao servidor.')
+    }
+  }
+
+  const createPost = async () => {
+    if (saving) return
+    setError('')
+    if (!title.trim() || !content.trim()) {
+      setError('Título e conteúdo são obrigatórios.')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: adminHeaders(),
+        body: JSON.stringify({
+          title: title.trim(),
+          content: content.trim(),
+          image_url: imageUrl.trim(),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Erro ao criar o anúncio.')
+        return
+      }
+      setTitle('')
+      setContent('')
+      setImageUrl('')
+      setPosts((prev) => [data, ...prev])
+    } catch {
+      setError('Sem ligação ao servidor.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const deletePost = async (id) => {
+    if (!window.confirm('Eliminar este anúncio?')) return
+    try {
+      const res = await fetch(`/api/posts/${id}`, {
+        method: 'DELETE',
+        headers: adminHeaders(),
+      })
+      if (res.ok) setPosts((prev) => prev.filter((p) => p.id !== id))
+    } catch {
+      /* sem rede */
+    }
+  }
+
+  /* ---------- clips de teste ---------- */
+  const resetClipForm = () => {
+    if (clipPreview) URL.revokeObjectURL(clipPreview)
+    setClipTitle('')
+    setClipFile(null)
+    setClipPreview('')
+    setClipDur(null)
+    setClipStart('0:00')
+    setClipEnd('')
+    setClipVis('public')
+    setClipProg(-1)
+    if (clipInputRef.current) clipInputRef.current.value = ''
+  }
+
+  const onClipPick = (f) => {
+    if (!f) return
+    if (clipPreview) URL.revokeObjectURL(clipPreview)
+    setClipFile(f)
+    setClipDur(null)
+    setClipEnd('')
+    setClipPreview(URL.createObjectURL(f))
+    setClipMsg('')
+    setClipOk(false)
+  }
+
+  const onClipMeta = () => {
+    const v = clipPreviewRef.current
+    if (v && Number.isFinite(v.duration)) {
+      setClipDur(v.duration)
+      setClipEnd(mmss(v.duration))
+    }
+  }
+
+  const submitClip = () => {
+    setClipMsg('')
+    setClipOk(false)
+    const t = clipTitle.trim()
+    if (!t) return setClipMsg('Dá um título ao clip.')
+    if (!clipFile) return setClipMsg('Escolhe um vídeo.')
+    const start = parseTime(clipStart) ?? 0
+    const end = clipEnd.trim() ? parseTime(clipEnd) : null
+    if (clipEnd.trim() && end == null) {
+      return setClipMsg('Tempo inválido — usa min:seg (ex.: 1:30).')
+    }
+    if (end != null && end <= start) return setClipMsg('O fim tem de ser depois do início.')
+    if (clipDur && end != null && end > clipDur + 0.5) {
+      return setClipMsg('O fim passa a duração do vídeo.')
+    }
+
+    const qs = new URLSearchParams({
+      title: t,
+      visibility: clipVis,
+      start: String(start),
+      end: end != null ? String(end) : '',
+    })
+
+    setClipProg(0)
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `/api/clips?${qs}`)
+    xhr.setRequestHeader('Content-Type', clipFile.type || 'video/mp4')
+    xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('adminToken')}`)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) setClipProg(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onload = () => {
+      setClipProg(-1)
+      let data = null
+      try {
+        data = JSON.parse(xhr.responseText)
+      } catch {
+        /* resposta inválida */
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && data) {
+        resetClipForm()
+        setClipOk(true)
+        setClipMsg('Clip publicado! Se for o mais recente, já aparece na página inicial.')
+        setClips((prev) => [data, ...prev])
+      } else {
+        setClipMsg((data && data.error) || 'Erro ao enviar o vídeo.')
+      }
+    }
+    xhr.onerror = () => {
+      setClipProg(-1)
+      setClipMsg('Falha no envio — tenta outra vez.')
+    }
+    xhr.send(clipFile)
+  }
+
+  const deleteClip = async (id) => {
+    if (!window.confirm('Eliminar este clip? O vídeo é apagado do servidor.')) return
+    try {
+      const res = await fetch(`/api/clips/${id}`, {
+        method: 'DELETE',
+        headers: adminHeaders(),
+      })
+      if (res.ok) setClips((prev) => prev.filter((c) => c.id !== id))
+    } catch {
+      /* sem rede */
+    }
+  }
+
+  const statCards = [
+    {
+      icon: <Activity className="w-6 h-6" />,
+      label: 'Online Agora',
+      value: stats?.online || 0,
+      color: 'text-green-400',
+      bgColor: 'bg-green-400/10',
+    },
+    {
+      icon: <Calendar className="w-6 h-6" />,
+      label: 'Últimos 15 Dias',
+      value: stats?.last15Days || 0,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
+    },
+    {
+      icon: <TrendingUp className="w-6 h-6" />,
+      label: 'Últimos 30 Dias',
+      value: stats?.last30Days || 0,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-400/10',
+    },
+    {
+      icon: <Globe className="w-6 h-6" />,
+      label: 'Último Ano',
+      value: stats?.lastYear || 0,
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-400/10',
+    },
+  ]
+
+  /* Cartões da visão geral do site */
+  const OVERVIEW_CARDS = [
+    { key: 'contas', label: 'Contas', Icon: Users, color: 'text-orange-400', bg: 'bg-orange-400/10' },
+    { key: 'administradores', label: 'Admins', Icon: ShieldCheck, color: 'text-red-400', bg: 'bg-red-400/10' },
+    { key: 'anuncios', label: 'Anúncios', Icon: StickyNote, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+    { key: 'comentarios', label: 'Comentários', Icon: MessageSquare, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+    { key: 'clips', label: 'Clips', Icon: Film, color: 'text-pink-400', bg: 'bg-pink-400/10' },
+    { key: 'visitas', label: 'Visitas', Icon: Eye, color: 'text-green-400', bg: 'bg-green-400/10' },
+    { key: 'distincoes', label: 'Distinções', Icon: Award, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+  ]
+
+  const tabBtn = (id, label, Icon) => (
+    <button
+      onClick={() => setTab(id)}
+      className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
+        tab === id
+          ? 'bg-orange-500 text-white'
+          : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+      }`}
+    >
+      <Icon className="h-4 w-4" /> {label}
+    </button>
+  )
+
+  const inputCls =
+    'w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="glass rounded-2xl p-6 sm:p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Users className="w-6 h-6 text-orange-500" />
+            Painel Admin
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors"
+              title="Terminar sessão"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Abas */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {tabBtn('painel', 'Painel', LayoutDashboard)}
+          {tabBtn('utilizadores', 'Utilizadores', Users)}
+          {tabBtn('anuncios', 'Anúncios', StickyNote)}
+          {/* Aba "Clips" desativada no site (código mantido) */}
+        </div>
+
+        {tab === 'painel' ? (
+          loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+          ) : (
+            <>
+              {/* Visão geral de tudo */}
+              <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {OVERVIEW_CARDS.map((c) => (
+                  <div key={c.key} className="glass rounded-xl p-4 text-center">
+                    <div
+                      className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full ${c.bg}`}
+                    >
+                      <c.Icon className={`h-5 w-5 ${c.color}`} />
+                    </div>
+                    <div className="text-2xl font-bold text-white">
+                      {overview ? overview[c.key] ?? 0 : '—'}
+                    </div>
+                    <div className="text-xs text-gray-400">{c.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Visitantes */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {statCards.map((stat) => (
+                  <div key={stat.label} className="glass rounded-xl p-4 text-center">
+                    <div
+                      className={`w-12 h-12 rounded-full ${stat.bgColor} flex items-center justify-center mx-auto mb-3`}
+                    >
+                      <div className={stat.color}>{stat.icon}</div>
+                    </div>
+                    <div className="text-2xl font-bold text-white">
+                      {stat.value.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-400">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="glass rounded-xl p-6 text-center">
+                <h3 className="text-lg font-semibold text-gray-300 mb-2">Total de Visitantes</h3>
+                <div className="text-4xl font-black gradient-text">
+                  {(stats?.total || 0).toLocaleString()}
+                </div>
+              </div>
+
+              <div className="mt-6 text-center text-sm text-gray-500">
+                Os dados são atualizados automaticamente a cada 30 segundos
+              </div>
+            </>
+          )
+        ) : tab === 'utilizadores' ? (
+          /* ---------- UTILIZADORES: contas + distinções ---------- */
+          <div>
+            <p className="mb-4 text-xs text-gray-500">
+              Clica numa joia para atribuir ou retirar a distinção de qualquer conta — até à tua
+              própria.
+            </p>
+
+            {usersError && (
+              <p className="mb-4 rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
+                {usersError}
+              </p>
+            )}
+
+            {usersLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+              </div>
+            ) : userList.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+                Ainda não há contas.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {userList.map((u) => (
+                  <div key={u.id} className="glass rounded-xl p-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-500/20 text-sm font-black text-white">
+                        {u.username.slice(0, 2).toUpperCase()}
+                        {u.avatar_url && (
+                          <img
+                            src={u.avatar_url}
+                            alt=""
+                            className="absolute inset-0 h-full w-full rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        )}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="flex flex-wrap items-center gap-2 font-bold text-white">
+                          {u.username}
+                          {user && Number(user.id) === Number(u.id) && (
+                            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-400">
+                              és tu
+                            </span>
+                          )}
+                          {u.is_admin && (
+                            <span className="flex items-center gap-1 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-red-400">
+                              <ShieldCheck className="h-3 w-3" /> admin
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ID {u.id} · criada a {fmtUserDate(u.created_at)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => toggleAdminUser(u)}
+                        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                          u.is_admin
+                            ? 'border border-red-500/40 text-red-400 hover:bg-red-500/15'
+                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                        }`}
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        {u.is_admin ? 'Retirar admin' : 'Tornar admin'}
+                      </button>
+                    </div>
+
+                    {/* Email (obrigatório para recuperar a pass) */}
+                    <EmailRow
+                      user={u}
+                      onSaved={(email) =>
+                        setUserList((list) =>
+                          list.map((x) => (Number(x.id) === Number(u.id) ? { ...x, email } : x)),
+                        )
+                      }
+                    />
+
+                    {/* Distinções manuais */}
+                    <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/10 pt-3">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        Distinções
+                      </span>
+                      {BADGES.map((b) => {
+                        const on = u.badges.includes(b.id)
+                        return (
+                          <button
+                            key={b.id}
+                            onClick={() => toggleBadge(u, b.id)}
+                            title={`${b.label} — ${on ? 'retirar' : 'atribuir'}`}
+                            className="rounded-full p-1 transition-all"
+                            style={{
+                              filter: on ? 'none' : 'grayscale(1) opacity(.35)',
+                              boxShadow: on ? `0 0 12px ${b.color}80` : 'none',
+                              background: on
+                                ? `radial-gradient(circle, ${b.color}22, transparent 70%)`
+                                : 'transparent',
+                            }}
+                          >
+                            <BadgeGem badge={b} size={30} />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : tab === 'anuncios' ? (
+          /* ---------- ANÚNCIOS (só admin cria) ---------- */
+          <div>
+            <div className="glass rounded-xl p-4">
+              <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
+                <Plus className="h-4 w-4 text-orange-400" /> Novo anúncio
+              </h3>
+              <div className="space-y-3">
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={150}
+                  placeholder="Título"
+                  className={inputCls}
+                />
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  maxLength={5000}
+                  rows={4}
+                  placeholder="Conteúdo do anúncio…"
+                  className={`${inputCls} resize-y`}
+                />
+                <input
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  maxLength={2000}
+                  placeholder="URL de imagem (opcional)"
+                  className={inputCls}
+                />
+                {error && (
+                  <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
+                    {error}
+                  </p>
+                )}
+                <div className="flex justify-end">
+                  <button
+                    onClick={createPost}
+                    disabled={saving}
+                    className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                  >
+                    <StickyNote className="h-4 w-4" />
+                    {saving ? 'A guardar…' : 'Publicar anúncio'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <h3 className="mb-3 mt-6 font-bold text-white">
+              Anúncios existentes ({posts.length})
+            </h3>
+            {posts.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+                Ainda não há anúncios.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {posts.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-start gap-3 rounded-xl bg-white/5 px-4 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-white">{p.title}</p>
+                      <p className="mt-0.5 line-clamp-2 text-sm text-gray-400">{p.content}</p>
+                    </div>
+                    <button
+                      onClick={() => deletePost(p.id)}
+                      title="Eliminar anúncio"
+                      className="rounded-full p-2 text-gray-500 transition-colors hover:bg-red-500/15 hover:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ---------- CLIPS DE TESTE (admin publica direto) ---------- */
+          <div>
+            <div className="glass rounded-xl p-4">
+              <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
+                <Film className="h-4 w-4 text-orange-400" /> Novo clip (teste)
+              </h3>
+              <div className="space-y-3">
+                <input
+                  value={clipTitle}
+                  onChange={(e) => setClipTitle(e.target.value)}
+                  maxLength={100}
+                  placeholder="Título do clip"
+                  className={inputCls}
+                />
+
+                {/* vídeo escolhido */}
+                {!clipPreview ? (
+                  <button
+                    onClick={() => clipInputRef.current && clipInputRef.current.click()}
+                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-orange-500/60 hover:text-orange-400"
+                  >
+                    <Upload className="h-7 w-7" />
+                    <span className="text-sm font-bold">Escolher vídeo</span>
+                    <span className="text-xs text-gray-500">
+                      MP4, WebM ou MOV · máx. 150 MB
+                    </span>
+                  </button>
+                ) : (
+                  <div>
+                    <video
+                      ref={clipPreviewRef}
+                      src={clipPreview}
+                      controls
+                      preload="metadata"
+                      onLoadedMetadata={onClipMeta}
+                      className="max-h-64 w-full rounded-xl bg-black"
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
+                      <span className="truncate font-semibold text-orange-400">
+                        {clipFile?.name}
+                      </span>
+                      <button
+                        onClick={() => clipInputRef.current && clipInputRef.current.click()}
+                        className="rounded-full bg-white/10 px-2.5 py-1 font-bold hover:bg-white/20"
+                      >
+                        Trocar
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <input
+                  ref={clipInputRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  className="hidden"
+                  onChange={(e) => onClipPick(e.target.files && e.target.files[0])}
+                />
+
+                {/* corte do trecho */}
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
+                      Começa em
+                    </span>
+                    <input
+                      value={clipStart}
+                      onChange={(e) => setClipStart(e.target.value)}
+                      placeholder="0:00"
+                      className={inputCls}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
+                      Termina em
+                    </span>
+                    <input
+                      value={clipEnd}
+                      onChange={(e) => setClipEnd(e.target.value)}
+                      placeholder="0:00"
+                      className={inputCls}
+                    />
+                  </label>
+                </div>
+
+                {/* visibilidade */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setClipVis('public')}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                      clipVis === 'public'
+                        ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40'
+                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                    }`}
+                  >
+                    <Globe className="h-4 w-4" /> Público
+                  </button>
+                  <button
+                    onClick={() => setClipVis('private')}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                      clipVis === 'private'
+                        ? 'bg-yellow-500/20 text-yellow-400 ring-1 ring-yellow-500/40'
+                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                    }`}
+                  >
+                    <Lock className="h-4 w-4" /> Privado
+                  </button>
+                </div>
+
+                {clipMsg && (
+                  <p
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                      clipOk ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'
+                    }`}
+                  >
+                    {clipMsg}
+                  </p>
+                )}
+
+                {clipProg >= 0 && (
+                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full bg-orange-500 transition-all"
+                      style={{ width: `${clipProg}%` }}
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-2">
+                  <a
+                    href="/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-bold text-gray-400 underline decoration-dotted hover:text-white"
+                  >
+                    Ver a página inicial ↗
+                  </a>
+                  <button
+                    onClick={submitClip}
+                    disabled={clipProg >= 0}
+                    className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                  >
+                    {clipProg >= 0 ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> A enviar {clipProg}%
+                      </>
+                    ) : (
+                      <>
+                        <Film className="h-4 w-4" /> Publicar clip
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <h3 className="mb-3 mt-6 font-bold text-white">Clips no site ({clips.length})</h3>
+            {clips.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+                Ainda não há clips.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {clips.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-bold text-white">{c.title}</p>
+                      <p className="mt-0.5 text-xs text-gray-400">
+                        {c.author} · {c.visibility === 'private' ? 'privado' : 'público'} ·{' '}
+                        {c.downloads || 0} transferências
+                      </p>
+                    </div>
+                    <a
+                      href={c.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Abrir vídeo"
+                      className="rounded-full p-2 text-gray-500 hover:bg-white/10 hover:text-white"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <button
+                      onClick={() => deleteClip(c.id)}
+                      title="Eliminar clip"
+                      className="rounded-full p-2 text-gray-500 transition-colors hover:bg-red-500/15 hover:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  )
+}

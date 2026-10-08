@@ -1,0 +1,44 @@
+# ================== SEGREDOS (nunca subir) ==================
+.env
+.env.*
+!.env.example
+passupabase/
+*_pass.txt
+senha*
+
+# ================== Dependências ==================
+node_modules/
+.npm/
+
+# ================== Build do frontend ==================
+client/dist/
+.vercel/
+
+# ================== Base de dados local ==================
+*.sqlite
+*.sqlite-journal
+*.db
+
+# ================== Dados privados dos utilizadores ==================
+server/data/avatars/
+server/data/clips/
+server/data/*.log
+
+# ================== Exportações da Steam (locais) ==================
+historico-*.html
+historico-*_files/
+
+# ================== Ficheiros de teste/meus ==================
+_*.html
+_check*
+_imgtest*
+*.log
+
+# ================== Sistema / editor ==================
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tmp

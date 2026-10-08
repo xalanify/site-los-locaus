@@ -1,0 +1,2826 @@
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Gamepad2,
+  Trophy,
+  Swords,
+  Flame,
+  Users,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  KeyRound,
+  Target,
+  Crosshair,
+  Skull,
+  Star,
+  Calendar,
+  Link,
+  BarChart3,
+  Filter,
+  RotateCcw,
+  Info,
+  AlertCircle,
+} from 'lucide-react'
+
+const fmt = (n) => (Number(n) || 0).toLocaleString('pt-PT')
+
+const resultLabel = { win: 'Vitória', loss: 'Derrota', draw: 'Empate' }
+const resultBadge = {
+  win: 'bg-green-500/20 text-green-400',
+  loss: 'bg-red-500/20 text-red-400',
+  draw: 'bg-yellow-500/20 text-yellow-400',
+}
+const resultColor = {
+  win: 'text-green-400',
+  loss: 'text-red-400',
+  draw: 'text-yellow-400',
+}
+
+/* Cores próprias de cada jogador acompanhado */
+const PLAYER_COLORS = {
+  xalanix: '#f97316', // laranja
+  sonojo: '#3b82f6', // azul
+  jrm: '#22c55e', // verde
+  take: '#a855f7', // roxo
+  habibi: '#ec4899', // rosa
+  rabixo: '#06b6d4', // ciano
+  /* Rainbow Six — esquadrão (chaves = handle em minúsculas) */
+  'xalana.': '#f43f5e', // rosa
+  'm4xi01504': '#eab308', // âmbar
+  'xandy_r6': '#22c55e', // verde
+  'simao270413': '#06b6d4', // ciano
+  'xalanix-': '#f97316', // laranja (mesmo do CS2)
+}
+
+/* ------------------------------------------------------------
+   Agregação no cliente (espelha o servidor) — necessária para
+   as estatísticas reagirem aos filtros de jogadores
+   ------------------------------------------------------------ */
+function aggregate(list) {
+  let matches = 0
+  let wins = 0
+  let losses = 0
+  let draws = 0
+  let roundsFor = 0
+  let roundsAgainst = 0
+  const players = {}
+
+  for (const m of list) {
+    matches++
+    if (m.result === 'win') wins++
+    else if (m.result === 'loss') losses++
+    else if (m.result === 'draw') draws++
+    if (m.ourTeam !== null && m.ourTeam !== undefined) {
+      roundsFor += m.ourScore
+      roundsAgainst += m.oppScore
+    }
+
+    for (const team of [m.teamA, m.teamB]) {
+      const teamIdx = team === m.teamA ? 0 : 1
+      const teamWon = m.scoreA > m.scoreB ? 0 : m.scoreB > m.scoreA ? 1 : -1
+      for (const p of team) {
+        if (!p.tracked) continue
+        const ps =
+          players[p.tracked] ||
+          (players[p.tracked] = {
+            matches: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            kills: 0,
+            deaths: 0,
+            assists: 0,
+            mvps: 0,
+            hspSum: 0,
+            scoreSum: 0,
+          })
+        ps.matches++
+        if (teamWon === teamIdx) ps.wins++
+        else if (teamWon === -1) ps.draws++
+        else ps.losses++
+        ps.kills += p.k
+        ps.deaths += p.d
+        ps.assists += p.a
+        ps.mvps += p.mvp
+        ps.hspSum += p.hsp
+        ps.scoreSum += p.score
+      }
+    }
+  }
+
+  const finished = {}
+  for (const [k, p] of Object.entries(players)) {
+    const n = p.matches || 1
+    finished[k] = {
+      matches: p.matches,
+      wins: p.wins,
+      losses: p.losses,
+      draws: p.draws,
+      winRate: p.matches
+        ? Math.round(((p.wins + p.draws * 0.5) / p.matches) * 100)
+        : 0,
+      kills: p.kills,
+      deaths: p.deaths,
+      assists: p.assists,
+      mvps: p.mvps,
+      kd: p.deaths ? Math.round((p.kills / p.deaths) * 100) / 100 : p.kills,
+      avgKills: Math.round((p.kills / n) * 10) / 10,
+      avgScore: Math.round(p.scoreSum / n),
+      avgHsp: Math.round((p.hspSum / n) * 10) / 10,
+    }
+  }
+
+  return {
+    matches,
+    wins,
+    losses,
+    draws,
+    winRate: matches ? Math.round(((wins + draws * 0.5) / matches) * 100) : 0,
+    roundsFor,
+    roundsAgainst,
+    players: finished,
+  }
+}
+
+/* Toda a gente selecionada tem de estar na MESMA partida */
+function matchHasAll(m, keys) {
+  if (!keys.length) return true
+  const roster = [...(m.teamA || []), ...(m.teamB || [])]
+  return keys.every((k) => roster.some((p) => p.tracked === k))
+}
+
+function StatCard({ icon: Icon, label, value, color = 'text-orange-400', delay = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className="glass rounded-2xl p-4 text-center transition-transform duration-300 hover:scale-105 sm:p-5"
+    >
+      <Icon className={`mx-auto mb-2 h-7 w-7 sm:h-8 sm:w-8 ${color}`} />
+      <div className="text-2xl font-black text-white sm:text-3xl">{value}</div>
+      <div className="mt-1 text-xs text-gray-400 sm:text-sm">{label}</div>
+    </motion.div>
+  )
+}
+
+function WinRateBar({ value, delay = 0 }) {
+  return (
+    <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+        transition={{ delay, duration: 0.8, ease: 'easeOut' }}
+        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-fuchsia-500"
+      />
+    </div>
+  )
+}
+
+/* ============================================================
+   Escolha do jogo — nada vem já selecionado
+   ============================================================ */
+function GameChooser({ onPick }) {
+  const games = [
+    {
+      id: 'cs2',
+      name: 'CS2',
+      icon: Gamepad2,
+      color: 'text-orange-400',
+      ring: 'hover:border-orange-500',
+      bg: 'bg-orange-500/10',
+      desc: 'Partidas do histórico da Steam — Braço Direito, Competitivo, CS:GO e Premier.',
+    },
+    {
+      id: 'eafc',
+      name: 'EA FC 26',
+      icon: Trophy,
+      color: 'text-yellow-400',
+      ring: 'hover:border-yellow-500',
+      bg: 'bg-yellow-500/10',
+      desc: 'Pro Clubs — estatísticas em breve.',
+    },
+    {
+      id: 'r6',
+      name: 'Rainbow Six',
+      icon: Crosshair,
+      color: 'text-red-400',
+      ring: 'hover:border-red-500',
+      bg: 'bg-red-500/10',
+      desc: 'R6 Siege — esquadrão, partidas, modos e ranks (tracker.gg).',
+    },
+    {
+      id: 'bf',
+      name: 'Battlefield',
+      icon: Swords,
+      color: 'text-sky-400',
+      ring: 'hover:border-sky-500',
+      bg: 'bg-sky-500/10',
+      desc: 'BF1, BFV e BF6 — perfil, modos, kits e partidas (tracker.gg).',
+    },
+  ]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-auto max-w-3xl text-center"
+    >
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+        {games.map((g, i) => {
+          const Icon = g.icon
+          return (
+            <motion.button
+              key={g.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * i }}
+              onClick={() => onPick(g.id)}
+              className={`glass group rounded-2xl border-2 border-transparent p-6 transition-all duration-300 hover:scale-[1.03] ${g.ring}`}
+            >
+              <div
+                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${g.bg}`}
+              >
+                <Icon className={`h-8 w-8 ${g.color}`} />
+              </div>
+              <div className="mb-1 text-xl font-black text-white sm:text-2xl">{g.name}</div>
+              <p className="text-sm leading-relaxed text-gray-400">{g.desc}</p>
+            </motion.button>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
+
+/* ============================================================
+   EA FC 26 — ainda não implementado
+   ============================================================ */
+function EafcPage() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass mx-auto max-w-xl rounded-2xl p-8 text-center"
+    >
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-500/10">
+        <Trophy className="h-8 w-8 text-yellow-400" />
+      </div>
+      <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl">EA FC 26 — Pro Clubs</h3>
+      <p className="text-sm leading-relaxed text-gray-400 sm:text-base">
+        As estatísticas do EA FC 26 ainda não estão implementadas.
+        <br />
+        Em breve fica disponível!
+      </p>
+      <div className="mt-6 flex items-center justify-center gap-2 text-xs text-yellow-500/80">
+        <Clock className="h-4 w-4" />
+        Em desenvolvimento
+      </div>
+    </motion.div>
+  )
+}
+
+/* ============================================================
+   CS2 — cartão de resumo (V/E/D + taxa)
+   ============================================================ */
+function SummaryCards({ s, delayBase = 0 }) {
+  if (!s) return null
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 sm:gap-4">
+        <StatCard icon={Swords} label="Partidas" value={fmt(s.matches)} delay={delayBase} />
+        <StatCard
+          icon={Trophy}
+          label="Vitórias"
+          value={fmt(s.wins)}
+          color="text-green-400"
+          delay={delayBase + 0.05}
+        />
+        <StatCard
+          icon={Skull}
+          label="Derrotas"
+          value={fmt(s.losses)}
+          color="text-red-400"
+          delay={delayBase + 0.1}
+        />
+        <StatCard
+          icon={Target}
+          label="Empates"
+          value={fmt(s.draws)}
+          color="text-yellow-400"
+          delay={delayBase + 0.15}
+        />
+        <StatCard
+          icon={Flame}
+          label="Taxa Vitória"
+          value={`${s.winRate}%`}
+          color="text-orange-400"
+          delay={delayBase + 0.2}
+        />
+        <StatCard
+          icon={Crosshair}
+          label="Rondas M / S"
+          value={`${fmt(s.roundsFor)} / ${fmt(s.roundsAgainst)}`}
+          color="text-purple-400"
+          delay={delayBase + 0.25}
+        />
+      </div>
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        <div className="mb-2 flex items-center justify-between text-sm">
+          <span className="font-semibold text-gray-300">Taxa de vitória</span>
+          <span className="font-black text-orange-400">{s.winRate}%</span>
+        </div>
+        <WinRateBar value={s.winRate} delay={0.3} />
+        <p className="mt-2 text-xs text-gray-500">
+          {s.matches > 0
+            ? `${s.wins}V · ${s.draws}E · ${s.losses}D — empates contam meio ponto na taxa.`
+            : 'Sem partidas nesta seleção.'}
+        </p>
+      </div>
+    </>
+  )
+}
+
+/* ============================================================
+   CS2 — tabela dos jogadores acompanhados (com cores)
+   ============================================================ */
+function PlayersTable({ players, stats, subtitle }) {
+  return (
+    <div className="glass rounded-2xl p-5 sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <Users className="h-5 w-5 text-orange-400" />
+        <h4 className="text-lg font-bold text-white sm:text-xl">
+          Jogadores
+          <span className="ml-2 text-sm font-normal text-gray-400">{subtitle}</span>
+        </h4>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead>
+            <tr className="border-b border-white/10 text-xs uppercase text-gray-500">
+              <th className="pb-3 pr-3">Jogador</th>
+              <th className="pb-3 pr-3 text-right">Partidas</th>
+              <th className="pb-3 pr-3 text-right">V / E / D</th>
+              <th className="pb-3 pr-3 text-right">Taxa</th>
+              <th className="pb-3 pr-3 text-right">Kills</th>
+              <th className="pb-3 pr-3 text-right">K/D</th>
+              <th className="pb-3 pr-3 text-right">★ MVP</th>
+              <th className="pb-3 pr-3 text-right">Score méd.</th>
+              <th className="pb-3 text-right">HSP méd.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {players.map((pl) => {
+              const s = stats[pl.key]
+              const empty = !s || s.matches === 0
+              const color = PLAYER_COLORS[pl.key] || '#f97316'
+              return (
+                <tr
+                  key={pl.key}
+                  className="border-b border-white/5 transition-colors hover:bg-white/5"
+                >
+                  <td className="py-3 pr-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className="font-bold" style={{ color }}>
+                        {pl.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3 pr-3 text-right text-gray-300">
+                    {empty ? '—' : fmt(s.matches)}
+                  </td>
+                  <td className="py-3 pr-3 text-right">
+                    {empty ? (
+                      '—'
+                    ) : (
+                      <span className="text-xs">
+                        <span className="font-bold text-green-400">{s.wins}</span>
+                        <span className="text-gray-600"> / </span>
+                        <span className="font-bold text-yellow-400">{s.draws}</span>
+                        <span className="text-gray-600"> / </span>
+                        <span className="font-bold text-red-400">{s.losses}</span>
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 pr-3 text-right font-bold text-orange-400">
+                    {empty ? '—' : `${s.winRate}%`}
+                  </td>
+                  <td className="py-3 pr-3 text-right text-gray-300">
+                    {empty ? '—' : fmt(s.kills)}
+                  </td>
+                  <td className="py-3 pr-3 text-right font-bold text-yellow-400">
+                    {empty ? '—' : s.kd}
+                  </td>
+                  <td className="py-3 pr-3 text-right text-gray-300">
+                    {empty ? '—' : fmt(s.mvps)}
+                  </td>
+                  <td className="py-3 pr-3 text-right text-gray-300">
+                    {empty ? '—' : fmt(s.avgScore)}
+                  </td>
+                  <td className="py-3 text-right text-gray-300">
+                    {empty ? '—' : `${s.avgHsp}%`}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="mt-4 text-xs text-gray-500">
+        Médias por partida — refletem o filtro de jogadores ativo.
+      </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   CS2 — filtros de jogadores (sozinhos ou juntos)
+   ============================================================ */
+function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
+  const label = selected.map((k) => players.find((p) => p.key === k)?.name || k)
+
+  return (
+    <div className="glass rounded-2xl p-4 sm:p-5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h4 className="flex items-center gap-2 text-base font-bold text-white sm:text-lg">
+          <Filter className="h-4 w-4 text-orange-400" />
+          Jogadores
+        </h4>
+        {selected.length > 0 && (
+          <button
+            onClick={onClear}
+            className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-gray-300 transition-colors hover:bg-white/20 hover:text-white"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Limpar
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {/* Chip "todas" */}
+        <button
+          onClick={onClear}
+          className={`rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
+            selected.length === 0
+              ? 'bg-orange-500 text-white glow-orange'
+              : 'bg-white/5 text-gray-300 hover:bg-white/10'
+          }`}
+        >
+          Todas
+        </button>
+
+        {/* Um chip por jogador */}
+        {players.map((p) => {
+          const color = PLAYER_COLORS[p.key] || '#f97316'
+          const on = selected.includes(p.key)
+          return (
+            <button
+              key={p.key}
+              onClick={() => onToggle(p.key)}
+              className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm"
+              style={{
+                backgroundColor: on ? `${color}33` : 'rgba(255,255,255,0.05)',
+                color: on ? color : '#d1d5db',
+                boxShadow: on ? `0 0 0 1.5px ${color}` : 'none',
+              }}
+            >
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+              {p.name}
+            </button>
+          )
+        })}
+      </div>
+
+      <p className="mt-3 text-xs text-gray-500">
+        {selected.length === 0 ? (
+          <>{fmt(total)} partidas</>
+        ) : selected.length === 1 ? (
+          <>
+            <span className="font-bold text-white">{label[0]}</span> — {fmt(shown)} de{' '}
+            {fmt(total)}
+          </>
+        ) : (
+          <>
+            <span className="font-bold text-white">{label.join(' + ')}</span>{' '}
+            <span className="font-bold text-orange-400">juntos</span> — {fmt(shown)} de{' '}
+            {fmt(total)}
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   CS2 — cartões por modo (visibilidade global)
+   ============================================================ */
+function ModeCards({ modes, perMode, onSelect }) {
+  return (
+    <div className="glass rounded-2xl p-5 sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <BarChart3 className="h-5 w-5 text-orange-400" />
+        <h4 className="text-lg font-bold text-white sm:text-xl">Resumo por modo</h4>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {modes.map((m, i) => {
+          const s = perMode[m.id]
+          return (
+            <motion.button
+              key={m.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 * i }}
+              onClick={() => onSelect(m.id)}
+              className="rounded-xl bg-white/5 p-4 text-left transition-all duration-300 hover:bg-white/10 hover:scale-[1.02]"
+            >
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="truncate font-bold text-white">{m.label}</span>
+                <span
+                  className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black ${
+                    m.game === 'CS2'
+                      ? 'bg-orange-500/20 text-orange-400'
+                      : 'bg-blue-500/20 text-blue-400'
+                  }`}
+                >
+                  {m.game}
+                </span>
+              </div>
+              <div className="mb-2 text-xs text-gray-500">
+                {fmt(m.count)} {m.count === 1 ? 'partida' : 'partidas'}
+              </div>
+              <div className="mb-2 flex items-center gap-2 text-xs">
+                <span className="font-bold text-green-400">{s.wins}V</span>
+                <span className="font-bold text-yellow-400">{s.draws}E</span>
+                <span className="font-bold text-red-400">{s.losses}D</span>
+                <span className="ml-auto font-black text-orange-400">{s.winRate}%</span>
+              </div>
+              <WinRateBar value={s.winRate} delay={0.1 * i} />
+            </motion.button>
+          )
+        })}
+      </div>
+      <p className="mt-3 text-xs text-gray-500">Clica num modo para ver só as partidas dele.</p>
+    </div>
+  )
+}
+
+/* ============================================================
+   CS2 — linha de partida (expansível com o scoreboard)
+   ============================================================ */
+function TeamBoard({ players, score, title, isOurs }) {
+  return (
+    <div
+      className={`rounded-xl p-3 ${
+        isOurs ? 'bg-orange-500/10 ring-1 ring-orange-500/30' : 'bg-black/30'
+      }`}
+    >
+      <div className="mb-2 flex items-center justify-between px-1">
+        <span className={`text-xs font-black uppercase ${isOurs ? 'text-orange-400' : 'text-gray-500'}`}>
+          {title}
+        </span>
+        <span className={`text-lg font-black ${isOurs ? 'text-orange-400' : 'text-gray-400'}`}>
+          {score}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {players.map((p, i) => {
+          const color = p.tracked ? PLAYER_COLORS[p.tracked] : null
+          return (
+            <div
+              key={i}
+              className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs"
+              style={
+                color
+                  ? { backgroundColor: `${color}22` }
+                  : { backgroundColor: 'rgba(255,255,255,0.05)' }
+              }
+            >
+              <span
+                className={`flex min-w-0 items-center gap-1.5 ${color ? 'font-bold' : 'text-gray-300'}`}
+                style={color ? { color } : undefined}
+              >
+                {color && (
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                )}
+                <span className="truncate">{p.name}</span>
+              </span>
+              <span className="flex shrink-0 gap-2 pl-2 text-gray-400">
+                <span>
+                  <span className="font-bold text-green-400">{p.k}</span>K
+                </span>
+                <span>
+                  <span className="font-bold text-blue-400">{p.a}</span>A
+                </span>
+                <span>
+                  <span className="font-bold text-red-400">{p.d}</span>D
+                </span>
+                {p.mvp > 0 && <span className="font-bold text-yellow-400">★{p.mvp}</span>}
+                <span className="hidden sm:inline">{p.hsp}%</span>
+                <span className="font-bold text-white">{p.score}</span>
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function MatchRow({ m, open, onToggle }) {
+  const date = m.date ? new Date(m.date) : null
+  const dateLabel = date
+    ? date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+    : ''
+  const timeLabel = date
+    ? date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+    : ''
+  const res = m.result || 'draw'
+  const scoreText =
+    m.ourTeam !== null && m.ourTeam !== undefined
+      ? `${m.ourScore} - ${m.oppScore}`
+      : `${m.scoreA} - ${m.scoreB}`
+
+  const trackedHere = [...(m.teamA || []), ...(m.teamB || [])].filter((p) => p.tracked)
+
+  return (
+    <div className="overflow-hidden rounded-xl bg-white/5">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={`shrink-0 rounded-md px-2 py-1 text-xs font-black ${resultBadge[res]}`}
+          >
+            {resultLabel[res]}
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-semibold text-gray-200">{m.label}</span>
+              {/* Jogadores acompanhados nesta partida, com as suas cores */}
+              {trackedHere.length > 0 && (
+                <span className="flex shrink-0 items-center gap-1">
+                  {trackedHere.map((p, i) => (
+                    <span
+                      key={i}
+                      title={p.name}
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: PLAYER_COLORS[p.tracked] || '#f97316' }}
+                    />
+                  ))}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-gray-500">
+              {dateLabel && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {dateLabel} {timeLabel}
+                </span>
+              )}
+              {m.duration && (
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {m.duration}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          {m.demo && (
+            <a
+              href={m.demo}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title="Ver demo"
+              className="text-gray-500 transition-colors hover:text-orange-400"
+            >
+              <Link className="h-4 w-4" />
+            </a>
+          )}
+          <span className={`text-base font-black ${resultColor[res]}`}>{scoreText}</span>
+          {open ? (
+            <ChevronUp className="h-4 w-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-white/5"
+          >
+            <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2">
+              <TeamBoard
+                players={m.teamA}
+                score={m.scoreA}
+                title="Equipa de cima"
+                isOurs={m.ourTeam === 0}
+              />
+              <TeamBoard
+                players={m.teamB}
+                score={m.scoreB}
+                title="Equipa de baixo"
+                isOurs={m.ourTeam === 1}
+              />
+            </div>
+            <p className="px-4 pb-3 text-[11px] text-gray-500">
+              Cada jogador acompanhado tem a sua cor · K / A / D · ★ MVP · Headshots % · Score
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/* ============================================================
+   CS2 — página principal
+   ============================================================ */
+function Cs2Page() {
+  const [state, setState] = useState({ loading: true, data: null, error: '' })
+  const [view, setView] = useState('global')
+  const [section, setSection] = useState('stats')
+  const [selected, setSelected] = useState([])
+  const [expanded, setExpanded] = useState(null)
+  const [showAll, setShowAll] = useState(false)
+
+  const load = () => {
+    setState({ loading: true, data: null, error: '' })
+    fetch('/api/games/cs2')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.error) setState({ loading: false, data: d, error: d.error })
+        else setState({ loading: false, data: d, error: '' })
+      })
+      .catch(() =>
+        setState({ loading: false, data: null, error: 'Erro ao carregar. Tenta novamente.' }),
+      )
+  }
+
+  useEffect(() => {
+    let cancel = false
+    fetch('/api/games/cs2')
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancel) return
+        if (d?.error) setState({ loading: false, data: d, error: d.error })
+        else setState({ loading: false, data: d, error: '' })
+      })
+      .catch(() => {
+        if (!cancel)
+          setState({ loading: false, data: null, error: 'Erro ao carregar. Tenta novamente.' })
+      })
+    return () => {
+      cancel = true
+    }
+  }, [])
+
+  const d = state.data
+
+  const modeMatches = useMemo(() => {
+    if (!d?.matches) return []
+    return view === 'global' ? d.matches : d.matches.filter((m) => m.mode === view)
+  }, [d, view])
+
+  const matches = useMemo(() => {
+    const list = modeMatches.filter((m) => matchHasAll(m, selected))
+    return [...list].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+  }, [modeMatches, selected])
+
+  // Estatísticas calculadas com o filtro ativo
+  const stats = useMemo(() => aggregate(matches), [matches])
+
+  const visible = showAll ? matches : matches.slice(0, 15)
+
+  /* Melhor partida de sempre de cada jogador — percorre TODAS as
+     partidas de TODOS os modos e fica com o máximo de kills numa
+     única partida de cada um (com os detalhes dessa partida). */
+  const topKills = useMemo(() => {
+    if (!d?.matches?.length) return []
+    const best = new Map()
+    for (const m of d.matches) {
+      const modeLabel = d.modes?.find((x) => x.id === m.mode)?.label || m.label || m.mode
+      for (const team of [m.teamA || [], m.teamB || []]) {
+        for (const p of team) {
+          if (!p.tracked) continue
+          const k = Number(p.k) || 0
+          const prev = best.get(p.tracked)
+          if (!prev || k > prev.kills || (k === prev.kills && (m.date || '') > prev.date)) {
+            best.set(p.tracked, {
+              key: p.tracked,
+              name: p.name || p.tracked,
+              kills: k,
+              deaths: Number(p.d) || 0,
+              assists: Number(p.a) || 0,
+              map: m.map,
+              modeLabel,
+              date: m.date || '',
+              result: m.result || 'draw',
+              score:
+                m.ourTeam !== null && m.ourTeam !== undefined
+                  ? `${m.ourScore} - ${m.oppScore}`
+                  : `${m.scoreA} - ${m.scoreB}`,
+            })
+          }
+        }
+      }
+    }
+    return [...best.values()].sort(
+      (a, b) => b.kills - a.kills || (b.date || '').localeCompare(a.date || ''),
+    )
+  }, [d])
+
+  if (state.loading) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-16">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <p className="text-sm text-gray-400">A analisar o histórico das partidas...</p>
+      </div>
+    )
+  }
+
+  // ---------- Ficheiros em falta ----------
+  if (d?.configured === false && d?.missing?.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
+      >
+        <div className="mb-5 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
+            <KeyRound className="h-8 w-8 text-orange-500" />
+          </div>
+          <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
+            Faltam ficheiros do histórico
+          </h3>
+          <p className="text-sm text-gray-400">
+            Guarda as páginas do histórico da Steam (com a tua conta iniciado) na pasta do projeto
+            com estes nomes:
+          </p>
+        </div>
+        <ul className="space-y-2">
+          {d.missing.map((f) => (
+            <li
+              key={f}
+              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-orange-400"
+            >
+              {f}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-center text-xs text-gray-500">
+          Depois reinicia com o <code className="text-orange-500">INICIAR.bat</code> e os dados
+          aparecem aqui.
+        </p>
+        <div className="mt-5 text-center">
+          <button
+            onClick={load}
+            className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // ---------- Erro ----------
+  if (state.error || !d) {
+    return (
+      <div className="glass mx-auto max-w-xl rounded-2xl p-6 text-center">
+        <p className="mb-4 text-sm text-red-400">{state.error || 'Erro ao carregar.'}</p>
+        <button
+          onClick={load}
+          className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    )
+  }
+
+  const mode = view === 'global' ? null : d.modes.find((m) => m.id === view)
+
+  const togglePlayer = (key) => {
+    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
+    setExpanded(null)
+    setShowAll(false)
+  }
+
+  const clearPlayers = () => {
+    setSelected([])
+    setExpanded(null)
+    setShowAll(false)
+  }
+
+  const playersSubtitle = selected.length
+    ? '— com filtro'
+    : view === 'global'
+      ? '— todas'
+      : '— só deste modo'
+
+  return (
+    <div className="space-y-6">
+      {/* ---------- Aviso de atualização de estatísticas ---------- */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass rounded-2xl p-4 mb-4 border-l-4 border-red-500/50 bg-red-500/5"
+      >
+        <div className="flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-400" />
+          <div>
+            <p className="font-bold text-red-400">Estatísticas não atualizadas</p>
+            <p className="text-sm text-gray-300">
+              As estatísticas atuais vêm da conta do xalanix no tracker.gg e ainda não foram atualizadas.
+              Serão atualizadas o mais rapidamente possível e, em breve, incluirão também as
+              estatísticas da FACEIT.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Aviso: dados vêm todos da conta do xalanix */}
+      <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm text-gray-300">
+        <Info className="h-4 w-4 shrink-0 text-blue-400" />
+        <p>
+          Dados da conta do{' '}
+          <span className="font-bold text-orange-400">xalanix</span> — ele aparece sempre.
+        </p>
+      </div>
+
+      {/* Título da vista */}
+      <div className="text-center">
+        <h2 className="text-2xl font-black text-white sm:text-3xl">
+          {mode ? mode.label : 'Todas as partidas'}
+        </h2>
+        <p className="mt-1 text-sm text-gray-400">
+          {mode ? (
+            <>
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
+                  mode.game === 'CS2'
+                    ? 'bg-orange-500/20 text-orange-400'
+                    : 'bg-blue-500/20 text-blue-400'
+                }`}
+              >
+                {mode.game}
+              </span>{' '}
+              {fmt(modeMatches.length)} partidas
+            </>
+          ) : (
+            <>
+              {fmt(d.global.matches)} partidas · {d.modes.length} modos
+            </>
+          )}
+        </p>
+      </div>
+
+      {/* Nota do modo (ex.: CS:GO antigo) */}
+      {mode?.note && (
+        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-gray-300">
+          <span className="font-bold text-yellow-400">Nota:</span> {mode.note}
+        </div>
+      )}
+
+      {/* Controlos — o que ver (secção) e por onde filtrar (modo) */}
+      <div className="glass rounded-2xl p-3 sm:p-4">
+        <div className="mb-2.5 flex items-center gap-3 px-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            Secção
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-1">
+          {[
+            { id: 'stats', label: 'Estatísticas', icon: BarChart3 },
+            { id: 'players', label: 'Jogadores', icon: Users },
+            { id: 'matches', label: 'Partidas', icon: Swords },
+            { id: 'topkills', label: 'Top 1 Kill', icon: Skull },
+          ].map((s) => {
+            const Icon = s.icon
+            const on = section === s.id
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSection(s.id)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-5 ${
+                  on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {s.label}
+                {s.id === 'matches' && (
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
+                      on ? 'bg-white/20' : 'bg-white/10 text-gray-400'
+                    }`}
+                  >
+                    {fmt(matches.length)}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="mt-3.5 flex items-center gap-3 border-t border-white/5 px-1 pt-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            Modo
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <div className="-mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 py-1 sm:flex-wrap sm:justify-center sm:overflow-visible">
+          <button
+            onClick={() => {
+              setView('global')
+              setExpanded(null)
+              setShowAll(false)
+            }}
+            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
+              view === 'global'
+                ? 'bg-orange-500 text-white glow-orange scale-105'
+                : 'glass text-gray-300 hover:text-white'
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            Global
+          </button>
+          {d.modes.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => {
+                setView(m.id)
+                setExpanded(null)
+                setShowAll(false)
+              }}
+              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
+                view === m.id
+                  ? 'bg-orange-500 text-white glow-orange scale-105'
+                  : 'glass text-gray-300 hover:text-white'
+              }`}
+            >
+              <Gamepad2 className="h-4 w-4" />
+              <span className="whitespace-nowrap">{m.label}</span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
+                  view === m.id ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-400'
+                }`}
+              >
+                {m.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Filtro de jogadores (afeta as 3 secções) */}
+      <PlayerFilters
+        players={d.players}
+        selected={selected}
+        onToggle={togglePlayer}
+        onClear={clearPlayers}
+        shown={matches.length}
+        total={modeMatches.length}
+      />
+
+      {/* Conteúdo da secção ativa */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={section}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.25 }}
+          className="space-y-6"
+        >
+          {/* -------- Estatísticas -------- */}
+          {section === 'stats' && (
+            <>
+              <SummaryCards s={stats} />
+              {view === 'global' && (
+                <ModeCards modes={d.modes} perMode={d.perMode} onSelect={setView} />
+              )}
+            </>
+          )}
+
+          {/* -------- Jogadores -------- */}
+          {section === 'players' && (
+            <PlayersTable
+              players={d.players}
+              stats={stats.players}
+              subtitle={playersSubtitle}
+            />
+          )}
+
+          {/* -------- Top 1 Kill (só CS2) -------- */}
+          {section === 'topkills' && (
+            <div className="glass rounded-2xl p-5 sm:p-6">
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+                <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
+                  <Skull className="h-5 w-5 text-orange-400" />
+                  Top 1 Kill — a melhor partida de cada jogador
+                </h4>
+                <span className="text-xs text-gray-500">todas as partidas · todos os modos</span>
+              </div>
+              <p className="mb-4 text-xs text-gray-500">
+                Máximo de kills numa única partida, percorrendo o histórico completo (qualquer
+                modo, de sempre). Os filtros de cima não afetam este ranking.
+              </p>
+
+              {topKills.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-500">
+                  Ainda não há partidas com jogadores acompanhados.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {topKills.map((t, i) => {
+                    const initials =
+                      (t.name || '')
+                        .replace(/[^a-zA-Z0-9]/g, '')
+                        .slice(0, 2)
+                        .toUpperCase() || '??'
+                    const dObj = t.date ? new Date(t.date) : null
+                    const dateLabel =
+                      dObj && !isNaN(dObj)
+                        ? dObj.toLocaleDateString('pt-PT', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : ''
+                    const place =
+                      i === 0
+                        ? 'text-yellow-400'
+                        : i === 1
+                          ? 'text-gray-300'
+                          : i === 2
+                            ? 'text-yellow-600'
+                            : 'text-gray-500'
+                    return (
+                      <motion.div
+                        key={t.key}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-orange-500/40 sm:gap-4 sm:p-4"
+                      >
+                        <span
+                          className={`w-7 shrink-0 text-center text-lg font-black sm:text-xl ${place}`}
+                        >
+                          {i + 1}
+                        </span>
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-sm font-black text-orange-400 ring-1 ring-orange-500/30 sm:h-12 sm:w-12 sm:text-base">
+                          {initials}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-black text-white sm:text-base">
+                            {t.name}
+                          </div>
+                          <div className="truncate text-[11px] uppercase tracking-wide text-gray-500">
+                            {[t.map, t.modeLabel, dateLabel].filter(Boolean).join(' · ') ||
+                              'partida'}
+                          </div>
+                          <div className="truncate text-[11px] text-gray-400">
+                            <span className="font-bold text-green-400">{t.kills}</span>K ·{' '}
+                            <span className="font-bold text-blue-400">{t.assists}</span>A ·{' '}
+                            <span className="font-bold text-red-400">{t.deaths}</span>D ·{' '}
+                            {resultLabel[t.result]} {t.score}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <div className="text-2xl font-black text-orange-400 sm:text-3xl">
+                            {t.kills}
+                          </div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                            kills
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* -------- Partidas -------- */}
+          {section === 'matches' && (
+            <div className="glass rounded-2xl p-5 sm:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
+                  <Swords className="h-5 w-5 text-orange-400" />
+                  {mode ? `Partidas — ${mode.label}` : 'Todas as partidas'}
+                </h4>
+                <span className="text-xs text-gray-500">mais recentes primeiro</span>
+              </div>
+
+              {matches.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-500">
+                  Não há partidas com este filtro nesta seleção.
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    {visible.map((m) => (
+                      <MatchRow
+                        key={m.id}
+                        m={m}
+                        open={expanded === m.id}
+                        onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
+                      />
+                    ))}
+                  </div>
+
+                  {matches.length > visible.length && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAll(true)}
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-500"
+                      >
+                        Mostrar todas ({fmt(matches.length)})
+                      </button>
+                    </div>
+                  )}
+                  {showAll && matches.length > 15 && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAll(false)}
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-gray-300 transition-colors hover:bg-white/20"
+                      >
+                        Mostrar menos
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <p className="text-center text-xs text-gray-500">
+        <Star className="mb-1 mr-1 inline h-3 w-3 text-orange-400" />
+        Dados lidos das páginas do histórico da Steam guardadas no projeto
+        {d.updatedAt && (
+          <>
+            {' '}
+            · atualizado a{' '}
+            {new Date(d.updatedAt).toLocaleString('pt-PT', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   Rainbow Six — agregação no cliente (mesma forma do aggregate)
+   ============================================================ */
+function r6Aggregate(list) {
+  let matches = 0
+  let wins = 0
+  let losses = 0
+  let draws = 0
+  let roundsFor = 0
+  let roundsAgainst = 0
+  const players = {}
+
+  for (const m of list) {
+    matches++
+    if (m.result === 'win') wins++
+    else if (m.result === 'loss') losses++
+    else if (m.result === 'draw') draws++
+    if (typeof m.rw === 'number') roundsFor += m.rw
+    if (typeof m.rl === 'number') roundsAgainst += m.rl
+
+    // Quem teve mais score conta como "MVP da squad" nesta partida
+    const roster = m.players || []
+    let topKey = null
+    let topScore = -1
+    for (const p of roster) {
+      if ((p.sc || 0) > topScore) {
+        topScore = p.sc || 0
+        topKey = p.key
+      }
+    }
+
+    for (const p of roster) {
+      const ps =
+        players[p.key] ||
+        (players[p.key] = {
+          matches: 0,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          kills: 0,
+          deaths: 0,
+          assists: 0,
+          hs: 0,
+          mvps: 0,
+          scoreSum: 0,
+        })
+      ps.matches++
+      if (m.result === 'win') ps.wins++
+      else if (m.result === 'loss') ps.losses++
+      else ps.draws++
+      ps.kills += p.k || 0
+      ps.deaths += p.d || 0
+      ps.assists += p.a || 0
+      ps.hs += p.hs || 0
+      ps.scoreSum += p.sc || 0
+      if (p.key === topKey) ps.mvps++
+    }
+  }
+
+  const finished = {}
+  for (const [k, p] of Object.entries(players)) {
+    const n = p.matches || 1
+    finished[k] = {
+      matches: p.matches,
+      wins: p.wins,
+      losses: p.losses,
+      draws: p.draws,
+      winRate: p.matches
+        ? Math.round(((p.wins + p.draws * 0.5) / p.matches) * 100)
+        : 0,
+      kills: p.kills,
+      deaths: p.deaths,
+      assists: p.assists,
+      mvps: p.mvps,
+      kd: p.deaths ? Math.round((p.kills / p.deaths) * 100) / 100 : p.kills,
+      avgScore: Math.round(p.scoreSum / n),
+      avgHsp: p.kills ? Math.round((p.hs / p.kills) * 1000) / 10 : 0,
+    }
+  }
+
+  return {
+    matches,
+    wins,
+    losses,
+    draws,
+    winRate: matches ? Math.round(((wins + draws * 0.5) / matches) * 100) : 0,
+    roundsFor,
+    roundsAgainst,
+    players: finished,
+  }
+}
+
+/* Todos os selecionados têm de estar na MESMA partida */
+function r6MatchHasAll(m, keys) {
+  if (!keys.length) return true
+  const roster = m.players || []
+  return keys.every((k) => roster.some((p) => p.key === k))
+}
+
+const fmtMs = (ms) => {
+  const min = Math.round((Number(ms) || 0) / 60000)
+  if (min < 60) return `${min} min`
+  return `${Math.floor(min / 60)}h ${String(min % 60).padStart(2, '0')}m`
+}
+
+const fmtSecs = (sec) => {
+  const s = Number(sec) || 0
+  const h = Math.floor(s / 3600)
+  if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`
+  if (h > 0) return `${h}h ${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}m`
+  return `${Math.round(s / 60)} min`
+}
+
+/* ============================================================
+   Rainbow Six — linha de partida (esquadrão, sem equipas)
+   ============================================================ */
+function R6MatchRow({ m, open, onToggle }) {
+  const date = m.ts ? new Date(m.ts) : null
+  const dateLabel = date
+    ? date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+    : ''
+  const timeLabel = date
+    ? date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+    : ''
+  const res = m.result || null
+  const hasScore = typeof m.rw === 'number' && typeof m.rl === 'number'
+  const roster = [...(m.players || [])].sort((a, b) => (b.sc || 0) - (a.sc || 0))
+
+  return (
+    <div className="overflow-hidden rounded-xl bg-white/5">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={`shrink-0 rounded-md px-2 py-1 text-xs font-black ${
+              res ? resultBadge[res] : 'bg-white/10 text-gray-400'
+            }`}
+          >
+            {res ? resultLabel[res] : 'Sem resultado'}
+          </span>
+          {m.mapImg && (
+            <img
+              src={m.mapImg}
+              alt=""
+              className="hidden h-10 w-16 shrink-0 rounded-md object-cover sm:block"
+            />
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-semibold text-gray-200">
+                {m.map || m.mode || 'Partida'}
+              </span>
+              <span className="shrink-0 rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] font-black text-red-400">
+                {m.mode || '—'}
+              </span>
+              {m.surrender && (
+                <span className="shrink-0 rounded bg-yellow-500/20 px-1.5 py-0.5 text-[10px] font-black text-yellow-400">
+                  Desistência
+                </span>
+              )}
+              {roster.length > 0 && (
+                <span className="flex shrink-0 items-center gap-1">
+                  {roster.map((p, i) => (
+                    <span
+                      key={i}
+                      title={p.key}
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: PLAYER_COLORS[p.key] || '#f97316' }}
+                    />
+                  ))}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-gray-500">
+              {dateLabel && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {dateLabel} {timeLabel}
+                </span>
+              )}
+              {m.dur && (
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {fmtMs(m.dur)}
+                </span>
+              )}
+              {m.dc && <span className="truncate">{m.dc}</span>}
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className={`text-base font-black ${res ? resultColor[res] : 'text-gray-400'}`}>
+            {hasScore ? `${m.rw} - ${m.rl}` : '—'}
+          </span>
+          {open ? (
+            <ChevronUp className="h-4 w-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-white/5"
+          >
+            <div className="space-y-1 p-3">
+              {roster.map((p, i) => {
+                const color = PLAYER_COLORS[p.key] || '#f97316'
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs"
+                    style={{ backgroundColor: `${color}22` }}
+                  >
+                    <span
+                      className="flex min-w-0 items-center gap-1.5 font-bold"
+                      style={{ color }}
+                    >
+                      <span
+                        className="h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className="truncate">{p.key}</span>
+                    </span>
+                    <span className="flex shrink-0 gap-2 pl-2 text-gray-400">
+                      <span>
+                        <span className="font-bold text-green-400">{p.k}</span>K
+                      </span>
+                      <span>
+                        <span className="font-bold text-blue-400">{p.a}</span>A
+                      </span>
+                      <span>
+                        <span className="font-bold text-red-400">{p.d}</span>D
+                      </span>
+                      <span className="hidden sm:inline">
+                        <span className="font-bold text-purple-400">{p.hs}</span>HS
+                      </span>
+                      <span className="font-bold text-white">{p.sc}</span>
+                    </span>
+                  </div>
+                )
+              })}
+              {roster.length === 0 && (
+                <p className="py-2 text-center text-xs text-gray-500">
+                  Sem jogadores acompanhados registados nesta partida.
+                </p>
+              )}
+            </div>
+            <p className="px-4 pb-3 text-[11px] text-gray-500">
+              Só os jogadores acompanhados nesta partida · K / A / D · HS = headshots · Score
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/* ============================================================
+   Rainbow Six — cartões do esquadrão (rank, nível, carreira)
+   ============================================================ */
+function R6Squad({ players }) {
+  return (
+    <div className="glass rounded-2xl p-5 sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <Users className="h-5 w-5 text-orange-400" />
+        <h4 className="text-lg font-bold text-white sm:text-xl">Esquadrão</h4>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {players.map((p, i) => {
+          const color = PLAYER_COLORS[p.key] || '#f97316'
+          const ov = p.overview || {}
+          const wr = ov.matchesPlayed
+            ? Math.round(((ov.matchesWon || 0) / ov.matchesPlayed) * 100)
+            : 0
+          const rank = p.rank || null
+          const ranked = rank && rank.name && rank.name !== 'NO RANK'
+          return (
+            <motion.div
+              key={p.key}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 * i }}
+              className="rounded-xl bg-white/5 p-4"
+            >
+              <div className="mb-3 flex items-center gap-3">
+                {p.avatar ? (
+                  <img
+                    src={p.avatar}
+                    alt=""
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-black"
+                    style={{ backgroundColor: `${color}22`, color }}
+                  >
+                    {(p.handle || '?').slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="truncate font-bold" style={{ color }}>
+                    {p.handle}
+                  </div>
+                  <div className="text-[11px] text-gray-500">
+                    Nível {p.level ?? '—'}
+                    {ranked && rank.points > 0 ? ` · ${fmt(rank.points)} RP` : ''}
+                  </div>
+                </div>
+                {rank && rank.img && (
+                  <img
+                    src={rank.img}
+                    alt=""
+                    title={rank.name}
+                    className="ml-auto h-10 w-10 shrink-0 object-contain"
+                  />
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div>
+                  <div className="font-black text-white">{fmt(ov.matchesPlayed || 0)}</div>
+                  <div className="text-gray-500">Partidas</div>
+                </div>
+                <div>
+                  <div className="font-black text-orange-400">{wr}%</div>
+                  <div className="text-gray-500">Vitórias</div>
+                </div>
+                <div>
+                  <div className="font-black text-yellow-400">{ov.kdRatio ?? '—'}</div>
+                  <div className="text-gray-500">K/D</div>
+                </div>
+                <div>
+                  <div className="font-black text-green-400">{ov.killsPerMatch ?? '—'}</div>
+                  <div className="text-gray-500">K/partida</div>
+                </div>
+                <div>
+                  <div className="font-black text-purple-400">{fmt(ov.kills || 0)}</div>
+                  <div className="text-gray-500">Kills</div>
+                </div>
+                <div>
+                  <div className="font-black text-blue-400">{fmtSecs(ov.timePlayed || 0)}</div>
+                  <div className="text-gray-500">Tempo</div>
+                </div>
+              </div>
+              <div
+                className={`mt-2 text-center text-[11px] font-black ${
+                  ranked ? 'text-yellow-400' : 'text-gray-500'
+                }`}
+              >
+                {rank ? rank.name : 'Sem rank'}
+                {rank && rank.season ? ` · ${rank.season}` : ''}
+              </div>
+            </motion.div>
+          )
+        })}
+      </div>
+      <p className="mt-4 text-xs text-gray-500">
+        Perfil tracker.gg de cada membro — nível, rank da temporada e números de carreira.
+      </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   Rainbow Six — página principal
+   ============================================================ */
+function R6Page() {
+  const [state, setState] = useState({ loading: true, data: null, error: '' })
+  const [view, setView] = useState('global')
+  const [section, setSection] = useState('stats')
+  const [selected, setSelected] = useState([])
+  const [expanded, setExpanded] = useState(null)
+  const [showAll, setShowAll] = useState(false)
+
+  const load = () => {
+    setState({ loading: true, data: null, error: '' })
+    fetch('/api/games/r6')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.error) setState({ loading: false, data: d, error: d.error })
+        else setState({ loading: false, data: d, error: '' })
+      })
+      .catch(() =>
+        setState({ loading: false, data: null, error: 'Erro ao carregar. Tenta novamente.' }),
+      )
+  }
+
+  useEffect(() => {
+    let cancel = false
+    fetch('/api/games/r6')
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancel) return
+        if (d?.error) setState({ loading: false, data: d, error: d.error })
+        else setState({ loading: false, data: d, error: '' })
+      })
+      .catch(() => {
+        if (!cancel)
+          setState({ loading: false, data: null, error: 'Erro ao carregar. Tenta novamente.' })
+      })
+    return () => {
+      cancel = true
+    }
+  }, [])
+
+  const d = state.data
+
+  const r6Players = useMemo(
+    () => (d?.players || []).map((p) => ({ key: p.key, name: p.handle })),
+    [d],
+  )
+
+  const r6Modes = useMemo(() => {
+    if (!d?.matches) return []
+    const map = new Map()
+    for (const m of d.matches) {
+      const id = m.modeKey || m.mode || 'outro'
+      if (!map.has(id)) map.set(id, { id, label: m.mode || id, game: 'R6', count: 0 })
+      map.get(id).count++
+    }
+    return [...map.values()].sort((a, b) => b.count - a.count)
+  }, [d])
+
+  const perMode = useMemo(() => {
+    const out = {}
+    for (const mo of r6Modes) {
+      out[mo.id] = r6Aggregate(
+        (d?.matches || []).filter((m) => (m.modeKey || m.mode) === mo.id),
+      )
+    }
+    return out
+  }, [r6Modes, d])
+
+  const modeMatches = useMemo(() => {
+    if (!d?.matches) return []
+    return view === 'global'
+      ? d.matches
+      : d.matches.filter((m) => (m.modeKey || m.mode) === view)
+  }, [d, view])
+
+  const matches = useMemo(() => {
+    const list = modeMatches.filter((m) => r6MatchHasAll(m, selected))
+    return [...list].sort((a, b) => (b.ts || '').localeCompare(a.ts || ''))
+  }, [modeMatches, selected])
+
+  const stats = useMemo(() => r6Aggregate(matches), [matches])
+
+  const visible = showAll ? matches : matches.slice(0, 15)
+
+  if (state.loading) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-16">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <p className="text-sm text-gray-400">A ler os dados do tracker.gg...</p>
+      </div>
+    )
+  }
+
+  // ---------- Snapshot em falta ----------
+  if (d?.configured === false && d?.missing?.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
+      >
+        <div className="mb-5 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
+            <KeyRound className="h-8 w-8 text-orange-500" />
+          </div>
+          <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
+            Snapshot do tracker em falta
+          </h3>
+          <p className="text-sm text-gray-400">
+            Ainda não há dados colhidos do Rainbow Six. Gera o ficheiro no projeto:
+          </p>
+        </div>
+        <ul className="space-y-2">
+          {d.missing.map((f) => (
+            <li
+              key={f}
+              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-orange-400"
+            >
+              {f}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-center text-xs text-gray-500">
+          Depois reinicia com o <code className="text-orange-500">INICIAR.bat</code> e os dados
+          aparecem aqui.
+        </p>
+        <div className="mt-5 text-center">
+          <button
+            onClick={load}
+            className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // ---------- Erro ----------
+  if (state.error || !d) {
+    return (
+      <div className="glass mx-auto max-w-xl rounded-2xl p-6 text-center">
+        <p className="mb-4 text-sm text-red-400">{state.error || 'Erro ao carregar.'}</p>
+        <button
+          onClick={load}
+          className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    )
+  }
+
+  const mode = view === 'global' ? null : r6Modes.find((m) => m.id === view)
+
+  const togglePlayer = (key) => {
+    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
+    setExpanded(null)
+    setShowAll(false)
+  }
+
+  const clearPlayers = () => {
+    setSelected([])
+    setExpanded(null)
+    setShowAll(false)
+  }
+
+  const playersSubtitle = selected.length
+    ? '— com filtro'
+    : view === 'global'
+      ? '— todas'
+      : '— só deste modo'
+
+  return (
+    <div className="space-y-6">
+      {/* Aviso: fonte dos dados */}
+      <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm text-gray-300">
+        <Info className="h-4 w-4 shrink-0 text-blue-400" />
+        <p>
+          <span className="font-bold text-orange-400">tracker.gg</span> —{' '}
+          <span className="font-bold text-white">{d.players?.length || 0}</span> jogadores do
+          esquadrão e <span className="font-bold text-white">{fmt(d.matches?.length || 0)}</span>{' '}
+          partidas onde pelo menos um deles jogou.
+        </p>
+      </div>
+
+      {/* Título da vista */}
+      <div className="text-center">
+        <h2 className="text-2xl font-black text-white sm:text-3xl">
+          {mode ? mode.label : 'Todas as partidas'}
+        </h2>
+        <p className="mt-1 text-sm text-gray-400">
+          {mode ? (
+            <>
+              <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] font-black text-red-400">
+                R6
+              </span>{' '}
+              {fmt(modeMatches.length)} partidas
+            </>
+          ) : (
+            <>
+              {fmt(d.matches?.length || 0)} partidas · {r6Modes.length} modos
+            </>
+          )}
+        </p>
+      </div>
+
+      {/* Controlos — o que ver (secção) e por onde filtrar (modo) */}
+      <div className="glass rounded-2xl p-3 sm:p-4">
+        <div className="mb-2.5 flex items-center gap-3 px-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            Secção
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-1">
+          {[
+            { id: 'stats', label: 'Estatísticas', icon: BarChart3 },
+            { id: 'players', label: 'Jogadores', icon: Users },
+            { id: 'matches', label: 'Partidas', icon: Swords },
+          ].map((s) => {
+            const Icon = s.icon
+            const on = section === s.id
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSection(s.id)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-5 ${
+                  on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {s.label}
+                {s.id === 'matches' && (
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
+                      on ? 'bg-white/20' : 'bg-white/10 text-gray-400'
+                    }`}
+                  >
+                    {fmt(matches.length)}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="mt-3.5 flex items-center gap-3 border-t border-white/5 px-1 pt-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            Modo
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <div className="-mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 py-1 sm:flex-wrap sm:justify-center sm:overflow-visible">
+          <button
+            onClick={() => {
+              setView('global')
+              setExpanded(null)
+              setShowAll(false)
+            }}
+            className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
+              view === 'global'
+                ? 'bg-orange-500 text-white glow-orange scale-105'
+                : 'glass text-gray-300 hover:text-white'
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            Global
+          </button>
+          {r6Modes.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => {
+                setView(m.id)
+                setExpanded(null)
+                setShowAll(false)
+              }}
+              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
+                view === m.id
+                  ? 'bg-orange-500 text-white glow-orange scale-105'
+                  : 'glass text-gray-300 hover:text-white'
+              }`}
+            >
+              <Crosshair className="h-4 w-4" />
+              <span className="whitespace-nowrap">{m.label}</span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
+                  view === m.id ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-400'
+                }`}
+              >
+                {m.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Filtro de jogadores (afeta as 3 secções) */}
+      <PlayerFilters
+        players={r6Players}
+        selected={selected}
+        onToggle={togglePlayer}
+        onClear={clearPlayers}
+        shown={matches.length}
+        total={modeMatches.length}
+      />
+
+      {/* Conteúdo da secção ativa */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={section}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.25 }}
+          className="space-y-6"
+        >
+          {/* -------- Estatísticas -------- */}
+          {section === 'stats' && (
+            <>
+              <SummaryCards s={stats} />
+              {view === 'global' && <ModeCards modes={r6Modes} perMode={perMode} onSelect={setView} />}
+              <R6Squad players={d.players || []} />
+            </>
+          )}
+
+          {/* -------- Jogadores -------- */}
+          {section === 'players' && (
+            <PlayersTable
+              players={r6Players}
+              stats={stats.players}
+              subtitle={playersSubtitle}
+            />
+          )}
+
+          {/* -------- Partidas -------- */}
+          {section === 'matches' && (
+            <div className="glass rounded-2xl p-5 sm:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
+                  <Swords className="h-5 w-5 text-orange-400" />
+                  {mode ? `Partidas — ${mode.label}` : 'Todas as partidas'}
+                </h4>
+                <span className="text-xs text-gray-500">mais recentes primeiro</span>
+              </div>
+
+              {matches.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-500">
+                  Não há partidas com este filtro nesta seleção.
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    {visible.map((m) => (
+                      <R6MatchRow
+                        key={m.id}
+                        m={m}
+                        open={expanded === m.id}
+                        onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
+                      />
+                    ))}
+                  </div>
+
+                  {matches.length > visible.length && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAll(true)}
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-500"
+                      >
+                        Mostrar todas ({fmt(matches.length)})
+                      </button>
+                    </div>
+                  )}
+                  {showAll && matches.length > 15 && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAll(false)}
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-gray-300 transition-colors hover:bg-white/20"
+                      >
+                        Mostrar menos
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <p className="text-center text-xs text-gray-500">
+        <Star className="mb-1 mr-1 inline h-3 w-3 text-orange-400" />
+        Dados lidos no tracker.gg (snapshot no projeto)
+        {d.updatedAt && (
+          <>
+            {' '}
+            · atualizado a{' '}
+            {new Date(d.updatedAt).toLocaleString('pt-PT', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   Battlefield — cartões de estatísticas gerais
+   ============================================================ */
+const BF_STAT_CARDS = [
+  { keys: ['wins'], label: 'Vitórias', icon: Trophy, color: 'text-green-400' },
+  { keys: ['losses'], label: 'Derrotas', icon: Skull, color: 'text-red-400' },
+  { keys: ['draws'], label: 'Empates', icon: Target, color: 'text-yellow-400' },
+  { keys: ['winPercentage', 'wlPercentage'], label: 'Taxa Vitória', icon: Flame, pct: true },
+  { keys: ['matchesPlayed'], label: 'Partidas', icon: Swords },
+  { keys: ['kills'], label: 'Kills', icon: Crosshair, color: 'text-orange-400' },
+  { keys: ['deaths'], label: 'Mortes', icon: Skull, color: 'text-red-400' },
+  { keys: ['kdRatio'], label: 'K/D', icon: Star, color: 'text-yellow-400', dec: true },
+  { keys: ['scorePerMinute'], label: 'Score / min', icon: BarChart3, color: 'text-blue-400' },
+  { keys: ['timePlayed'], label: 'Tempo jogado', icon: Clock, time: true },
+  { keys: ['headshotPercentage', 'headshotsPercentage'], label: 'HSP', icon: Target, color: 'text-purple-400', pct: true },
+  { keys: ['headshots', 'headshotKills'], label: 'Headshots', icon: Target, color: 'text-purple-400' },
+]
+
+function BfOverview({ ov }) {
+  const cards = []
+  for (const c of BF_STAT_CARDS) {
+    const v = c.keys.map((k) => ov[k]).find((x) => typeof x === 'number')
+    if (v === undefined) continue
+    let value
+    if (c.time) value = fmtSecs(v)
+    else if (c.pct) value = `${Math.round((v <= 1 ? v * 100 : v) * 10) / 10}%`
+    else if (c.dec) value = Math.round(v * 100) / 100
+    else value = fmt(v)
+    cards.push({ ...c, value })
+  }
+  if (!cards.length) return null
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 sm:gap-4">
+      {cards.map((c, i) => (
+        <StatCard
+          key={c.label}
+          icon={c.icon}
+          label={c.label}
+          value={c.value}
+          color={c.color}
+          delay={0.04 * i}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* ============================================================
+   Battlefield — tabela por modo
+   ============================================================ */
+function BfModes({ modes }) {
+  if (!modes?.length) return null
+  return (
+    <div className="glass rounded-2xl p-5 sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <BarChart3 className="h-5 w-5 text-orange-400" />
+        <h4 className="text-lg font-bold text-white sm:text-xl">Por modo de jogo</h4>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-left text-sm">
+          <thead>
+            <tr className="border-b border-white/10 text-xs uppercase text-gray-500">
+              <th className="pb-3 pr-3">Modo</th>
+              <th className="pb-3 pr-3 text-right">Partidas</th>
+              <th className="pb-3 pr-3 text-right">V</th>
+              <th className="pb-3 pr-3 text-right">D</th>
+              <th className="pb-3 pr-3 text-right">Taxa</th>
+              <th className="pb-3 text-right">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {modes.map((m) => {
+              const st = m.stats || {}
+              const wins = st.wins ?? st.matchesWon ?? 0
+              const losses = st.losses ?? st.matchesLost ?? 0
+              const rawPct = st.winPercentage ?? st.wlPercentage ?? null
+              const pct =
+                rawPct !== null
+                  ? Math.round((rawPct <= 1 ? rawPct * 100 : rawPct) * 10) / 10
+                  : wins + losses
+                    ? Math.round((wins / (wins + losses)) * 100)
+                    : 0
+              const mp = st.matchesPlayed
+              return (
+                <tr key={m.key || m.name} className="border-b border-white/5">
+                  <td className="py-3 pr-3 font-bold text-white">{m.name}</td>
+                  <td className="py-3 pr-3 text-right text-gray-300">
+                    {typeof mp === 'number' ? fmt(mp) : '—'}
+                  </td>
+                  <td className="py-3 pr-3 text-right font-bold text-green-400">{fmt(wins)}</td>
+                  <td className="py-3 pr-3 text-right font-bold text-red-400">{fmt(losses)}</td>
+                  <td className="py-3 pr-3 text-right font-black text-orange-400">{pct}%</td>
+                  <td className="py-3 text-right text-gray-300">
+                    {typeof st.score === 'number' ? fmt(st.score) : '—'}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   Battlefield — cartões por classe/kit
+   ============================================================ */
+function BfKits({ kits }) {
+  if (!kits?.length) return null
+  return (
+    <div className="glass rounded-2xl p-5 sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <Users className="h-5 w-5 text-orange-400" />
+        <h4 className="text-lg font-bold text-white sm:text-xl">Por classe</h4>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {kits.map((k, i) => {
+          const st = k.stats || {}
+          return (
+            <motion.div
+              key={k.key || k.name}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.04 * i }}
+              className="rounded-xl bg-white/5 p-4"
+            >
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="truncate font-bold uppercase text-white">{k.name}</span>
+                {typeof st.killsPerMinute === 'number' && (
+                  <span className="shrink-0 text-xs font-black text-orange-400">
+                    {st.killsPerMinute}/min
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div>
+                  <div className="font-black text-yellow-400">
+                    {typeof st.kills === 'number' ? fmt(st.kills) : '—'}
+                  </div>
+                  <div className="text-gray-500">Kills</div>
+                </div>
+                <div>
+                  <div className="font-black text-orange-400">
+                    {typeof st.score === 'number' ? fmt(st.score) : '—'}
+                  </div>
+                  <div className="text-gray-500">Score</div>
+                </div>
+                <div>
+                  <div className="font-black text-blue-400">
+                    {typeof st.timePlayed === 'number' ? fmtSecs(st.timePlayed) : '—'}
+                  </div>
+                  <div className="text-gray-500">Tempo</div>
+                </div>
+              </div>
+              {typeof st.kdRatio === 'number' && (
+                <div className="mt-2 text-center text-[11px] text-gray-400">
+                  K/D <span className="font-bold text-yellow-400">{st.kdRatio}</span>
+                  {typeof st.scorePerMinute === 'number' && (
+                    <>
+                      {' · '}Score/min{' '}
+                      <span className="font-bold text-orange-400">{st.scorePerMinute}</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   Battlefield — linha de partida (+ detalhe por modo)
+   ============================================================ */
+function BfMatchRow({ m, open, onToggle }) {
+  const date = m.ts ? new Date(m.ts) : null
+  const dateLabel = date
+    ? date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
+    : ''
+  const timeLabel = date
+    ? date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+    : ''
+  const gms = m.gamemodes || []
+  const expandable = gms.length > 0
+
+  const body = (
+    <>
+      <div className="flex min-w-0 items-center gap-3">
+        {m.mapImg && (
+          <img
+            src={m.mapImg}
+            alt=""
+            className="hidden h-10 w-16 shrink-0 rounded-md object-cover sm:block"
+          />
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold text-gray-200">
+              {m.map || m.mode || 'Partida'}
+            </span>
+            {m.mode && (
+              <span className="shrink-0 rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-black text-sky-400">
+                {m.mode}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-gray-500">
+            {dateLabel && (
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {dateLabel} {timeLabel}
+              </span>
+            )}
+            {m.server && <span className="truncate">{m.server}</span>}
+          </div>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        {expandable &&
+          (open ? (
+            <ChevronUp className="h-4 w-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          ))}
+      </div>
+    </>
+  )
+
+  return (
+    <div className="overflow-hidden rounded-xl bg-white/5">
+      {expandable ? (
+        <button
+          onClick={onToggle}
+          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
+        >
+          {body}
+        </button>
+      ) : (
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-3">{body}</div>
+      )}
+
+      <AnimatePresence>
+        {open && expandable && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-white/5"
+          >
+            <div className="space-y-1 p-3">
+              {gms.map((g, i) => {
+                const st = g.stats || {}
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded-lg bg-white/5 px-2 py-1.5 text-xs"
+                  >
+                    <span className="truncate font-bold text-white">{g.name}</span>
+                    <span className="flex shrink-0 gap-2 pl-2 text-gray-400">
+                      {typeof st.kills === 'number' && (
+                        <span>
+                          <span className="font-bold text-green-400">{fmt(st.kills)}</span>K
+                        </span>
+                      )}
+                      {typeof st.deaths === 'number' && (
+                        <span>
+                          <span className="font-bold text-red-400">{fmt(st.deaths)}</span>D
+                        </span>
+                      )}
+                      {typeof st.kdRatio === 'number' && (
+                        <span className="font-bold text-yellow-400">{st.kdRatio}</span>
+                      )}
+                      {typeof st.score === 'number' && (
+                        <span className="font-bold text-white">{fmt(st.score)}</span>
+                      )}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="px-4 pb-3 text-[11px] text-gray-500">
+              Progresso registado por modo (instantâneo delta do tracker.gg)
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/* ============================================================
+   Battlefield — página principal (BF1 / BFV / BF6)
+   ============================================================ */
+function BFPage() {
+  const [game, setGame] = useState('bf1')
+  const [state, setState] = useState({ loading: true, data: null, error: '' })
+  const [section, setSection] = useState('stats')
+  const [expanded, setExpanded] = useState(null)
+  const [showAll, setShowAll] = useState(false)
+
+  const bfGames = [
+    { id: 'bf1', label: 'BF1' },
+    { id: 'bfv', label: 'BFV' },
+    { id: 'bf6', label: 'BF6' },
+  ]
+
+  useEffect(() => {
+    let cancel = false
+    setState({ loading: true, data: null, error: '' })
+    fetch(`/api/games/bf?g=${game}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancel) return
+        if (d?.error) setState({ loading: false, data: d, error: d.error })
+        else setState({ loading: false, data: d, error: '' })
+      })
+      .catch(() => {
+        if (!cancel)
+          setState({ loading: false, data: null, error: 'Erro ao carregar. Tenta novamente.' })
+      })
+    return () => {
+      cancel = true
+    }
+  }, [game])
+
+  const d = state.data
+
+  const retry = () => {
+    setState((s) => ({ ...s, loading: true, error: '' }))
+    fetch(`/api/games/bf?g=${game}`)
+      .then((r) => r.json())
+      .then((nd) => {
+        if (nd?.error) setState({ loading: false, data: nd, error: nd.error })
+        else setState({ loading: false, data: nd, error: '' })
+      })
+      .catch(() => setState({ loading: false, data: null, error: 'Erro ao carregar.' }))
+  }
+
+  if (state.loading) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-16">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <p className="text-sm text-gray-400">A ler os dados do tracker.gg...</p>
+      </div>
+    )
+  }
+
+  // ---------- Snapshot em falta ----------
+  if (d?.configured === false && d?.missing?.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
+      >
+        <div className="mb-5 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
+            <KeyRound className="h-8 w-8 text-orange-500" />
+          </div>
+          <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
+            Snapshot do tracker em falta
+          </h3>
+          <p className="text-sm text-gray-400">
+            Ainda não há dados colhidos deste Battlefield. Gera o ficheiro no projeto:
+          </p>
+        </div>
+        <ul className="space-y-2">
+          {d.missing.map((f) => (
+            <li
+              key={f}
+              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-orange-400"
+            >
+              {f}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-center text-xs text-gray-500">
+          Depois reinicia com o <code className="text-orange-500">INICIAR.bat</code> e os dados
+          aparecem aqui.
+        </p>
+        <div className="mt-5 text-center">
+          <button
+            onClick={retry}
+            className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // ---------- Erro ----------
+  if (state.error || !d) {
+    return (
+      <div className="glass mx-auto max-w-xl rounded-2xl p-6 text-center">
+        <p className="mb-4 text-sm text-red-400">{state.error || 'Erro ao carregar.'}</p>
+        <button
+          onClick={retry}
+          className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    )
+  }
+
+  const supportsMatches = d.matchesSupported !== false && Array.isArray(d.matches)
+  const matchList = supportsMatches
+    ? [...d.matches].sort((a, b) => (b.ts || '').localeCompare(a.ts || ''))
+    : []
+  const visible = showAll ? matchList : matchList.slice(0, 15)
+  const gameLabel = (bfGames.find((g) => g.id === game) || {}).label || game
+
+  const pickGame = (id) => {
+    setGame(id)
+    setSection('stats')
+    setExpanded(null)
+    setShowAll(false)
+  }
+
+  const sections = [
+    { id: 'stats', label: 'Estatísticas', icon: BarChart3 },
+    { id: 'modes', label: 'Modos e classes', icon: Filter },
+    ...(supportsMatches ? [{ id: 'matches', label: 'Partidas', icon: Swords, count: matchList.length }] : []),
+  ]
+
+  return (
+    <div className="space-y-6">
+      {/* Controlos — jogo (dados) */}
+      <div className="glass rounded-2xl p-3 sm:p-4">
+        <div className="mb-2.5 flex items-center gap-3 px-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            Jogo
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+          {bfGames.map((g) => (
+            <button
+              key={g.id}
+              onClick={() => pickGame(g.id)}
+              className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
+                game === g.id
+                  ? 'bg-orange-500 text-white glow-orange scale-105'
+                  : 'glass text-gray-300 hover:text-white'
+              }`}
+            >
+              <Gamepad2 className="h-4 w-4" />
+              {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Cabeçalho do perfil */}
+      <div className="text-center">
+        <h2 className="text-2xl font-black text-white sm:text-3xl">
+          {gameLabel}
+          <span className="ml-2 text-base font-bold text-gray-400">{d.handle}</span>
+        </h2>
+        <p className="mt-1 text-sm text-gray-400">
+          <span className="rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-black text-sky-400">
+            tracker.gg
+          </span>{' '}
+          {fmt(d.modes?.length || 0)} modos · {fmt(d.kits?.length || 0)} classes
+          {supportsMatches ? ` · ${fmt(matchList.length)} partidas` : ''}
+        </p>
+      </div>
+
+      {/* Controlos — o que ver (secção) */}
+      <div className="glass rounded-2xl p-3 sm:p-4">
+        <div className="mb-2.5 flex items-center gap-3 px-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
+            Secção
+          </span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+        <div className="flex flex-wrap justify-center gap-1">
+          {sections.map((s) => {
+            const Icon = s.icon
+            const on = section === s.id
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSection(s.id)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-5 ${
+                  on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {s.label}
+                {s.count !== undefined && (
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
+                      on ? 'bg-white/20' : 'bg-white/10 text-gray-400'
+                    }`}
+                  >
+                    {fmt(s.count)}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={section}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.25 }}
+          className="space-y-6"
+        >
+          {/* -------- Estatísticas -------- */}
+          {section === 'stats' && (
+            <>
+              <BfOverview ov={d.overview || {}} />
+              {d.avatar && (
+                <div className="glass flex items-center gap-4 rounded-2xl p-5">
+                  <img src={d.avatar} alt="" className="h-16 w-16 rounded-full object-cover" />
+                  <div className="min-w-0">
+                    <div className="truncate text-lg font-bold text-white">{d.handle}</div>
+                    <div className="text-xs text-gray-400">
+                      {gameLabel} · tempo jogado{' '}
+                      {typeof d.overview?.timePlayed === 'number'
+                        ? fmtSecs(d.overview.timePlayed)
+                        : '—'}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* -------- Modos e classes -------- */}
+          {section === 'modes' && (
+            <>
+              <BfModes modes={d.modes} />
+              <BfKits kits={d.kits} />
+            </>
+          )}
+
+          {/* -------- Partidas -------- */}
+          {section === 'matches' && (
+            <div className="glass rounded-2xl p-5 sm:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
+                  <Swords className="h-5 w-5 text-orange-400" />
+                  Histórico de partidas — {gameLabel}
+                </h4>
+                <span className="text-xs text-gray-500">mais recentes primeiro</span>
+              </div>
+
+              {!supportsMatches ? (
+                <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-gray-300">
+                  <span className="font-bold text-yellow-400">Nota:</span> o {gameLabel} não
+                  devolve histórico de partidas na tracker.gg — aqui ficam só as estatísticas de
+                  perfil.
+                </div>
+              ) : matchList.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-500">Sem partidas registadas.</p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    {visible.map((m) => (
+                      <BfMatchRow
+                        key={m.id}
+                        m={m}
+                        open={expanded === m.id}
+                        onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
+                      />
+                    ))}
+                  </div>
+
+                  {matchList.length > visible.length && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAll(true)}
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-500"
+                      >
+                        Mostrar todas ({fmt(matchList.length)})
+                      </button>
+                    </div>
+                  )}
+                  {showAll && matchList.length > 15 && (
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => setShowAll(false)}
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-gray-300 transition-colors hover:bg-white/20"
+                      >
+                        Mostrar menos
+                      </button>
+                    </div>
+                  )}
+                  <p className="mt-4 text-[11px] text-gray-500">
+                    {game === 'bf1'
+                      ? 'Só metadados por partida — data, mapa, modo e servidor.'
+                      : 'Instantâneos de progresso (delta) da tracker.gg — não é o detalhe de uma partida isolada.'}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <p className="text-center text-xs text-gray-500">
+        <Star className="mb-1 mr-1 inline h-3 w-3 text-orange-400" />
+        Dados lidos no tracker.gg (snapshot no projeto)
+        {d.updated && (
+          <>
+            {' '}
+            · atualizado a{' '}
+            {new Date(d.updated).toLocaleString('pt-PT', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+export default function GamesPage() {
+  const [tab, setTab] = useState(null)
+
+  return (
+    <section className="min-h-screen px-4 pb-20 pt-28 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 text-center sm:mb-10"
+        >
+          <h1
+            className="mb-3 font-black gradient-text"
+            style={{ fontSize: 'clamp(1.9rem, 7vw, 3.2rem)' }}
+          >
+            Jogos
+          </h1>
+        </motion.div>
+
+        {tab === null ? (
+          <GameChooser onPick={setTab} />
+        ) : (
+          <>
+            {/* Abas de jogo */}
+            <div className="mb-10 flex flex-wrap justify-center gap-3 sm:gap-4">
+              <button
+                onClick={() => setTab('cs2')}
+                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
+                  tab === 'cs2'
+                    ? 'bg-orange-500 text-white glow-orange scale-105'
+                    : 'glass text-gray-300 hover:text-white'
+                }`}
+              >
+                <Gamepad2 className="h-5 w-5" />
+                CS2
+              </button>
+              <button
+                onClick={() => setTab('eafc')}
+                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
+                  tab === 'eafc'
+                    ? 'bg-orange-500 text-white glow-orange scale-105'
+                    : 'glass text-gray-300 hover:text-white'
+                }`}
+              >
+                <Trophy className="h-5 w-5" />
+                EA FC 26
+              </button>
+              <button
+                onClick={() => setTab('r6')}
+                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
+                  tab === 'r6'
+                    ? 'bg-orange-500 text-white glow-orange scale-105'
+                    : 'glass text-gray-300 hover:text-white'
+                }`}
+              >
+                <Crosshair className="h-5 w-5" />
+                Rainbow Six
+              </button>
+              <button
+                onClick={() => setTab('bf')}
+                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
+                  tab === 'bf'
+                    ? 'bg-orange-500 text-white glow-orange scale-105'
+                    : 'glass text-gray-300 hover:text-white'
+                }`}
+              >
+                <Swords className="h-5 w-5" />
+                Battlefield
+              </button>
+              <button
+                onClick={() => setTab(null)}
+                title="Escolher outro jogo"
+                className="flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-bold text-gray-400 transition-all duration-300 hover:border-orange-500 hover:text-orange-400 sm:px-6 sm:text-base"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Trocar de jogo
+              </button>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tab}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+              >
+                {tab === 'eafc' ? (
+                  <EafcPage />
+                ) : tab === 'r6' ? (
+                  <R6Page />
+                ) : tab === 'bf' ? (
+                  <BFPage />
+                ) : (
+                  <Cs2Page />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </>
+        )}
+      </div>
+    </section>
+  )
+}
