@@ -11,7 +11,6 @@ import {
   StickyNote,
   Plus,
   Trash2,
-  BarChart3,
   Film,
   Lock,
   Upload,
