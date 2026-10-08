@@ -12,6 +12,12 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
 
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "{historico-*.html,server/data/*.json}"
+    }
+  },
+
   "headers": [
     {
       "source": "/assets/(.*)",
