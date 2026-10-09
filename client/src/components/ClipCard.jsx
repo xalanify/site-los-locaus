@@ -9,10 +9,12 @@ import {
   Lock,
   X,
   Gamepad2,
+  Pencil,
+  Loader2,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import { authHeaders, mmss } from '../lib/auth'
-import { gameLabel } from '../data/clipGames'
+import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 
 const fmtDate = (iso) => {
   if (!iso) return ''
@@ -40,6 +42,13 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
   const [replyTo, setReplyTo] = useState(null)
   const [busy, setBusy] = useState(false)
   const videoRef = useRef(null)
+
+  // edição (só para o dono do clip)
+  const [editando, setEditando] = useState(false)
+  const [novoTitulo, setNovoTitulo] = useState('')
+  const [novoJogo, setNovoJogo] = useState('')
+  const [errEdit, setErrEdit] = useState('')
+  const [salvando, setSalvando] = useState(false)
 
   useEffect(() => setC(clip), [clip])
 
@@ -186,6 +195,40 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
     }
   }
 
+  /* ---- editar (só o dono) ---- */
+  const abrirEdicao = () => {
+    setNovoTitulo(c.title)
+    setNovoJogo(c.game || '')
+    setErrEdit('')
+    setEditando(true)
+  }
+
+  const guardarEdicao = async () => {
+    if (salvando) return
+    const t = novoTitulo.trim()
+    if (!t) return setErrEdit('O título não pode ficar vazio.')
+    setSalvando(true)
+    setErrEdit('')
+    try {
+      const res = await fetch(`/api/clips/${c.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ title: t, game: novoJogo || undefined }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setErrEdit((data && data.error) || 'Não consegui guardar as alterações.')
+        return
+      }
+      update({ ...c, ...data })
+      setEditando(false)
+    } catch {
+      setErrEdit('Sem rede — tenta outra vez.')
+    } finally {
+      setSalvando(false)
+    }
+  }
+
   const removeClip = async () => {
     if (!window.confirm('Eliminar este clip?')) return
     try {
@@ -276,21 +319,81 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
           </span>
         )}
         {c.mine && (
-          <button
-            onClick={removeClip}
-            title="Eliminar clip"
-            className={`${
-              c.visibility === 'private' ? '' : 'ml-auto'
-            } rounded-full p-2 text-gray-500 transition-colors hover:bg-red-500/15 hover:text-red-400`}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <div className={`flex items-center gap-1 ${c.visibility === 'private' ? '' : 'ml-auto'}`}>
+            {!editando && (
+              <button
+                onClick={abrirEdicao}
+                title="Editar clip"
+                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-orange-500/15 hover:text-orange-400"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={removeClip}
+              title="Eliminar clip"
+              className="rounded-full p-2 text-gray-500 transition-colors hover:bg-red-500/15 hover:text-red-400"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         )}
       </div>
 
       {/* Título + vídeo */}
       <div className="px-4 pt-3">
-        <h3 className="font-bold text-white">{c.title}</h3>
+        {editando ? (
+          <div className="rounded-xl bg-white/5 p-3">
+            <input
+              value={novoTitulo}
+              onChange={(e) => setNovoTitulo(e.target.value)}
+              maxLength={100}
+              placeholder="Título do clip"
+              className="w-full rounded-lg bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+            />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <select
+                value={novoJogo}
+                onChange={(e) => setNovoJogo(e.target.value)}
+                className="rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+              >
+                {!novoJogo && (
+                  <option value="" className="bg-neutral-900">
+                    Escolher jogo…
+                  </option>
+                )}
+                {CLIP_GAMES.map((g) => (
+                  <option key={g.id} value={g.id} className="bg-neutral-900">
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={guardarEdicao}
+                disabled={salvando}
+                className="ml-auto flex items-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+              >
+                {salvando ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> A guardar…
+                  </>
+                ) : (
+                  'Guardar'
+                )}
+              </button>
+              <button
+                onClick={() => setEditando(false)}
+                disabled={salvando}
+                className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold text-gray-300 hover:bg-white/20 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+            </div>
+            {errEdit && <p className="mt-2 text-xs font-bold text-red-400">{errEdit}</p>}
+          </div>
+        ) : (
+          <h3 className="font-bold text-white">{c.title}</h3>
+        )}
         <video
           ref={videoRef}
           src={c.url}

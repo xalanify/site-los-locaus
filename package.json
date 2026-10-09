@@ -1,5 +1,5 @@
 {
-  "name": "site-los-locaus",
+  "name": "locaus",
   "version": "1.0.0",
   "private": true,
   "description": "Site Los Locaus — a API Express corre como função da Vercel",

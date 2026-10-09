@@ -231,6 +231,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [clips, setClips] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('todos')
+  const [jogo, setJogo] = useState('') // filtro por jogo ('' = todos)
   const [showForm, setShowForm] = useState(false)
 
   // lista lateral de membros (online/offline + pesquisa)
@@ -631,11 +632,12 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     }
     if (graph) graph.monitor.gain.value = 0
 
-    /* Qualidade inicial: se o original é muito pesado para o limite,
-       já se grava com menos resolução e menos imagens/segundo. */
+    /* Qualidade inicial: 60 fps (para o corte ficar igual ao original).
+       Se o original é muito pesado para o limite, já se grava com
+       menos resolução — os fps só descem nas tentativas seguintes. */
     const ratio = bitrateOrig > 0 ? (MAXB * 0.75 * 8) / (bitrateOrig * Math.max(sel, 1)) : 1
     let escala = ratio >= 1 ? 1 : Math.max(0.3, Math.min(1, Math.sqrt(ratio)))
-    let fps = ratio < 0.35 ? 24 : 30
+    let fps = 60
 
     /* Grava o trecho escolhido (em tempo real) com a qualidade dada */
     const gravar = async (qEscala, qFps, tentativa) => {
@@ -731,12 +733,15 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
     try {
       let blob = null
+      let fpsUsado = fps
       for (let tent = 1; tent <= 3; tent++) {
+        fpsUsado = fps
         blob = await gravar(escala, fps, tent)
         if (blob.size <= MAXB || tent === 3) break
         // ficou acima do limite: volta a gravar com menos resolução
         escala = Math.max(0.25, escala * 0.6)
-        fps = Math.min(fps, 24)
+        // só aqui os fps descem (é o que mais poupa espaço)
+        fps = tent === 1 ? 30 : 24
       }
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
@@ -758,7 +763,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       )
       setStartStr('0:00')
       onPick(novo)
-      setNota(`Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}).`)
+      setNota(`Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}, ${fpsUsado} fps).`)
     } catch {
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
@@ -767,11 +772,21 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   }
 
   const filtered = clips.filter((c) => {
-    if (tab === 'publicos') return c.visibility === 'public'
-    if (tab === 'meus') return c.mine
-    if (tab === 'guardados') return c.saved
+    if (tab === 'publicos' && c.visibility !== 'public') return false
+    if (tab === 'meus' && !c.mine) return false
+    if (tab === 'guardados' && !c.saved) return false
+    if (jogo && c.game !== jogo) return false
     return true
   })
+
+  // jogos que já têm clips (para o filtro não ficar cheio de opções vazias)
+  const jogosComClips = []
+  for (const c of clips) {
+    if (c.game && !jogosComClips.some((j) => j.id === c.game)) {
+      jogosComClips.push({ id: c.game, label: gameLabel(c.game) })
+    }
+  }
+  jogosComClips.sort((a, b) => a.label.localeCompare(b.label, 'pt'))
 
   const shownMembers = members.filter((m) =>
     m.username.toLowerCase().includes(query.trim().toLowerCase()),
@@ -791,12 +806,14 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     </button>
   )
 
-  const emptyMsg = {
-    todos: 'Ainda não há clips.',
-    publicos: 'Ainda não há clips públicos.',
-    meus: 'Ainda não publicaste clips.',
-    guardados: 'Ainda não guardaste clips.',
-  }[tab]
+  const emptyMsg = jogo
+    ? `Ainda não há clips de ${gameLabel(jogo)}.`
+    : {
+        todos: 'Ainda não há clips.',
+        publicos: 'Ainda não há clips públicos.',
+        meus: 'Ainda não publicaste clips.',
+        guardados: 'Ainda não guardaste clips.',
+      }[tab]
 
   return (
     <section className="min-h-screen px-4 pb-20 pt-28 sm:px-6">
@@ -1050,8 +1067,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         {trimming
                           ? 'A cortar…'
                           : over
-                            ? `Cortar para caber (${saidaMB} MB)`
-                            : `Cortar vídeo (${saidaMB} MB)`}
+                            ? `Cortar para caber (${saidaMB} MB, 60 fps)`
+                            : `Cortar vídeo (${saidaMB} MB, 60 fps)`}
                       </button>
                     </div>
 
@@ -1084,7 +1101,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
                     <p className="mt-2 text-[11px] text-gray-500">
                       O corte é feito aqui no browser e não envia nada para o site: fica só o
-                      trecho escolhido, com um tamanho que cabe nos {maxMB} MB.
+                      trecho escolhido, a 60 fps e com um tamanho que cabe nos {maxMB} MB.
                     </p>
                   </div>
                 )}
@@ -1156,9 +1173,34 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             </div>
           )}
 
-          {/* Filtros */}
-          <div className="mb-5 flex flex-wrap gap-2">
+          {/* Filtros (aba + jogo) */}
+          <div className="mb-5 flex flex-wrap items-center gap-2">
             {TABS.filter((t) => user || (t.id !== 'meus' && t.id !== 'guardados')).map(tabChip)}
+            {jogosComClips.length > 0 && (
+              <label className="ml-auto flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-gray-300 focus-within:bg-white/20">
+                <Gamepad2 className="h-4 w-4 text-orange-400" />
+                <select
+                  value={jogo}
+                  onChange={(e) => setJogo(e.target.value)}
+                  title="Filtrar por jogo"
+                  className="cursor-pointer bg-transparent text-sm font-bold text-gray-200 outline-none"
+                >
+                  <option value="" className="bg-neutral-900">
+                    Todos os jogos
+                  </option>
+                  {jogosComClips.map((g) => (
+                    <option key={g.id} value={g.id} className="bg-neutral-900">
+                      {g.label}
+                    </option>
+                  ))}
+                  {jogo && !jogosComClips.some((g) => g.id === jogo) && (
+                    <option value={jogo} className="bg-neutral-900">
+                      {gameLabel(jogo)}
+                    </option>
+                  )}
+                </select>
+              </label>
+            )}
           </div>
 
           {/* Lista */}

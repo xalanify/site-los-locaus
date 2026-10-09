@@ -562,6 +562,53 @@ router.get('/:id/download', attachAuth, async (req, res) => {
 });
 
 // Eliminar clip (dono ou admin) — e ficheiro
+/* Editar um clip (título, jogo e visibilidade) — só o dono ou o admin */
+router.patch('/:id', attachAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    const id = Number(req.params.id);
+    const clip = await db.prepare('SELECT * FROM clips WHERE id = ?').get(id);
+    if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
+
+    const auth = req.auth;
+    if (!auth || !(auth.admin || (auth.uid && Number(clip.user_id) === auth.uid))) {
+      return res.status(403).json({ error: 'Sem permissões' });
+    }
+
+    const b = req.body || {};
+    const title =
+      b.title === undefined ? clip.title : String(b.title).trim().slice(0, 100);
+    if (!title) return res.status(400).json({ error: 'Título em falta' });
+
+    // o jogo só é validado quando é enviado (há clips antigos sem jogo)
+    let game = clip.game;
+    if (b.game !== undefined) {
+      game = String(b.game).trim().toLowerCase();
+      if (!CLIP_GAME_IDS.has(game)) {
+        return res.status(400).json({ error: 'Escolhe um jogo válido.' });
+      }
+    }
+
+    const visibility =
+      b.visibility === undefined
+        ? clip.visibility
+        : b.visibility === 'private'
+          ? 'private'
+          : 'public';
+
+    await db
+      .prepare('UPDATE clips SET title = ?, game = ?, visibility = ? WHERE id = ?')
+      .run(title, game, visibility, id);
+
+    const row = await db.prepare(SELECT_SQL + ' WHERE c.id = ?').get(id);
+    if (!row) return res.status(500).json({ error: 'Erro ao guardar' });
+    res.json((await decorate(db, [row], auth))[0]);
+  } catch (error) {
+    console.error('Erro clip PATCH:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 router.delete('/:id', attachAuth, async (req, res) => {
   try {
     const db = getDb();
