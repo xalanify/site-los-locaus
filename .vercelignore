@@ -1,0 +1,21 @@
+# O que NÃO sobe para a Vercel (o CLI usa este ficheiro em vez do .gitignore).
+# Principal: o server/.env tem segredos (Supabase, SMTP) — em produção as
+# variáveis vêm do dashboard da Vercel, não do ficheiro.
+
+node_modules
+**/node_modules
+.vercel
+**/.vercel
+
+# segredos locais
+.env
+**/.env
+
+# construído na Vercel durante o build
+client/dist
+**/*.log
+
+# ficheiros de teste e lixo local
+_check*.html
+.tmp
+**/.tmp
