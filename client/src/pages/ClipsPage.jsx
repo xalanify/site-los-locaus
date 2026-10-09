@@ -13,6 +13,8 @@ import {
   Gamepad2,
   Calendar,
   Award,
+  Scissors,
+  AlertTriangle,
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
@@ -26,6 +28,24 @@ const TABS = [
   { id: 'meus', label: 'Meus' },
   { id: 'guardados', label: 'Guardados' },
 ]
+
+/* Tamanho máximo de um clip (o servidor manda o valor certo em
+   /api/clips/limits — o Supabase Storage também tem um limite próprio). */
+const DEFAULT_MAX_MB = 50
+
+/* codecs possíveis para gravar o corte (o melhor primeiro) */
+const MIMES = [
+  'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+  'video/mp4',
+  'video/webm;codecs=vp9,opus',
+  'video/webm;codecs=vp8,opus',
+  'video/webm',
+]
+
+const pickMime = () => {
+  if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return null
+  return MIMES.find((m) => MediaRecorder.isTypeSupported(m)) || null
+}
 
 /* ============================================================
    Perfil público de um membro — contas de jogo, distinções
@@ -230,8 +250,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [visibility, setVisibility] = useState('public')
   const [progress, setProgress] = useState(-1)
   const [error, setError] = useState('')
+  const [maxMB, setMaxMB] = useState(DEFAULT_MAX_MB)
+  const [trimming, setTrimming] = useState(null) // { done, total } enquanto corta
+  const [nota, setNota] = useState('') // aviso depois de cortar
   const previewRef = useRef(null)
   const fileRef = useRef(null)
+  const audioRef = useRef(null) // grafo de áudio usado no corte
+  const previewingRef = useRef(false) // "ver só o trecho" em curso
 
   const load = async () => {
     setLoading(true)
@@ -262,6 +287,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   useEffect(() => {
     load()
     loadMembers()
+    // limite real de tamanho (o servidor decide)
+    fetch('/api/clips/limits')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.maxMB) setMaxMB(Number(d.maxMB))
+      })
+      .catch(() => {})
     const t = setInterval(loadMembers, 30000)
     return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -298,24 +330,53 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     setVisibility('public')
     setProgress(-1)
     setError('')
+    setTrimming(null)
+    setNota('')
     if (fileRef.current) fileRef.current.value = ''
   }
 
   const onPick = (f) => {
     if (!f) return
     if (preview) URL.revokeObjectURL(preview)
+    previewingRef.current = false
     setFile(f)
     setDuration(null)
+    setStartStr('0:00')
     setEndStr('')
+    setNota('')
     setPreview(URL.createObjectURL(f))
   }
 
   const onPreviewMeta = () => {
     const v = previewRef.current
-    if (v && Number.isFinite(v.duration)) {
-      setDuration(v.duration)
-      setEndStr(mmss(v.duration))
+    if (!v) return
+    const aplicar = () => {
+      if (Number.isFinite(v.duration) && v.duration > 0) {
+        setDuration(v.duration)
+        setEndStr(mmss(v.duration))
+      }
     }
+    if (Number.isFinite(v.duration) && v.duration > 0) return aplicar()
+    // WebM gravado no browser vem sem duração no cabeçalho —
+    // obrigamos o browser a calculá-la (truque do seek gigante)
+    const onDur = () => {
+      if (Number.isFinite(v.duration) && v.duration > 0) {
+        v.removeEventListener('durationchange', onDur)
+        try {
+          v.currentTime = 0
+        } catch {
+          /* nada */
+        }
+        aplicar()
+      }
+    }
+    v.addEventListener('durationchange', onDur)
+    try {
+      v.currentTime = 1e101
+    } catch {
+      /* nada */
+    }
+    setTimeout(onDur, 4000)
   }
 
   const submit = () => {
@@ -324,6 +385,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     if (!trimmed) return setError('Dá um título ao clip.')
     if (!game) return setError('Escolhe o jogo do clip.')
     if (!file) return setError('Escolhe um vídeo.')
+    // tamanho — avisa aqui em vez de esperar pelo erro do servidor
+    if (file.size > maxMB * 1048576) {
+      const agora = Math.round((file.size / 1048576) * 10) / 10
+      return setError(
+        `O vídeo tem ${agora} MB e o limite é ${maxMB} MB — corta o vídeo para ficar abaixo.`,
+      )
+    }
     const start = parseTime(startStr) ?? 0
     const end = endStr.trim() ? parseTime(endStr) : null
     if (endStr.trim() && end == null) return setError('Tempo inválido — usa min:seg (ex.: 1:30).')
@@ -371,6 +439,264 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       setError('Falha no envio — tenta outra vez.')
     }
     xhr.send(file)
+  }
+
+  /* ============================================================
+     Tamanho (MB em tempo real) e corte do vídeo no browser
+     ============================================================ */
+  const MAXB = maxMB * 1048576
+  const sizeMB = file ? Math.round((file.size / 1048576) * 10) / 10 : 0
+  const over = !!file && file.size > MAXB
+  const dur = duration || 0
+  const tA = dur > 0 ? Math.min(Math.max(0, parseTime(startStr) ?? 0), dur) : 0
+  const parsedEnd = endStr.trim() ? parseTime(endStr) : null
+  const tB = dur > 0 ? Math.min(Math.max(0, parsedEnd ?? dur), dur) : 0
+  const sel = Math.max(0, tB - tA)
+  const mbps = file && dur > 0 ? Math.round(((file.size * 8) / dur / 1000000) * 10) / 10 : 0
+  const bitrateOrig = file && dur > 0 ? (file.size * 8) / dur : 0
+  const base = bitrateOrig > 0 ? bitrateOrig : 6000000
+  // alvo: 75% do limite para o vídeo (o resto fica para o áudio e para a margem)
+  const bitrateMax = sel > 0 ? Math.max(300000, (MAXB * 0.75 * 8) / sel - 128000) : Infinity
+  const vbps = Math.round(Math.max(Math.min(500000, base), Math.min(base, bitrateMax)))
+  // sem compressão a fazer, o corte sai com o tamanho do original
+  const aComprimir = bitrateOrig > 0 && bitrateOrig * sel > MAXB * 0.75 * 8
+  const saidaMB =
+    sel > 0
+      ? Math.max(
+          0.1,
+          aComprimir
+            ? Math.round((((vbps + 128000) * sel) / 8 / 1048576) * 10) / 10
+            : Math.round(sizeMB * (sel / dur) * 10) / 10,
+        )
+      : 0
+  const pctBar = file ? Math.min(100, (sizeMB / maxMB) * 100) : 0
+  const corBarra = over ? 'bg-red-500' : pctBar > 80 ? 'bg-orange-500' : 'bg-green-500'
+  const corTexto = over ? 'text-red-400' : pctBar > 80 ? 'text-orange-400' : 'text-green-400'
+
+  /* espera o vídeo chegar a um instante concreto */
+  const seekTo = (v, t) =>
+    new Promise((resolve) => {
+      let feito = false
+      const ok = () => {
+        if (feito) return
+        feito = true
+        v.removeEventListener('seeked', ok)
+        resolve()
+      }
+      v.addEventListener('seeked', ok)
+      try {
+        v.currentTime = t
+      } catch {
+        ok()
+      }
+      setTimeout(ok, 4000)
+    })
+
+  /* Grafo de áudio: manda o som do vídeo para o gravador sem
+     o fazer soar em voz alta durante o corte. */
+  const audioGraph = (v) => {
+    if (audioRef.current && audioRef.current.el === v) return audioRef.current
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext
+      if (!AC || !v) return null
+      if (audioRef.current) {
+        try {
+          audioRef.current.ctx.close()
+        } catch {
+          /* já fechado */
+        }
+      }
+      const ctx = new AC()
+      const src = ctx.createMediaElementSource(v)
+      const dest = ctx.createMediaStreamDestination()
+      const monitor = ctx.createGain()
+      monitor.gain.value = 1
+      src.connect(dest)
+      src.connect(monitor)
+      monitor.connect(ctx.destination)
+      audioRef.current = { el: v, ctx, dest, monitor }
+      return audioRef.current
+    } catch {
+      return null
+    }
+  }
+
+  /* ver só o trecho escolhido (sem cortar nada) */
+  const playSelection = async () => {
+    const v = previewRef.current
+    if (!v || sel < 0.3) return
+    previewingRef.current = true
+    await seekTo(v, tA)
+    try {
+      await v.play()
+    } catch {
+      previewingRef.current = false
+    }
+  }
+
+  const onTimeUpdate = () => {
+    const v = previewRef.current
+    if (!v || !previewingRef.current) return
+    if (v.currentTime >= tB - 0.05) {
+      v.pause()
+      previewingRef.current = false
+    }
+  }
+
+  /* Corta o vídeo no browser (grava o trecho escolhido) e troca o
+     ficheiro pelo cortado — sai com o tamanho que couber no limite. */
+  const cutVideo = async () => {
+    const v = previewRef.current
+    if (!file || !v) return
+    if (typeof MediaRecorder === 'undefined') {
+      return setError('Este browser não sabe cortar vídeos — usa Chrome ou Edge.')
+    }
+    if (sel < 0.4) return setError('O trecho tem de ter pelo menos meio segundo.')
+    setError('')
+    setNota('')
+
+    const mime = pickMime()
+    const graph = audioGraph(v)
+    try {
+      if (graph) await graph.ctx.resume()
+    } catch {
+      /* segue sem áudio */
+    }
+    if (graph) graph.monitor.gain.value = 0
+
+    /* Qualidade inicial: se o original é muito pesado para o limite,
+       já se grava com menos resolução e menos imagens/segundo. */
+    const ratio = bitrateOrig > 0 ? (MAXB * 0.75 * 8) / (bitrateOrig * Math.max(sel, 1)) : 1
+    let escala = ratio >= 1 ? 1 : Math.max(0.3, Math.min(1, Math.sqrt(ratio)))
+    let fps = ratio < 0.35 ? 24 : 30
+
+    /* Grava o trecho escolhido (em tempo real) com a qualidade dada */
+    const gravar = async (qEscala, qFps, tentativa) => {
+      const vw = v.videoWidth || 1280
+      const vh = v.videoHeight || 720
+      const cw = Math.max(160, Math.round((vw * qEscala) / 2) * 2)
+      const ch = Math.max(90, Math.round((vh * qEscala) / 2) * 2)
+      const out = document.createElement('canvas')
+      out.width = cw
+      out.height = ch
+      const ctxOut = out.getContext('2d')
+
+      let stream = null
+      let rec = null
+      try {
+        const cvStream = out.captureStream(qFps)
+        stream = new MediaStream(cvStream.getVideoTracks())
+        if (graph) graph.dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t))
+        rec = new MediaRecorder(
+          stream,
+          mime ? { mimeType: mime, videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 } : undefined,
+        )
+      } catch {
+        if (stream) stream.getTracks().forEach((t) => t.stop())
+        throw new Error('Gravação indisponível')
+      }
+
+      const chunks = []
+      rec.ondataavailable = (e) => {
+        if (e.data && e.data.size) chunks.push(e.data)
+      }
+      const terminou = new Promise((res) => {
+        rec.onstop = res
+      })
+
+      previewingRef.current = false
+      try {
+        v.pause()
+      } catch {
+        /* nada */
+      }
+      // espera o vídeo estar pronto a dar imagem
+      if (v.readyState < 2) {
+        await new Promise((res) => {
+          v.addEventListener('loadeddata', res, { once: true })
+          setTimeout(res, 5000)
+        })
+      }
+      setTrimming({ done: 0, total: sel, tentativa })
+      await seekTo(v, tA)
+
+      let deveParar = false
+      let rafDraw = 0
+      const desenhar = () => {
+        if (deveParar) return
+        try {
+          ctxOut.drawImage(v, 0, 0, cw, ch)
+        } catch {
+          /* frame perdido */
+        }
+        rafDraw = requestAnimationFrame(desenhar)
+      }
+
+      rec.start(250)
+      await new Promise((resolve) => {
+        const t0 = Date.now()
+        const limite = (sel + 6) * 1000 // rede de segurança se o vídeo travar
+        const tick = () => {
+          const feito = Math.max(0, Math.min(sel, v.currentTime - tA))
+          setTrimming({ done: feito, total: sel, tentativa })
+          if (v.currentTime >= tB - 0.04 || v.ended || Date.now() - t0 > limite) resolve()
+          else requestAnimationFrame(tick)
+        }
+        desenhar()
+        v.play()
+          .then(() => requestAnimationFrame(tick))
+          .catch(() => resolve())
+      })
+
+      deveParar = true
+      if (rafDraw) cancelAnimationFrame(rafDraw)
+      try {
+        v.pause()
+      } catch {
+        /* nada */
+      }
+      if (rec.state !== 'inactive') rec.stop()
+      await terminou
+      if (stream) stream.getTracks().forEach((t) => t.stop())
+      const type = (rec.mimeType || 'video/webm').split(';')[0]
+      return new Blob(chunks, { type })
+    }
+
+    try {
+      let blob = null
+      for (let tent = 1; tent <= 3; tent++) {
+        blob = await gravar(escala, fps, tent)
+        if (blob.size <= MAXB || tent === 3) break
+        // ficou acima do limite: volta a gravar com menos resolução
+        escala = Math.max(0.25, escala * 0.6)
+        fps = Math.min(fps, 24)
+      }
+      if (graph) graph.monitor.gain.value = 1
+      setTrimming(null)
+      if (!blob || !blob.size) return setError('O corte não deu resultado — tenta outra vez.')
+
+      const ficou = Math.round((blob.size / 1048576) * 10) / 10
+      if (blob.size > MAXB) {
+        return setError(
+          `Mesmo a reduzir a qualidade ficou em ${ficou} MB (limite ${maxMB} MB) — escolhe menos segundos do vídeo.`,
+        )
+      }
+
+      const type = blob.type || 'video/webm'
+      const base = (file.name || 'video').replace(/\.[^.]+$/, '').slice(0, 60)
+      const novo = new File(
+        [blob],
+        base + '-cortado' + (type.indexOf('mp4') >= 0 ? '.mp4' : '.webm'),
+        { type },
+      )
+      setStartStr('0:00')
+      onPick(novo)
+      setNota(`Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}).`)
+    } catch {
+      if (graph) graph.monitor.gain.value = 1
+      setTrimming(null)
+      return setError('Não consegui cortar este vídeo neste browser.')
+    }
   }
 
   const filtered = clips.filter((c) => {
@@ -482,16 +808,19 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   >
                     <Upload className="h-7 w-7" />
                     <span className="text-sm font-bold">Escolher vídeo</span>
-                    <span className="text-xs text-gray-500">MP4, WebM ou MOV · máx. 150 MB</span>
+                    <span className="text-xs text-gray-500">
+                      MP4, WebM ou MOV · máx. {maxMB} MB
+                    </span>
                   </button>
                 ) : (
                   <div>
                     <video
                       ref={previewRef}
                       src={preview}
-                      controls
+                      controls={!trimming}
                       preload="metadata"
                       onLoadedMetadata={onPreviewMeta}
+                      onTimeUpdate={onTimeUpdate}
                       className="max-h-72 w-full rounded-xl bg-black"
                     />
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
@@ -515,6 +844,43 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   className="hidden"
                   onChange={(e) => onPick(e.target.files && e.target.files[0])}
                 />
+
+                {/* tamanho do vídeo em tempo real (MB / limite) */}
+                {file && (
+                  <div className="rounded-xl bg-black/30 p-3">
+                    <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1 text-xs font-bold">
+                      <span className="text-gray-300">
+                        Tamanho:{' '}
+                        <span className={corTexto}>{sizeMB} MB</span> / {maxMB} MB
+                      </span>
+                      <span className={corTexto}>
+                        {over
+                          ? `${Math.round(sizeMB - maxMB)} MB acima do limite`
+                          : `usamos ${Math.round(pctBar)}% do limite`}
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className={`h-full rounded-full transition-all ${corBarra}`}
+                        style={{ width: `${pctBar}%` }}
+                      />
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
+                      {duration != null && <span>Duração {mmss(duration)}</span>}
+                      {mbps > 0 && <span>≈ {mbps} Mbps</span>}
+                      <span className={over ? 'font-bold text-red-400' : ''}>
+                        {over
+                          ? 'Corta o vídeo (em baixo) até caber.'
+                          : 'Cabe no limite — podes publicar.'}
+                      </span>
+                    </div>
+                    {nota && (
+                      <p className="mt-1.5 rounded-lg bg-green-500/10 px-2.5 py-1.5 text-[11px] font-bold text-green-400">
+                        {nota}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* corte do trecho */}
                 <div className="grid grid-cols-2 gap-3">
@@ -541,6 +907,120 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                     />
                   </label>
                 </div>
+
+                {/* cortador — vê-se os MB em tempo real e corta aqui mesmo */}
+                {preview && dur > 0 && (
+                  <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
+                      <span className="flex items-center gap-1.5 text-xs font-bold uppercase text-gray-400">
+                        <Scissors className="h-4 w-4 text-orange-400" /> Cortar o vídeo
+                      </span>
+                      <span className="text-xs font-bold text-white">
+                        {mmss(tA)} → {mmss(tB)} · {mmss(sel)} · ≈{' '}
+                        <span className={over ? 'text-red-400' : 'text-orange-400'}>
+                          {saidaMB} MB
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block">
+                        <span className="mb-1 flex items-center justify-between text-[11px] text-gray-500">
+                          <span>Início</span>
+                          <span className="font-bold text-orange-300">{mmss(tA)}</span>
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={dur}
+                          step={1}
+                          value={tA}
+                          disabled={!!trimming}
+                          onChange={(e) => {
+                            const val = Number(e.target.value)
+                            setStartStr(mmss(val))
+                            if (val >= tB) setEndStr(mmss(Math.min(dur, val + 1)))
+                          }}
+                          className="w-full accent-orange-500"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 flex items-center justify-between text-[11px] text-gray-500">
+                          <span>Fim</span>
+                          <span className="font-bold text-orange-300">{mmss(tB)}</span>
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={dur}
+                          step={1}
+                          value={tB}
+                          disabled={!!trimming}
+                          onChange={(e) => {
+                            const val = Number(e.target.value)
+                            if (val <= tA) setStartStr(mmss(Math.max(0, val - 1)))
+                            setEndStr(mmss(val))
+                          }}
+                          className="w-full accent-orange-500"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        onClick={playSelection}
+                        disabled={!!trimming}
+                        className="rounded-full bg-white/10 px-3.5 py-2 text-xs font-bold text-gray-200 hover:bg-white/20 disabled:opacity-40"
+                      >
+                        Ver só o trecho
+                      </button>
+                      <button
+                        onClick={cutVideo}
+                        disabled={!!trimming}
+                        className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40"
+                      >
+                        <Scissors className="h-3.5 w-3.5" />
+                        {trimming
+                          ? 'A cortar…'
+                          : over
+                            ? `Cortar para caber (${saidaMB} MB)`
+                            : `Cortar vídeo (${saidaMB} MB)`}
+                      </button>
+                    </div>
+
+                    {trimming && (
+                      <div className="mt-3">
+                        <div className="mb-1 flex justify-between text-[11px] font-bold text-orange-300">
+                          <span>
+                            A cortar em tempo real…
+                            {trimming.tentativa > 1 ? ` (tentativa ${trimming.tentativa}/3)` : ''}
+                          </span>
+                          <span>
+                            {mmss(trimming.done)} / {mmss(trimming.total)} (
+                            {Math.round((trimming.done / Math.max(0.01, trimming.total)) * 100)}%)
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-orange-500 transition-all"
+                            style={{
+                              width: `${Math.min(100, (trimming.done / Math.max(0.01, trimming.total)) * 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="mt-1.5 text-[11px] text-gray-500">
+                          Deixa esta aba aberta — o vídeo tem de correr todo o trecho para ser
+                          cortado (dura {mmss(sel)}) e o som não é reproduzido.
+                        </p>
+                      </div>
+                    )}
+
+                    <p className="mt-2 text-[11px] text-gray-500">
+                      O corte é feito aqui no browser e não envia nada para o site: fica só o
+                      trecho escolhido, com um tamanho que cabe nos {maxMB} MB.
+                    </p>
+                  </div>
+                )}
 
                 {/* visibilidade */}
                 <div className="flex flex-wrap gap-2">

@@ -9,7 +9,11 @@ const router = express.Router();
 
 const BUCKET = 'clips';
 
-const MAX_BYTES = 150 * 1024 * 1024; // 150 MB (o Vercel corta aos 4,5 MB — ver nota)
+/* Tamanho máximo de um clip.
+   O Supabase Storage tem limite próprio (por omissão 50 MB) — se
+   aumentares no dashboard, sobe aqui também (CLIP_MAX_MB no .env). */
+const MAX_MB = Math.max(1, Number(process.env.CLIP_MAX_MB) || 50);
+const MAX_BYTES = MAX_MB * 1024 * 1024;
 const EXT_BY_TYPE = {
   'video/mp4': '.mp4',
   'video/webm': '.webm',
@@ -178,6 +182,11 @@ router.get('/latest', attachAuth, async (req, res) => {
   }
 });
 
+// Tamanho máximo de um clip (o cliente usa para mostrar os MB e cortar)
+router.get('/limits', (req, res) => {
+  res.json({ maxMB: MAX_MB });
+});
+
 // Streaming/redirecionamento de um clip privado
 router.get('/:id/stream', attachAuth, async (req, res) => {
   try {
@@ -226,7 +235,7 @@ router.post(
         return res.status(400).json({ error: 'Vídeo em falta' });
       }
       if (req.body.length > MAX_BYTES) {
-        return res.status(413).json({ error: 'Vídeo demasiado grande (máx. 150 MB).' });
+        return res.status(413).json({ error: `Vídeo demasiado grande (máx. ${MAX_MB} MB).` });
       }
 
       // utilizador normal → o próprio; admin → conta interna "admin"
@@ -259,6 +268,11 @@ router.post(
       res.json((await decorate(db, [row], req.auth))[0]);
     } catch (error) {
       console.error('Erro clips POST:', error.message);
+      if (/413|EntityTooLarge|maximum allowed|Payload too large/i.test(error.message || '')) {
+        return res
+          .status(413)
+          .json({ error: `O vídeo não passou — o limite é de ${MAX_MB} MB. Corta o vídeo.` });
+      }
       res.status(500).json({ error: 'Erro ao guardar o clip.' });
     }
   },
@@ -267,7 +281,7 @@ router.post(
 // Erros próprios deste router (ex.: vídeo acima do limite)
 router.use((err, req, res, next) => {
   if (err && err.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'Vídeo demasiado grande (máx. 150 MB).' });
+    return res.status(413).json({ error: `Vídeo demasiado grande (máx. ${MAX_MB} MB).` });
   }
   next(err);
 });

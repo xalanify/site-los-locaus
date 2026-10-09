@@ -7,7 +7,7 @@ const { validateEmail } = require('../emailValidate');
 const router = express.Router();
 
 /* Distinções possíveis (tem de coincidir com o cliente) */
-const VALID_BADGES = ['dev', 'top1', 'jogador', 'mod', 'og', 'lenda'];
+const VALID_BADGES = ['dev', 'top1', 'jogador'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');

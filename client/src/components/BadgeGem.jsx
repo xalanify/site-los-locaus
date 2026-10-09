@@ -4,14 +4,11 @@
    com a sua cor e um efeito animado. Arte própria.
 
    - DEV .............. vermelho brilhante (legenda branca→vermelha)
-   - TOP 1 KILL DE CS . laranja com brilho a passar
+   - TOP 1 KILL DE CS . laranja com brilho a passar (sem descrição)
    - JOGADOR DO CANAL . roxo a flutuar
-   - MODERADOR ........ azul com halo a pulsar
-   - MEMBRO OG ........ dourado com brilho a passar
-   - LENDA DO CANAL ... verde a flutuar
 
    Sem cadeados e sem estados (desbloqueada/por ganhar): só o
-   nome e uma descrição curta do que significa.
+   nome (e a descrição curta, quando existe).
    ============================================================ */
 
 export const BADGES = [
@@ -27,7 +24,7 @@ export const BADGES = [
   {
     id: 'top1',
     label: 'TOP 1 KILL DE CS',
-    desc: 'Melhor kill da época em CS2',
+    desc: '',
     color: '#F97316',
     light: '#FFC084',
     dark: '#7A2A08',
@@ -40,33 +37,6 @@ export const BADGES = [
     color: '#8B5CF6',
     light: '#CBB7FF',
     dark: '#3B1480',
-    anim: 'float',
-  },
-  {
-    id: 'mod',
-    label: 'MODERADOR',
-    desc: 'Ajuda a cuidar da comunidade',
-    color: '#3B82F6',
-    light: '#A5CCFF',
-    dark: '#0B2E63',
-    anim: 'pulse',
-  },
-  {
-    id: 'og',
-    label: 'MEMBRO OG',
-    desc: 'No site desde o primeiro dia',
-    color: '#FBBF24',
-    light: '#FFE7A3',
-    dark: '#7A4A02',
-    anim: 'shine',
-  },
-  {
-    id: 'lenda',
-    label: 'LENDA DO CANAL',
-    desc: 'Marcou a história do canal',
-    color: '#10B981',
-    light: '#A7F3E0',
-    dark: '#04543C',
     anim: 'float',
   },
 ]
@@ -196,7 +166,9 @@ export function BadgeTile({ badge, size = 54 }) {
       >
         {badge.label}
       </span>
-      <span className="text-[10px] font-semibold leading-tight text-gray-400">{badge.desc}</span>
+      {badge.desc ? (
+        <span className="text-[10px] font-semibold leading-tight text-gray-400">{badge.desc}</span>
+      ) : null}
     </div>
   )
 }
