@@ -187,6 +187,107 @@ router.get('/limits', (req, res) => {
   res.json({ maxMB: MAX_MB });
 });
 
+/* ============================================================
+   Subida direta ao Supabase: o browser pede a URL de subida
+   assinada, sobe o vídeo sozinho e só depois o servidor guarda
+   a linha na BD. Assim os vídeos não passam pelo servidor (no
+   Vercel os corpos grandes são cortados) e o limite de tamanho
+   deixa de ser o do servidor — fica o do Supabase.
+   ============================================================ */
+function metaFromQuery(q) {
+  const visibility = q.visibility === 'private' ? 'private' : 'public';
+  const start = Math.max(0, Number(q.start) || 0);
+  let end =
+    q.end === undefined || q.end === null || q.end === '' || q.end === 'null'
+      ? null
+      : Number(q.end);
+  if (end != null && (!Number.isFinite(end) || end <= start)) end = null;
+  return { visibility, start, end };
+}
+
+router.post('/upload-url', requireUserOrAdmin, async (req, res) => {
+  try {
+    const title = String(req.query.title || '').trim().slice(0, 100);
+    if (!title) return res.status(400).json({ error: 'Título em falta' });
+
+    const game = String(req.query.game || '').trim().toLowerCase();
+    if (!CLIP_GAME_IDS.has(game)) {
+      return res.status(400).json({ error: 'Escolhe o jogo do clip.' });
+    }
+
+    const ct = String(req.query.type || '')
+      .split(';')[0]
+      .trim()
+      .toLowerCase();
+    const ext = EXT_BY_TYPE[ct];
+    if (!ext) {
+      return res.status(415).json({ error: 'Formato não suportado — usa MP4, WebM ou MOV.' });
+    }
+    if (!storage.isConfigured()) {
+      return res.status(503).json({ error: 'Storage por configurar.' });
+    }
+
+    const file = crypto.randomBytes(16).toString('hex') + ext;
+    const uploadUrl = await storage.signedUploadUrl(BUCKET, file);
+    res.json({ path: file, uploadUrl, maxMB: MAX_MB });
+  } catch (error) {
+    console.error('Erro clips upload-url:', error.message);
+    res.status(500).json({ error: 'Não consegui preparar a subida.' });
+  }
+});
+
+// Depois de o browser subir o vídeo, fica registar a linha
+router.post('/confirm', requireUserOrAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const b = req.body || {};
+
+    const file = String(b.file || '');
+    if (!/^[a-f0-9]{32}\.[a-z0-9]{2,5}$/i.test(file)) {
+      return res.status(400).json({ error: 'Ficheiro inválido.' });
+    }
+    const title = String(b.title || '').trim().slice(0, 100);
+    if (!title) return res.status(400).json({ error: 'Título em falta' });
+
+    const game = String(b.game || '').trim().toLowerCase();
+    if (!CLIP_GAME_IDS.has(game)) {
+      return res.status(400).json({ error: 'Escolhe o jogo do clip.' });
+    }
+
+    // o vídeo tem mesmo de estar no Storage (e dentro do limite)
+    const url = storage.publicUrl(BUCKET, file);
+    const head = await fetch(url, { method: 'HEAD' });
+    if (!head.ok) {
+      return res.status(400).json({ error: 'O vídeo não chegou ao Supabase — tenta outra vez.' });
+    }
+    const bytes = Number(head.headers.get('content-length') || 0);
+    if (bytes > MAX_BYTES) {
+      storage.remove(BUCKET, file).catch(() => {});
+      return res.status(413).json({ error: `Vídeo demasiado grande (máx. ${MAX_MB} MB).` });
+    }
+
+    let uid = req.auth && req.auth.uid;
+    if (!uid && req.auth && req.auth.admin) uid = (await ensureAdminUser(db)).id;
+    if (!uid) return res.status(401).json({ error: 'Inicia sessão para continuares' });
+
+    const meta = metaFromQuery(b);
+    const result = await db
+      .prepare(
+        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
+      )
+      .run(uid, title, game, file, meta.start, meta.end, meta.visibility);
+
+    const row = await db
+      .prepare(SELECT_SQL + ' WHERE c.id = ?')
+      .get(Number(result.lastInsertRowid));
+    if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
+    res.json((await decorate(db, [row], req.auth))[0]);
+  } catch (error) {
+    console.error('Erro clips confirm:', error.message);
+    res.status(500).json({ error: 'Erro ao guardar o clip.' });
+  }
+});
+
 // Streaming/redirecionamento de um clip privado
 router.get('/:id/stream', attachAuth, async (req, res) => {
   try {

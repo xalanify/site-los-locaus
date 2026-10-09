@@ -21,16 +21,19 @@ function publicUrl(bucket, path) {
   return `${SUPA()}/storage/v1/object/public/${bucket}/${path}`;
 }
 
-/** URL de subida assinada — o browser usa esta para enviar o ficheiro. */
+/** URL de subida assinada — o browser usa esta para enviar o ficheiro.
+ *  (o Supabase devolve { url, token }; a url é relativa a /storage/v1) */
 async function signedUploadUrl(bucket, path, { expiresIn = 3600 } = {}) {
-  const res = await fetch(`${SUPA()}/storage/v1/object/sign/${bucket}/${path}`, {
+  const res = await fetch(`${SUPA()}/storage/v1/object/upload/sign/${bucket}/${path}`, {
     method: 'POST',
     headers: headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ expiresIn }),
   });
   if (!res.ok) throw new Error(`Storage sign ${res.status} — ${(await res.text()).slice(0, 140)}`);
   const data = await res.json();
-  return `${SUPA()}${data.signedURL}`;
+  const rel = String(data.url || data.signedURL || '').replace(/^\/storage\/v1/, '');
+  if (!rel) throw new Error('Storage sign sem URL de subida');
+  return `${SUPA()}/storage/v1${rel}`;
 }
 
 /** URL de leitura temporária (clips privados). */

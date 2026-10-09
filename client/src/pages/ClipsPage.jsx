@@ -379,7 +379,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     setTimeout(onDur, 4000)
   }
 
-  const submit = () => {
+  const submit = async () => {
     setError('')
     const trimmed = title.trim()
     if (!trimmed) return setError('Dá um título ao clip.')
@@ -409,6 +409,73 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     })
 
     setProgress(0)
+    // 1) tenta subir direto ao Supabase (o vídeo não passa pelo site)
+    if (await enviarDireto(qs)) return
+    // 2) fallback: envio pelo servidor (servidor local ou vídeos pequenos)
+    enviarPeloServidor(qs)
+  }
+
+  /* O vídeo vai direto do browser para o Supabase: o servidor só
+     dá a URL de subida assinada e guarda o caminho no fim. */
+  const enviarDireto = async (qs) => {
+    try {
+      const res = await fetch(
+        `/api/clips/upload-url?${qs}&type=${encodeURIComponent(file.type || 'video/mp4')}`,
+        { method: 'POST', headers: authHeaders() },
+      )
+      if (!res.ok) return false
+      const d = await res.json()
+      if (!d || !d.uploadUrl || !d.path) return false
+
+      const subido = await new Promise((resolve) => {
+        const x = new XMLHttpRequest()
+        x.open('PUT', d.uploadUrl)
+        x.setRequestHeader('Content-Type', file.type || 'video/mp4')
+        x.setRequestHeader('x-upsert', 'false')
+        x.upload.onprogress = (e) => {
+          if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 90))
+        }
+        x.onload = () => resolve(x.status >= 200 && x.status < 300)
+        x.onerror = () => resolve(false)
+        x.onabort = () => resolve(false)
+        x.send(file)
+      })
+      if (!subido) return false
+
+      setProgress(95)
+      const conf = await fetch('/api/clips/confirm', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file: d.path,
+          title: qs.get('title'),
+          game: qs.get('game'),
+          visibility: qs.get('visibility'),
+          start: qs.get('start'),
+          end: qs.get('end'),
+        }),
+      })
+      if (!conf.ok) {
+        setProgress(-1)
+        const err = await conf.json().catch(() => null)
+        setError((err && err.error) || 'Erro ao guardar o clip.')
+        return true // erro já explicado — não repetir no servidor
+      }
+      const clip = await conf.json()
+      setClips((prev) => [clip, ...prev])
+      resetForm()
+      setShowForm(false)
+      setTab('todos')
+      return true
+    } catch {
+      setProgress(-1)
+      return false
+    }
+  }
+
+  /* Envio antigo (vídeo no corpo do pedido) — usado quando a
+     subida direta não é possível. */
+  const enviarPeloServidor = (qs) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `/api/clips?${qs}`)
     xhr.setRequestHeader('Content-Type', file.type || 'video/mp4')
