@@ -47,6 +47,7 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
   const [editando, setEditando] = useState(false)
   const [novoTitulo, setNovoTitulo] = useState('')
   const [novoJogo, setNovoJogo] = useState('')
+  const [novaVis, setNovaVis] = useState('public')
   const [errEdit, setErrEdit] = useState('')
   const [salvando, setSalvando] = useState(false)
 
@@ -199,6 +200,7 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
   const abrirEdicao = () => {
     setNovoTitulo(c.title)
     setNovoJogo(c.game || '')
+    setNovaVis(c.visibility === 'private' ? 'private' : 'public')
     setErrEdit('')
     setEditando(true)
   }
@@ -213,7 +215,7 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
       const res = await fetch(`/api/clips/${c.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ title: t, game: novoJogo || undefined }),
+        body: JSON.stringify({ title: t, game: novoJogo || undefined, visibility: novaVis }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
@@ -351,11 +353,12 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
               placeholder="Título do clip"
               className="w-full rounded-lg bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
             />
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <select
                 value={novoJogo}
                 onChange={(e) => setNovoJogo(e.target.value)}
-                className="rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+                title="Jogo do clip"
+                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
               >
                 {!novoJogo && (
                   <option value="" className="bg-neutral-900">
@@ -368,10 +371,25 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
                   </option>
                 ))}
               </select>
+              <select
+                value={novaVis}
+                onChange={(e) => setNovaVis(e.target.value)}
+                title="Visibilidade do clip"
+                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+              >
+                <option value="public" className="bg-neutral-900">
+                  Público — vê toda a gente
+                </option>
+                <option value="private" className="bg-neutral-900">
+                  Privado — vês só tu
+                </option>
+              </select>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
               <button
                 onClick={guardarEdicao}
                 disabled={salvando}
-                className="ml-auto flex items-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
               >
                 {salvando ? (
                   <>
@@ -384,7 +402,7 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
               <button
                 onClick={() => setEditando(false)}
                 disabled={salvando}
-                className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold text-gray-300 hover:bg-white/20 disabled:opacity-50"
+                className="flex-1 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold text-gray-300 hover:bg-white/20 disabled:opacity-50"
               >
                 Cancelar
               </button>

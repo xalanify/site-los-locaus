@@ -106,20 +106,14 @@ Site Los Locaus/
 
 ## Domínio (Vercel)
 
-O site vive em `locaus.vercel.app`. Esse endereço vem do **nome do projeto** na
-Vercel, por isso o projeto chama-se `locaus` (o `package.json` também).
+O site vive em **`locaus.vercel.app`** — é o endereço oficial (renomeado em outubro de 2026).
+O projeto na Vercel chama-se `locaus`, tal como o `package.json`.
 
-Se ainda aparecer `site-los-locaus.vercel.app`, só falta mudar o nome do projeto:
-
-1. Na Vercel: **Project Settings** → **General** → **Project Name** → põe `locaus`
-2. Guarda — os novos deploys passam a responder em `locaus.vercel.app`
-3. O link antigo **não é garantido que continue a funcionar** (a Vercel não
-   promete redirect dos endereços antigos), por isso atualiza os favoritos
-
-O projeto mantém o mesmo ID, por isso o Git, os deploys e as variáveis de
-ambiente continuam a funcionar. Se o nome `locaus` já estiver ocupado por
-outra conta, a Vercel recusa o rename — nesse caso usa uma variante
-(ex.: `locaus-site`) ou domínio próprio.
+- O endereço antigo `site-los-locaus.vercel.app` foi **removido** — já não responde
+- Os endereços `*-alexandregumes2017-1990s-projects.vercel.app` são aliases internos da Vercel
+  (criados automaticamente a cada deploy), não são para partilhar
+- Para mudar isto outra vez: `vercel project rename <atual> <novo>` + `vercel alias set <deploy> <novo>.vercel.app`
+  + atualizar `SITE_URL` nas variáveis de ambiente e em `server/.env`
 
 ## Suporte
 
