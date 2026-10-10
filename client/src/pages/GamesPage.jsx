@@ -1365,6 +1365,19 @@ const rankFromRp = (rp) => {
   return { name: `${t.nome} ${ROMANOS[idx]}`, img: rankImg(`${t.slug}-${5 - idx}`) }
 }
 
+/* Rank máximo: vem do tracker (r6.json → maxRank, colhido no perfil
+   de cada jogador — é o melhor rank que a conta já teve, não o do RP
+   das partidas guardadas aqui). Aceita objeto {name, img, rp, season}
+   ou texto antigo; só em último caso se calcula do maior RP. */
+const maxRankDe = (p, rp) => {
+  const m = p.maxRank
+  if (m && typeof m === 'object' && m.name) {
+    return { name: m.name, img: m.img || rankImg(slugDeNome(m.name)), rp: m.rp, season: m.season }
+  }
+  if (typeof m === 'string' && m.trim()) return { name: m, img: rankImg(slugDeNome(m)) }
+  return rankFromRp(rp)
+}
+
 function R6Squad({ players, maxRp = {} }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
@@ -1458,18 +1471,16 @@ function R6Squad({ players, maxRp = {} }) {
               </div>
               <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-black text-orange-300">
                 {(() => {
-                  // rank máximo: o campo manual do r6.json manda; senão
-                  // vem do maior RP atingido nas partidas ranked
-                  const max = p.maxRank
-                    ? { name: p.maxRank, img: rankImg(slugDeNome(p.maxRank)) }
-                    : rankFromRp(maxRp[p.key])
+                  // rank máximo: o melhor que a conta já teve (tracker)
+                  const max = maxRankDe(p, maxRp[p.key])
                   if (!max) return <span className="text-gray-500">Rank máx. · —</span>
+                  const rp = max.rp || maxRp[p.key]
                   return (
                     <>
                       <img
                         src={max.img}
                         alt=""
-                        title={`${max.name}${maxRp[p.key] ? ` · ${fmt(maxRp[p.key])} RP` : ''}`}
+                        title={`${max.name}${rp ? ` · ${rp} RP` : ''}${max.season ? ` · ${max.season}` : ''}`}
                         className="h-4 w-4 shrink-0 object-contain"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none'

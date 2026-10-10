@@ -23,8 +23,12 @@ import {
   Award,
   Gamepad2,
   KeyRound,
+  Palette,
+  Snowflake,
 } from 'lucide-react'
-import { mmss, parseTime } from '../lib/auth'
+import { mmss, parseTime, authHeaders } from '../lib/auth'
+import { getTema, guardarTema, isLocal } from '../lib/theme'
+import { tocar } from '../lib/sound'
 import { BADGES, BadgeGem } from './BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 
@@ -125,7 +129,7 @@ function EmailRow({ user, onSaved }) {
 }
 
 export default function AdminPanel({ onClose, onLogout, user = null }) {
-  const [tab, setTab] = useState('painel') // 'painel' | 'utilizadores' | 'anuncios' | 'clips'
+  const [tab, setTab] = useState('painel') // 'painel' | 'utilizadores' | 'anuncios' | 'temas' | 'clips'
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -167,6 +171,12 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const [clipMsg, setClipMsg] = useState('')
   const [clipOk, setClipOk] = useState(false)
   const clipInputRef = useRef(null)
+
+  // Temas do site (o admin escolhe, todos os clientes aplicam)
+  const [temas, setTemas] = useState([])
+  const [temaSel, setTemaSel] = useState('normal')
+  const [temaBusy, setTemaBusy] = useState(false)
+  const [temaMsg, setTemaMsg] = useState('')
   const clipPreviewRef = useRef(null)
 
   const adminHeaders = () => ({
@@ -242,8 +252,41 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       fetchRequests()
     }
     if (tab === 'anuncios') fetchPosts()
+    if (tab === 'temas') fetchTemas()
     if (tab === 'clips') fetchClips()
   }, [tab])
+
+  /* ---------- temas ---------- */
+  const fetchTemas = async () => {
+    try {
+      const r = await fetch('/api/settings')
+      const d = r.ok ? await r.json() : { theme: getTema(), themes: [] }
+      setTemas(d.themes || [])
+      setTemaSel(d.theme || 'normal')
+    } catch {
+      setTemaSel(getTema())
+    }
+  }
+
+  const salvarTema = async (id) => {
+    setTemaBusy(true)
+    setTemaMsg('')
+    try {
+      await guardarTema(id, authHeaders())
+      setTemaSel(id)
+      setTemaMsg(
+        id === 'natal' && !isLocal()
+          ? 'Tema guardado. Como é de teste, só aparece em localhost.'
+          : 'Tema guardado e já aplicado no site.',
+      )
+      if (id === 'natal') tocar('natal')
+      else tocar('ok')
+    } catch (e) {
+      setTemaMsg(e.message || 'Não deu para guardar.')
+    } finally {
+      setTemaBusy(false)
+    }
+  }
 
   const handleLogout = () => {
     onLogout()
@@ -644,6 +687,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           {tabBtn('painel', 'Painel', LayoutDashboard)}
           {tabBtn('utilizadores', 'Utilizadores', Users)}
           {tabBtn('anuncios', 'Anúncios', StickyNote)}
+          {tabBtn('temas', 'Temas', Palette)}
           {/* Aba "Clips" desativada no site (código mantido) */}
         </div>
 
@@ -1058,6 +1102,99 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 ))}
               </div>
             )}
+          </div>
+        ) : tab === 'temas' ? (
+          /* ---------- TEMAS DO SITE ---------- */
+          <div>
+            <p className="mb-4 text-xs text-gray-500">
+              Escolhe a "roupa" do site — fica guardada no servidor e aparece a todos os que
+              abrem o site.
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(temas.length
+                ? temas
+                : [
+                    { id: 'normal', label: 'Nosso tema', test: false },
+                    { id: 'natal', label: 'Natal', test: true },
+                  ]
+              ).map((t) => {
+                const sel = temaSel === t.id
+                const Natal = t.id === 'natal'
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => salvarTema(t.id)}
+                    disabled={temaBusy}
+                    data-som="nao"
+                    className={`btn-glass group relative overflow-hidden rounded-xl p-4 text-left transition disabled:opacity-60 ${
+                      sel ? 'ring-2 ring-orange-500' : 'ring-1 ring-white/10 hover:ring-white/25'
+                    }`}
+                  >
+                    {/* miniatura do tema */}
+                    <span
+                      className="mb-3 flex h-16 items-center justify-center rounded-lg"
+                      style={{
+                        background: Natal
+                          ? 'radial-gradient(120% 90% at 50% 0%, #123d2a 0%, #04140d 60%, #000 100%)'
+                          : 'radial-gradient(120% 90% at 50% 0%, #241a4d 0%, #0d0a1f 60%, #000 100%)',
+                      }}
+                    >
+                      <span
+                        className="font-display text-lg font-black uppercase"
+                        style={
+                          Natal
+                            ? { color: '#fcd34d' }
+                            : {
+                                backgroundImage:
+                                  'linear-gradient(135deg, #c4b5fd, #8b5cf6, #7c3aed)',
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                              }
+                        }
+                      >
+                        {Natal ? '❄ Natal' : 'Ashow e Jazer'}
+                      </span>
+                    </span>
+
+                    <span className="flex items-center gap-2">
+                      <span className="font-bold text-white">{t.label}</span>
+                      {t.test && (
+                        <span className="rounded-full bg-yellow-500/15 px-2 py-0.5 text-[10px] font-black uppercase text-yellow-400">
+                          teste
+                        </span>
+                      )}
+                      {sel && (
+                        <span className="ml-auto flex items-center gap-1 text-[11px] font-black uppercase text-orange-400">
+                          ativo
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-relaxed text-gray-500">
+                      {Natal
+                        ? 'Fundo natalino, cordão de luzes, neve a cair e som de sino. Só aparece em localhost — o site real não muda.'
+                        : 'Preto com violeta, gema e brilho — o visual oficial do site.'}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {temaMsg && (
+              <p className="mt-4 rounded-lg bg-white/5 px-3 py-2 text-sm font-semibold text-gray-300">
+                {temaMsg}
+              </p>
+            )}
+
+            <div className="mt-5 flex items-start gap-2 rounded-xl bg-white/5 p-4 text-[11px] leading-relaxed text-gray-500">
+              <Snowflake className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />
+              <span>
+                O tema de Natal inclui sons de sino nos botões (o botão de som, em cima à
+                direita, desliga tudo). Como é de teste, fica só em localhost — só passa para o
+                site real quando eu tirar essa marca.
+              </span>
+            </div>
           </div>
         ) : (
           /* ---------- CLIPS DE TESTE (admin publica direto) ---------- */

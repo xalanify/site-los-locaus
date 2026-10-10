@@ -1,0 +1,28 @@
+{
+  "_origem": "tracker.gg — API v2 r6siege (colhida no browser; o node e o curl são bloqueados pelo tracker)",
+  "colhidoEm": "2026-10-10T00:00:00.000Z",
+  "seasonAtual": 43,
+  "shortAtual": "Y11S3",
+  "jogadores": {
+    "xalana.": {
+      "rank": { "season": "Y11S3", "points": 0, "name": "NO RANK" },
+      "maxRank": { "name": "EMERALD III", "rp": 3753, "season": "Y11S1" }
+    },
+    "m4xi01504": {
+      "rank": { "season": "Y11S3", "points": 2013, "name": "SILVER V" },
+      "maxRank": { "name": "SILVER V", "rp": 2053, "season": "Y11S3" }
+    },
+    "xalanix-": {
+      "rank": { "season": "Y11S3", "points": 2669, "name": "GOLD IV" },
+      "maxRank": { "name": "GOLD II", "rp": 2800, "season": "Y11S2" }
+    },
+    "xandy_r6": {
+      "rank": { "season": "Y11S3", "points": 3062, "name": "PLATINUM V" },
+      "maxRank": { "name": "PLATINUM V", "rp": 3062, "season": "Y11S3" }
+    },
+    "simao270413": {
+      "rank": { "season": "Y11S3", "points": 0, "name": "NO RANK" },
+      "maxRank": null
+    }
+  }
+}

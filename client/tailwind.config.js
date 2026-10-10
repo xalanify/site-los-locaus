@@ -7,17 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#8B5CF6',
+        primary: 'rgb(var(--aj-500) / <alpha-value>)',
         secondary: '#282828',
         dark: '#000000',
-        accent: '#7C3AED',
-        // Laranja remapeado para a paleta violeta (estética do site)
+        accent: 'rgb(var(--aj-600) / <alpha-value>)',
+        // Laranja remapeado para a paleta violeta (estética do site).
+        // Os valores vêm de variáveis CSS (--aj-*) para poder trocar de
+        // tema (normal -> natal) sem reescrever nenhuma classe.
         orange: {
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
+          300: 'rgb(var(--aj-300) / <alpha-value>)',
+          400: 'rgb(var(--aj-400) / <alpha-value>)',
+          500: 'rgb(var(--aj-500) / <alpha-value>)',
+          600: 'rgb(var(--aj-600) / <alpha-value>)',
+          700: 'rgb(var(--aj-700) / <alpha-value>)',
         },
       },
       animation: {

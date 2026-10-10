@@ -16,10 +16,16 @@ import ClipsPage from './pages/ClipsPage'
 import RecentClip from './components/RecentClip'
 import BootScreen, { BackToMenu } from './components/BootScreen'
 import ProfilePage from './pages/ProfilePage'
+import Snow from './components/Snow'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
+import { carregarTema, getTema, onTema } from './lib/theme'
+import { ligarSons } from './lib/sound'
+import { ligarVidro } from './lib/glass'
 
 function App() {
   const [entered, setEntered] = useState(false)
+  // tema escolhido no painel admin ('normal' | 'natal')
+  const [tema, setTema] = useState(getTema())
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [user, setUser] = useState(null) // conta de utilizador (obrigatória)
   const [showAuth, setShowAuth] = useState(false)
@@ -62,6 +68,14 @@ function App() {
     window.scrollTo(0, 0)
   }, [location.pathname])
 
+  // Tema do site (escolhido no painel admin) + sons + vidro dos botões
+  useEffect(() => {
+    ligarSons()
+    ligarVidro()
+    carregarTema()
+    return onTema(setTema)
+  }, [])
+
   // Conta de utilizador (a sessão é obrigatória para entrar)
   const handleAuthed = (data) => {
     setUserSession(data.token, data.user)
@@ -102,6 +116,13 @@ function App() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="origin-center"
           >
+            {/* Tema de Natal — cordão de luzes no topo + neve a cair */}
+            {tema === 'natal' && (
+              <>
+                <div className="luzes-natal" aria-hidden="true" />
+                <Snow />
+              </>
+            )}
             {/* A verificar sessão guardada */}
             {!sessionChecked && (
               <div className="flex min-h-screen flex-col items-center justify-center gap-3">

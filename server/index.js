@@ -14,6 +14,7 @@ const { gamesRouter } = require('./routes/games');
 const { usersRouter } = require('./routes/users');
 const { clipsRouter } = require('./routes/clips');
 const { adminRouter } = require('./routes/admin');
+const { settingsRouter } = require('./routes/settings');
 const { trackVisitor } = require('./middleware/tracker');
 const { backendInfo } = require('./usersStore');
 
@@ -133,6 +134,7 @@ app.use('/api', trackVisitor);
 app.use('/api', apiLimiter);
 
 app.use('/api/youtube', youtubeRouter);
+app.use('/api/settings', settingsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/stats', statsRouter);
