@@ -11,6 +11,10 @@ const VALID_BADGES = ['dev', 'top1', 'jogador'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');
+const { notify } = require('../notify');
+
+/* Rótulos das distinções para as notificações */
+const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS', jogador: 'Jogador do canal' };
 
 const count = async (db, sql) => {
   try {
@@ -113,11 +117,24 @@ router.post('/users/:id/badges', requireAdmin, async (req, res) => {
   }
   try {
     const db = getDb();
-    await db
+    const r = await db
       .prepare(
-        'INSERT INTO user_badges (user_id, badge, granted_by) VALUES (?, ?, ?) ON CONFLICT (user_id, badge) DO NOTHING',
+        'INSERT INTO user_badges (user_id, badge, granted_by) VALUES (?, ?, ?) ON CONFLICT (user_id, badge) DO NOTHING RETURNING user_id AS id',
       )
       .run(id, badge, req.auth && req.auth.uid ? req.auth.uid : null);
+    // avisa a conta (sino + push) — só quando a distinção é mesmo nova
+    if (r && r.lastInsertRowid) {
+      notify({
+        userId: id,
+        actorId: req.auth && req.auth.uid ? req.auth.uid : null,
+        type: 'badge',
+        entity: 'user',
+        entityId: id,
+        title: `Nova distinção: ${BADGE_LABEL[badge] || badge}`,
+        body: 'O admin atribuiu-te uma distinção no site.',
+        link: '/perfil',
+      }).catch(() => {});
+    }
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Erro ao atribuir a distinção.' });
@@ -325,6 +342,113 @@ router.get('/game-names', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Erro game-names:', error.message);
     res.status(500).json({ error: 'Erro ao ler os nomes do jogo.' });
+  }
+});
+
+/* ---------- Estatísticas (aba "Estatísticas" do painel) ---------- */
+router.get('/stats', requireAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const n = async (sql) => {
+      try {
+        const r = await db.prepare(sql).get();
+        return Number(r?.n || 0);
+      } catch {
+        return 0;
+      }
+    };
+    const list = async (sql) => {
+      try {
+        return await db.prepare(sql).all();
+      } catch {
+        return [];
+      }
+    };
+
+    const [
+      clipsTotal,
+      clipsPublicos,
+      clipsPrivados,
+      likes,
+      saves,
+      downloads,
+      comClips,
+      posts,
+      usersTotal,
+      usersNovos,
+      visitasTotal,
+      visitasOnline,
+    ] = await Promise.all([
+      n('SELECT COUNT(*) n FROM clips'),
+      n("SELECT COUNT(*) n FROM clips WHERE visibility = 'public'"),
+      n("SELECT COUNT(*) n FROM clips WHERE visibility <> 'public'"),
+      n('SELECT COALESCE(SUM(likes),0) n FROM clips'),
+      n('SELECT COALESCE(SUM(saves),0) n FROM clips'),
+      n('SELECT COALESCE(SUM(downloads),0) n FROM clips'),
+      n('SELECT COUNT(*) n FROM clip_comments'),
+      n('SELECT COUNT(*) n FROM posts'),
+      n('SELECT COUNT(*) n FROM users'),
+      n("SELECT COUNT(*) n FROM users WHERE created_at > now() - interval '30 days'"),
+      n('SELECT COUNT(*) n FROM visitors'),
+      n('SELECT COUNT(*) n FROM visitors WHERE is_online = 1'),
+    ]);
+
+    const porJogo = await list(`
+      SELECT COALESCE(NULLIF(game, ''), 'outro') AS jogo,
+             COUNT(*)::int AS n,
+             COALESCE(SUM(likes),0)::int AS likes,
+             COALESCE(SUM(downloads),0)::int AS downloads
+      FROM clips GROUP BY 1 ORDER BY n DESC, jogo ASC`);
+
+    const topClips = await list(`
+      SELECT c.id, c.title, c.game, c.likes, c.downloads, c.created_at, u.username,
+             (SELECT COUNT(*) FROM clip_comments cc WHERE cc.clip_id = c.id)::int AS comentarios
+      FROM clips c JOIN users u ON u.id = c.user_id
+      ORDER BY c.likes DESC, c.downloads DESC, c.created_at DESC
+      LIMIT 5`);
+
+    const topAutores = await list(`
+      SELECT u.username, COUNT(*)::int AS n
+      FROM clip_comments cc JOIN users u ON u.id = cc.user_id
+      GROUP BY u.username ORDER BY n DESC, u.username ASC LIMIT 5`);
+
+    const porDia = await list(`
+      SELECT to_char(d.day, 'YYYY-MM-DD') AS dia,
+             COALESCE(c.n,0)::int AS clips,
+             COALESCE(k.n,0)::int AS comentarios,
+             COALESCE(v.n,0)::int AS visitas
+      FROM generate_series(current_date - interval '13 days', current_date, interval '1 day') AS d(day)
+      LEFT JOIN (SELECT date_trunc('day', created_at) AS dia, COUNT(*) n
+                 FROM clips GROUP BY 1) c ON c.dia = d.day
+      LEFT JOIN (SELECT date_trunc('day', created_at) AS dia, COUNT(*) n
+                 FROM clip_comments GROUP BY 1) k ON k.dia = d.day
+      LEFT JOIN (SELECT date_trunc('day', visited_at) AS dia, COUNT(*) n
+                 FROM visitors GROUP BY 1) v ON v.dia = d.day
+      ORDER BY 1`);
+
+    res.json({
+      resumo: {
+        clipsTotal,
+        clipsPublicos,
+        clipsPrivados,
+        likes,
+        saves,
+        downloads,
+        comentarios: comClips,
+        posts,
+        usersTotal,
+        usersNovos,
+        visitasTotal,
+        visitasOnline,
+      },
+      porJogo,
+      topClips,
+      topAutores,
+      porDia,
+    });
+  } catch (error) {
+    console.error('Erro admin stats:', error.message);
+    res.status(500).json({ error: 'Erro ao carregar estatísticas.' });
   }
 });
 

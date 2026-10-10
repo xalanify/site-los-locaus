@@ -453,14 +453,25 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
-    const [badges, prof, gameAccounts] = await Promise.all([
+    const [badges, prof, gameAccounts, pres] = await Promise.all([
       badgesOf(user.id),
       profileOf(user.id),
       getDb()
         .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
         .all(user.id)
         .catch(() => []),
+      getDb()
+        .prepare('SELECT last_seen FROM user_presence WHERE user_id = ?')
+        .get(user.id)
+        .catch(() => null),
     ]);
+
+    // "online agora" — mesma regra da lista de membros (2 minutos)
+    const online = !!(
+      pres &&
+      pres.last_seen &&
+      Date.now() - new Date(pres.last_seen).getTime() < 120000
+    );
 
     res.json({
       found: true,
@@ -469,6 +480,7 @@ router.get('/:username', attachAuth, async (req, res) => {
         username: user.username,
         created_at: user.created_at,
         badges,
+        online,
         ...prof,
         game_accounts: gameAccounts.map((a) => ({
           id: Number(a.id),

@@ -11,8 +11,10 @@ import {
   Gamepad2,
   Pencil,
   Loader2,
+  FolderPlus,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
+import Estado from './Estado'
 import { authHeaders, mmss } from '../lib/auth'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 
@@ -33,7 +35,15 @@ const fmtComment = fmtDate
 
 /* Cartão de um clip: vídeo (com corte), autor, gostos,
    comentários com respostas, guardar e transferir. */
-export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdate, onDelete }) {
+export default function ClipCard({
+  clip,
+  user,
+  onRequestAuth,
+  onProfile,
+  onUpdate,
+  onDelete,
+  onColecao = null,
+}) {
   const [c, setC] = useState(clip)
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState([])
@@ -196,6 +206,36 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
     }
   }
 
+  /* ---- gosto num comentário (toggle) ---- */
+  const toggleCommentLike = async (cm) => {
+    if (!user) return onRequestAuth && onRequestAuth()
+    const liked = !cm.liked
+    const anterior = cm.likes || 0
+    // atualiza já, sem esperar pelo servidor
+    setComments((prev) =>
+      prev.map((x) =>
+        x.id === cm.id ? { ...x, liked, likes: Math.max(0, anterior + (liked ? 1 : -1)) } : x,
+      ),
+    )
+    try {
+      const res = await fetch(`/api/clips/${c.id}/comments/${cm.id}/like`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      if (res.ok) {
+        const d = await res.json()
+        setComments((prev) => prev.map((x) => (x.id === cm.id ? { ...x, ...d } : x)))
+      } else {
+        throw new Error('falhou')
+      }
+    } catch {
+      // sem rede -> volta ao que estava
+      setComments((prev) =>
+        prev.map((x) => (x.id === cm.id ? { ...x, liked: !liked, likes: anterior } : x)),
+      )
+    }
+  }
+
   /* ---- editar (só o dono) ---- */
   const abrirEdicao = () => {
     setNovoTitulo(c.title)
@@ -271,6 +311,17 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
           <p className="mt-0.5 break-words text-sm text-gray-200">{cm.content}</p>
         </div>
         <div className="flex shrink-0 flex-col gap-1">
+          <button
+            onClick={() => toggleCommentLike(cm)}
+            title={cm.liked ? 'Tirar o gosto' : 'Gostar do comentário'}
+            aria-pressed={!!cm.liked}
+            className={`flex items-center gap-0.5 rounded p-1 transition-colors ${
+              cm.liked ? 'text-rose-400' : 'text-gray-500 hover:bg-white/10 hover:text-rose-400'
+            }`}
+          >
+            <Heart className="h-3.5 w-3.5" fill={cm.liked ? 'currentColor' : 'none'} />
+            {!!cm.likes && <span className="text-[10px] font-black leading-none">{cm.likes}</span>}
+          </button>
           <button
             onClick={() => {
               if (!user) return onRequestAuth && onRequestAuth()
@@ -420,6 +471,12 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
           playsInline
           onLoadedMetadata={onMeta}
           onTimeUpdate={onTime}
+          /* só um clip a tocar de cada vez (menos CPU e banda) */
+          onPlay={() =>
+            document.querySelectorAll('video').forEach((v) => {
+              if (v !== videoRef.current && !v.paused) v.pause()
+            })
+          }
           className="mt-3 max-h-[65vh] w-full rounded-xl bg-black"
         />
         {(start > 0 || end != null) && (
@@ -443,6 +500,15 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
           <Bookmark className={`h-4 w-4 ${c.saved ? 'fill-yellow-400 text-yellow-400' : ''}`} />
           {c.saves || 0}
         </button>
+        {onColecao && (
+          <button
+            onClick={() => (user ? onColecao(c) : onRequestAuth && onRequestAuth())}
+            className={actionCls(false)}
+            title="Guardar numa coleção"
+          >
+            <FolderPlus className="h-4 w-4" />
+          </button>
+        )}
         <button onClick={download} className={actionCls(false)} title="Transferir">
           <Download className="h-4 w-4" />
           {c.downloads || 0}
@@ -453,7 +519,12 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
       {showComments && (
         <div className="border-t border-white/10 px-4 py-3">
           {comments.length === 0 && loadedComments && (
-            <p className="text-sm text-gray-500">Ainda não há comentários.</p>
+            <Estado
+              compacto
+              icon={MessageCircle}
+              titulo="Ainda não há comentários"
+              texto="Sê o primeiro a deixar a tua neste clip."
+            />
           )}
           {tops.map((cm) => renderComment(cm))}
 

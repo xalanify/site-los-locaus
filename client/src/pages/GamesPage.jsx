@@ -22,6 +22,8 @@ import {
   Info,
   AlertCircle,
 } from 'lucide-react'
+import TabBar from '../components/TabBar'
+import Estado from '../components/Estado'
 
 const fmt = (n) => (Number(n) || 0).toLocaleString('pt-PT')
 
@@ -898,14 +900,14 @@ function Cs2Page() {
   // ---------- Erro ----------
   if (state.error || !d) {
     return (
-      <div className="glass mx-auto max-w-xl rounded-2xl p-6 text-center">
-        <p className="mb-4 text-sm text-red-400">{state.error || 'Erro ao carregar.'}</p>
-        <button
-          onClick={load}
-          className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
-        >
-          Tentar novamente
-        </button>
+      <div className="mx-auto max-w-xl">
+        <Estado
+          tipo="erro"
+          icon={Gamepad2}
+          titulo="Não deu para carregar"
+          texto={state.error || 'Erro ao carregar.'}
+          acao={{ label: 'Tentar novamente', onClick: load }}
+        />
       </div>
     )
   }
@@ -1165,9 +1167,12 @@ function Cs2Page() {
               </p>
 
               {topKills.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-500">
-                  Ainda não há partidas com jogadores acompanhados.
-                </p>
+                <Estado
+                  compacto
+                  icon={Gamepad2}
+                  titulo="Ainda não há partidas"
+                  texto="Ninguém acompanhado tem partidas registadas no histórico da Steam."
+                />
               ) : (
                 <div className="space-y-2">
                   {topKills.map((t, i) => {
@@ -1615,14 +1620,14 @@ function R6Page() {
   // ---------- Erro ----------
   if (state.error || !d) {
     return (
-      <div className="glass mx-auto max-w-xl rounded-2xl p-6 text-center">
-        <p className="mb-4 text-sm text-red-400">{state.error || 'Erro ao carregar.'}</p>
-        <button
-          onClick={load}
-          className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
-        >
-          Tentar novamente
-        </button>
+      <div className="mx-auto max-w-xl">
+        <Estado
+          tipo="erro"
+          icon={Gamepad2}
+          titulo="Não deu para carregar"
+          texto={state.error || 'Erro ao carregar.'}
+          acao={{ label: 'Tentar novamente', onClick: load }}
+        />
       </div>
     )
   }
@@ -1684,47 +1689,25 @@ export default function GamesPage() {
         ) : (
           <>
             {/* Abas de jogo */}
-            <div className="mb-10 flex flex-wrap justify-center gap-3 sm:gap-4">
-              <button
-                onClick={() => setTab('cs2')}
-                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
-                  tab === 'cs2'
-                    ? 'bg-orange-500 text-white glow-orange scale-105'
-                    : 'glass text-gray-300 hover:text-white'
-                }`}
-              >
-                <Gamepad2 className="h-5 w-5" />
-                CS2
-              </button>
-              <button
-                onClick={() => setTab('eafc')}
-                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
-                  tab === 'eafc'
-                    ? 'bg-orange-500 text-white glow-orange scale-105'
-                    : 'glass text-gray-300 hover:text-white'
-                }`}
-              >
-                <Trophy className="h-5 w-5" />
-                EA FC 26
-              </button>
-              <button
-                onClick={() => setTab('r6')}
-                className={`flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition-all duration-300 sm:px-8 sm:text-base ${
-                  tab === 'r6'
-                    ? 'bg-orange-500 text-white glow-orange scale-105'
-                    : 'glass text-gray-300 hover:text-white'
-                }`}
-              >
-                <Crosshair className="h-5 w-5" />
-                Rainbow Six
-              </button>
+            <div className="mb-10 flex flex-wrap items-center justify-center gap-3">
+              <TabBar
+                ariaLabel="Escolher jogo"
+                className="tabbar-grande"
+                value={tab}
+                onChange={setTab}
+                items={[
+                  { id: 'cs2', label: 'CS2', Icon: Gamepad2 },
+                  { id: 'eafc', label: 'EA FC 26', Icon: Trophy },
+                  { id: 'r6', label: 'Rainbow Six', Icon: Crosshair },
+                ]}
+              />
               <button
                 onClick={() => setTab(null)}
                 title="Escolher outro jogo"
-                className="flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-bold text-gray-400 transition-all duration-300 hover:border-orange-500 hover:text-orange-400 sm:px-6 sm:text-base"
+                className="btn-glass flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold text-gray-300"
               >
                 <RotateCcw className="h-4 w-4" />
-                Trocar de jogo
+                Trocar
               </button>
             </div>
 

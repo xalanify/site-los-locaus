@@ -1,0 +1,24 @@
+{
+  "name": "Ashow e Jazer",
+  "short_name": "Ashow e Jazer",
+  "description": "Clips, publicações, jogos e estatísticas do grupo Ashow e Jazer.",
+  "lang": "pt-PT",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0B12",
+  "theme_color": "#0B0B12",
+  "categories": ["entertainment", "social", "games"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Clips", "url": "/clips", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Jogos", "url": "/jogos", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Atualizações", "url": "/atualizacoes", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

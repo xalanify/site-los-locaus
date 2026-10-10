@@ -13,7 +13,7 @@ let raf = 0
 
 /* Mesmos botões que o CSS pinta de vidro (index.css). */
 const SELETOR =
-  ".btn-glass, button[class*='bg-white/10'], button[class*='border border-white/15']";
+  ".btn-glass, button[class~='bg-white/10'], button[class~='border-white/15'], button[class~='bg-orange-500']";
 
 function aplicar() {
   raf = 0

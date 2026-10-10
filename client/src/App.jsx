@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
@@ -10,22 +10,21 @@ import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
-import GamesPage from './pages/GamesPage'
-import UpdatesPage from './pages/UpdatesPage'
-import ClipsPage from './pages/ClipsPage'
 import RecentClip from './components/RecentClip'
+import MembrosOnline from './components/MembrosOnline'
 import BootScreen, { BackToMenu } from './components/BootScreen'
-import ProfilePage from './pages/ProfilePage'
-import Snow from './components/Snow'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
-import { carregarTema, getTema, onTema } from './lib/theme'
-import { ligarSons } from './lib/sound'
 import { ligarVidro } from './lib/glass'
+
+// Páginas pesadas entram em separado (lazy) — a home abre mais rápido
+const GamesPage = lazy(() => import('./pages/GamesPage'))
+const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
+const ClipsPage = lazy(() => import('./pages/ClipsPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 
 function App() {
   const [entered, setEntered] = useState(false)
-  // tema escolhido no painel admin ('normal' | 'natal')
-  const [tema, setTema] = useState(getTema())
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [user, setUser] = useState(null) // conta de utilizador (obrigatória)
   const [showAuth, setShowAuth] = useState(false)
@@ -68,12 +67,9 @@ function App() {
     window.scrollTo(0, 0)
   }, [location.pathname])
 
-  // Tema do site (escolhido no painel admin) + sons + vidro dos botões
+  // Vidro dos botões (reflexo que segue o rato)
   useEffect(() => {
-    ligarSons()
     ligarVidro()
-    carregarTema()
-    return onTema(setTema)
   }, [])
 
   // Conta de utilizador (a sessão é obrigatória para entrar)
@@ -94,8 +90,8 @@ function App() {
   // Modo recuperação ligado pelo admin -> obriga ao ecrã de nova pass
   const needsRecovery = authed && Boolean(user?.recovery)
 
-  // Ver o perfil público de um membro (a partir de um clip)
-  const openMember = (name) => navigate('/clips', { state: { member: name } })
+  // Ver o perfil público de um membro — cada um tem página própria
+  const openMember = (name) => navigate(`/perfil/${encodeURIComponent(name)}`)
 
   return (
     <div className="min-h-screen bg-dark">
@@ -116,13 +112,6 @@ function App() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="origin-center"
           >
-            {/* Tema de Natal — cordão de luzes no topo + neve a cair */}
-            {tema === 'natal' && (
-              <>
-                <div className="luzes-natal" aria-hidden="true" />
-                <Snow />
-              </>
-            )}
             {/* A verificar sessão guardada */}
             {!sessionChecked && (
               <div className="flex min-h-screen flex-col items-center justify-center gap-3">
@@ -146,6 +135,13 @@ function App() {
               <>
                 <Navbar isAdmin={isAdmin} user={user} />
                 <main>
+                  <Suspense
+                    fallback={
+                      <div className="flex min-h-[60vh] items-center justify-center">
+                        <Loader2 className="h-7 w-7 animate-spin text-orange-500" />
+                      </div>
+                    }
+                  >
                   <Routes>
                     <Route
                       path="/"
@@ -176,14 +172,15 @@ function App() {
                               </div>
                             </section>
                           )}
+                          {/* Presença — quem está no site agora */}
+                          <MembrosOnline onProfile={openMember} />
                           <HomeFeed />
                           <VideosSection />
                         </>
                       }
                     />
                     <Route path="/jogos" element={<GamesPage />} />
-                    <Route path="/atualizacoes" element={<UpdatesPage />} />
-                    <Route
+                    <Route path="/atualizacoes" element={<UpdatesPage />} />                    <Route
                       path="/clips"
                       element={
                         <ClipsPage
@@ -207,8 +204,20 @@ function App() {
                         />
                       }
                     />
+                    {/* Perfil público com página própria */}
+                    <Route
+                      path="/perfil/:username"
+                      element={
+                        <PublicProfilePage
+                          user={user}
+                          onRequestAuth={() => setShowAuth(true)}
+                          onProfile={openMember}
+                        />
+                      }
+                    />
                     <Route path="*" element={<Hero />} />
                   </Routes>
+                  </Suspense>
                 </main>
                 <Footer />
 

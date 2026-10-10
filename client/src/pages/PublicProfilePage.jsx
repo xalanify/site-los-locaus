@@ -1,0 +1,253 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import {
+  ArrowLeft,
+  Calendar,
+  Download,
+  Film,
+  Gamepad2,
+  Heart,
+  Loader2,
+  Save,
+  UserRoundX,
+} from 'lucide-react'
+import AvatarImg from '../components/AvatarImg'
+import ClipCard from '../components/ClipCard'
+import Estado from '../components/Estado'
+import { BadgeGem } from '../components/BadgeGem'
+import { gameLabel } from '../data/clipGames'
+import { authHeaders } from '../lib/auth'
+
+/* Contador de uma estatística (rótulo em baixo, número em cima) */
+function Stat({ valor, rotulo, Icon }) {
+  return (
+    <div className="glass flex flex-col items-center gap-1 rounded-2xl px-3 py-3">
+      <Icon className="h-4 w-4 text-violet-300" />
+      <span className="font-display text-xl font-black leading-none text-white">
+        {Number(valor) || 0}
+      </span>
+      <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+        {rotulo}
+      </span>
+    </div>
+  )
+}
+
+/* ============================================================
+   Perfil público com página própria — /perfil/:username
+
+   Mostra quem é o membro (foto, distinções, conta em jogo),
+   as contagens e os clips públicos dele. Chega por um clique
+   no nome de qualquer autor de clip.
+   ============================================================ */
+export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
+  const { username } = useParams()
+  const navigate = useNavigate()
+  const [data, setData] = useState(null)
+  const [erro, setErro] = useState('')
+  const [carregado, setCarregado] = useState(false)
+
+  useEffect(() => {
+    let vivo = true
+    setData(null)
+    setErro('')
+    setCarregado(false)
+    fetch(`/api/users/${encodeURIComponent(username)}`, { headers: authHeaders() })
+      .then(async (r) => {
+        const d = await r.json().catch(() => null)
+        if (!vivo) return
+        if (!r.ok) setErro(d?.error || 'Perfil não encontrado')
+        else setData(d)
+      })
+      .catch(() => vivo && setErro('Não deu para carregar o perfil.'))
+      .finally(() => vivo && setCarregado(true))
+    return () => {
+      vivo = false
+    }
+  }, [username])
+
+  if (!carregado) {
+    return (
+      <section className="flex min-h-screen flex-col items-center justify-center gap-3 pt-14">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <p className="text-sm text-gray-500">A abrir o perfil…</p>
+      </section>
+    )
+  }
+
+  if (erro || !data) {
+    return (
+      <section className="mx-auto max-w-3xl px-4 pb-20 pt-24 sm:px-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="btn-glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-gray-300"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </button>
+        <Estado
+          tipo="erro"
+          icon={UserRoundX}
+          titulo="Perfil não encontrado"
+          texto={erro || 'Esta conta não existe ou foi removida.'}
+          acao={{ label: 'Ver os clips', onClick: () => navigate('/clips') }}
+        />
+      </section>
+    )
+  }
+
+  const p = data.profile || {}
+  const s = data.stats || {}
+  const clips = data.clips || []
+  const souEu = p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
+  const desde = p.created_at
+    ? new Date(p.created_at).toLocaleDateString('pt-PT', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—'
+
+  return (
+    <section className="mx-auto max-w-4xl px-4 pb-24 pt-20 sm:px-6 sm:pt-24">
+      <button
+        onClick={() => navigate(-1)}
+        className="btn-glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-gray-300"
+      >
+        <ArrowLeft className="h-4 w-4" /> Voltar
+      </button>
+
+      {/* Cabeçalho do perfil */}
+      <div className="glass rounded-3xl p-5 sm:p-7">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+          <div className="relative">
+            <AvatarImg
+              src={p.avatar_url}
+              name={p.username}
+              className="h-20 w-20 text-2xl sm:h-24 sm:w-24"
+            />
+            {p.online && (
+              <span
+                title="Online agora"
+                className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-400 ring-4 ring-[#0B0B12]"
+              />
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate font-display text-2xl font-black uppercase tracking-wide text-white sm:text-3xl">
+                {p.username}
+              </h1>
+              {souEu && (
+                <span className="rounded-full bg-violet-500/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-200 ring-1 ring-violet-400/30">
+                  és tu
+                </span>
+              )}
+              {p.online && (
+                <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30">
+                  online
+                </span>
+              )}
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" /> desde {desde}
+              </span>
+            </div>
+
+            {(p.badges || []).length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {p.badges.map((b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-bold text-gray-200 ring-1 ring-white/10"
+                  >
+                    <BadgeGem badge={b} size={16} />
+                    {b === 'dev' ? 'Dev' : b === 'top1' ? 'Top 1' : 'Jogador'}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {souEu && (
+            <Link
+              to="/perfil"
+              className="btn-glass rounded-full px-4 py-2 text-sm font-bold text-white"
+            >
+              Gerir conta
+            </Link>
+          )}
+        </div>
+
+        {/* Contagens */}
+        <div className="mt-5 grid grid-cols-4 gap-2 sm:gap-3">
+          <Stat valor={s.clips} rotulo="clips" Icon={Film} />
+          <Stat valor={s.likes} rotulo="gostos" Icon={Heart} />
+          <Stat valor={s.downloads} rotulo="transferidos" Icon={Download} />
+          <Stat valor={s.saved} rotulo="guardados" Icon={Save} />
+        </div>
+
+        {/* Contas de jogo ligadas */}
+        {(p.game_accounts || []).length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-gray-500">
+              <Gamepad2 className="h-3.5 w-3.5" /> contas
+            </span>
+            {p.game_accounts.map((a) => (
+              <span
+                key={a.id}
+                className="rounded-full bg-white/5 px-3 py-1 text-xs font-bold text-gray-200 ring-1 ring-white/10"
+              >
+                {gameLabel(a.game)} · {a.nick}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Clips do perfil */}
+      <div className="mb-4 mt-8 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
+          Clips de {p.username}
+        </h2>
+        <span className="text-sm text-gray-500">{clips.length}</span>
+      </div>
+
+      {clips.length === 0 ? (
+        <Estado
+          icon={Film}
+          titulo="Ainda não há clips"
+          texto={
+            souEu
+              ? 'Publica o teu primeiro clip e aparece aqui na tua página.'
+              : `${p.username} ainda não publicou nenhum clip.`
+          }
+          acao={souEu ? { label: 'Publicar clip', onClick: () => navigate('/clips') } : null}
+        />
+      ) : (
+        <div className="space-y-6">
+          {clips.map((c) => (
+            <ClipCard
+              key={c.id}
+              clip={c}
+              user={user}
+              onRequestAuth={onRequestAuth}
+              onProfile={onProfile}
+              onUpdate={(next) =>
+                setData((prev) => ({
+                  ...prev,
+                  clips: prev.clips.map((x) => (x.id === next.id ? next : x)),
+                }))
+              }
+              onDelete={(id) =>
+                setData((prev) => ({ ...prev, clips: prev.clips.filter((x) => x.id !== id) }))
+              }
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}

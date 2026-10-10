@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
+import { registarSW } from './lib/pwa'
+
+// PWA: regista o service worker (cache do site + notificações push)
+registarSW()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

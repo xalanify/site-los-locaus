@@ -17,6 +17,8 @@ import {
   Trophy,
   Loader2,
 } from 'lucide-react'
+import TabBar from '../components/TabBar'
+import Estado from '../components/Estado'
 import { updates, CHANGE_TYPES } from '../data/updates'
 import { BADGES, BadgeTile } from '../components/BadgeGem'
 import { GAMES, gameImg } from '../data/gameUpdates'
@@ -119,27 +121,13 @@ function SiteScope() {
   return (
     <div>
       {/* Filtros por tipo */}
-      <div className="mb-8 flex flex-wrap justify-center gap-2">
-        {filters.map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setFilter(f.id)}
-            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-300 sm:text-sm ${
-              filter === f.id
-                ? 'bg-orange-500 text-white glow-orange scale-105'
-                : 'glass text-gray-300 hover:text-white'
-            }`}
-          >
-            {f.label}
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
-                filter === f.id ? 'bg-white/20' : 'bg-white/10 text-gray-400'
-              }`}
-            >
-              {counts[f.id] ?? 0}
-            </span>
-          </button>
-        ))}
+      <div className="mb-8 flex justify-center">
+        <TabBar
+          ariaLabel="Filtrar atualizações"
+          value={filter}
+          onChange={setFilter}
+          items={filters.map((f) => ({ id: f.id, label: f.label, cont: counts[f.id] ?? 0 }))}
+        />
       </div>
 
       {/* Timeline */}
@@ -178,7 +166,12 @@ function SiteScope() {
           ))}
 
           {list.length === 0 && (
-            <p className="py-8 text-center text-sm text-gray-500">Sem alterações deste tipo.</p>
+            <Estado
+              compacto
+              icon={History}
+              titulo="Sem alterações deste tipo"
+              texto="Não há registos com este tipo no histórico."
+            />
           )}
         </motion.div>
       </AnimatePresence>
@@ -548,9 +541,12 @@ function GameScope() {
               </button>
             </div>
           ) : filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500">
-              Sem atualizações neste período. Experimenta o filtro «Todas».
-            </p>
+            <Estado
+              compacto
+              icon={Newspaper}
+              titulo="Sem atualizações neste período"
+              texto="Experimenta o filtro «Todas» para ver tudo."
+            />
           ) : (
             filtered.map((u, i) => (
               <motion.article

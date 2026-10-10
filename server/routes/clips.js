@@ -4,6 +4,7 @@ const { getDb } = require('../database');
 const { requireUser, requireUserOrAdmin, attachAuth } = require('../middleware/auth');
 const storage = require('../storage');
 const { CLIP_GAME_IDS } = require('../clipGames');
+const { notify } = require('../notify');
 
 const router = express.Router();
 
@@ -146,6 +147,18 @@ router.get('/', attachAuth, async (req, res) => {
         'EXISTS (SELECT 1 FROM clip_saves s WHERE s.clip_id = c.id AND s.user_id = ?)',
       );
       params.push(auth.uid);
+    }
+    if (req.query.collection) {
+      if (!auth || !auth.uid) return res.status(401).json({ error: 'Inicia sessão' });
+      const cid = Number(req.query.collection);
+      const col = await db.prepare('SELECT user_id FROM clip_collections WHERE id = ?').get(cid);
+      if (!col || Number(col.user_id) !== auth.uid) {
+        return res.status(403).json({ error: 'Sem permissões' });
+      }
+      where.push(
+        'EXISTS (SELECT 1 FROM clip_collection_items ci WHERE ci.clip_id = c.id AND ci.collection_id = ?)',
+      );
+      params.push(cid);
     }
     if (req.query.user) {
       where.push('LOWER(u.username) = ?');
@@ -396,7 +409,7 @@ router.post('/:id/like', requireUser, async (req, res) => {
   try {
     const db = getDb();
     const id = Number(req.params.id);
-    const clip = await db.prepare('SELECT id FROM clips WHERE id = ?').get(id);
+    const clip = await db.prepare('SELECT id, user_id, title FROM clips WHERE id = ?').get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
 
     const has = await db
@@ -408,6 +421,17 @@ router.post('/:id/like', requireUser, async (req, res) => {
     } else {
       await db.prepare('INSERT INTO clip_likes (clip_id, user_id) VALUES (?, ?)').run(id, req.auth.uid);
       await db.prepare('UPDATE clips SET likes = likes + 1 WHERE id = ?').run(id);
+      // avisa o dono do clip (sino + push)
+      notify({
+        userId: Number(clip.user_id),
+        actorId: req.auth.uid,
+        type: 'like',
+        entity: 'clip',
+        entityId: id,
+        title: `${req.auth.username} gostou do teu clip`,
+        body: clip.title,
+        link: `/clips?clip=${id}`,
+      }).catch(() => {});
     }
     const after = await db.prepare('SELECT likes FROM clips WHERE id = ?').get(id);
     res.json({ liked: !has, likes: Number(after.likes) || 0 });
@@ -455,12 +479,17 @@ router.get('/:id/comments', attachAuth, async (req, res) => {
     const rows = await db
       .prepare(
         `SELECT cc.id, cc.parent_id, cc.content, cc.created_at, cc.user_id, u.username,
-                up.avatar_url AS author_avatar
+                up.avatar_url AS author_avatar,
+                (SELECT COUNT(*) FROM comment_likes cl
+                   WHERE cl.comment_id = cc.id AND cl.kind = 'clip')::int AS likes,
+                EXISTS(SELECT 1 FROM comment_likes cl
+                   WHERE cl.comment_id = cc.id AND cl.kind = 'clip'
+                     AND cl.user_id = ?) AS liked
          FROM clip_comments cc JOIN users u ON u.id = cc.user_id
          LEFT JOIN user_profiles up ON up.user_id = cc.user_id
          WHERE cc.clip_id = ? ORDER BY cc.created_at ASC, cc.id ASC`,
       )
-      .all(id);
+      .all((req.auth && req.auth.uid) || 0, id);
     const auth = req.auth;
     res.json(
       rows.map((c) => ({
@@ -470,6 +499,8 @@ router.get('/:id/comments', attachAuth, async (req, res) => {
         created_at: c.created_at,
         author: c.username,
         author_avatar: c.author_avatar || null,
+        likes: Number(c.likes) || 0,
+        liked: !!c.liked,
         deletable: !!(auth && (auth.admin || (auth.uid && Number(c.user_id) === auth.uid))),
       })),
     );
@@ -507,6 +538,28 @@ router.post('/:id/comments', requireUser, async (req, res) => {
         'INSERT INTO clip_comments (clip_id, user_id, parent_id, content) VALUES (?, ?, ?, ?) RETURNING id',
       )
       .run(id, req.auth.uid, parentId, content);
+
+    // Avisa o dono do clip (ou a quem se respondeu)
+    let alvoId = Number(clip.user_id);
+    if (parentId) {
+      const pai = await db
+        .prepare('SELECT user_id FROM clip_comments WHERE id = ?')
+        .get(parentId);
+      if (pai && Number(pai.user_id) !== Number(req.auth.uid)) alvoId = Number(pai.user_id);
+    }
+    notify({
+      userId: alvoId,
+      actorId: req.auth.uid,
+      type: parentId ? 'reply' : 'comment',
+      entity: 'clip',
+      entityId: id,
+      title: parentId
+        ? `${req.auth.username} respondeu ao teu comentário`
+        : `${req.auth.username} comentou no teu clip`,
+      body: content.slice(0, 140),
+      link: '/clips',
+    }).catch(() => {});
+
     const row = await db
       .prepare(
         `SELECT cc.id, cc.parent_id, cc.content, cc.created_at, cc.user_id, u.username,
@@ -523,10 +576,63 @@ router.post('/:id/comments', requireUser, async (req, res) => {
       created_at: row.created_at,
       author: row.username,
       author_avatar: row.author_avatar || null,
+      likes: 0,
+      liked: false,
       deletable: true,
     });
   } catch (error) {
     console.error('Erro clip comment POST:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// Gosto num comentário (toggle) — exige conta
+router.post('/:id/comments/:commentId/like', requireUser, async (req, res) => {
+  try {
+    const db = getDb();
+    const commentId = Number(req.params.commentId);
+    if (!Number.isFinite(commentId) || commentId <= 0) {
+      return res.status(404).json({ error: 'Comentário não encontrado' });
+    }
+    const c = await db
+      .prepare('SELECT id, clip_id, user_id, content FROM clip_comments WHERE id = ?')
+      .get(commentId);
+    if (!c || Number(c.clip_id) !== Number(req.params.id)) {
+      return res.status(404).json({ error: 'Comentário não encontrado' });
+    }
+    const uid = req.auth.uid;
+    const has = await db
+      .prepare(
+        "SELECT 1 FROM comment_likes WHERE comment_id = ? AND kind = 'clip' AND user_id = ?",
+      )
+      .get(commentId, uid);
+    if (has) {
+      await db
+        .prepare(
+          "DELETE FROM comment_likes WHERE comment_id = ? AND kind = 'clip' AND user_id = ?",
+        )
+        .run(commentId, uid);
+    } else {
+      await db
+        .prepare("INSERT INTO comment_likes (comment_id, kind, user_id) VALUES (?, 'clip', ?)")
+        .run(commentId, uid);
+      notify({
+        userId: Number(c.user_id),
+        actorId: uid,
+        type: 'like',
+        entity: 'clip',
+        entityId: Number(c.clip_id),
+        title: `${req.auth.username} gostou do teu comentário`,
+        body: String(c.content || '').slice(0, 140),
+        link: '/clips',
+      }).catch(() => {});
+    }
+    const n = await db
+      .prepare("SELECT COUNT(*) n FROM comment_likes WHERE comment_id = ? AND kind = 'clip'")
+      .get(commentId);
+    res.json({ liked: !has, likes: Number(n?.n || 0) });
+  } catch (error) {
+    console.error('Erro comment like:', error.message);
     res.status(500).json({ error: 'Erro interno' });
   }
 });
@@ -536,12 +642,22 @@ router.delete('/:id/comments/:commentId', attachAuth, async (req, res) => {
   try {
     const db = getDb();
     const commentId = Number(req.params.commentId);
+    if (!Number.isFinite(commentId) || commentId <= 0) {
+      return res.status(404).json({ error: 'Comentário não encontrado' });
+    }
     const c = await db.prepare('SELECT id, user_id FROM clip_comments WHERE id = ?').get(commentId);
     if (!c) return res.status(404).json({ error: 'Comentário não encontrado' });
     const auth = req.auth;
     if (!auth || !(auth.admin || (auth.uid && Number(c.user_id) === auth.uid))) {
       return res.status(403).json({ error: 'Sem permissões' });
     }
+    // apaga os gostos do comentário e das respostas primeiro
+    await db
+      .prepare(
+        `DELETE FROM comment_likes WHERE kind = 'clip' AND comment_id IN
+           (SELECT id FROM clip_comments WHERE id = ? OR parent_id = ?)`,
+      )
+      .run(commentId, commentId);
     await db.prepare('DELETE FROM clip_comments WHERE id = ? OR parent_id = ?').run(commentId, commentId);
     res.json({ success: true });
   } catch (error) {

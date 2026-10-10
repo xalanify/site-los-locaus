@@ -12,8 +12,8 @@ export default {
         dark: '#000000',
         accent: 'rgb(var(--aj-600) / <alpha-value>)',
         // Laranja remapeado para a paleta violeta (estética do site).
-        // Os valores vêm de variáveis CSS (--aj-*) para poder trocar de
-        // tema (normal -> natal) sem reescrever nenhuma classe.
+        // Os valores vêm de variáveis CSS (--aj-*) para poder mudar a
+        // paleta inteira num sítio só, sem reescrever nenhuma classe.
         orange: {
           300: 'rgb(var(--aj-300) / <alpha-value>)',
           400: 'rgb(var(--aj-400) / <alpha-value>)',

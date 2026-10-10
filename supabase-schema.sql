@@ -33,15 +33,3 @@ alter table public.users
 -- Segurança: ninguém lê nem escreve as contas diretamente do
 -- browser; só o servidor (chave service_role) acede.
 alter table public.users enable row level security;
-
--- ============================================================
--- Definicoes do site (tema, etc.) — escolhidas no painel admin.
--- O servidor e o unico que le e escreve aqui.
--- ============================================================
-create table if not exists public.site_settings (
-  k          text primary key,                -- chave (ex.: 'theme')
-  v          text not null,                   -- valor (ex.: 'normal')
-  updated_at timestamptz not null default now()
-);
-
-alter table public.site_settings enable row level security;

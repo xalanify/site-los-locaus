@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import {
   Plus,
   X,
@@ -18,6 +19,9 @@ import {
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
+import TabBar from '../components/TabBar'
+import Estado from '../components/Estado'
+import ColecoesModal from '../components/ColecoesModal'
 import { BADGES, BadgeGem } from '../components/BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { authHeaders, mmss, parseTime } from '../lib/auth'
@@ -254,6 +258,12 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [endStr, setEndStr] = useState('')
   const [visibility, setVisibility] = useState('public')
   const [progress, setProgress] = useState(-1)
+  // detalhes do envio para a barra: bytes, início e fase
+  const [envio, setEnvio] = useState({ total: 0, enviado: 0, inicio: 0, fase: '' })
+  const xhrRef = useRef(null)
+  const canceladoRef = useRef(false)
+  // modal de coleções — clip aberto para escolher as pastas
+  const [clipColecao, setClipColecao] = useState(null)
   const [error, setError] = useState('')
   const [maxMB, setMaxMB] = useState(DEFAULT_MAX_MB)
   const [trimming, setTrimming] = useState(null) // { done, total } enquanto corta
@@ -413,7 +423,9 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       end: end != null ? String(end) : '',
     })
 
+    canceladoRef.current = false
     setProgress(0)
+    setEnvio({ total: file ? file.size : 0, enviado: 0, inicio: Date.now(), fase: 'enviar' })
     // 1) tenta subir direto ao Supabase (o vídeo não passa pelo site)
     if (await enviarDireto(qs)) return
     // 2) fallback: envio pelo servidor (servidor local ou vídeos pequenos)
@@ -434,20 +446,36 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
       const subido = await new Promise((resolve) => {
         const x = new XMLHttpRequest()
+        xhrRef.current = x
         x.open('PUT', d.uploadUrl)
         x.setRequestHeader('Content-Type', file.type || 'video/mp4')
         x.setRequestHeader('x-upsert', 'false')
         x.upload.onprogress = (e) => {
-          if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 90))
+          if (e.lengthComputable) {
+            setProgress(Math.round((e.loaded / e.total) * 90))
+            setEnvio((s) => ({ ...s, total: e.total, enviado: e.loaded }))
+          }
         }
-        x.onload = () => resolve(x.status >= 200 && x.status < 300)
-        x.onerror = () => resolve(false)
-        x.onabort = () => resolve(false)
+        x.onload = () => {
+          xhrRef.current = null
+          resolve(x.status >= 200 && x.status < 300)
+        }
+        x.onerror = () => {
+          xhrRef.current = null
+          resolve(false)
+        }
+        x.onabort = () => {
+          xhrRef.current = null
+          resolve(false)
+        }
         x.send(file)
       })
+      // cancelado pelo utilizador -> não tenta o envio alternativo
+      if (canceladoRef.current) return true
       if (!subido) return false
 
       setProgress(95)
+      setEnvio((s) => ({ ...s, fase: 'guardar' }))
       const conf = await fetch('/api/clips/confirm', {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
@@ -482,14 +510,19 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
      subida direta não é possível. */
   const enviarPeloServidor = (qs) => {
     const xhr = new XMLHttpRequest()
+    xhrRef.current = xhr
     xhr.open('POST', `/api/clips?${qs}`)
     xhr.setRequestHeader('Content-Type', file.type || 'video/mp4')
     const token = localStorage.getItem('userToken')
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
     xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100))
+      if (e.lengthComputable) {
+        setProgress(Math.round((e.loaded / e.total) * 100))
+        setEnvio((s) => ({ ...s, total: e.total, enviado: e.loaded }))
+      }
     }
     xhr.onload = () => {
+      xhrRef.current = null
       setProgress(-1)
       let data = null
       try {
@@ -507,10 +540,29 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       }
     }
     xhr.onerror = () => {
+      xhrRef.current = null
       setProgress(-1)
       setError('Falha no envio — tenta outra vez.')
     }
+    xhr.onabort = () => {
+      xhrRef.current = null
+      setProgress(-1)
+    }
     xhr.send(file)
+  }
+
+  /* Corta o envio a meio (botão "cancelar" da barra) */
+  const cancelarEnvio = () => {
+    canceladoRef.current = true
+    if (xhrRef.current) {
+      try {
+        xhrRef.current.abort()
+      } catch {
+        /* já estava morto */
+      }
+    }
+    xhrRef.current = null
+    setProgress(-1)
   }
 
   /* ============================================================
@@ -793,20 +845,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     m.username.toLowerCase().includes(query.trim().toLowerCase()),
   )
 
-  const tabChip = (t) => (
-    <button
-      key={t.id}
-      onClick={() => setTab(t.id)}
-      className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
-        tab === t.id
-          ? 'bg-orange-500 text-white'
-          : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
-      }`}
-    >
-      {t.label}
-    </button>
-  )
-
   const emptyMsg = jogo
     ? `Ainda não há clips de ${gameLabel(jogo)}.`
     : {
@@ -816,19 +854,40 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         guardados: 'Ainda não guardaste clips.',
       }[tab]
 
+  /* Barra de upload — MB enviados, velocidade e quanto falta */
+  const mbTotal = envio.total
+    ? Math.round((envio.total / 1048576) * 10) / 10
+    : Number(sizeMB) || 0
+  const mbEnviado = Math.round((envio.enviado / 1048576) * 10) / 10
+  const segundos = envio.inicio ? (Date.now() - envio.inicio) / 1000 : 0
+  const velocidade =
+    segundos > 0.4 && envio.enviado > 0
+      ? Math.max(0.1, Math.round((envio.enviado / 1048576 / segundos) * 10) / 10)
+      : 0
+  const restante =
+    velocidade > 0 && mbTotal > mbEnviado && envio.fase === 'enviar'
+      ? `cerca de ${Math.max(1, Math.ceil((mbTotal - mbEnviado) / velocidade))} s a restar`
+      : ''
+
   return (
     <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row">
         {/* ---------------- Conteúdo ---------------- */}
         <div className="min-w-0 flex-1">
           {/* Cabeçalho */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h1
-              className="font-black gradient-text"
-              style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
-            >
-              Clips e Publicações
-            </h1>
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1
+                className="font-black gradient-text"
+                style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
+              >
+                Clips e Publicações
+              </h1>
+              <p className="mt-1 text-sm text-gray-400">
+                {clips.length} clip{clips.length === 1 ? '' : 's'} · cortes do grupo,
+                comentários e guardados
+              </p>
+            </div>
             <button
               onClick={openForm}
               className="flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-600"
@@ -1102,11 +1161,40 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 )}
 
                 {progress >= 0 && (
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className="h-full bg-orange-500 transition-all"
-                      style={{ width: `${progress}%` }}
-                    />
+                  <div className="rounded-xl bg-white/5 px-3 py-2.5">
+                    <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="flex items-center gap-1.5 font-bold text-gray-200">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-300" />
+                        {envio.fase === 'guardar' ? 'A guardar o clip…' : 'A enviar o vídeo…'}
+                      </span>
+                      <span className="flex items-center gap-2 text-gray-400">
+                        <span>
+                          {mbEnviado} / {mbTotal} MB
+                        </span>
+                        {velocidade > 0 && (
+                          <>
+                            <span className="text-gray-600">·</span>
+                            <span>{velocidade} MB/s</span>
+                          </>
+                        )}
+                        <span className="font-black text-white">{progress}%</span>
+                      </span>
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 transition-[width] duration-200"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <span className="text-[11px] text-gray-500">{restante}</span>
+                      <button
+                        onClick={cancelarEnvio}
+                        className="text-[11px] font-bold text-gray-400 transition-colors hover:text-red-400"
+                      >
+                        cancelar envio
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1165,10 +1253,15 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           )}
 
           {/* Filtros (aba + jogo) */}
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            {TABS.filter((t) => user || (t.id !== 'meus' && t.id !== 'guardados')).map(tabChip)}
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <TabBar
+              ariaLabel="Filtrar clips"
+              value={tab}
+              onChange={setTab}
+              items={TABS.filter((t) => user || (t.id !== 'meus' && t.id !== 'guardados'))}
+            />
             {jogosComClips.length > 0 && (
-              <label className="ml-auto flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-gray-300 focus-within:bg-white/20">
+              <label className="ml-auto flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-gray-300 focus-within:bg-white/10">
                 <Gamepad2 className="h-4 w-4 text-orange-400" />
                 <select
                   value={jogo}
@@ -1196,14 +1289,27 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
           {/* Lista */}
           {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="h-9 w-9 animate-spin text-orange-500" />
+            <div className="flex flex-col items-center gap-3 py-16 text-gray-500">
+              <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+              <span className="text-sm">A carregar clips…</span>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/15 px-4 py-14 text-center text-gray-500">
-              <Film className="mx-auto mb-3 h-9 w-9 opacity-50" />
-              {emptyMsg}
-            </div>
+            <Estado
+              icon={Film}
+              titulo={emptyMsg}
+              texto={
+                tab === 'guardados'
+                  ? 'Toca no ícone de guardar de um clip e ele aparece aqui.'
+                  : jogo
+                    ? `Escolhe outro jogo ou publica o primeiro clip de ${gameLabel(jogo)}.`
+                    : 'Publica um clip novo e fica logo no topo da lista.'
+              }
+              acao={
+                user
+                  ? { label: 'Publicar clip', onClick: openForm }
+                  : { label: 'Entrar para publicar', onClick: () => onRequestAuth?.('clips') }
+              }
+            />
           ) : (
             <div className="space-y-6">
               {filtered.map((c) => (
@@ -1213,6 +1319,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   user={user}
                   onRequestAuth={onRequestAuth}
                   onProfile={onProfile}
+                  onColecao={user ? setClipColecao : null}
                   onUpdate={(next) =>
                     setClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
                   }
@@ -1221,6 +1328,19 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               ))}
             </div>
           )}
+
+          {/* Modal de coleções (pastas dos clips guardados) */}
+          <AnimatePresence>
+            {clipColecao && (
+              <ColecoesModal
+                clip={clipColecao}
+                onClose={() => setClipColecao(null)}
+                onMudou={() => {
+                  /* o estado de "guardado" continua no servidor */
+                }}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* ---------------- Membros (online/offline) ---------------- */}

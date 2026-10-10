@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Youtube, Clapperboard, Gamepad2, Home, History, User, Volume2, VolumeX } from 'lucide-react'
-import { estaMudo, onMudo, setMudo } from '../lib/sound'
+import { Youtube, Clapperboard, Gamepad2, Home, History, User } from 'lucide-react'
+import Sino from './Sino'
 
 /* ============================================================
    Barra de topo (só a marca) + barra de navegação flutuante
@@ -12,10 +11,6 @@ import { estaMudo, onMudo, setMudo } from '../lib/sound'
 export default function Navbar({ isAdmin = false, user = null }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [mudo, setMudoState] = useState(estaMudo())
-
-  // Estado do som (ligado/desligado no botão da barra de topo)
-  useEffect(() => onMudo(setMudoState), [])
 
   // Navega para a home e faz scroll para a secção
   const goTo = (hash) => {
@@ -77,16 +72,8 @@ export default function Navbar({ isAdmin = false, user = null }) {
             </span>
           </Link>
 
-          {/* Ligar/desligar os sons do site */}
-          <button
-            onClick={() => setMudo(!mudo)}
-            title={mudo ? 'Ligar os sons' : 'Desligar os sons'}
-            aria-label={mudo ? 'Ligar os sons' : 'Desligar os sons'}
-            aria-pressed={mudo}
-            className="btn-glass ml-auto flex h-9 w-9 items-center justify-center rounded-full text-gray-300 ring-1 ring-white/15 sm:h-10 sm:w-10"
-          >
-            {mudo ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
+          {/* Notificações (sino) — só para contas com sessão */}
+          <Sino user={user} />
         </div>
       </nav>
 
