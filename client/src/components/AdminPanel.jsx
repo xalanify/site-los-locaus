@@ -142,8 +142,9 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
   // Contas de jogo (ligação user <-> jogador) por conta aberta
   const [openUser, setOpenUser] = useState(null)
-  const [accForm, setAccForm] = useState({ game: 'cs2', nick: '' })
+  const [accForm, setAccForm] = useState({ game: 'cs2', nick: '', escolha: '' })
   const [accBusy, setAccBusy] = useState(false)
+  const [nomesJogo, setNomesJogo] = useState([]) // nomes das estatísticas do jogo aberto
 
   // Anúncios (publicações do admin)
   const [posts, setPosts] = useState([])
@@ -309,10 +310,28 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   }
 
   /* ---------- ligações user <-> contas de jogo ---------- */
+  // Nomes disponíveis: os que já aparecem nas estatísticas do jogo
+  // escolhido (cada jogo tem os seus — CS2, Rainbow, …)
+  useEffect(() => {
+    if (!openUser) return
+    let vivo = true
+    setNomesJogo([])
+    fetch(`/api/admin/game-names?game=${encodeURIComponent(accForm.game)}`, {
+      headers: adminHeaders(),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => vivo && setNomesJogo(Array.isArray(d?.names) ? d.names : []))
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openUser, accForm.game])
+
   const addGameAccount = async (u) => {
     const nick = accForm.nick.trim()
     if (!nick) {
-      setUsersError('Escreve o nick nesse jogo.')
+      setUsersError('Escolhe um nome das estatísticas (ou escreve outro).')
       return
     }
     setAccBusy(true)
@@ -331,7 +350,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       setUserList((prev) =>
         prev.map((x) => (x.id === u.id ? { ...x, game_accounts: data.accounts } : x)),
       )
-      setAccForm((f) => ({ ...f, nick: '' }))
+      setAccForm((f) => ({ ...f, nick: '', escolha: '' }))
     } catch {
       setUsersError('Sem ligação ao servidor.')
     } finally {
@@ -876,7 +895,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                         <button
                           onClick={() => {
                             setOpenUser(openUser === u.id ? null : u.id)
-                            setAccForm({ game: 'cs2', nick: '' })
+                            setAccForm({ game: 'cs2', nick: '', escolha: '' })
                           }}
                           className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-gray-300 hover:bg-white/20"
                         >
@@ -888,7 +907,14 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                         <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           <select
                             value={accForm.game}
-                            onChange={(e) => setAccForm((f) => ({ ...f, game: e.target.value }))}
+                            onChange={(e) =>
+                              setAccForm((f) => ({
+                                ...f,
+                                game: e.target.value,
+                                nick: '',
+                                escolha: '',
+                              }))
+                            }
                             className="rounded-lg bg-white/10 px-2 py-1.5 text-xs text-white outline-none"
                           >
                             {CLIP_GAMES.map((g) => (
@@ -897,16 +923,47 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                               </option>
                             ))}
                           </select>
-                          <input
-                            value={accForm.nick}
-                            onChange={(e) => setAccForm((f) => ({ ...f, nick: e.target.value }))}
-                            maxLength={40}
-                            placeholder="Nick nesse jogo"
-                            className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white outline-none placeholder:text-gray-600"
-                          />
+
+                          {/* nomes que já aparecem nas estatísticas desse jogo */}
+                          <select
+                            value={accForm.escolha}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              setAccForm((f) => ({
+                                ...f,
+                                escolha: v,
+                                nick: v === '__outro__' ? '' : v,
+                              }))
+                            }}
+                            title="Jogadores que aparecem nas estatísticas deste jogo"
+                            className="min-w-0 max-w-[16rem] flex-1 rounded-lg bg-white/10 px-2 py-1.5 text-xs text-white outline-none"
+                          >
+                            <option value="" className="bg-[#131316]">
+                              {nomesJogo.length ? 'Escolhe o jogador…' : 'Sem lista para este jogo'}
+                            </option>
+                            {nomesJogo.map((n) => (
+                              <option key={n} value={n} className="bg-[#131316]">
+                                {n}
+                              </option>
+                            ))}
+                            <option value="__outro__" className="bg-[#131316]">
+                              Outro nome / conta secundária…
+                            </option>
+                          </select>
+
+                          {accForm.escolha === '__outro__' && (
+                            <input
+                              value={accForm.nick}
+                              onChange={(e) => setAccForm((f) => ({ ...f, nick: e.target.value }))}
+                              maxLength={40}
+                              placeholder="Nick nesse jogo"
+                              className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white outline-none placeholder:text-gray-600"
+                            />
+                          )}
+
                           <button
                             onClick={() => addGameAccount(u)}
-                            disabled={accBusy}
+                            disabled={accBusy || !accForm.nick.trim()}
                             className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                           >
                             {accBusy && <Loader2 className="h-3 w-3 animate-spin" />} Ligar
@@ -914,8 +971,9 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                         </div>
                       )}
                       <p className="mt-1.5 text-[10px] text-gray-500">
-                        Estas ligações ligam o jogador ao membro — é assim que o TOP 1 KILL muda
-                        sozinho quando o líder muda.
+                        Os nomes são os que aparecem nas estatísticas de cada jogo (cada jogo tem
+                        os seus) e um membro pode ter vários no mesmo jogo. É assim que o TOP 1
+                        KILL muda sozinho quando o líder muda.
                       </p>
                     </div>
                   </div>

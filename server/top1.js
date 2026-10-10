@@ -42,17 +42,26 @@ function computeLeader() {
 }
 
 /* Lider -> conta (ligação oficial do admin primeiro, depois
-   nick no CS2 do perfil, depois username) */
+   nick no CS2 do perfil, depois username).
+   O nick guardado pode ser a chave interna ou o nome que se vê nas
+   estatísticas — aceita qualquer forma do mesmo jogador. */
 async function matchAccount(key) {
-  const k = String(key || '').toLowerCase();
+  const k = String(key || '').toLowerCase().trim();
+  const formas = new Set([k]);
+  const t = (cs2.TRACKED || []).find((x) => String(x.key).toLowerCase() === k);
+  if (t) {
+    formas.add(String(t.name || '').toLowerCase().trim());
+    for (const n of t.names || []) formas.add(String(n).toLowerCase().trim());
+  }
+  for (const f of [...formas]) if (!f) formas.delete(f);
+
   const db = getDb();
   // 1) user_game_accounts — ligação feita no painel admin
   try {
-    const hit = await db
-      .prepare(
-        "SELECT user_id FROM user_game_accounts WHERE LOWER(game) = 'cs2' AND LOWER(TRIM(nick)) = ?",
-      )
-      .get(k);
+    const rows = await db
+      .prepare("SELECT user_id, nick FROM user_game_accounts WHERE LOWER(game) = 'cs2'")
+      .all();
+    const hit = rows.find((r) => formas.has(String(r.nick || '').toLowerCase().trim()));
     if (hit) {
       const u = await store.findById(hit.user_id);
       if (u) return u;
@@ -67,7 +76,7 @@ async function matchAccount(key) {
         "SELECT user_id, game_nick FROM user_profiles WHERE game_nick IS NOT NULL AND TRIM(game_nick) != ''",
       )
       .all();
-    const hit = rows.find((r) => String(r.game_nick).toLowerCase() === k);
+    const hit = rows.find((r) => formas.has(String(r.game_nick || '').toLowerCase().trim()));
     if (hit) {
       const u = await store.findById(hit.user_id);
       if (u) return u;

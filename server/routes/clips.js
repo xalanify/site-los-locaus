@@ -88,6 +88,8 @@ async function decorate(db, rows, auth) {
     comments_count: countBy.get(Number(c.id)) || 0,
     author: c.username || '???',
     author_id: Number(c.user_id),
+    // foto de perfil do autor (Supabase) — sem ela o cartão mostra só as iniciais
+    author_avatar: c.author_avatar || null,
     mine: !!(uid && Number(c.user_id) === uid),
     liked: !!(uid && likedSet.has(Number(c.id))),
     saved: !!(uid && savedSet.has(Number(c.id))),
@@ -96,8 +98,10 @@ async function decorate(db, rows, auth) {
 }
 
 const SELECT_SQL = `
-  SELECT c.*, u.username FROM clips c
+  SELECT c.*, u.username, up.avatar_url AS author_avatar
+  FROM clips c
   JOIN users u ON u.id = c.user_id
+  LEFT JOIN user_profiles up ON up.user_id = c.user_id
 `;
 
 // Conta interna usada quando o ADMIN publica um clip de teste.
@@ -450,8 +454,10 @@ router.get('/:id/comments', attachAuth, async (req, res) => {
 
     const rows = await db
       .prepare(
-        `SELECT cc.id, cc.parent_id, cc.content, cc.created_at, cc.user_id, u.username
+        `SELECT cc.id, cc.parent_id, cc.content, cc.created_at, cc.user_id, u.username,
+                up.avatar_url AS author_avatar
          FROM clip_comments cc JOIN users u ON u.id = cc.user_id
+         LEFT JOIN user_profiles up ON up.user_id = cc.user_id
          WHERE cc.clip_id = ? ORDER BY cc.created_at ASC, cc.id ASC`,
       )
       .all(id);
@@ -463,6 +469,7 @@ router.get('/:id/comments', attachAuth, async (req, res) => {
         content: c.content,
         created_at: c.created_at,
         author: c.username,
+        author_avatar: c.author_avatar || null,
         deletable: !!(auth && (auth.admin || (auth.uid && Number(c.user_id) === auth.uid))),
       })),
     );
@@ -502,8 +509,11 @@ router.post('/:id/comments', requireUser, async (req, res) => {
       .run(id, req.auth.uid, parentId, content);
     const row = await db
       .prepare(
-        `SELECT cc.id, cc.parent_id, cc.content, cc.created_at, cc.user_id, u.username
-         FROM clip_comments cc JOIN users u ON u.id = cc.user_id WHERE cc.id = ?`,
+        `SELECT cc.id, cc.parent_id, cc.content, cc.created_at, cc.user_id, u.username,
+                up.avatar_url AS author_avatar
+         FROM clip_comments cc JOIN users u ON u.id = cc.user_id
+         LEFT JOIN user_profiles up ON up.user_id = cc.user_id
+         WHERE cc.id = ?`,
       )
       .get(Number(result.lastInsertRowid));
     res.json({
@@ -512,6 +522,7 @@ router.post('/:id/comments', requireUser, async (req, res) => {
       content: row.content,
       created_at: row.created_at,
       author: row.username,
+      author_avatar: row.author_avatar || null,
       deletable: true,
     });
   } catch (error) {

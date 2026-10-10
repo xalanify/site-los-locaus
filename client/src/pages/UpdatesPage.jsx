@@ -612,7 +612,7 @@ function GameScope() {
    ============================================================ */
 export default function UpdatesPage() {
   return (
-    <section className="min-h-screen px-4 pb-20 pt-28 sm:px-6">
+    <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
       <div className="mx-auto max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

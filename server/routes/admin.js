@@ -280,4 +280,52 @@ router.delete('/users/:id/game-accounts/:accId', requireAdmin, async (req, res) 
   }
 });
 
+/* ---------- Nomes que já aparecem nas estatísticas de cada jogo ----------
+   O painel liga um membro a um nome real das estatísticas: o CS2 tem
+   os nomes do CS2, o Rainbow os do Rainbow, etc. Cada membro pode ter
+   vários nomes no mesmo jogo (contas secundárias). */
+const tracker = require('../trackerdata');
+const cs2 = require('../cs2data');
+
+/* lista sem repetidos (xandy_R6 / xandy_r6 é o mesmo jogador) */
+const uniq = (list) => {
+  const seen = new Set();
+  const out = [];
+  for (const s of list) {
+    const v = String(s || '').trim();
+    if (!v) continue;
+    const k = v.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(v);
+  }
+  return out;
+};
+
+async function namesForGame(game) {
+  if (game === 'cs2' || game === 'csgo') {
+    return uniq((cs2.TRACKED || []).map((t) => t.name));
+  }
+  if (game === 'r6') {
+    const d = tracker.readJson(tracker.R6_FILE);
+    return uniq((d?.players || []).flatMap((p) => [p.handle, p.key]));
+  }
+  if (tracker.BF_FILES[game]) {
+    const d = tracker.readJson(tracker.BF_FILES[game]);
+    return uniq([d && (d.handle || d.name)]);
+  }
+  return [];
+}
+
+router.get('/game-names', requireAdmin, async (req, res) => {
+  try {
+    const game = String(req.query.game || '').trim().toLowerCase();
+    if (!CLIP_GAME_IDS.has(game)) return res.status(400).json({ error: 'Jogo inválido.' });
+    res.json({ game, names: await namesForGame(game) });
+  } catch (error) {
+    console.error('Erro game-names:', error.message);
+    res.status(500).json({ error: 'Erro ao ler os nomes do jogo.' });
+  }
+});
+
 module.exports = { adminRouter: router };

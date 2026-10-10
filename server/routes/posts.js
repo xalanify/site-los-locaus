@@ -4,6 +4,20 @@ const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+/* Foto de perfil de quem escreveu — o nome do comentário/com publicação
+   bate certo com o username da conta, por isso dá para ir buscar a foto. */
+async function avatarLookup(db) {
+  const rows = await db
+    .prepare(
+      `SELECT LOWER(u.username) AS k, p.avatar_url
+       FROM users u LEFT JOIN user_profiles p ON p.user_id = u.id`,
+    )
+    .all()
+    .catch(() => []);
+  const map = new Map(rows.map((r) => [String(r.k), r.avatar_url || null]));
+  return (name) => map.get(String(name || '').trim().toLowerCase()) || null;
+}
+
 // Obter todas as publicações (com gostos e comentários)
 router.get('/', async (req, res) => {
   try {
@@ -20,10 +34,13 @@ router.get('/', async (req, res) => {
       .all();
     const liked = await db.prepare('SELECT DISTINCT post_id FROM post_likes WHERE ip = ?').all(ip);
 
+    // Fotos de perfil de quem escreveu (o nome bate certo com o username)
+    const avatarOf = await avatarLookup(db);
+
     const byPost = new Map();
     for (const c of comments) {
       if (!byPost.has(c.post_id)) byPost.set(c.post_id, []);
-      byPost.get(c.post_id).push(c);
+      byPost.get(c.post_id).push({ ...c, author_avatar: avatarOf(c.author) });
     }
     const likedSet = new Set(liked.map((r) => Number(r.post_id)));
 
@@ -31,6 +48,7 @@ router.get('/', async (req, res) => {
       const cs = byPost.get(p.id) || [];
       return {
         ...p,
+        author_avatar: avatarOf(p.author),
         liked: likedSet.has(p.id),
         comments: cs,
         comments_count: cs.length,
@@ -114,7 +132,8 @@ router.get('/:id/comments', async (req, res) => {
         'SELECT id, author, content, created_at FROM post_comments WHERE post_id = ? ORDER BY created_at ASC'
       )
       .all(postId);
-    res.json(comments);
+    const avatarOf = await avatarLookup(db);
+    res.json(comments.map((c) => ({ ...c, author_avatar: avatarOf(c.author) })));
   } catch (error) {
     console.error('Erro comments GET:', error.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -146,7 +165,7 @@ router.post('/:id/comments', async (req, res) => {
       .prepare('SELECT id, author, content, created_at FROM post_comments WHERE id = ?')
       .get(result.lastInsertRowid);
 
-    res.json(comment);
+    res.json({ ...comment, author_avatar: (await avatarLookup(db))(comment.author) });
   } catch (error) {
     console.error('Erro comment POST:', error.message);
     res.status(500).json({ error: 'Erro interno' });

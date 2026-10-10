@@ -1329,6 +1329,42 @@ const fmtSecs = (sec) => {
 /* ============================================================
    Rainbow Six — cartões do esquadrão (rank, nível, carreira)
    ============================================================ */
+
+/* RP -> rank do Rainbow Six (Ranked 2.0): devolve o nome e o
+   ícone do rank atingido, para o "Rank máx." não ficar só em números. */
+const ROMANOS = ['V', 'IV', 'III', 'II', 'I']
+const R6_TIERS = [
+  { nome: 'COPPER', slug: 'copper', min: 0, max: 1600 },
+  { nome: 'BRONZE', slug: 'bronze', min: 1600, max: 2100 },
+  { nome: 'SILVER', slug: 'silver', min: 2100, max: 2600 },
+  { nome: 'GOLD', slug: 'gold', min: 2600, max: 3200 },
+  { nome: 'PLATINUM', slug: 'platinum', min: 3200, max: 4100 },
+  { nome: 'EMERALD', slug: 'emerald', min: 4100, max: 4600 },
+  { nome: 'DIAMOND', slug: 'diamond', min: 4600, max: 5000 },
+  { nome: 'CHAMPION', slug: 'champion', min: 5000, max: Infinity },
+]
+const rankImg = (slug) =>
+  `https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/${slug}.png?v=5`
+
+/* Converte um nome de rank ("GOLD III") para o slug da imagem */
+const slugDeNome = (nome) => {
+  const s = String(nome || '').toUpperCase().trim()
+  const m = s.match(/^(.+?)[\s-]+(IV|III|II|I|V)$/)
+  const tier = (m ? m[1] : s).trim().toLowerCase().replace(/\s+/g, '-')
+  const num = m ? { I: 1, II: 2, III: 3, IV: 4, V: 5 }[m[2]] : null
+  return num ? `${tier}-${num}` : tier
+}
+
+const rankFromRp = (rp) => {
+  const r = Number(rp) || 0
+  if (r <= 0) return null
+  const t = R6_TIERS.find((x) => r >= x.min && r < x.max)
+  if (!t) return null
+  if (!Number.isFinite(t.max)) return { name: 'CHAMPION', img: rankImg('champion') }
+  const idx = Math.min(4, Math.max(0, Math.floor((r - t.min) / ((t.max - t.min) / 5))))
+  return { name: `${t.nome} ${ROMANOS[idx]}`, img: rankImg(`${t.slug}-${5 - idx}`) }
+}
+
 function R6Squad({ players, maxRp = {} }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
@@ -1420,13 +1456,29 @@ function R6Squad({ players, maxRp = {} }) {
                 {rank ? rank.name : 'Sem rank'}
                 {rank && rank.season ? ` · ${rank.season}` : ''}
               </div>
-              <div className="mt-0.5 text-center text-[11px] font-black text-orange-300">
-                Rank máx. ·{' '}
-                {p.maxRank
-                  ? p.maxRank
-                  : maxRp[p.key] > 0
-                    ? `${fmt(maxRp[p.key])} RP`
-                    : '—'}
+              <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-black text-orange-300">
+                {(() => {
+                  // rank máximo: o campo manual do r6.json manda; senão
+                  // vem do maior RP atingido nas partidas ranked
+                  const max = p.maxRank
+                    ? { name: p.maxRank, img: rankImg(slugDeNome(p.maxRank)) }
+                    : rankFromRp(maxRp[p.key])
+                  if (!max) return <span className="text-gray-500">Rank máx. · —</span>
+                  return (
+                    <>
+                      <img
+                        src={max.img}
+                        alt=""
+                        title={`${max.name}${maxRp[p.key] ? ` · ${fmt(maxRp[p.key])} RP` : ''}`}
+                        className="h-4 w-4 shrink-0 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                      <span className="truncate">Rank máx. · {max.name}</span>
+                    </>
+                  )
+                })()}
               </div>
             </motion.div>
           )
@@ -1601,7 +1653,7 @@ export default function GamesPage() {
   const [tab, setTab] = useState(null)
 
   return (
-    <section className="min-h-screen px-4 pb-20 pt-28 sm:px-6">
+    <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

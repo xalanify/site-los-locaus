@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Calendar,
-  Hash,
   Clapperboard,
   LogOut,
   LayoutDashboard,
@@ -196,7 +195,7 @@ export default function ProfilePage({
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-28 sm:px-6">
+    <section className="min-h-screen px-4 pb-24 pt-24 sm:pt-28 sm:px-6">
       <div className="mx-auto max-w-3xl">
         {/* ---------------- Saudação ---------------- */}
         <motion.h1
@@ -260,9 +259,17 @@ export default function ProfilePage({
                   </span>
                 )}
               </div>
-              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-400">
-                <Calendar className="h-3.5 w-3.5 text-orange-400" />
-                Membro desde {criado}
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                  Membro desde {criado}
+                </span>
+                <span
+                  className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
+                  title="ID da conta"
+                >
+                  ID {me.id}
+                </span>
               </p>
             </div>
           </div>
@@ -288,27 +295,6 @@ export default function ProfilePage({
               ))}
             </div>
           )}
-
-          <div className="relative mt-5 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-white/5 p-3 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-lg font-black text-white">
-                <Hash className="h-4 w-4 text-orange-400" />
-                {me.id}
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
-                ID da conta
-              </div>
-            </div>
-            <div className="rounded-2xl bg-white/5 p-3 text-center">
-              <div className="text-lg font-black text-white">
-                {minhas.length}
-                <span className="text-sm text-gray-500">/{BADGES.length}</span>
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
-                Distinções
-              </div>
-            </div>
-          </div>
 
           {/* editar foto (ficheiro) */}
           {edit && (

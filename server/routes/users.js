@@ -436,8 +436,10 @@ router.get('/:username', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT c.*, u.username FROM clips c
+        `SELECT c.*, u.username, p.avatar_url AS author_avatar
+         FROM clips c
          JOIN users u ON u.id = c.user_id
+         LEFT JOIN user_profiles p ON p.user_id = c.user_id
          WHERE c.user_id = ? AND (c.visibility = 'public' OR ? = 1)
          ORDER BY c.created_at DESC, c.id DESC LIMIT 100`,
       )

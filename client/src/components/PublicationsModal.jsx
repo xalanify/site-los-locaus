@@ -331,6 +331,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                           <div key={c.id} className="flex items-start gap-2">
                             <AvatarImg
                               name={c.author}
+                              src={c.author_avatar}
                               color="#f97316"
                               className="mt-0.5 h-6 w-6"
                             />

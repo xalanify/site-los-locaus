@@ -257,7 +257,7 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
   const renderComment = (cm, isReply = false) => (
     <div key={cm.id} className={isReply ? 'ml-6 mt-2' : 'mt-3'}>
       <div className="flex items-start gap-2">
-        <AvatarImg name={cm.author} className="h-6 w-6" />
+        <AvatarImg name={cm.author} src={cm.author_avatar} className="h-6 w-6" />
         <div className="min-w-0 flex-1 rounded-xl bg-white/5 px-3 py-2">
           <div className="flex flex-wrap items-center gap-x-2">
             <button
@@ -304,7 +304,7 @@ export default function ClipCard({ clip, user, onRequestAuth, onProfile, onUpdat
           onClick={() => onProfile && onProfile(c.author)}
           className="group flex items-center gap-2.5"
         >
-          <AvatarImg name={c.author} className="h-9 w-9" />
+          <AvatarImg name={c.author} src={c.author_avatar} className="h-9 w-9" />
           <span className="text-sm font-bold text-white group-hover:text-orange-400">
             {c.author}
           </span>

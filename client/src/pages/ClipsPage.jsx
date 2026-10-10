@@ -103,7 +103,11 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
           <div className="space-y-5">
             {/* Cabeçalho */}
             <div className="flex items-center gap-3">
-              <AvatarImg name={d.profile.username} className="h-14 w-14" />
+              <AvatarImg
+                name={d.profile.username}
+                src={d.profile.avatar_url}
+                className="h-14 w-14"
+              />
               <div className="min-w-0">
                 <div className="truncate font-display text-xl font-black uppercase text-white">
                   {d.profile.username}
@@ -632,12 +636,12 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     }
     if (graph) graph.monitor.gain.value = 0
 
-    /* Qualidade inicial: 60 fps (para o corte ficar igual ao original).
-       Se o original é muito pesado para o limite, já se grava com
-       menos resolução — os fps só descem nas tentativas seguintes. */
+    /* Qualidade inicial: 60 fps, igual ao original. Os fps NUNCA descem
+       (descer para 30/24 estraga a qualidade do clip) — se não couber no
+       limite, o que baixa é a resolução. */
+    const FPS = 60
     const ratio = bitrateOrig > 0 ? (MAXB * 0.75 * 8) / (bitrateOrig * Math.max(sel, 1)) : 1
     let escala = ratio >= 1 ? 1 : Math.max(0.3, Math.min(1, Math.sqrt(ratio)))
-    let fps = 60
 
     /* Grava o trecho escolhido (em tempo real) com a qualidade dada */
     const gravar = async (qEscala, qFps, tentativa) => {
@@ -733,15 +737,12 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
     try {
       let blob = null
-      let fpsUsado = fps
-      for (let tent = 1; tent <= 3; tent++) {
-        fpsUsado = fps
-        blob = await gravar(escala, fps, tent)
-        if (blob.size <= MAXB || tent === 3) break
+      for (let tent = 1; tent <= 4; tent++) {
+        blob = await gravar(escala, FPS, tent)
+        if (blob.size <= MAXB || tent === 4) break
         // ficou acima do limite: volta a gravar com menos resolução
-        escala = Math.max(0.25, escala * 0.6)
-        // só aqui os fps descem (é o que mais poupa espaço)
-        fps = tent === 1 ? 30 : 24
+        // (mantendo os 60 fps — qualidade acima de tudo)
+        escala = Math.max(0.2, escala * 0.6)
       }
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
@@ -750,20 +751,20 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       const ficou = Math.round((blob.size / 1048576) * 10) / 10
       if (blob.size > MAXB) {
         return setError(
-          `Mesmo a reduzir a qualidade ficou em ${ficou} MB (limite ${maxMB} MB) — escolhe menos segundos do vídeo.`,
+          `Mesmo a reduzir a resolução ficou em ${ficou} MB (limite ${maxMB} MB) — escolhe menos segundos do vídeo.`,
         )
       }
 
       const type = blob.type || 'video/webm'
-      const base = (file.name || 'video').replace(/\.[^.]+$/, '').slice(0, 60)
+      const nomeBase = (file.name || 'video').replace(/\.[^.]+$/, '').slice(0, 60)
       const novo = new File(
         [blob],
-        base + '-cortado' + (type.indexOf('mp4') >= 0 ? '.mp4' : '.webm'),
+        nomeBase + '-cortado' + (type.indexOf('mp4') >= 0 ? '.mp4' : '.webm'),
         { type },
       )
       setStartStr('0:00')
       onPick(novo)
-      setNota(`Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}, ${fpsUsado} fps).`)
+      setNota(`Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}, ${FPS} fps).`)
     } catch {
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
@@ -816,7 +817,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       }[tab]
 
   return (
-    <section className="min-h-screen px-4 pb-20 pt-28 sm:px-6">
+    <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row">
         {/* ---------------- Conteúdo ---------------- */}
         <div className="min-w-0 flex-1">
@@ -855,34 +856,37 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               </div>
 
               <div className="space-y-4">
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  maxLength={100}
-                  placeholder="Título do clip"
-                  className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15"
-                />
+                {/* título + jogo */}
+                <div className="grid gap-4 sm:grid-cols-[1fr,14rem]">
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={100}
+                    placeholder="Título do clip"
+                    className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15"
+                  />
 
-                {/* jogo do clip — obrigatório */}
-                <label className="block">
-                  <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
-                    Jogo do clip <span className="text-orange-400">*</span>
-                  </span>
-                  <select
-                    value={game}
-                    onChange={(e) => setGame(e.target.value)}
-                    className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none focus:bg-white/15"
-                  >
-                    <option value="" className="bg-[#131316]">
-                      Escolhe o jogo…
-                    </option>
-                    {CLIP_GAMES.map((g) => (
-                      <option key={g.id} value={g.id} className="bg-[#131316]">
-                        {g.label}
+                  {/* jogo do clip — obrigatório */}
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
+                      Jogo do clip <span className="text-orange-400">*</span>
+                    </span>
+                    <select
+                      value={game}
+                      onChange={(e) => setGame(e.target.value)}
+                      className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none focus:bg-white/15"
+                    >
+                      <option value="" className="bg-[#131316]">
+                        Escolhe o jogo…
                       </option>
-                    ))}
-                  </select>
-                </label>
+                      {CLIP_GAMES.map((g) => (
+                        <option key={g.id} value={g.id} className="bg-[#131316]">
+                          {g.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
 
                 {/* vídeo escolhido */}
                 {!preview ? (
@@ -929,147 +933,115 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   onChange={(e) => onPick(e.target.files && e.target.files[0])}
                 />
 
-                {/* tamanho do vídeo em tempo real (MB / limite) */}
+                {/* peso + corte — tudo no mesmo sítio */}
                 {file && (
-                  <div className="rounded-xl bg-black/30 p-3">
-                    <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1 text-xs font-bold">
-                      <span className="text-gray-300">
-                        Tamanho:{' '}
-                        <span className={corTexto}>{sizeMB} MB</span> / {maxMB} MB
+                  <div className="rounded-xl border border-white/10 bg-black/40 p-3 sm:p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-gray-400">
+                        <Scissors className="h-4 w-4 text-orange-400" /> Peso e corte
                       </span>
-                      <span className={corTexto}>
-                        {over
-                          ? `${Math.round(sizeMB - maxMB)} MB acima do limite`
-                          : `usamos ${Math.round(pctBar)}% do limite`}
+                      <span className="text-xs font-bold">
+                        <span className={corTexto}>{sizeMB} MB</span>
+                        <span className="text-gray-500"> / {maxMB} MB</span>
+                        <span className={`ml-2 ${corTexto}`}>
+                          {over ? `${Math.round(sizeMB - maxMB)} MB acima` : 'cabe'}
+                        </span>
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-white/10">
+
+                    {/* barra de tamanho */}
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
                       <div
                         className={`h-full rounded-full transition-all ${corBarra}`}
                         style={{ width: `${pctBar}%` }}
                       />
                     </div>
-                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
-                      {duration != null && <span>Duração {mmss(duration)}</span>}
-                      {mbps > 0 && <span>≈ {mbps} Mbps</span>}
-                      <span className={over ? 'font-bold text-red-400' : ''}>
-                        {over
-                          ? 'Corta o vídeo (em baixo) até caber.'
-                          : 'Cabe no limite — podes publicar.'}
-                      </span>
-                    </div>
-                    {nota && (
-                      <p className="mt-1.5 rounded-lg bg-green-500/10 px-2.5 py-1.5 text-[11px] font-bold text-green-400">
-                        {nota}
-                      </p>
-                    )}
-                  </div>
-                )}
 
-                {/* corte do trecho */}
-                <div className="grid grid-cols-2 gap-3">
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
-                      Começa em
-                    </span>
-                    <input
-                      value={startStr}
-                      onChange={(e) => setStartStr(e.target.value)}
-                      placeholder="0:00"
-                      className="w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none focus:bg-white/15"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
-                      Termina em
-                    </span>
-                    <input
-                      value={endStr}
-                      onChange={(e) => setEndStr(e.target.value)}
-                      placeholder={duration != null ? mmss(duration) : 'fim do vídeo'}
-                      className="w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none focus:bg-white/15"
-                    />
-                  </label>
-                </div>
-
-                {/* cortador — vê-se os MB em tempo real e corta aqui mesmo */}
-                {preview && dur > 0 && (
-                  <div className="rounded-xl border border-white/10 bg-black/40 p-3">
-                    <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
-                      <span className="flex items-center gap-1.5 text-xs font-bold uppercase text-gray-400">
-                        <Scissors className="h-4 w-4 text-orange-400" /> Cortar o vídeo
-                      </span>
-                      <span className="text-xs font-bold text-white">
-                        {mmss(tA)} → {mmss(tB)} · {mmss(sel)} · ≈{' '}
-                        <span className={over ? 'text-red-400' : 'text-orange-400'}>
-                          {saidaMB} MB
+                    {/* trecho: hora editável + barra de arrastar */}
+                    <div className="mt-3 space-y-2">
+                      <label className="flex items-center gap-2">
+                        <span className="w-11 shrink-0 text-[11px] font-black uppercase text-gray-500">
+                          Início
                         </span>
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block">
-                        <span className="mb-1 flex items-center justify-between text-[11px] text-gray-500">
-                          <span>Início</span>
-                          <span className="font-bold text-orange-300">{mmss(tA)}</span>
-                        </span>
+                        <input
+                          value={startStr}
+                          onChange={(e) => setStartStr(e.target.value)}
+                          placeholder="0:00"
+                          disabled={!!trimming}
+                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-orange-300 outline-none focus:bg-white/15 disabled:opacity-50"
+                        />
                         <input
                           type="range"
                           min={0}
                           max={dur}
                           step={1}
                           value={tA}
-                          disabled={!!trimming}
+                          disabled={!!trimming || dur <= 0}
                           onChange={(e) => {
                             const val = Number(e.target.value)
                             setStartStr(mmss(val))
                             if (val >= tB) setEndStr(mmss(Math.min(dur, val + 1)))
                           }}
-                          className="w-full accent-orange-500"
+                          className="min-w-0 flex-1 accent-orange-500"
                         />
                       </label>
-                      <label className="block">
-                        <span className="mb-1 flex items-center justify-between text-[11px] text-gray-500">
-                          <span>Fim</span>
-                          <span className="font-bold text-orange-300">{mmss(tB)}</span>
+                      <label className="flex items-center gap-2">
+                        <span className="w-11 shrink-0 text-[11px] font-black uppercase text-gray-500">
+                          Fim
                         </span>
+                        <input
+                          value={endStr}
+                          onChange={(e) => setEndStr(e.target.value)}
+                          placeholder={duration != null ? mmss(duration) : 'fim'}
+                          disabled={!!trimming}
+                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-orange-300 outline-none focus:bg-white/15 disabled:opacity-50"
+                        />
                         <input
                           type="range"
                           min={0}
                           max={dur}
                           step={1}
                           value={tB}
-                          disabled={!!trimming}
+                          disabled={!!trimming || dur <= 0}
                           onChange={(e) => {
                             const val = Number(e.target.value)
                             if (val <= tA) setStartStr(mmss(Math.max(0, val - 1)))
                             setEndStr(mmss(val))
                           }}
-                          className="w-full accent-orange-500"
+                          className="min-w-0 flex-1 accent-orange-500"
                         />
                       </label>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    {nota && (
+                      <p className="mt-2 rounded-lg bg-green-500/10 px-2.5 py-1.5 text-[11px] font-bold text-green-400">
+                        {nota}
+                      </p>
+                    )}
+
+                    {/* ações do corte */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
                       <button
                         onClick={playSelection}
-                        disabled={!!trimming}
+                        disabled={!!trimming || dur <= 0}
                         className="rounded-full bg-white/10 px-3.5 py-2 text-xs font-bold text-gray-200 hover:bg-white/20 disabled:opacity-40"
                       >
                         Ver só o trecho
                       </button>
                       <button
                         onClick={cutVideo}
-                        disabled={!!trimming}
+                        disabled={!!trimming || dur <= 0}
                         className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40"
                       >
                         <Scissors className="h-3.5 w-3.5" />
-                        {trimming
-                          ? 'A cortar…'
-                          : over
-                            ? `Cortar para caber (${saidaMB} MB, 60 fps)`
-                            : `Cortar vídeo (${saidaMB} MB, 60 fps)`}
+                        {trimming ? 'A cortar…' : over ? 'Cortar para caber' : 'Cortar vídeo'}
                       </button>
+                      {dur > 0 && (
+                        <span className="text-[11px] text-gray-500">
+                          trecho {mmss(sel)} · sai com{' '}
+                          <span className={corTexto}>{saidaMB} MB</span>
+                        </span>
+                      )}
                     </div>
 
                     {trimming && (
@@ -1077,7 +1049,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         <div className="mb-1 flex justify-between text-[11px] font-bold text-orange-300">
                           <span>
                             A cortar em tempo real…
-                            {trimming.tentativa > 1 ? ` (tentativa ${trimming.tentativa}/3)` : ''}
+                            {trimming.tentativa > 1 ? ` (tentativa ${trimming.tentativa}/4)` : ''}
                           </span>
                           <span>
                             {mmss(trimming.done)} / {mmss(trimming.total)} (
@@ -1099,36 +1071,29 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       </div>
                     )}
 
-                    <p className="mt-2 text-[11px] text-gray-500">
-                      O corte é feito aqui no browser e não envia nada para o site: fica só o
-                      trecho escolhido, a 60 fps e com um tamanho que cabe nos {maxMB} MB.
-                    </p>
+                    {/* números técnicos — disponíveis mas fora do caminho */}
+                    <details className="mt-3 border-t border-white/10 pt-2 text-[11px] text-gray-500">
+                      <summary className="cursor-pointer font-bold text-gray-400 hover:text-gray-200">
+                        Detalhes técnicos
+                      </summary>
+                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                        {duration != null && <span>Duração {mmss(duration)}</span>}
+                        {mbps > 0 && <span>≈ {mbps} Mbps originais</span>}
+                        <span>{Math.round(pctBar)}% do limite</span>
+                        <span>60 fps na saída</span>
+                        <span>
+                          {over
+                            ? 'Corta o vídeo até caber.'
+                            : 'Cabe no limite — podes publicar.'}
+                        </span>
+                      </div>
+                      <p className="mt-1.5">
+                        O corte é feito aqui no browser e não envia nada para o site: fica só o
+                        trecho escolhido, a 60 fps e com um tamanho que cabe nos {maxMB} MB.
+                      </p>
+                    </details>
                   </div>
                 )}
-
-                {/* visibilidade */}
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setVisibility('public')}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                      visibility === 'public'
-                        ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40'
-                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
-                    }`}
-                  >
-                    <Globe className="h-4 w-4" /> Público
-                  </button>
-                  <button
-                    onClick={() => setVisibility('private')}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                      visibility === 'private'
-                        ? 'bg-yellow-500/20 text-yellow-400 ring-1 ring-yellow-500/40'
-                        : 'bg-white/10 text-gray-400 hover:bg-white/20'
-                    }`}
-                  >
-                    <Lock className="h-4 w-4" /> Privado
-                  </button>
-                </div>
 
                 {error && (
                   <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
@@ -1145,29 +1110,55 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   </div>
                 )}
 
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      setShowForm(false)
-                      resetForm()
-                    }}
-                    className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-gray-300 hover:bg-white/20"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={submit}
-                    disabled={progress >= 0}
-                    className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
-                  >
-                    {progress >= 0 ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" /> A enviar {progress}%
-                      </>
-                    ) : (
-                      'Publicar'
-                    )}
-                  </button>
+                {/* visibilidade + ações */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-3">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setVisibility('public')}
+                      className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                        visibility === 'public'
+                          ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40'
+                          : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                      }`}
+                    >
+                      <Globe className="h-4 w-4" /> Público
+                    </button>
+                    <button
+                      onClick={() => setVisibility('private')}
+                      className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                        visibility === 'private'
+                          ? 'bg-yellow-500/20 text-yellow-400 ring-1 ring-yellow-500/40'
+                          : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                      }`}
+                    >
+                      <Lock className="h-4 w-4" /> Privado
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowForm(false)
+                        resetForm()
+                      }}
+                      className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-gray-300 hover:bg-white/20"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={submit}
+                      disabled={progress >= 0}
+                      className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                    >
+                      {progress >= 0 ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> A enviar {progress}%
+                        </>
+                      ) : (
+                        'Publicar'
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
