@@ -1,7 +1,7 @@
 import { Inbox } from 'lucide-react'
 
 /* ============================================================
-   Estado vazio / erro — um cartão de vidro com ícone, título,
+   Estado vazio / erro — um cartão sólido com ícone, título,
    texto e (opcional) ação. Todos os sítios sem conteúdo usam
    este componente para ficarem iguais.
    ============================================================ */

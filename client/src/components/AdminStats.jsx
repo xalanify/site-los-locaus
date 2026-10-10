@@ -114,6 +114,7 @@ export default function AdminStats() {
           <Cartao Icon={Eye} cor="bg-emerald-400/15 text-emerald-300" valor={r.clipsPublicos} rotulo="públicos" />
           <Cartao Icon={Heart} cor="bg-rose-400/15 text-rose-300" valor={r.likes} rotulo="gostos" />
           <Cartao Icon={Download} cor="bg-sky-400/15 text-sky-300" valor={r.downloads} rotulo="transferidos" />
+          <Cartao Icon={Eye} cor="bg-orange-400/15 text-orange-300" valor={r.views} rotulo="visualizações" />
           <Cartao Icon={Save} cor="bg-amber-400/15 text-amber-300" valor={r.saves} rotulo="guardados" />
           <Cartao Icon={MessageSquare} cor="bg-indigo-400/15 text-indigo-300" valor={r.comentarios} rotulo="comentários" />
           <Cartao Icon={Clapperboard} cor="bg-fuchsia-400/15 text-fuchsia-300" valor={r.posts} rotulo="publicações" />
@@ -151,7 +152,7 @@ export default function AdminStats() {
         {/* Top clips */}
         <div className="glass rounded-2xl p-4">
           <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-gray-300">
-            Clips mais gostados
+            Clips mais vistos
           </h3>
           {topClips.length === 0 ? (
             <Estado compacto icon={Film} titulo="Sem clips ainda" />
@@ -174,6 +175,9 @@ export default function AdminStats() {
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2 text-[11px] text-gray-300">
+                    <span className="inline-flex items-center gap-1" title="Visualizações">
+                      <Eye className="h-3 w-3" /> {c.views || 0}
+                    </span>
                     <span className="inline-flex items-center gap-1">
                       <Heart className="h-3 w-3" /> {c.likes}
                     </span>

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 /* ============================================================
-   Barra de abas em "segmented control" (estilo iOS): um vidro
-   com os separadores dentro e o ativo preenchido a violeta.
+   Barra de abas em "segmented control" (estilo iOS): uma pista
+   sólida com os separadores dentro e o ativo preenchido a violeta.
 
    Serve para as abas de Clips, Jogos, Atualizações e do painel
    admin — toda a interface passa a ter o mesmo comportamento.

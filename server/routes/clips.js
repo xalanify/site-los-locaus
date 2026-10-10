@@ -5,6 +5,7 @@ const { requireUser, requireUserOrAdmin, attachAuth } = require('../middleware/a
 const storage = require('../storage');
 const { CLIP_GAME_IDS } = require('../clipGames');
 const { notify } = require('../notify');
+const { disponivel, transcodificar } = require('../transcode');
 
 const router = express.Router();
 
@@ -39,6 +40,32 @@ function clipUrl(clip) {
   } catch {
     return storage.publicUrl(BUCKET, clip.file);
   }
+}
+
+/* ============================================================
+   Otimização em segundo plano (720p H.264)
+
+   O clip já está publicado com o original; depois, sem o utilizador
+   ficar à espera, busca-se o vídeo, comprime-se e substitui-se no
+   mesmo caminho. Se falhar (ou não houver ffmpeg) fica tudo como
+   estava — nunca é bloqueio.
+   ============================================================ */
+function otimizarClip(file) {
+  if (!disponivel() || !file) return;
+  setImmediate(async () => {
+    try {
+      const r = await fetch(storage.publicUrl(BUCKET, file));
+      if (!r.ok) return;
+      const original = Buffer.from(await r.arrayBuffer());
+      const novo = await transcodificar(original);
+      if (!novo) return;
+      await storage.upload(BUCKET, file, novo, 'video/mp4');
+      const mb = (n) => Math.round((n / 1048576) * 10) / 10;
+      console.log(`Clip otimizado ${file}: ${mb(original)}MB -> ${mb(novo)}MB (720p H.264)`);
+    } catch (erro) {
+      console.warn('Otimização de vídeo saltou:', String(erro.message).slice(0, 160));
+    }
+  });
 }
 
 // Forma canónica de um clip na API (uma só passagem por tabela)
@@ -86,6 +113,7 @@ async function decorate(db, rows, auth) {
     likes: Number(c.likes) || 0,
     saves: Number(c.saves) || 0,
     downloads: Number(c.downloads) || 0,
+    views: Number(c.views) || 0,
     comments_count: countBy.get(Number(c.id)) || 0,
     author: c.username || '???',
     author_id: Number(c.user_id),
@@ -169,11 +197,17 @@ router.get('/', attachAuth, async (req, res) => {
       params.push(String(req.query.game).toLowerCase().slice(0, 20));
     }
 
+    // Paginação opcional: quem pede ?limit= recebe só uma página
+    const limit = req.query.limit
+      ? Math.min(200, Math.max(1, Number(req.query.limit) || 1))
+      : 100;
+    const offset = Math.max(0, Number(req.query.offset) || 0);
+
     const sql =
       SELECT_SQL +
       (where.length ? ' WHERE ' + where.join(' AND ') : '') +
-      ' ORDER BY c.created_at DESC, c.id DESC LIMIT 100';
-    const rows = await db.prepare(sql).all(...params);
+      ' ORDER BY c.created_at DESC, c.id DESC LIMIT ? OFFSET ?';
+    const rows = await db.prepare(sql).all(...params, limit, offset);
     res.json(await decorate(db, rows, auth));
   } catch (error) {
     console.error('Erro clips GET:', error.message);
@@ -299,6 +333,8 @@ router.post('/confirm', requireUserOrAdmin, async (req, res) => {
       .get(Number(result.lastInsertRowid));
     if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
     res.json((await decorate(db, [row], req.auth))[0]);
+    // em segundo plano: passa a 720p H.264 (pesa menos no telemóvel)
+    otimizarClip(file);
   } catch (error) {
     console.error('Erro clips confirm:', error.message);
     res.status(500).json({ error: 'Erro ao guardar o clip.' });
@@ -384,6 +420,8 @@ router.post(
         .get(Number(result.lastInsertRowid));
       if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
       res.json((await decorate(db, [row], req.auth))[0]);
+      // em segundo plano: passa a 720p H.264 (pesa menos no telemóvel)
+      otimizarClip(file);
     } catch (error) {
       console.error('Erro clips POST:', error.message);
       if (/413|EntityTooLarge|maximum allowed|Payload too large/i.test(error.message || '')) {
@@ -467,7 +505,29 @@ router.post('/:id/save', requireUser, async (req, res) => {
   }
 });
 
-// Comentários (com respostas)
+/* Contador de visualizações — o cliente soma uma vista por clip e
+   por sessão, para não inflar com os refresh nem com os pedidos de
+   range do próprio <video>. */
+router.post('/:id/view', attachAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Id inválido' });
+    const clip = await db.prepare('SELECT id FROM clips WHERE id = ?').get(id);
+    if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
+    if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
+    await db.prepare('UPDATE clips SET views = COALESCE(views, 0) + 1 WHERE id = ?').run(id);
+    const after = await db.prepare('SELECT views FROM clips WHERE id = ?').get(id);
+    res.json({ views: Number(after.views) || 0 });
+  } catch (error) {
+    console.error('Erro clip view:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+/* Comentários (com respostas) — paginados pelos de topo, para que
+   as respostas continuem sempre junto do comentário pai.
+   Sem ?limit devolve todos (como dantes). */
 router.get('/:id/comments', attachAuth, async (req, res) => {
   try {
     const db = getDb();
@@ -475,6 +535,27 @@ router.get('/:id/comments', attachAuth, async (req, res) => {
     const clip = await db.prepare('SELECT * FROM clips WHERE id = ?').get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
     if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
+
+    const limite = req.query.limit
+      ? Math.min(50, Math.max(1, Number(req.query.limit) || 20))
+      : 0;
+    const offset = Math.max(0, Number(req.query.offset) || 0);
+
+    let cond = 'cc.clip_id = ?';
+    let args = [id];
+    if (limite) {
+      const tops = await db
+        .prepare(
+          'SELECT id FROM clip_comments WHERE clip_id = ? AND parent_id IS NULL ' +
+            'ORDER BY created_at ASC, id ASC LIMIT ? OFFSET ?',
+        )
+        .all(id, limite, offset);
+      const ids = tops.map((r) => Number(r.id));
+      if (!ids.length) return res.json([]);
+      // as respostas vão buscar-se todas (as threads nunca ficam cortadas)
+      cond = '(cc.parent_id = ANY(?::int[]) OR cc.id = ANY(?::int[]))';
+      args = [ids, ids];
+    }
 
     const rows = await db
       .prepare(
@@ -487,9 +568,9 @@ router.get('/:id/comments', attachAuth, async (req, res) => {
                      AND cl.user_id = ?) AS liked
          FROM clip_comments cc JOIN users u ON u.id = cc.user_id
          LEFT JOIN user_profiles up ON up.user_id = cc.user_id
-         WHERE cc.clip_id = ? ORDER BY cc.created_at ASC, cc.id ASC`,
+         WHERE ${cond} ORDER BY cc.created_at ASC, cc.id ASC`,
       )
-      .all((req.auth && req.auth.uid) || 0, id);
+      .all((req.auth && req.auth.uid) || 0, ...args);
     const auth = req.auth;
     res.json(
       rows.map((c) => ({

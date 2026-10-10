@@ -95,6 +95,7 @@ create table if not exists public.clips (
   likes      integer not null default 0,
   saves      integer not null default 0,
   downloads  integer not null default 0,
+  views      integer not null default 0,
   created_at timestamptz not null default now()
 );
 create index if not exists idx_clips_created    on public.clips (created_at desc);

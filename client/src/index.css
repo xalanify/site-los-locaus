@@ -13,6 +13,12 @@
   --aj-500: 139 92 246;
   --aj-600: 124 58 237;
   --aj-700: 109 40 217;
+
+  /* Superfícies — tema escuro limpo e sólido (sem vidro) */
+  --aj-bg: #0a0a0f;
+  --aj-card: #15151b;
+  --aj-card-hi: #1c1c24;
+  --aj-line: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -23,7 +29,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #000000;
+  background-color: var(--aj-bg);
   color: white;
   overflow-x: hidden;
   /* espaço para a barra de navegação flutuante */
@@ -70,35 +76,25 @@ h4 {
   background: rgb(var(--aj-500));
 }
 
-/* Glow effects */
+/* Glow — discreto: só um halo curto para destacar o elemento ativo */
 .glow-orange {
-  box-shadow:
-    0 0 20px rgb(var(--aj-500) / 0.5),
-    0 0 40px rgb(var(--aj-600) / 0.3);
+  box-shadow: 0 2px 12px rgb(var(--aj-600) / 0.4);
 }
 
-.glow-text {
-  text-shadow:
-    0 0 10px rgb(var(--aj-400) / 0.8),
-    0 0 20px rgb(var(--aj-500) / 0.5);
-}
-
-/* Glass effect — material translúcido do iOS 26: muito transparente,
-   desfoque forte e um fio de luz na aresta superior */
+/* Cartão — superfície sólida, borda fina e um cantinho suave.
+   Sem desfoque nem reflexo: leitura limpa em qualquer fundo. */
 .glass {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 38%),
-    rgba(14, 14, 18, 0.55);
-  backdrop-filter: blur(26px) saturate(160%);
-  -webkit-backdrop-filter: blur(26px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 18px 50px rgba(0, 0, 0, 0.45);
+  background: var(--aj-card);
+  border: 1px solid var(--aj-line);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   transition:
-    box-shadow 0.25s ease,
-    background-color 0.25s ease,
-    border-color 0.25s ease;
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.glass:hover {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Gradient text */
@@ -262,8 +258,8 @@ h4 {
 
 
 /* ============================================================
-   Liquid Glass — botões com vidro, reflexo que segue o rato
-   e reação ao clique (estilo iOS 26, sem sair do nosso tema)
+   Botões — superfície sólida com borda fina.
+   Sem desfoque, sem reflexo especular: só cor e contraste.
    ============================================================ */
 button {
   transition:
@@ -276,133 +272,49 @@ button {
 }
 
 button:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 button:disabled {
   cursor: not-allowed;
 }
 
-/* ============================================================
-   Liquid Glass (estilo iOS 26)
-   — fundo quase transparente, o ecrã atrás continua a ver-se
-   — borda refrativa: um anel de luz que dobra na aresta
-   — reflexo especular que segue o rato
-   — "gel" ao premir (encolhe e brilha por dentro)
-   ============================================================ */
+/* Botão secundário: cinza translúcido + fio de borda discreto.
+   (o inset shadow dá o contorno sem mexer no layout) */
 .btn-glass,
 button[class~='bg-white/5'],
 button[class~='bg-white/10'],
 button[class~='border-white/15'] {
   position: relative;
-  isolation: isolate;
-  /* vidro: 92% do fundo passa para dentro */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.11) 0%,
-      rgba(255, 255, 255, 0.02) 44%,
-      rgba(255, 255, 255, 0.07) 100%
-    );
-  backdrop-filter: blur(14px) saturate(190%) brightness(1.06);
-  -webkit-backdrop-filter: blur(14px) saturate(190%) brightness(1.06);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 14px rgba(255, 255, 255, 0.04),
-    0 6px 20px rgba(0, 0, 0, 0.34);
-}
-
-/* Anel refrativo da aresta (máscara em anel: só a "borda" fica pintada) */
-.btn-glass::before,
-button[class~='bg-white/5']::before,
-button[class~='bg-white/10']::before,
-button[class~='border-white/15']::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  pointer-events: none;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(255, 255, 255, 0.14) 26%,
-    rgba(255, 255, 255, 0.05) 54%,
-    rgba(255, 255, 255, 0.5) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-
-/* Luz especular que segue o rato (--mx / --my vêm do JS) */
-.btn-glass::after,
-button[class~='bg-white/5']::after,
-button[class~='bg-white/10']::after,
-button[class~='border-white/15']::after,
-button[class~='bg-orange-500']::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: inherit;
-  background: radial-gradient(
-    170px 90px at var(--mx, 50%) var(--my, 0%),
-    rgba(255, 255, 255, 0.45),
-    rgba(255, 255, 255, 0) 72%
-  );
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.btn-glass:hover::after,
-button[class~='bg-white/5']:hover::after,
-button[class~='bg-white/10']:hover::after,
-button[class~='border-white/15']:hover::after,
-button[class~='bg-orange-500']:hover::after {
-  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .btn-glass:hover,
 button[class~='bg-white/5']:hover,
 button[class~='bg-white/10']:hover,
 button[class~='border-white/15']:hover {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 18px rgb(var(--aj-500) / 0.14),
-    0 10px 26px rgba(0, 0, 0, 0.42);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
-/* só os botões marcados à mão sobem (os outros guardam o seu
-   próprio hover, como o scale-110 da seta voltar) */
-.btn-glass:hover {
-  transform: translateY(-1px);
-}
-
-/* Premir: o vidro "gelifica" — encolhe e a cor junta-se por dentro */
 .btn-glass:active,
 button[class~='bg-white/5']:active,
 button[class~='bg-white/10']:active,
 button[class~='border-white/15']:active {
-  transform: translateY(0) scale(0.965);
-  filter: brightness(1.14);
+  transform: scale(0.97);
+  filter: brightness(1.08);
 }
 
 /* ============================================================
-   Barra de abas em segmentos (TabBar) — o ativo leva uma
-   "pílula" de vidro tingido, o resto fica só com o texto.
+   Barra de abas em segmentos (TabBar) — pista sólida e a pílula
+   ativa em violeta chapado.
    ============================================================ */
 .tabbar {
   padding: 4px;
   gap: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .tab-item {
@@ -436,17 +348,8 @@ button[class~='border-white/15']:active {
 .tab-ativo,
 .tab-ativo:hover {
   color: #fff;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.28) 0%,
-      rgba(255, 255, 255, 0.04) 50%,
-      rgba(255, 255, 255, 0.14) 100%
-    ),
-    rgb(var(--aj-500) / 0.85);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 6px 16px rgb(var(--aj-600) / 0.45);
+  background: rgb(var(--aj-500));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .tab-cont {
@@ -498,8 +401,8 @@ button[class~='border-white/15']:active {
   height: 52px;
   border-radius: 9999px;
   color: #c4b5fd;
-  background: rgb(var(--aj-500) / 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: rgb(var(--aj-500) / 0.16);
+  border: 1px solid rgb(var(--aj-500) / 0.3);
 }
 
 .estado-curto .estado-icone {
@@ -536,69 +439,25 @@ button[class~='border-white/15']:active {
 
 
 /* ------------------------------------------------------------
-   Botões principais (violeta) também são vidro tingido:
-   a cor fica a 72% e deixa ver o que está por trás.
+   Botões principais (violeta): cor chapada, sombra curta e
+   encolhe um pouco ao premir.
    ------------------------------------------------------------ */
 button[class~='bg-orange-500'] {
-  position: relative;
-  isolation: isolate;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.3) 0%,
-      rgba(255, 255, 255, 0.04) 46%,
-      rgba(255, 255, 255, 0.16) 100%
-    ),
-    rgb(var(--aj-500) / 0.72);
-  backdrop-filter: blur(12px) saturate(170%);
-  -webkit-backdrop-filter: blur(12px) saturate(170%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    inset 0 -6px 14px rgb(var(--aj-700) / 0.35),
-    0 8px 22px rgb(var(--aj-600) / 0.35);
-}
-
-button[class~='bg-orange-500']::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  pointer-events: none;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.2) 30%,
-    rgba(255, 255, 255, 0.1) 60%,
-    rgba(255, 255, 255, 0.6) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 button[class~='bg-orange-500']:hover {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -6px 14px rgb(var(--aj-700) / 0.4),
-    0 12px 30px rgb(var(--aj-600) / 0.5);
+  box-shadow: 0 6px 18px rgb(var(--aj-600) / 0.35);
 }
 
 button[class~='bg-orange-500']:active {
-  transform: scale(0.965);
-  filter: brightness(1.1);
+  transform: scale(0.97);
+  filter: brightness(1.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
   button,
-  .btn-glass,
-  .btn-glass::before,
-  .btn-glass::after {
+  .btn-glass {
     transition-duration: 0.01ms !important;
   }
 }

@@ -33,6 +33,9 @@ const TABS = [
   { id: 'guardados', label: 'Guardados' },
 ]
 
+/* Clips por página no feed (o resto vem com "carregar mais") */
+const PAGE_CLIPS = 12
+
 /* Tamanho máximo de um clip (o servidor manda o valor certo em
    /api/clips/limits — o Supabase Storage também tem um limite próprio). */
 const DEFAULT_MAX_MB = 50
@@ -237,6 +240,9 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const location = useLocation()
   const [clips, setClips] = useState([])
+  // paginação do feed — o servidor devolve uma página de cada vez
+  const [maisClips, setMaisClips] = useState(false)
+  const [aCarregarMaisClips, setACarregarMaisClips] = useState(false)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('todos')
   const [jogo, setJogo] = useState('') // filtro por jogo ('' = todos)
@@ -276,12 +282,36 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const load = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/clips', { headers: authHeaders() })
-      if (res.ok) setClips(await res.json())
+      const res = await fetch(`/api/clips?limit=${PAGE_CLIPS}`, { headers: authHeaders() })
+      if (res.ok) {
+        const data = await res.json()
+        setClips(data)
+        setMaisClips(data.length === PAGE_CLIPS)
+      }
     } catch {
       /* sem rede */
     } finally {
       setLoading(false)
+    }
+  }
+
+  // página seguinte do feed (junta ao fim da lista)
+  const carregarMaisClips = async () => {
+    if (aCarregarMaisClips) return
+    setACarregarMaisClips(true)
+    try {
+      const res = await fetch(`/api/clips?limit=${PAGE_CLIPS}&offset=${clips.length}`, {
+        headers: authHeaders(),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setClips((prev) => [...prev, ...data])
+        setMaisClips(data.length === PAGE_CLIPS)
+      }
+    } catch {
+      /* sem rede */
+    } finally {
+      setACarregarMaisClips(false)
     }
   }
 
@@ -884,8 +914,9 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 Clips e Publicações
               </h1>
               <p className="mt-1 text-sm text-gray-400">
-                {clips.length} clip{clips.length === 1 ? '' : 's'} · cortes do grupo,
-                comentários e guardados
+                {clips.length}
+                {maisClips ? '+' : ''} clip{clips.length === 1 && !maisClips ? '' : 's'} · cortes
+                do grupo, comentários e guardados
               </p>
             </div>
             <button
@@ -1326,6 +1357,17 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   onDelete={(id) => setClips((prev) => prev.filter((x) => x.id !== id))}
                 />
               ))}
+
+              {/* Feed paginado — só aparece se existir mais do que uma página */}
+              {maisClips && (
+                <button
+                  onClick={carregarMaisClips}
+                  disabled={aCarregarMaisClips}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+                >
+                  {aCarregarMaisClips ? 'A carregar…' : 'Carregar mais clips'}
+                </button>
+              )}
             </div>
           )}
 

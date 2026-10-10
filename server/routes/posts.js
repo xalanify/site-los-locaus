@@ -19,20 +19,42 @@ async function avatarLookup(db) {
 }
 
 // Obter todas as publicações (com gostos e comentários)
+// — aceita ?limit / ?offset para paginar o feed
 router.get('/', async (req, res) => {
   try {
     const db = getDb();
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
 
-    const posts = await db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
+    const limit = req.query.limit
+      ? Math.min(100, Math.max(1, Number(req.query.limit) || 10))
+      : 0;
+    const offset = Math.max(0, Number(req.query.offset) || 0);
 
-    // Tudo numa só passagem (antes eram N+1 consultas)
-    const comments = await db
-      .prepare(
-        'SELECT id, post_id, author, content, created_at FROM post_comments ORDER BY created_at ASC'
-      )
-      .all();
-    const liked = await db.prepare('SELECT DISTINCT post_id FROM post_likes WHERE ip = ?').all(ip);
+    const posts = limit
+      ? await db
+          .prepare('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?')
+          .all(limit, offset)
+      : await db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
+
+    const ids = posts.map((p) => Number(p.id));
+
+    // Tudo numa só passagem (antes eram N+1 consultas) — e só dos
+    // posts desta página, em vez de a lista inteira da BD
+    const comments = ids.length
+      ? await db
+          .prepare(
+            'SELECT id, post_id, author, content, created_at FROM post_comments ' +
+              'WHERE post_id = ANY(?::int[]) ORDER BY created_at ASC',
+          )
+          .all(ids)
+      : [];
+    const liked = ids.length
+      ? await db
+          .prepare(
+            'SELECT DISTINCT post_id FROM post_likes WHERE ip = ? AND post_id = ANY(?::int[])',
+          )
+          .all(ip, ids)
+      : [];
 
     // Fotos de perfil de quem escreveu (o nome bate certo com o username)
     const avatarOf = await avatarLookup(db);

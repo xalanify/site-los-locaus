@@ -450,6 +450,7 @@ router.get('/:username', attachAuth, async (req, res) => {
       clips: clips.length,
       likes: clips.reduce((s, c) => s + c.likes, 0),
       downloads: clips.reduce((s, c) => s + c.downloads, 0),
+      views: clips.reduce((s, c) => s + (c.views || 0), 0),
       saved: clips.filter((c) => c.saved).length,
     };
 

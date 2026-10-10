@@ -4,6 +4,7 @@ import {
   MessageCircle,
   Bookmark,
   Download,
+  Eye,
   Trash2,
   Send,
   Lock,
@@ -33,6 +34,32 @@ const fmtDate = (iso) => {
 
 const fmtComment = fmtDate
 
+/* Página de comentários (quantos comentários de topo por vez) */
+const PAGE_COMENT = 12
+
+/* Vistas já contadas nesta sessão — evita somar o mesmo clip duas
+   vezes quando o utilizador dá play, pausa e volta a dar play. */
+const vistos = new Set()
+async function registarVista(id, setC) {
+  if (!id || vistos.has(id)) return
+  vistos.add(id)
+  try {
+    const res = await fetch(`/api/clips/${id}/view`, {
+      method: 'POST',
+      headers: authHeaders(),
+    })
+    if (!res.ok) {
+      vistos.delete(id)
+      return
+    }
+    const d = await res.json()
+    if (d && typeof d.views === 'number') setC((prev) => ({ ...prev, views: d.views }))
+  } catch {
+    /* sem rede — deixa tentar outra vez */
+    vistos.delete(id)
+  }
+}
+
 /* Cartão de um clip: vídeo (com corte), autor, gostos,
    comentários com respostas, guardar e transferir. */
 export default function ClipCard({
@@ -51,6 +78,10 @@ export default function ClipCard({
   const [text, setText] = useState('')
   const [replyTo, setReplyTo] = useState(null)
   const [busy, setBusy] = useState(false)
+  // paginação dos comentários (só os de topo são paginados)
+  const [maisComent, setMaisComent] = useState(false)
+  const [offsetComent, setOffsetComent] = useState(0)
+  const [aCarregarMais, setACarregarMais] = useState(false)
   const videoRef = useRef(null)
 
   // edição (só para o dono do clip)
@@ -155,14 +186,39 @@ export default function ClipCard({
     setShowComments(next)
     if (next && !loadedComments) {
       try {
-        const res = await fetch(`/api/clips/${c.id}/comments`)
+        const res = await fetch(`/api/clips/${c.id}/comments?limit=${PAGE_COMENT}`)
         if (res.ok) {
-          setComments(await res.json())
+          const data = await res.json()
+          const tops = data.filter((x) => !x.parent_id)
+          setComments(data)
+          setOffsetComent(tops.length)
+          setMaisComent(tops.length === PAGE_COMENT)
           setLoadedComments(true)
         }
       } catch {
         /* sem rede */
       }
+    }
+  }
+
+  const carregarMaisComentarios = async () => {
+    if (aCarregarMais) return
+    setACarregarMais(true)
+    try {
+      const res = await fetch(
+        `/api/clips/${c.id}/comments?limit=${PAGE_COMENT}&offset=${offsetComent}`,
+      )
+      if (res.ok) {
+        const data = await res.json()
+        const tops = data.filter((x) => !x.parent_id)
+        setComments((prev) => [...prev, ...data])
+        setOffsetComent((n) => n + tops.length)
+        setMaisComent(tops.length === PAGE_COMENT)
+      }
+    } catch {
+      /* sem rede */
+    } finally {
+      setACarregarMais(false)
     }
   }
 
@@ -199,6 +255,8 @@ export default function ClipCard({
       })
       if (res.ok) {
         setComments((prev) => prev.filter((x) => x.id !== cm.id && x.parent_id !== cm.id))
+        // um comentário de topo a menos na lista -> a página seguinte recua
+        if (!cm.parent_id) setOffsetComent((n) => Math.max(0, n - 1))
         update({ ...c, comments_count: Math.max(0, (c.comments_count || 0) - 1) })
       }
     } catch {
@@ -472,11 +530,12 @@ export default function ClipCard({
           onLoadedMetadata={onMeta}
           onTimeUpdate={onTime}
           /* só um clip a tocar de cada vez (menos CPU e banda) */
-          onPlay={() =>
+          onPlay={() => {
+            registarVista(c.id, setC)
             document.querySelectorAll('video').forEach((v) => {
               if (v !== videoRef.current && !v.paused) v.pause()
             })
-          }
+          }}
           className="mt-3 max-h-[65vh] w-full rounded-xl bg-black"
         />
         {(start > 0 || end != null) && (
@@ -488,6 +547,14 @@ export default function ClipCard({
 
       {/* Ações */}
       <div className="flex flex-wrap items-center gap-1 px-3 py-3">
+        {/* Visualizações — só se mostra (o contador soma no play) */}
+        <span
+          className="flex items-center gap-1.5 px-2 py-1.5 text-sm font-bold text-gray-400"
+          title="Visualizações"
+        >
+          <Eye className="h-4 w-4" />
+          {c.views || 0}
+        </span>
         <button onClick={like} className={actionCls(c.liked)} title="Gosto">
           <Heart className={`h-4 w-4 ${c.liked ? 'fill-orange-400 text-orange-400' : ''}`} />
           {c.likes || 0}
@@ -527,6 +594,16 @@ export default function ClipCard({
             />
           )}
           {tops.map((cm) => renderComment(cm))}
+
+          {maisComent && (
+            <button
+              onClick={carregarMaisComentarios}
+              disabled={aCarregarMais}
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+            >
+              {aCarregarMais ? 'A carregar…' : 'Carregar mais comentários'}
+            </button>
+          )}
 
           {replyTo && (
             <div className="mt-3 flex items-center justify-between rounded-lg bg-orange-500/10 px-3 py-1.5 text-xs text-orange-300">

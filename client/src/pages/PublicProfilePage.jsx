@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Calendar,
   Download,
+  Eye,
   Film,
   Gamepad2,
   Heart,
@@ -182,8 +183,9 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
         </div>
 
         {/* Contagens */}
-        <div className="mt-5 grid grid-cols-4 gap-2 sm:gap-3">
+        <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-3">
           <Stat valor={s.clips} rotulo="clips" Icon={Film} />
+          <Stat valor={s.views} rotulo="vistos" Icon={Eye} />
           <Stat valor={s.likes} rotulo="gostos" Icon={Heart} />
           <Stat valor={s.downloads} rotulo="transferidos" Icon={Download} />
           <Stat valor={s.saved} rotulo="guardados" Icon={Save} />

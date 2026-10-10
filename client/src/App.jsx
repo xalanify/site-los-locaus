@@ -14,7 +14,6 @@ import RecentClip from './components/RecentClip'
 import MembrosOnline from './components/MembrosOnline'
 import BootScreen, { BackToMenu } from './components/BootScreen'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
-import { ligarVidro } from './lib/glass'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
@@ -66,11 +65,6 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.pathname])
-
-  // Vidro dos botões (reflexo que segue o rato)
-  useEffect(() => {
-    ligarVidro()
-  }, [])
 
   // Conta de utilizador (a sessão é obrigatória para entrar)
   const handleAuthed = (data) => {
@@ -142,7 +136,17 @@ function App() {
                       </div>
                     }
                   >
-                  <Routes>
+                  {/* Transição entre páginas ao estilo iOS:
+                      a nova entra pela direita, a antiga sai para a esquerda */}
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={location.pathname}
+                      initial={{ opacity: 0, x: 26 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -26 }}
+                      transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+                    >
+                    <Routes location={location}>
                     <Route
                       path="/"
                       element={
@@ -216,7 +220,9 @@ function App() {
                       }
                     />
                     <Route path="*" element={<Hero />} />
-                  </Routes>
+                    </Routes>
+                    </motion.div>
+                  </AnimatePresence>
                   </Suspense>
                 </main>
                 <Footer />

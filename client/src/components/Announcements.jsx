@@ -8,21 +8,44 @@ const fmtDate = (iso) => {
   return d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+const PAGE_POSTS = 6
+
 /* Anúncios do admin — aparecem no topo da página inicial,
    à esquerda, com cara de bloco de notas. */
 export default function Announcements() {
   const [posts, setPosts] = useState(null) // null = a carregar
+  const [mais, setMais] = useState(false) // há mais anúncios
+  const [aCarregarMais, setACarregarMais] = useState(false)
   const [openComments, setOpenComments] = useState({}) // postId -> bool
   const [comments, setComments] = useState({}) // postId -> []
   const [form, setForm] = useState({}) // postId -> {author, content}
   const [busy, setBusy] = useState({})
 
+  const carregar = async (offset = 0) => {
+    const res = await fetch(`/api/posts?limit=${PAGE_POSTS}&offset=${offset}`)
+    if (!res.ok) throw new Error('falhou')
+    const data = await res.json()
+    const lista = Array.isArray(data) ? data : []
+    setPosts((prev) => (offset === 0 ? lista : [...(prev || []), ...lista]))
+    setMais(lista.length === PAGE_POSTS)
+  }
+
   useEffect(() => {
-    fetch('/api/posts')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setPosts(Array.isArray(data) ? data : []))
-      .catch(() => setPosts([]))
+    carregar().catch(() => setPosts([]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const carregarMais = async () => {
+    if (aCarregarMais || posts === null) return
+    setACarregarMais(true)
+    try {
+      await carregar(posts.length)
+    } catch {
+      setMais(false)
+    } finally {
+      setACarregarMais(false)
+    }
+  }
 
   if (posts === null) {
     return (
@@ -185,6 +208,17 @@ export default function Announcements() {
           </article>
         ))}
       </div>
+
+      {/* Feed paginado — o resto dos anúncios vem a pedido */}
+      {mais && (
+        <button
+          onClick={carregarMais}
+          disabled={aCarregarMais}
+          className="mt-4 w-full rounded-lg border border-white/10 bg-white/5 py-2.5 text-xs font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+        >
+          {aCarregarMais ? 'A carregar…' : 'Ver mais anúncios'}
+        </button>
+      )}
     </div>
   )
 }

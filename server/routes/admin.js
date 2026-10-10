@@ -372,6 +372,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
       likes,
       saves,
       downloads,
+      views,
       comClips,
       posts,
       usersTotal,
@@ -385,6 +386,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
       n('SELECT COALESCE(SUM(likes),0) n FROM clips'),
       n('SELECT COALESCE(SUM(saves),0) n FROM clips'),
       n('SELECT COALESCE(SUM(downloads),0) n FROM clips'),
+      n('SELECT COALESCE(SUM(views),0) n FROM clips'),
       n('SELECT COUNT(*) n FROM clip_comments'),
       n('SELECT COUNT(*) n FROM posts'),
       n('SELECT COUNT(*) n FROM users'),
@@ -401,10 +403,10 @@ router.get('/stats', requireAdmin, async (req, res) => {
       FROM clips GROUP BY 1 ORDER BY n DESC, jogo ASC`);
 
     const topClips = await list(`
-      SELECT c.id, c.title, c.game, c.likes, c.downloads, c.created_at, u.username,
+      SELECT c.id, c.title, c.game, c.likes, c.downloads, c.views, c.created_at, u.username,
              (SELECT COUNT(*) FROM clip_comments cc WHERE cc.clip_id = c.id)::int AS comentarios
       FROM clips c JOIN users u ON u.id = c.user_id
-      ORDER BY c.likes DESC, c.downloads DESC, c.created_at DESC
+      ORDER BY c.views DESC, c.likes DESC, c.downloads DESC, c.created_at DESC
       LIMIT 5`);
 
     const topAutores = await list(`
@@ -434,6 +436,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
         likes,
         saves,
         downloads,
+        views,
         comentarios: comClips,
         posts,
         usersTotal,
