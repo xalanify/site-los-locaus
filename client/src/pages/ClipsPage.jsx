@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
 import {
   Plus,
   X,
@@ -21,7 +20,6 @@ import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
-import ColecoesModal from '../components/ColecoesModal'
 import { BADGES, BadgeGem } from '../components/BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { authHeaders, mmss, parseTime } from '../lib/auth'
@@ -268,8 +266,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [envio, setEnvio] = useState({ total: 0, enviado: 0, inicio: 0, fase: '' })
   const xhrRef = useRef(null)
   const canceladoRef = useRef(false)
-  // modal de coleções — clip aberto para escolher as pastas
-  const [clipColecao, setClipColecao] = useState(null)
   const [error, setError] = useState('')
   const [maxMB, setMaxMB] = useState(DEFAULT_MAX_MB)
   const [trimming, setTrimming] = useState(null) // { done, total } enquanto corta
@@ -1350,7 +1346,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   user={user}
                   onRequestAuth={onRequestAuth}
                   onProfile={onProfile}
-                  onColecao={user ? setClipColecao : null}
                   onUpdate={(next) =>
                     setClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
                   }
@@ -1370,19 +1365,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               )}
             </div>
           )}
-
-          {/* Modal de coleções (pastas dos clips guardados) */}
-          <AnimatePresence>
-            {clipColecao && (
-              <ColecoesModal
-                clip={clipColecao}
-                onClose={() => setClipColecao(null)}
-                onMudou={() => {
-                  /* o estado de "guardado" continua no servidor */
-                }}
-              />
-            )}
-          </AnimatePresence>
         </div>
 
         {/* ---------------- Membros (online/offline) ---------------- */}

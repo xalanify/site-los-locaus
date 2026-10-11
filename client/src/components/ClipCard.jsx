@@ -12,7 +12,6 @@ import {
   Gamepad2,
   Pencil,
   Loader2,
-  FolderPlus,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import Estado from './Estado'
@@ -69,7 +68,6 @@ export default function ClipCard({
   onProfile,
   onUpdate,
   onDelete,
-  onColecao = null,
 }) {
   const [c, setC] = useState(clip)
   const [showComments, setShowComments] = useState(false)
@@ -567,15 +565,6 @@ export default function ClipCard({
           <Bookmark className={`h-4 w-4 ${c.saved ? 'fill-yellow-400 text-yellow-400' : ''}`} />
           {c.saves || 0}
         </button>
-        {onColecao && (
-          <button
-            onClick={() => (user ? onColecao(c) : onRequestAuth && onRequestAuth())}
-            className={actionCls(false)}
-            title="Guardar numa coleção"
-          >
-            <FolderPlus className="h-4 w-4" />
-          </button>
-        )}
         <button onClick={download} className={actionCls(false)} title="Transferir">
           <Download className="h-4 w-4" />
           {c.downloads || 0}

@@ -33,7 +33,7 @@ export const BADGES = [
   {
     id: 'jogador',
     label: 'JOGADOR DO CANAL',
-    desc: 'Destaque entre os jogadores do canal',
+    desc: '',
     color: '#8B5CF6',
     light: '#CBB7FF',
     dark: '#3B1480',
@@ -54,8 +54,17 @@ const ANIM_CLASS = {
 /* A cara de diabo em si (joia facetada + chifres + olhos irados) */
 export function BadgeGem({ badge, size = 56 }) {
   const dev = badge.id === 'dev'
+  const top1 = badge.id === 'top1'
   const uid = badge.id
   const anim = ANIM_CLASS[badge.anim] || ''
+
+  // Paleta da gema: top1 é preta com olhos laranja; as outras usam a cor da distinção
+  const gemLight = top1 ? '#3A3A44' : badge.light
+  const gemColor = top1 ? '#111116' : badge.color
+  const gemDark = top1 ? '#000000' : badge.dark
+  const olhoFill = top1 ? '#FF8A1A' : '#08080e'
+  const olhoGlow = top1 ? '#FF6B00' : null
+
   return (
     <div
       className={`relative shrink-0 ${anim}`}
@@ -74,31 +83,42 @@ export function BadgeGem({ badge, size = 56 }) {
       <svg viewBox="0 0 100 100" className="relative h-full w-full">
         <defs>
           <radialGradient id={`fg-${uid}`} cx="50%" cy="38%" r="75%">
-            <stop offset="0%" stopColor={badge.light} />
-            <stop offset="55%" stopColor={badge.color} />
-            <stop offset="100%" stopColor={badge.dark} />
+            <stop offset="0%" stopColor={gemLight} />
+            <stop offset="55%" stopColor={gemColor} />
+            <stop offset="100%" stopColor={gemDark} />
           </radialGradient>
           <linearGradient id={`fh-${uid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={badge.light} />
-            <stop offset="100%" stopColor={badge.dark} />
+            <stop offset="0%" stopColor={gemLight} />
+            <stop offset="100%" stopColor={gemDark} />
           </linearGradient>
           <clipPath id={`fc-${uid}`}>
             <circle cx="50" cy="58" r="30" />
           </clipPath>
+          {/* brilho dos olhos (só top1) */}
+          {olhoGlow && (
+            <filter id={`og-${uid}`} x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="2.4" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          )}
         </defs>
 
         {/* chifres */}
         <path
           d="M42,29 Q32,20 24,6 Q20,22 30,36 Z"
           fill={`url(#fh-${uid})`}
-          stroke="rgba(255,255,255,.45)"
+          stroke={top1 ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
         <path
           d="M58,29 Q68,20 76,6 Q80,22 70,36 Z"
           fill={`url(#fh-${uid})`}
-          stroke="rgba(255,255,255,.45)"
+          stroke={top1 ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
@@ -108,12 +128,12 @@ export function BadgeGem({ badge, size = 56 }) {
 
         {/* facetas do cristal (recortadas à volta) */}
         <g clipPath={`url(#fc-${uid})`}>
-          <polygon points="22,46 50,34 42,64" fill="#fff" opacity="0.16" />
-          <polygon points="50,34 80,50 60,66" fill="#000" opacity="0.14" />
-          <polygon points="20,58 42,64 34,86" fill="#fff" opacity="0.10" />
-          <polygon points="42,64 60,66 54,88" fill="#000" opacity="0.20" />
-          <polygon points="60,66 82,60 70,86" fill="#fff" opacity="0.12" />
-          <polygon points="32,78 72,80 50,96" fill="#000" opacity="0.24" />
+          <polygon points="22,46 50,34 42,64" fill="#fff" opacity={top1 ? '0.07' : '0.16'} />
+          <polygon points="50,34 80,50 60,66" fill="#000" opacity={top1 ? '0.30' : '0.14'} />
+          <polygon points="20,58 42,64 34,86" fill="#fff" opacity={top1 ? '0.05' : '0.10'} />
+          <polygon points="42,64 60,66 54,88" fill="#000" opacity={top1 ? '0.35' : '0.20'} />
+          <polygon points="60,66 82,60 70,86" fill="#fff" opacity={top1 ? '0.06' : '0.12'} />
+          <polygon points="32,78 72,80 50,96" fill="#000" opacity={top1 ? '0.40' : '0.24'} />
           {/* brilho do vidro */}
           <ellipse
             cx="36"
@@ -121,17 +141,26 @@ export function BadgeGem({ badge, size = 56 }) {
             rx="13"
             ry="8"
             fill="#fff"
-            opacity="0.25"
+            opacity={top1 ? '0.10' : '0.25'}
             transform="rotate(-22 36 44)"
           />
         </g>
 
         {/* contorno da gema */}
-        <circle cx="50" cy="58" r="30" fill="none" stroke="rgba(255,255,255,.55)" strokeWidth="2.5" />
+        <circle
+          cx="50"
+          cy="58"
+          r="30"
+          fill="none"
+          stroke={top1 ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.55)'}
+          strokeWidth="2.5"
+        />
 
         {/* olhos de diabo (irados, a apontar para o centro) */}
-        <polygon points="26,50 48,60 46,67 28,60" fill="#08080e" />
-        <polygon points="74,50 52,60 54,67 72,60" fill="#08080e" />
+        <g filter={olhoGlow ? `url(#og-${uid})` : undefined}>
+          <polygon points="26,50 48,60 46,67 28,60" fill={olhoFill} />
+          <polygon points="74,50 52,60 54,67 72,60" fill={olhoFill} />
+        </g>
       </svg>
 
       {/* brilho a passar (distinções "shine") */}

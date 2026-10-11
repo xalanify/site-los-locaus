@@ -176,18 +176,6 @@ router.get('/', attachAuth, async (req, res) => {
       );
       params.push(auth.uid);
     }
-    if (req.query.collection) {
-      if (!auth || !auth.uid) return res.status(401).json({ error: 'Inicia sessão' });
-      const cid = Number(req.query.collection);
-      const col = await db.prepare('SELECT user_id FROM clip_collections WHERE id = ?').get(cid);
-      if (!col || Number(col.user_id) !== auth.uid) {
-        return res.status(403).json({ error: 'Sem permissões' });
-      }
-      where.push(
-        'EXISTS (SELECT 1 FROM clip_collection_items ci WHERE ci.clip_id = c.id AND ci.collection_id = ?)',
-      );
-      params.push(cid);
-    }
     if (req.query.user) {
       where.push('LOWER(u.username) = ?');
       params.push(String(req.query.user).toLowerCase().slice(0, 30));
