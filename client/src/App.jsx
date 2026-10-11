@@ -1,17 +1,15 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import VideosSection from './components/VideosSection'
-import HomeFeed from './components/HomeFeed'
+import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
-import RecentClip from './components/RecentClip'
-import MembrosOnline from './components/MembrosOnline'
 import BootScreen, { BackToMenu } from './components/BootScreen'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 
@@ -31,7 +29,6 @@ function App() {
   const [sessionChecked, setSessionChecked] = useState(
     () => !localStorage.getItem('userToken'),
   )
-  const [showRecent, setShowRecent] = useState(true) // último clip público na home
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -151,40 +148,22 @@ function App() {
                       path="/"
                       element={
                         <>
+                          {/* Anúncios presos no topo — só aparece se houver */}
+                          <BarraAnuncios />
+                          {/* O canal: foto, nome, subscritores e visualizações */}
                           <Hero />
-                          {/* Último clip público + botão para a aba de clips */}
-                          {showRecent && (
-                            <section className="mx-auto max-w-6xl px-4 pb-6 pt-10 sm:px-6">
-                              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                                <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
-                                  Último clip publicado
-                                </h2>
-                                <button
-                                  onClick={() => navigate('/clips')}
-                                  className="rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-orange-600 sm:text-sm"
-                                >
-                                  Ver todos os clips
-                                </button>
-                              </div>
-                              <div className="mx-auto max-w-2xl">
-                                <RecentClip
-                                  user={user}
-                                  onRequestAuth={() => setShowAuth(true)}
-                                  onProfile={openMember}
-                                  onEmptyChange={(empty) => setShowRecent(!empty)}
-                                />
-                              </div>
-                            </section>
-                          )}
-                          {/* Presença — quem está no site agora */}
-                          <MembrosOnline onProfile={openMember} />
-                          <HomeFeed />
+                          {/* Os vídeos do canal, mais em baixo */}
                           <VideosSection />
                         </>
                       }
                     />
-                    <Route path="/jogos" element={<GamesPage />} />
-                    <Route path="/atualizacoes" element={<UpdatesPage />} />                    <Route
+                    {/* Contas de jogo: ficam no backend — só o admin abre */}
+                    <Route
+                      path="/jogos"
+                      element={isAdmin ? <GamesPage /> : <Navigate to="/" replace />}
+                    />
+                    <Route path="/atualizacoes" element={<UpdatesPage />} />
+                    <Route
                       path="/clips"
                       element={
                         <ClipsPage

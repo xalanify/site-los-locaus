@@ -6,7 +6,6 @@ import {
   Download,
   Eye,
   Film,
-  Gamepad2,
   Heart,
   Loader2,
   Save,
@@ -16,7 +15,6 @@ import AvatarImg from '../components/AvatarImg'
 import ClipCard from '../components/ClipCard'
 import Estado from '../components/Estado'
 import { BadgeGem } from '../components/BadgeGem'
-import { gameLabel } from '../data/clipGames'
 import { authHeaders } from '../lib/auth'
 
 /* Contador de uma estatística (rótulo em baixo, número em cima) */
@@ -191,22 +189,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           <Stat valor={s.saved} rotulo="guardados" Icon={Save} />
         </div>
 
-        {/* Contas de jogo ligadas */}
-        {(p.game_accounts || []).length > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-gray-500">
-              <Gamepad2 className="h-3.5 w-3.5" /> contas
-            </span>
-            {p.game_accounts.map((a) => (
-              <span
-                key={a.id}
-                className="rounded-full bg-white/5 px-3 py-1 text-xs font-bold text-gray-200 ring-1 ring-white/10"
-              >
-                {gameLabel(a.game)} · {a.nick}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* As contas de jogo ficam no backend — não aparecem aqui */}
       </div>
 
       {/* Clips do perfil */}

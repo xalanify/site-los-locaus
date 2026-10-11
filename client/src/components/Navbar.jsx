@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Youtube, Clapperboard, Gamepad2, Home, History, User } from 'lucide-react'
+import { Youtube, Clapperboard, History, Home, User } from 'lucide-react'
 import Sino from './Sino'
 
 /* ============================================================
@@ -24,7 +24,6 @@ export default function Navbar({ isAdmin = false, user = null }) {
     }
   }
 
-  const isGames = location.pathname === '/jogos'
   const isUpdates = location.pathname === '/atualizacoes'
   const isHome = location.pathname === '/'
   const isProfile = location.pathname === '/perfil'
@@ -42,12 +41,6 @@ export default function Navbar({ isAdmin = false, user = null }) {
       icon: Clapperboard,
       action: () => navigate('/clips'),
       active: isClips,
-    },
-    {
-      name: 'Jogos',
-      icon: Gamepad2,
-      action: () => navigate('/jogos'),
-      active: isGames,
     },
     {
       name: 'Atualizações',

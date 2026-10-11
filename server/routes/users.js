@@ -454,13 +454,9 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
-    const [badges, prof, gameAccounts, pres] = await Promise.all([
+    const [badges, prof, pres] = await Promise.all([
       badgesOf(user.id),
       profileOf(user.id),
-      getDb()
-        .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
-        .all(user.id)
-        .catch(() => []),
       getDb()
         .prepare('SELECT last_seen FROM user_presence WHERE user_id = ?')
         .get(user.id)
@@ -483,11 +479,7 @@ router.get('/:username', attachAuth, async (req, res) => {
         badges,
         online,
         ...prof,
-        game_accounts: gameAccounts.map((a) => ({
-          id: Number(a.id),
-          game: a.game,
-          nick: a.nick,
-        })),
+        // as contas de jogo ficam no backend (painel admin) — não saem aqui
       },
       isOwner: isOwnerOrAdmin,
       stats,

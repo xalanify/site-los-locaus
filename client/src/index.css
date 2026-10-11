@@ -14,11 +14,12 @@
   --aj-600: 124 58 237;
   --aj-700: 109 40 217;
 
-  /* Superfícies — tema escuro limpo e sólido (sem vidro) */
-  --aj-bg: #0a0a0f;
-  --aj-card: #15151b;
-  --aj-card-hi: #1c1c24;
-  --aj-line: rgba(255, 255, 255, 0.08);
+  /* Superfícies — preto puro, cartões ligeiramente mais claros
+     (mesma leitura da referência: fundo escuro, blocos definidos) */
+  --aj-bg: #000000;
+  --aj-card: #0e0e11;
+  --aj-card-hi: #16161b;
+  --aj-line: rgba(255, 255, 255, 0.07);
 }
 
 * {
