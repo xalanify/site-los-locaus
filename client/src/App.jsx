@@ -3,6 +3,8 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import Navbar from './components/Navbar'
+import Sidebar from './components/Sidebar'
+import RightColumn from './components/RightColumn'
 import Hero from './components/Hero'
 import VideosSection from './components/VideosSection'
 import BarraAnuncios from './components/BarraAnuncios'
@@ -124,8 +126,13 @@ function App() {
             {/* Com conta -> site completo */}
             {authed && !needsRecovery && (
               <>
+                {/* Barra de navegação (só no telemóvel) */}
                 <Navbar isAdmin={isAdmin} user={user} />
-                <main>
+                {/* Sidebar lateral (só no PC) */}
+                <Sidebar user={user} isAdmin={isAdmin} />
+                {/* Coluna direita (só em ecrãs largos) */}
+                <RightColumn />
+                <main className="lg:pl-[260px] xl:pl-[280px] xl:pr-[320px]">
                   <Suspense
                     fallback={
                       <div className="flex min-h-[60vh] items-center justify-center">

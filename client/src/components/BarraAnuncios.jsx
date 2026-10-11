@@ -42,7 +42,7 @@ export default function BarraAnuncios() {
 
   return (
     <>
-      <div className="sticky top-14 z-30 px-3 pt-3 sm:top-16 sm:px-4">
+      <div className="sticky top-14 z-30 px-3 pt-3 sm:top-16 sm:px-4 lg:top-3 lg:px-6 xl:px-8">
         <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-2xl border border-violet-500/25 bg-violet-500/10 px-3 py-2">
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-500/20 text-violet-300">
             <Megaphone className="h-3.5 w-3.5" />
