@@ -71,7 +71,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       {/* Conta + sino em baixo */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-2">
-          <Sino user={user} />
+          <Sino user={user} posicao="lateral" />
         </div>
         <button
           onClick={() => navigate('/perfil')}

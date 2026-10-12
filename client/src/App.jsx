@@ -12,7 +12,7 @@ import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
-import BootScreen, { BackToMenu } from './components/BootScreen'
+import BootScreen from './components/BootScreen'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
@@ -21,6 +21,7 @@ const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
+const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 
 function App() {
   const [entered, setEntered] = useState(false)
@@ -88,11 +89,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-dark">
-      {/* Ecrã de carregamento — mantém-se montado para a seta voltar */}
+      {/* Ecrã de carregamento — entra sozinho depois da barra encher */}
       <BootScreen visible={!entered} onEnter={() => setEntered(true)} />
-
-      {/* Seta de voltar — só na página inicial */}
-      {entered && location.pathname === '/' && <BackToMenu onClick={() => setEntered(false)} />}
 
       {/* Site */}
       <AnimatePresence>
@@ -170,6 +168,10 @@ function App() {
                       element={isAdmin ? <GamesPage /> : <Navigate to="/" replace />}
                     />
                     <Route path="/atualizacoes" element={<UpdatesPage />} />
+                    <Route
+                      path="/membros"
+                      element={<MembrosPage onProfile={openMember} />}
+                    />
                     <Route
                       path="/clips"
                       element={

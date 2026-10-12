@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, BellRing, Check, CheckCheck, Heart, MessageSquare, Award, Sparkles } from 'lucide-react'
+import { Bell, BellRing, Check, CheckCheck, Heart, MessageSquare, Award, Sparkles, Trash2 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import { ativarPush, desligarPush, pushLigado, temPWA } from '../lib/pwa'
 import Estado from './Estado'
@@ -33,7 +33,7 @@ const quando = (iso) => {
    • abre a lista com o que aconteceu nos teus clips
    • ativa/desativa o push do PWA neste dispositivo
    ============================================================ */
-export default function Sino({ user }) {
+export default function Sino({ user, posicao = 'topo' }) {
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
   const [items, setItems] = useState([])
@@ -117,6 +117,16 @@ export default function Sino({ user }) {
     }
   }
 
+  /* Apaga o histórico todo (notificações já vistas) */
+  const limparHistorico = async () => {
+    setItems((prev) => prev.filter((x) => !x.read))
+    try {
+      await fetch('/api/notifications', { method: 'DELETE', headers: authHeaders() })
+    } catch {
+      /* ignora */
+    }
+  }
+
   const alternarPush = async () => {
     setBusy(true)
     setMsg('')
@@ -143,17 +153,33 @@ export default function Sino({ user }) {
       </button>
 
       {aberto && (
-        <div className="glass absolute right-0 top-11 z-50 w-[min(92vw,23rem)] overflow-hidden rounded-2xl">
+        <div
+          className={`glass absolute z-50 w-[min(92vw,23rem)] overflow-hidden rounded-2xl ${
+            // Na sidebar o sino encosta à esquerda: o painel abre para a
+            // direita, senão saía do ecrã. Na barra de topo abre por baixo.
+            posicao === 'lateral' ? 'left-11 top-0' : 'right-0 top-11'
+          }`}
+        >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <span className="text-sm font-black text-white">Notificações</span>
-            {items.some((i) => !i.read) && (
-              <button
-                onClick={marcarTudo}
-                className="flex items-center gap-1 text-xs font-bold text-violet-300 hover:text-white"
-              >
-                <CheckCheck className="h-3.5 w-3.5" /> marcar tudo
-              </button>
-            )}
+            <span className="flex items-center gap-3">
+              {items.some((i) => !i.read) && (
+                <button
+                  onClick={marcarTudo}
+                  className="flex items-center gap-1 text-xs font-bold text-violet-300 hover:text-white"
+                >
+                  <CheckCheck className="h-3.5 w-3.5" /> marcar tudo
+                </button>
+              )}
+              {items.length > 0 && (
+                <button
+                  onClick={limparHistorico}
+                  className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-rose-300"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> limpar
+                </button>
+              )}
+            </span>
           </div>
 
           <div className="max-h-[55vh] overflow-y-auto">

@@ -75,6 +75,16 @@ router.post(
   }),
 );
 
+// Apaga o histórico (notificações já lidas) do utilizador
+router.delete(
+  '/',
+  requireUser,
+  safe(async (req, res) => {
+    await getDb().prepare('DELETE FROM notifications WHERE user_id = ?').run(req.auth.uid);
+    res.json({ ok: true });
+  }),
+);
+
 router.post(
   '/:id/read',
   requireUser,

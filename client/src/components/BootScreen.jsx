@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
 
 const LOAD_TIME = 2500 // ms
@@ -109,19 +108,5 @@ export default function BootScreen({ visible, onEnter }) {
         </div>
       </motion.div>
     </div>
-  )
-}
-
-/* Seta para voltar do site ao ecrã de carregamento */
-export function BackToMenu({ onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label="Voltar"
-      title="Voltar"
-      className="fixed left-3 top-[4.5rem] z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/60 text-orange-500 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-orange-500 hover:bg-orange-500 hover:text-black sm:left-5 sm:top-20 sm:h-12 sm:w-12"
-    >
-      <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-    </button>
   )
 }
