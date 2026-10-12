@@ -28,6 +28,24 @@ const estado = {
   atualizacoes: 0,
 };
 
+/* progresso da última atualização (manual ou automática) — o
+   painel de admin mostra a barra e os logs disto a andar */
+const trabalho = {
+  aCorrer: false,
+  manual: false,
+  inicio: null,
+  fim: null,
+  total: 0,
+  feitos: 0,
+  mudou: 0,
+  logs: [],
+};
+
+function log(linha) {
+  trabalho.logs.push({ t: new Date().toISOString(), l: String(linha).slice(0, 300) });
+  if (trabalho.logs.length > 200) trabalho.logs.shift();
+}
+
 /* ---------- rank (mesmo padrão do cliente) ---------- */
 const slugDeNome = (nome) => {
   const s = String(nome || '').toUpperCase().trim();
@@ -230,54 +248,93 @@ async function buscarJogador(p, chave) {
   return r.json();
 }
 
-/** Atualiza todos os jogadores. Devolve { ok, motivo?, mudou?, n? }. */
-async function refreshNow() {
+/**
+ * Atualiza todos os jogadores a partir do tracker.gg.
+ * Preenche `trabalho` (barra + logs) para o painel de admin.
+ * Devolve { ok, motivo?, mudou?, n? }.
+ */
+async function refreshNow(opcoes = {}) {
+  if (trabalho.aCorrer) return { ok: false, motivo: 'em-curso' };
+
+  trabalho.aCorrer = true;
+  trabalho.manual = Boolean(opcoes.manual);
+  trabalho.inicio = new Date().toISOString();
+  trabalho.fim = null;
+  trabalho.total = 0;
+  trabalho.feitos = 0;
+  trabalho.mudou = 0;
+  trabalho.logs = [];
+
   const chave = process.env.TRACKER_API_KEY;
   estado.chave = Boolean(chave);
   estado.ultimaTentativa = new Date().toISOString();
-  if (!chave) {
-    estado.ultimoErro = 'Sem TRACKER_API_KEY no server/.env';
-    return { ok: false, motivo: 'sem-chave' };
-  }
-  const dados = lerJson();
-  if (!dados || !Array.isArray(dados.players)) {
-    estado.ultimoErro = 'Sem jogadores no r6.json';
-    return { ok: false, motivo: 'sem-jogadores' };
-  }
-  if (!dados.players.length) {
-    estado.ultimoErro = 'Sem jogadores no r6.json';
-    return { ok: false, motivo: 'sem-jogadores' };
-  }
 
-  // primeiro: garante que a lista do esquadrão está toda no ficheiro
-  let mudou = sincronizarLista(dados);
-  let n = 0;
-  for (const p of dados.players) {
-    try {
-      const api = await buscarJogador(p, chave);
-      const antes = JSON.stringify(p);
-      const novo = mapPlayer(api, p);
-      if (JSON.stringify(novo) !== antes) {
-        Object.assign(p, novo);
-        mudou = true;
-      }
-      n++;
-    } catch (e) {
-      // um jogador a falhar não pára os outros
-      estado.ultimoErro = `${p.handle}: ${e.message}`;
-      console.warn(`R6 auto (${p.handle}): ${e.message}`);
+  try {
+    if (!chave) {
+      estado.ultimoErro = 'Sem TRACKER_API_KEY no server/.env';
+      const d = lerJson();
+      if (d && Array.isArray(d.players)) trabalho.total = d.players.length;
+      log('Sem TRACKER_API_KEY em server/.env — sem chave não há como ir buscar.');
+      log('Chave grátis em tracker.network/developers.');
+      return { ok: false, motivo: 'sem-chave' };
     }
-    await new Promise((r) => setTimeout(r, 400)); // respeita o rate limit
-  }
 
-  if (mudou) {
-    dados.source = 'auto';
-    dados.updatedAt = new Date().toISOString();
-    guardar(dados);
-    estado.atualizacoes++;
+    const dados = lerJson();
+    if (!dados || !Array.isArray(dados.players) || !dados.players.length) {
+      estado.ultimoErro = 'Sem jogadores no r6.json';
+      log('Sem jogadores no r6.json.');
+      return { ok: false, motivo: 'sem-jogadores' };
+    }
+
+    // primeiro: garante que a lista do esquadrão está toda no ficheiro
+    let mudou = sincronizarLista(dados);
+    trabalho.total = dados.players.length;
+    log(`Esquadrão: ${dados.players.length} jogador(es) para ver no tracker.gg`);
+
+    let n = 0;
+    let alterados = 0;
+    for (const p of dados.players) {
+      log(`→ ${p.handle} · a perguntar ao tracker.gg...`);
+      try {
+        const api = await buscarJogador(p, chave);
+        const antes = JSON.stringify(p);
+        const novo = mapPlayer(api, p);
+        if (JSON.stringify(novo) !== antes) {
+          Object.assign(p, novo);
+          mudou = true;
+          alterados++;
+          const extra = [p.level ? `nível ${p.level}` : null, p.rank && p.rank.name]
+            .filter(Boolean)
+            .join(' · ');
+          log(`✓ ${p.handle} · atualizado${extra ? ` (${extra})` : ''}`);
+        } else {
+          log(`• ${p.handle} · sem alterações`);
+        }
+        n++;
+      } catch (e) {
+        // um jogador a falhar não pára os outros
+        estado.ultimoErro = `${p.handle}: ${e.message}`;
+        log(`✗ ${p.handle} · ${e.message}`);
+      }
+      trabalho.feitos++;
+      trabalho.mudou = alterados;
+      await new Promise((r) => setTimeout(r, 400)); // respeita o rate limit
+    }
+
+    if (mudou) {
+      dados.source = 'auto';
+      dados.updatedAt = new Date().toISOString();
+      guardar(dados);
+      estado.atualizacoes++;
+    }
+    estado.ultimoErro = n === 0 ? estado.ultimoErro : null;
+    if (alterados) log(`${alterados} perfil(is) atualizado(s) — já está no site.`);
+    else log('Nada para atualizar: tudo igual.');
+    return { ok: true, mudou, n };
+  } finally {
+    trabalho.aCorrer = false;
+    trabalho.fim = new Date().toISOString();
   }
-  estado.ultimoErro = n === 0 ? estado.ultimoErro : null;
-  return { ok: true, mudou, n };
 }
 
 /** Arranca o ciclo (a cada MIN minutos) — só com chave presente. */
@@ -313,7 +370,12 @@ function start() {
 }
 
 function status() {
-  return { ...estado, agora: new Date().toISOString(), jogadores: lerLista() };
+  return {
+    ...estado,
+    agora: new Date().toISOString(),
+    jogadores: lerLista(),
+    trabalho: { ...trabalho, logs: trabalho.logs.slice(-120) },
+  };
 }
 
 module.exports = { start, refreshNow, status };

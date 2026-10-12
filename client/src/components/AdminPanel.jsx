@@ -24,6 +24,7 @@ import {
   Gamepad2,
   KeyRound,
   BarChart3,
+  RefreshCcw,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
@@ -173,6 +174,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const clipInputRef = useRef(null)
   const clipPreviewRef = useRef(null)
 
+  // Rainbow Six: estado do tracker.gg + atualização manual
+  const [r6, setR6] = useState(null)
+  const [r6Msg, setR6Msg] = useState('')
+
   const adminHeaders = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('adminToken')}`,
@@ -233,6 +238,32 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       .catch(() => {})
   }
 
+  /* ---------- Rainbow Six: atualização manual (barra + logs) ---------- */
+  const fetchR6 = () => {
+    fetch('/api/admin/r6/status', { headers: adminHeaders() })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d) => d && setR6(d))
+      .catch(() => {})
+  }
+
+  const atualizarR6 = async () => {
+    setR6Msg('')
+    try {
+      const res = await fetch('/api/admin/r6/refresh', {
+        method: 'POST',
+        headers: adminHeaders(),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok && res.status !== 409) {
+        setR6Msg(d.error || 'Não foi possível atualizar.')
+        return
+      }
+      fetchR6()
+    } catch {
+      setR6Msg('Sem ligação ao servidor.')
+    }
+  }
+
   useEffect(() => {
     fetchStats()
     const interval = setInterval(fetchStats, 30000) // Atualizar a cada 30 segundos
@@ -247,7 +278,16 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
     }
     if (tab === 'anuncios') fetchPosts()
     if (tab === 'clips') fetchClips()
+    if (tab === 'r6') fetchR6()
   }, [tab])
+
+  /* acompanha a atualização do R6 enquanto estiver a correr */
+  const r6ACorrer = tab === 'r6' && Boolean(r6?.trabalho?.aCorrer)
+  useEffect(() => {
+    if (!r6ACorrer) return undefined
+    const iv = setInterval(fetchR6, 700)
+    return () => clearInterval(iv)
+  }, [r6ACorrer])
 
   const handleLogout = () => {
     onLogout()
@@ -641,6 +681,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'utilizadores', label: 'Utilizadores', Icon: Users },
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
+              { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
             ]}
           />
         </div>
@@ -1056,6 +1097,113 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 ))}
               </div>
             )}
+          </div>
+        ) : tab === 'r6' ? (
+          /* ---------- RAINBOW SIX: atualização manual ---------- */
+          <div>
+            <div className="glass rounded-xl p-4">
+              <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
+                <Gamepad2 className="h-4 w-4 text-orange-400" /> Rainbow Six — tracker.gg
+              </h3>
+              <p className="text-[13px] text-gray-400">
+                Vai buscar os dados do esquadrão e atualiza as estatísticas no site.
+              </p>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                    r6?.chave ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                  }`}
+                >
+                  {r6?.chave ? 'chave ligada' : 'sem chave'}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                    r6?.ligado ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
+                  {r6?.ligado ? `automático · ${r6.intervaloMin} min` : 'automático desligado'}
+                </span>
+                {r6?.atualizacoes ? (
+                  <span className="text-[11px] font-bold text-gray-500">
+                    {r6.atualizacoes} atualizações
+                  </span>
+                ) : null}
+              </div>
+
+              {!r6?.chave && (
+                <p className="mt-3 rounded-lg bg-yellow-500/10 px-3 py-2 text-[12px] leading-relaxed text-yellow-200">
+                  Sem <span className="font-bold">TRACKER_API_KEY</span> em server/.env não há como
+                  ir buscar. Chave grátis em tracker.network/developers.
+                </p>
+              )}
+
+              <button
+                onClick={atualizarR6}
+                disabled={r6ACorrer}
+                className="mt-3 flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-60"
+              >
+                <RefreshCcw className={`h-4 w-4 ${r6ACorrer ? 'animate-spin' : ''}`} />
+                {r6ACorrer ? 'A atualizar…' : 'Atualizar agora'}
+              </button>
+              {r6Msg && <p className="mt-2 text-[13px] font-bold text-red-400">{r6Msg}</p>}
+            </div>
+
+            {/* barra de progresso + logs */}
+            {(r6ACorrer || (r6?.trabalho?.logs?.length ?? 0) > 0) && (
+              <div className="glass mt-4 rounded-xl p-4">
+                <div className="mb-2 flex items-center justify-between gap-2 text-[11px] font-black uppercase tracking-wider">
+                  <span className={r6ACorrer ? 'text-emerald-400' : 'text-gray-500'}>
+                    {r6ACorrer ? 'A ir buscar…' : 'Última atualização'}
+                  </span>
+                  <span className="text-gray-500">
+                    {r6.trabalho.feitos}/{r6.trabalho.total} jogadores
+                  </span>
+                </div>
+
+                <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-emerald-400 transition-all duration-500"
+                    style={{
+                      width: `${
+                        r6.trabalho.total
+                          ? Math.max(6, Math.round((r6.trabalho.feitos / r6.trabalho.total) * 100))
+                          : 6
+                      }%`,
+                    }}
+                  />
+                </div>
+
+                <div className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
+                  {r6.trabalho.logs.map((lg, i) => (
+                    <p key={i} className="text-gray-300">
+                      <span className="text-emerald-500">›</span> {lg.l}
+                    </p>
+                  ))}
+                  {r6ACorrer && <p className="text-gray-500">› …</p>}
+                </div>
+              </div>
+            )}
+
+            {/* quem está a ser seguido */}
+            <div className="glass mt-4 rounded-xl p-4">
+              <h4 className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
+                Esquadrão · {r6?.jogadores?.length || 0} jogadores
+              </h4>
+              <ul className="flex flex-wrap gap-2">
+                {(r6?.jogadores || []).map((j) => (
+                  <li
+                    key={j}
+                    className="rounded-full bg-white/10 px-3 py-1 text-[12px] font-bold text-gray-300"
+                  >
+                    {j}
+                  </li>
+                ))}
+              </ul>
+              {r6?.ultimoErro && (
+                <p className="mt-2 text-[12px] text-red-400">{r6.ultimoErro}</p>
+              )}
+            </div>
           </div>
         ) : tab === 'stats' ? (
           /* ---------- ESTATÍSTICAS ---------- */

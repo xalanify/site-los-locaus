@@ -6,6 +6,7 @@ import {
   Users,
   Gamepad2,
   Cpu,
+  Wrench,
   User,
   LogOut,
   X,
@@ -32,9 +33,10 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'Clips e Publicações', icon: Clapperboard, path: '/clips' },
     { name: 'Atualizações', icon: History, path: '/atualizacoes' },
     { name: 'Membros', icon: Users, path: '/membros' },
-    // Jogos e Specs: só o admin abre (as contas de jogo ficam no backend)
+    // Jogos, Specs e Ferramentas: só o admin abre
     ...(isAdmin ? [{ name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' }] : []),
     ...(isAdmin ? [{ name: 'PCs / Specs', icon: Cpu, path: '/pcs' }] : []),
+    ...(isAdmin ? [{ name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' }] : []),
     { name: 'Conta', icon: User, path: '/perfil' },
   ]
 

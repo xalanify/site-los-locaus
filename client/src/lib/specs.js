@@ -107,42 +107,9 @@ export async function coletarSpecs() {
 }
 
 /* ============================================================
-   Stress test de CPU — um workload medido no browser.
-   Devolve o score em operações/segundo; serve para comparar
-   máquinas (e para ver desvios face à baseline do próprio PC).
+   Stress test da CPU — REMOVIDO (a leitura de overclock passou
+   a ser feita no servidor, com valores reais do Windows/CPU-Z).
    ============================================================ */
-export function stressCPU(ms = 2500) {
-  return new Promise((resolve) => {
-    const t0 = performance.now()
-    let ops = 0
-    let x = 123456789 ^ (t0 | 0)
-
-    const passo = () => {
-      const slice = performance.now() + 40
-      while (performance.now() < slice) {
-        for (let i = 0; i < 20000; i++) {
-          x ^= x << 13
-          x ^= x >>> 17
-          x ^= x << 5
-          x = (Math.imul(x, 1103515245) + 12345) | 0
-        }
-        ops += 20000
-      }
-      const decorrido = performance.now() - t0
-      if (decorrido < ms) {
-        setTimeout(passo, 0)
-      } else {
-        const segs = decorrido / 1000
-        resolve({
-          score: Math.round(ops / segs),
-          ops,
-          segundos: Math.round(segs * 10) / 10,
-        })
-      }
-    }
-    setTimeout(passo, 0)
-  })
-}
 
 /** Envia as specs para o servidor (a cada entrada — só se algo mudou). */
 export async function enviarSpecs(extra = {}) {

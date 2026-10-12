@@ -21,6 +21,7 @@ import { enviarSpecs } from './lib/specs'
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
 const PcsPage = lazy(() => import('./pages/PcsPage'))
+const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
@@ -207,6 +208,11 @@ function App() {
                     <Route
                       path="/pcs"
                       element={isAdmin ? <PcsPage /> : <Navigate to="/" replace />}
+                    />
+                    {/* Ferramentas Windows: scripts no PC do servidor — só o admin */}
+                    <Route
+                      path="/ferramentas"
+                      element={isAdmin ? <FerramentasPage /> : <Navigate to="/" replace />}
                     />
                     <Route path="/atualizacoes" element={<UpdatesPage />} />
                     <Route

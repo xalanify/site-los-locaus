@@ -16,6 +16,7 @@ const { clipsRouter } = require('./routes/clips');
 const { adminRouter } = require('./routes/admin');
 const { notificationsRouter } = require('./routes/notifications');
 const { specsRouter } = require('./routes/specs');
+const { ferramentasRouter } = require('./routes/ferramentas');
 const { trackVisitor } = require('./middleware/tracker');
 const { backendInfo } = require('./usersStore');
 
@@ -140,6 +141,7 @@ app.use('/api/notifications', notificationsRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/games', gamesRouter);
+app.use('/api/ferramentas', ferramentasRouter);
 // /api/users/specs tem de vir ANTES de /api/users — senão "specs"
 // seria interpretado como um :username.
 app.use('/api/users/specs', specsRouter);

@@ -14,40 +14,37 @@ import {
   Terminal,
   Copy,
   Check,
+  Lock,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
-import { stressCPU } from '../lib/specs'
 
 /* ============================================================
-   PCs / Specs — dashboard das máquinas dos membros
+   PCs / Specs — as máquinas do grupo
    ------------------------------------------------------------
-   O browser entrega o que consegue ler (SO, núcleos, RAM, GPU
-   via WebGL, ecrã e quota). A PRIMEIRA leitura fica guardada como
-   baseline: serve para comparar e pintar a vermelho quando algo
-   muda muito (desempenho muito acima do normal -> overclock).
+   Aqui só entram valores REIS: o site corre um script do Windows
+   (PowerShell + CPU-Z) no PC onde está o servidor e lê relógios,
+   tensões e a RAM a correr. O browser não chega a isso — por isso
+   a aba tem um portão: sem clicar em "Ler o PC", não se entra.
    ============================================================ */
 const fmt = (n) => (Number(n) || 0).toLocaleString('pt-PT')
 
 const ROTULOS = {
   os: 'Sistema',
   browser: 'Navegador',
-  cpu_cores: 'Núcleos da CPU',
-  ram_gb: 'Memória (GB)',
+  cpu_cores: 'Núcleos',
+  ram_gb: 'Memória',
   gpu: 'Placa gráfica',
   screen: 'Ecrã',
-  storage_gb: 'Armazenamento (GB)',
-  cpu_score: 'Score da CPU',
+  storage_gb: 'Armazenamento',
 }
-
-/* desvio face ao normal: +15% no score = overclock aos olhos do site */
-const OVERCLOCK_DESvio = 15
 
 function Badge({ tom, children }) {
   const tons = {
     ok: 'bg-white/10 text-gray-400',
     aviso: 'bg-yellow-500/15 text-yellow-400',
     perigo: 'bg-red-500/20 text-red-400 ring-1 ring-red-500/40',
+    bom: 'bg-emerald-500/15 text-emerald-400',
   }
   return (
     <span
@@ -75,43 +72,6 @@ function StatCard({ icon: Icon, label, value, tom = 'text-white', delay = 0 }) {
   )
 }
 
-/* uma linha da tabela de detalhe: valor atual vs baseline */
-function LinhaSpec({ campo, atual, base }) {
-  const a = atual == null ? '—' : String(atual)
-  const b = base == null ? '—' : String(base)
-  const num = Number(atual)
-  const numB = Number(base)
-  const ehNum = Number.isFinite(num) && Number.isFinite(numB) && numB > 0 && typeof atual === 'number'
-  const delta = ehNum ? Math.round(((num - numB) / numB) * 100) : null
-  const mudou = a !== b
-
-  return (
-    <div
-      className={`flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm ${
-        mudou ? 'bg-red-500/10 ring-1 ring-red-500/30' : 'bg-white/5'
-      }`}
-    >
-      <span className="text-gray-400">{ROTULOS[campo] || campo}</span>
-      <span className="flex items-center gap-2">
-        <span className={`font-bold ${mudou ? 'text-red-300' : 'text-white'}`}>{a}</span>
-        {mudou && (
-          <>
-            <span className="text-[11px] text-gray-500">era {b}</span>
-            {delta != null && (
-              <Badge tom={delta > 0 ? 'perigo' : 'aviso'}>
-                {delta > 0 ? '+' : ''}
-                {delta}%
-              </Badge>
-            )}
-            {delta == null && <Badge tom="aviso">Alterado</Badge>}
-          </>
-        )}
-      </span>
-    </div>
-  )
-}
-
-/* uma linha do bloco "leitura real" */
 function LinhaReal({ rotulo, valor, tom = 'text-white' }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2 text-[13px]">
@@ -121,110 +81,131 @@ function LinhaReal({ rotulo, valor, tom = 'text-white' }) {
   )
 }
 
+/* o que a análise (servidor) diz de cada peça — texto curto */
+const VEREDITO_CPU = {
+  overclock: { tom: 'perigo', txt: 'overclock' },
+  boost: { tom: 'aviso', txt: 'acima do fábrico' },
+  normal: { tom: 'ok', txt: 'de fábrica' },
+  'sem-dados': { tom: 'ok', txt: 'sem dados' },
+}
+
 /* ============================================================
-   Leitura REAL do PC — o que o PowerShell mandou (relógios,
-   módulos de RAM, discos, motherboard) com o veredito de overclock
+   Leitura real — o que o PowerShell/CPU-Z mandou
    ============================================================ */
 function LeituraReal({ d }) {
   if (!d) return null
   const av = d.avaliacao || {}
+  const cpu = av.cpu || {}
+  const ram = av.ram || {}
+  const ver = VEREDITO_CPU[cpu.estado] || VEREDITO_CPU['sem-dados']
 
   return (
     <div className="space-y-2">
       <p className="mb-2 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-gray-500">
-        <Terminal className="h-3.5 w-3.5 text-emerald-400" /> Leitura real (PowerShell)
+        <Terminal className="h-3.5 w-3.5 text-emerald-400" /> Valores reais (PowerShell + CPU-Z)
       </p>
 
-      {/* CPU: atual vs de fábrica */}
+      {/* ---------- CPU ---------- */}
       {d.cpu?.nome && (
         <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
-          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
+          <p className="mb-1 flex flex-wrap items-center gap-2 font-bold text-white">
             <Cpu className="h-3.5 w-3.5 text-orange-400" /> {String(d.cpu.nome).trim()}
+            <Badge tom={ver.tom}>{ver.txt}</Badge>
           </p>
-          {av.cpu ? (
+          {cpu.relogio_mhz ? (
             <p className="text-gray-400">
-              Relógio atual{' '}
-              <span className="font-bold text-white">{fmt(av.cpu.atual_mhz)} MHz</span> · de fábrica{' '}
-              <span className="font-bold text-white">{fmt(av.cpu.fabrica_mhz)} MHz</span>{' '}
-              {av.cpu.estado === 'overclock' ? (
-                <Badge tom="perigo">+{av.cpu.desvio_pct}% — overclock</Badge>
-              ) : (
-                <Badge tom="ok">dentro do normal</Badge>
-              )}
+              Relógio{' '}
+              <span className="font-bold text-white">{fmt(cpu.relogio_mhz)} MHz</span>
+              {cpu.teto_fabrica_mhz ? (
+                <>
+                  {' '}
+                  · fábrica até <span className="font-bold text-white">{fmt(cpu.teto_fabrica_mhz)} MHz</span>
+                </>
+              ) : null}
+              {cpu.desvio_pct != null ? ` (${cpu.desvio_pct > 0 ? '+' : ''}${cpu.desvio_pct}%)` : ''}
             </p>
           ) : (
             <p className="text-gray-500">Sem relógios para comparar.</p>
           )}
-          <p className="mt-1 text-[11px] text-gray-500">
-            {d.cpu.nucleos || '—'} núcleos · {d.cpu.logicos || '—'} lógicos
-            {d.cpu.socket ? ` · ${d.cpu.socket}` : ''}
+          <p className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-gray-500">
+            {d.cpu.nucleos ? <span>{d.cpu.nucleos} núcleos / {d.cpu.logicos} threads</span> : null}
+            {d.cpu.socket ? <span>{d.cpu.socket}</span> : null}
+            {cpu.tensao_v ? <span>{cpu.tensao_v} V</span> : null}
+            {cpu.temperatura_c ? <span>{cpu.temperatura_c} °C</span> : null}
+            {cpu.potencia_w ? <span>{cpu.potencia_w} W</span> : null}
+            {cpu.bclk_mhz ? <span>BCLK {cpu.bclk_mhz} MHz</span> : null}
           </p>
         </div>
       )}
 
-      {/* RAM: módulos, MHz, CAS */}
-      {d.ram?.modulos?.length > 0 && (
+      {/* ---------- RAM ---------- */}
+      {ram.aplicada_mhz || d.ram?.modulos?.length ? (
         <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
-          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
-            <MemoryStick className="h-3.5 w-3.5 text-violet-400" /> Memória — {d.ram.total_gb} GB ·{' '}
-            {d.ram.slots} módulos
-            {av.ram?.estado === 'overclock' && <Badge tom="perigo">overclock</Badge>}
+          <p className="mb-1 flex flex-wrap items-center gap-2 font-bold text-white">
+            <MemoryStick className="h-3.5 w-3.5 text-violet-400" />
+            Memória — {d.ram?.total_gb || '—'} GB {ram.tipo ? `· ${ram.tipo}` : ''}
+            {ram.estado === 'xmp' ? <Badge tom="aviso">XMP/EXPO ligado</Badge> : null}
           </p>
-          <ul className="space-y-1 text-gray-400">
-            {d.ram.modulos.map((m, i) => {
-              const oc = (m.desvio_pct ?? 0) >= 5
-              return (
+          {ram.aplicada_mhz ? (
+            <p className="text-gray-400">
+              A correr a <span className="font-bold text-white">{fmt(ram.aplicada_mhz)} MHz</span>
+              {ram.jedec_mhz ? (
+                <>
+                  {' '}
+                  · padrão até <span className="font-bold text-white">{fmt(ram.jedec_mhz)} MHz</span>
+                </>
+              ) : null}
+              {ram.kit_mhz ? ` · kit ${fmt(ram.kit_mhz)} MHz` : ''}
+              {ram.tensao_xmp_v ? ` · ${ram.tensao_xmp_v} V` : ''}
+            </p>
+          ) : null}
+          {d.ram?.modulos?.length > 0 && (
+            <ul className="mt-1 space-y-1 text-gray-400">
+              {d.ram.modulos.map((m, i) => (
                 <li key={i} className="flex flex-wrap items-center gap-2">
                   <span className="font-bold text-white">{m.tamanho_gb || '—'} GB</span>
                   <span>
                     {m.velocidade_mhz ? `${fmt(m.velocidade_mhz)} MHz` : '—'}
                     {m.aplicada_mhz && m.aplicada_mhz !== m.velocidade_mhz
-                      ? ` (a correr a ${fmt(m.aplicada_mhz)} MHz)`
+                      ? ` (a correr ${fmt(m.aplicada_mhz)})`
                       : ''}
                   </span>
-                  {m.cas && <span className="text-gray-500">CAS {m.cas}</span>}
-                  {m.tensao_v && <span className="text-gray-500">{m.tensao_v} V</span>}
-                  {oc && <Badge tom="perigo">+{m.desvio_pct}%</Badge>}
+                  {m.cas ? <span className="text-gray-500">CAS {m.cas}</span> : null}
+                  {m.tensao_v ? <span className="text-gray-500">{m.tensao_v} V</span> : null}
                 </li>
-              )
-            })}
-          </ul>
-          <p className="mt-1.5 text-[11px] text-gray-600">
-            {d.ram.modulos[0]?.referencia ? `Ref. ${d.ram.modulos[0].referencia}` : ''}
-            {d.ram.modulos[0]?.fabricante ? ` · ${d.ram.modulos[0].fabricante}` : ''}
-          </p>
+              ))}
+            </ul>
+          )}
+          {d.ram?.modulos?.[0]?.referencia ? (
+            <p className="mt-1.5 truncate text-[11px] text-gray-600">{d.ram.modulos[0].referencia}</p>
+          ) : null}
         </div>
-      )}
+      ) : null}
 
-      {/* GPU */}
+      {/* ---------- GPU ---------- */}
       {d.gpu?.nome && (
         <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
-          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
+          <p className="mb-1 flex flex-wrap items-center gap-2 font-bold text-white">
             <Monitor className="h-3.5 w-3.5 text-sky-400" /> {d.gpu.nome}
             {d.gpu.memoria_gb ? ` · ${d.gpu.memoria_gb} GB` : ''}
+            {av.gpu?.estado === 'com-relogios' ? <Badge tom="ok">com relógios</Badge> : null}
           </p>
           {d.gpu.clock_atual_mhz ? (
             <p className="text-gray-400">
               Relógio <span className="font-bold text-white">{fmt(d.gpu.clock_atual_mhz)} MHz</span>
+              {d.gpu.clock_base_mhz ? ` · base ${fmt(d.gpu.clock_base_mhz)} MHz` : ''}
               {d.gpu.clock_mem_mhz ? ` · memória ${fmt(d.gpu.clock_mem_mhz)} MHz` : ''}
               {d.gpu.temperatura ? ` · ${d.gpu.temperatura} °C` : ''}
-              {d.gpu.potencia_atual_w && d.gpu.limite_w
-                ? ` · ${d.gpu.potencia_atual_w} W de ${d.gpu.limite_w} W`
-                : ''}
-              <span className="ml-1 text-[11px] text-gray-500">
-                (sem valor de fábrica para comparar)
-              </span>
             </p>
           ) : (
             <p className="text-[12px] text-gray-500">
-              Sem relógios — o Windows só os dá com NVIDIA (nvidia-smi). Dizemo-lo em vez de
-              inventar.
+              Sem relógios — o Windows só os dá com NVIDIA.
             </p>
           )}
         </div>
       )}
 
-      {/* Discos + placa + BIOS */}
+      {/* ---------- Discos / placa ---------- */}
       {d.discos?.length > 0 && (
         <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
           <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
@@ -233,8 +214,7 @@ function LeituraReal({ d }) {
           <ul className="space-y-0.5 text-gray-400">
             {d.discos.map((x, i) => (
               <li key={i} className="truncate">
-                <span className="font-bold text-white">{x.tamanho_gb || '—'} GB</span>{' '}
-                {x.modelo || 'sem nome'} {x.interface ? `· ${x.interface}` : ''}
+                <span className="font-bold text-white">{x.tamanho_gb || '—'} GB</span> {x.modelo || 'sem nome'}
               </li>
             ))}
           </ul>
@@ -246,12 +226,7 @@ function LeituraReal({ d }) {
           rotulo="Motherboard / BIOS"
           tom="text-gray-300"
           valor={
-            [
-              d.placa?.fabricante,
-              d.placa?.modelo,
-              d.bios?.versao ? `BIOS ${d.bios.versao}` : null,
-              d.bios?.data ? `(${d.bios.data})` : null,
-            ]
+            [d.placa?.fabricante, d.placa?.modelo, d.bios?.versao ? `BIOS ${d.bios.versao}` : null]
               .filter(Boolean)
               .join(' · ') || '—'
           }
@@ -259,10 +234,32 @@ function LeituraReal({ d }) {
       )}
 
       <p className="text-[11px] leading-relaxed text-gray-600">
-        Estes valores vêm do Windows (WMI/CIM), não do browser — por isso é que dá para falar de
-        relógios e timings.
-        {d.recolhido ? ` Recolhido em ${new Date(d.recolhido).toLocaleString('pt-PT')}.` : ''}
+        Vem do Windows e do CPU-Z, não do browser.
+        {d.recolhido ? ` Lido em ${new Date(d.recolhido).toLocaleString('pt-PT')}.` : ''}
       </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   Terminal de passos (usado no portão e no cartão)
+   ============================================================ */
+function TerminalPassos({ passos, aCorrer }) {
+  if (!passos?.length && !aCorrer) return null
+  return (
+    <div className="max-h-52 overflow-y-auto rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
+      <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400/80">
+        <span className={`h-2 w-2 rounded-full ${aCorrer ? 'animate-pulse bg-emerald-400' : 'bg-gray-600'}`} />
+        PowerShell
+      </div>
+      <ul className="space-y-0.5">
+        {passos.map((p, i) => (
+          <li key={i} className="text-gray-300">
+            <span className="text-emerald-500">›</span> {p}
+          </li>
+        ))}
+        {aCorrer && <li className="text-gray-500">› …</li>}
+      </ul>
     </div>
   )
 }
@@ -271,8 +268,6 @@ export default function PcsPage() {
   const [lista, setLista] = useState([])
   const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(null) // linha expandida
-  const [testando, setTestando] = useState(false)
-  const [resultado, setResultado] = useState(null)
 
   /* leitura real do PC (PowerShell) */
   const [podeLocal, setPodeLocal] = useState(null) // null = ainda não sabemos
@@ -282,6 +277,8 @@ export default function PcsPage() {
   const [erroLeitura, setErroLeitura] = useState(null)
   const [comando, setComando] = useState('')
   const [copiado, setCopiado] = useState(false)
+  /* portão: bloqueia a aba até se correr a leitura */
+  const [portao, setPortao] = useState(true)
 
   const carregar = () => {
     fetch('/api/users/specs', { headers: authHeaders() })
@@ -354,6 +351,7 @@ export default function PcsPage() {
       } else {
         if (Array.isArray(d.passos) && d.passos.length) setPassos(d.passos)
         setLido(d)
+        setPortao(false) // leitura feita -> a aba abre
         carregar()
       }
     } catch {
@@ -364,74 +362,134 @@ export default function PcsPage() {
     }
   }
 
-  /* média do grupo (só quem já tem score) */
-  const mediaGrupo = useMemo(() => {
-    const s = lista.map((x) => x.cpu_score).filter((n) => n > 0)
-    return s.length ? Math.round(s.reduce((a, b) => a + b, 0) / s.length) : 0
-  }, [lista])
-
+  /* resumo: só interessa o que foi lido a sério */
   const resumo = useMemo(() => {
-    const alterados = lista.filter((s) => s.comparacao?.mudou).length
-    const overclock = lista.filter(
-      (s) => (s.comparacao?.scoreDelta || 0) >= OVERCLOCK_DESvio,
-    ).length
-    return { total: lista.length, alterados, overclock }
+    const reais = lista.filter((s) => s.details?.avaliacao)
+    return {
+      total: lista.length,
+      reais: reais.length,
+      ocCpu: reais.filter((s) => s.details.avaliacao?.cpu?.estado === 'overclock').length,
+      xmp: reais.filter((s) => s.details.avaliacao?.ram?.estado === 'xmp').length,
+    }
   }, [lista])
 
-  /* ordena por score (é a tabela "top" do grupo) */
+  /* primeiro quem já tem leitura real */
   const ordenada = useMemo(
     () =>
-      [...lista].sort((a, b) => (b.cpu_score || 0) - (a.cpu_score || 0)),
+      [...lista].sort((a, b) => {
+        const ra = a.details ? 1 : 0
+        const rb = b.details ? 1 : 0
+        if (ra !== rb) return rb - ra
+        return String(a.username).localeCompare(String(b.username), 'pt')
+      }),
     [lista],
   )
 
-  /* teste de CPU local -> guarda o score e mostra a comparação */
-  const correrTeste = async () => {
-    if (testando) return
-    setTestando(true)
-    setResultado(null)
-    try {
-      const r = await stressCPU(2500)
-      const res = await fetch('/api/users/specs/me', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ cpu_score: r.score }),
-      })
-      const d = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setResultado({ erro: d?.error || 'Não deu para guardar o score.' })
-        return
-      }
-      const deltaBase =
-        d?.comparacao?.scoreDelta != null ? d.comparacao.scoreDelta : null
-
-      // média do grupo JÁ com o score novo (senão a comparação fica velha)
-      let media = 0
-      try {
-        const rl = await fetch('/api/users/specs', { headers: authHeaders() })
-        const dl = await rl.json()
-        const s = (dl?.specs || []).map((x) => x.cpu_score).filter((n) => n > 0)
-        if (s.length) media = Math.round(s.reduce((a, b) => a + b, 0) / s.length)
-      } catch {
-        /* fica só a comparação com a baseline */
-      }
-
-      setResultado({
-        ...r,
-        deltaBase,
-        vsGrupo: media ? Math.round(((r.score - media) / media) * 100) : null,
-      })
-      carregar()
-    } catch {
-      setResultado({ erro: 'Não deu para correr o teste.' })
-    } finally {
-      setTestando(false)
-    }
+  const badgeDe = (s) => {
+    const av = s.details?.avaliacao
+    if (!av) return <Badge tom="ok">—</Badge>
+    if (av.cpu?.estado === 'overclock') return <Badge tom="perigo">Overclock</Badge>
+    if (av.ram?.estado === 'xmp') return <Badge tom="aviso">XMP</Badge>
+    if (av.cpu?.estado === 'boost') return <Badge tom="aviso">Boost</Badge>
+    return <Badge tom="ok">Normal</Badge>
   }
 
   return (
     <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
       <div className="mx-auto max-w-6xl">
+        {/* ---------------- PORTÃO: bloqueia a aba até ler o PC ---------------- */}
+        <AnimatePresence>
+          {portao && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
+            >
+              <motion.div
+                initial={{ scale: 0.94, y: 18 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.96, opacity: 0 }}
+                className="glass w-full max-w-lg rounded-2xl p-5 ring-1 ring-white/10"
+              >
+                <div className="mb-3 flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/15">
+                    <Lock className="h-5 w-5 text-orange-400" />
+                  </span>
+                  <div>
+                    <h2 className="font-display text-lg font-black uppercase text-white">
+                      Ler as specs deste PC
+                    </h2>
+                    <p className="mt-1 text-[13px] leading-relaxed text-gray-400">
+                      Precisamos de correr o PowerShell aqui: é a única forma de ver os GHz
+                      reais, a tensão e a RAM a correr. Toca no botão para entrar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {podeLocal && (
+                    <button
+                      onClick={lerPC}
+                      disabled={lendo}
+                      className="flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
+                    >
+                      <RefreshCcw className={`h-4 w-4 ${lendo ? 'animate-spin' : ''}`} />
+                      {lendo ? 'A ler o PC…' : 'Ler o meu PC agora'}
+                    </button>
+                  )}
+                  {!podeLocal && podeLocal !== null && (
+                    <button
+                      onClick={() => setPortao(false)}
+                      className="btn-glass rounded-full px-5 py-2.5 text-sm font-bold text-gray-300"
+                    >
+                      Entrar
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-3">
+                  <TerminalPassos passos={passos} aCorrer={lendo} />
+                </div>
+
+                {erroLeitura && (
+                  <p className="mt-3 text-[13px] font-bold text-red-400">{erroLeitura}</p>
+                )}
+
+                {!podeLocal && !lendo && podeLocal !== null && (
+                  <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+                    <p className="mb-2 text-[12px] leading-relaxed text-gray-400">
+                      Este servidor não tem PowerShell (Vercel). Corre este comando no PC e o
+                      resultado vem para o site:
+                    </p>
+                    {comando ? (
+                      <button
+                        onClick={copiarComando}
+                        className="block w-full overflow-x-auto rounded-lg border border-emerald-500/30 bg-black/60 px-3 py-2 text-left font-mono text-[11px] text-emerald-300 transition-colors hover:border-emerald-500/60"
+                        title="Clicar para copiar"
+                      >
+                        {copiado ? '✓ copiado' : comando}
+                      </button>
+                    ) : (
+                      <p className="text-[12px] text-gray-600">A preparar o comando…</p>
+                    )}
+                  </div>
+                )}
+
+                {/* só depois de falhar (ou de não haver PowerShell) dá para passar */}
+                {(erroLeitura || (!podeLocal && podeLocal !== null)) && !lendo && (
+                  <button
+                    onClick={() => setPortao(false)}
+                    className="mt-3 w-full text-center text-[11px] font-bold uppercase tracking-wider text-gray-500 transition-colors hover:text-gray-300"
+                  >
+                    Entrar mesmo assim
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ---------------- Cabeçalho ---------------- */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -445,9 +503,7 @@ export default function PcsPage() {
             PCs / Specs
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-400">
-            As máquinas dos membros, recolhidas automaticamente pelo site a cada entrada. Cada PC
-            guarda a primeira leitura como <span className="font-bold text-white">baseline</span> —
-            é com ela que se vê o que mudou.
+            As máquinas do grupo com valores lidos no Windows. Clique numa linha para ver tudo.
           </p>
         </motion.div>
 
@@ -455,38 +511,35 @@ export default function PcsPage() {
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard icon={Monitor} label="PCs registados" value={fmt(resumo.total)} delay={0} />
           <StatCard
-            icon={Activity}
-            label="Score médio do grupo"
-            value={mediaGrupo ? fmt(mediaGrupo) : '—'}
-            tom="text-orange-400"
+            icon={Terminal}
+            label="Leituras reais"
+            value={fmt(resumo.reais)}
+            tom="text-emerald-400"
             delay={0.05}
           />
           <StatCard
-            icon={AlertTriangle}
-            label="Com alterações"
-            value={fmt(resumo.alterados)}
-            tom="text-yellow-400"
+            icon={Gauge}
+            label="CPU com overclock"
+            value={fmt(resumo.ocCpu)}
+            tom="text-red-400"
             delay={0.1}
           />
           <StatCard
-            icon={Gauge}
-            label="Overclock"
-            value={fmt(resumo.overclock)}
-            tom="text-red-400"
+            icon={MemoryStick}
+            label="Com XMP/EXPO"
+            value={fmt(resumo.xmp)}
+            tom="text-yellow-400"
             delay={0.15}
           />
         </div>
 
-        {/* ---------------- O que o browser lê (honesto) ---------------- */}
+        {/* ---------------- Aviso curto ---------------- */}
         <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] leading-relaxed text-gray-400">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
           <p>
-            O browser só consegue ler uma parte da máquina (sistema, núcleos, memória anunciada,
-            placa gráfica via WebGL, ecrã e armazenamento). Não há como ler clocks nem timings da
-            RAM — por isso o <span className="font-bold text-red-400">OVERCLOCK</span> é detetado
-            pelo desempenho: um resultado muito acima da baseline ou da média do grupo aparece a
-            vermelho. Em baixo há o botão que lê os valores <span className="font-bold text-white">à
-            verdade</span> com um script do Windows.
+            O browser não lê relógios — os valores vêm do Windows (PowerShell + CPU-Z).{' '}
+            <span className="font-bold text-white">Overclock</span> = CPU acima do teto de
+            fábrica ou RAM com XMP/EXPO ligado.
           </p>
         </div>
 
@@ -501,13 +554,11 @@ export default function PcsPage() {
             <div>
               <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase text-white">
                 <Terminal className="h-5 w-5 text-emerald-400" />
-                Leitura real do PC
+                Ler o meu PC
               </h2>
               <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-gray-500">
-                O site, sozinho, não chega aos relógios nem aos timings — o browser não os expõe. Este
-                botão corre um script do Windows <span className="text-gray-300">no PC onde está o
-                servidor</span>: mostra aqui cada passo que dá, lê CPU (relógio atual vs de fábrica),
-                RAM (módulos em MHz, CAS, tensão), GPU e discos, e guarda tudo no teu PC.
+                Corre o script aqui no PC: CPU (relógio real, tensão, teto de fábrica), RAM (MHz,
+                XMP), GPU e discos. Demora ~15 s.
               </p>
             </div>
 
@@ -534,34 +585,17 @@ export default function PcsPage() {
             </div>
           </div>
 
-          {/* terminal com os passos do PowerShell */}
-          {(lendo || passos.length > 0) && (
-            <div className="mt-4 rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
-              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400/80">
-                <span className={`h-2 w-2 rounded-full ${lendo ? 'animate-pulse bg-emerald-400' : 'bg-gray-600'}`} />
-                PowerShell — o que está a fazer
-              </div>
-              <ul className="space-y-0.5">
-                {passos.map((p, i) => (
-                  <li key={i} className="text-gray-300">
-                    <span className="text-emerald-500">›</span> {p}
-                  </li>
-                ))}
-                {lendo && <li className="text-gray-500">› …</li>}
-              </ul>
-            </div>
-          )}
+          <div className="mt-4">
+            <TerminalPassos passos={passos} aCorrer={lendo} />
+          </div>
 
-          {erroLeitura && (
-            <p className="mt-3 text-sm font-bold text-red-400">{erroLeitura}</p>
-          )}
+          {erroLeitura && <p className="mt-3 text-sm font-bold text-red-400">{erroLeitura}</p>}
 
-          {!podeLocal && !lendo && (
+          {!podeLocal && !lendo && podeLocal !== null && (
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
               <p className="mb-2 text-[13px] leading-relaxed text-gray-400">
-                Este servidor não está num Windows local (a Vercel não tem PowerShell). Nesse caso,
-                corre o comando abaixo <span className="font-bold text-white">no PowerShell do teu
-                PC</span> — ele mostra tudo o que vai buscar e envia o resultado para o site.
+                Sem PowerShell no servidor. Corre o comando no PC — ele envia o resultado para o
+                site.
               </p>
               {comando ? (
                 <button
@@ -578,96 +612,10 @@ export default function PcsPage() {
           )}
 
           {lido?.details && (
-            <div className="mt-4">
+            <div className="mt-4 border-t border-white/10 pt-4">
               <LeituraReal d={lido.details} />
             </div>
           )}
-        </motion.div>
-
-        {/* ---------------- Teste de CPU ---------------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass mb-6 rounded-2xl p-4 sm:p-5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase text-white">
-                <Cpu className="h-5 w-5 text-orange-400" />
-                Stress test da CPU
-              </h2>
-              <p className="mt-1 text-[13px] text-gray-500">
-                2,5 s de carga no teu processador — dá um score em operações/segundo.
-              </p>
-            </div>
-            <button
-              onClick={correrTeste}
-              disabled={testando}
-              className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-60"
-            >
-              <RefreshCcw className={`h-4 w-4 ${testando ? 'animate-spin' : ''}`} />
-              {testando ? 'A medir…' : 'Testar agora'}
-            </button>
-          </div>
-
-          <AnimatePresence>
-            {resultado && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                {resultado.erro ? (
-                  <p className="mt-3 text-sm font-bold text-red-400">{resultado.erro}</p>
-                ) : (
-                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="rounded-xl bg-black/40 p-3 text-center">
-                      <div className="font-display text-xl font-black text-white">
-                        {fmt(resultado.score)}
-                      </div>
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
-                        ops/segundo
-                      </div>
-                    </div>
-                    <div className="rounded-xl bg-black/40 p-3 text-center">
-                      <div
-                        className={`font-display text-xl font-black ${
-                          (resultado.deltaBase || 0) >= OVERCLOCK_DESvio
-                            ? 'text-red-400'
-                            : 'text-white'
-                        }`}
-                      >
-                        {resultado.deltaBase == null
-                          ? '—'
-                          : `${resultado.deltaBase > 0 ? '+' : ''}${resultado.deltaBase}%`}
-                      </div>
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
-                        face à tua baseline
-                      </div>
-                    </div>
-                    <div className="rounded-xl bg-black/40 p-3 text-center">
-                      <div className="font-display text-xl font-black text-white">
-                        {resultado.vsGrupo == null
-                          ? '—'
-                          : `${resultado.vsGrupo > 0 ? '+' : ''}${resultado.vsGrupo}%`}
-                      </div>
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
-                        face à média do grupo
-                      </div>
-                    </div>
-                    {resultado.deltaBase != null &&
-                    resultado.deltaBase >= OVERCLOCK_DESvio ? (
-                      <p className="text-center text-xs font-black uppercase tracking-wide text-red-400 sm:col-span-3">
-                        ⚠ Valores muito acima da tua baseline — possível overclock
-                      </p>
-                    ) : null}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
 
         {/* ---------------- Tabela ---------------- */}
@@ -677,7 +625,7 @@ export default function PcsPage() {
               Máquinas do grupo
             </h2>
             <span className="text-[11px] font-bold text-gray-500">
-              {lista.length} registos · clique numa linha para ver tudo
+              {lista.length} registos · clique numa linha
             </span>
           </div>
 
@@ -687,7 +635,7 @@ export default function PcsPage() {
             </div>
           ) : lista.length === 0 ? (
             <div className="py-10 text-center text-sm text-gray-500">
-              Ainda sem specs — cada membro envia as do seu PC automaticamente ao entrar no site.
+              Ainda sem specs — cada membro envia as do seu PC ao entrar no site.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -700,20 +648,13 @@ export default function PcsPage() {
                     <th className="px-4 py-2.5 font-bold">CPU</th>
                     <th className="px-4 py-2.5 font-bold">RAM</th>
                     <th className="px-4 py-2.5 font-bold">Placa gráfica</th>
-                    <th className="px-4 py-2.5 text-right font-bold">Score</th>
                     <th className="px-4 py-2.5 text-right font-bold">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ordenada.map((s, i) => {
-                    const delta = s.comparacao?.scoreDelta || 0
-                    const oc = delta >= OVERCLOCK_DESvio
-                    const alterado = s.comparacao?.campos?.length > 0
+                    const av = s.details?.avaliacao
                     const expandido = aberto === s.user_id
-                    const vsGrupo =
-                      s.cpu_score && mediaGrupo
-                        ? Math.round(((s.cpu_score - mediaGrupo) / mediaGrupo) * 100)
-                        : null
                     return (
                       <Fragment key={s.user_id}>
                         <tr
@@ -743,32 +684,44 @@ export default function PcsPage() {
                           </td>
                           <td className="px-4 py-3 text-gray-300">{s.os || '—'}</td>
                           <td className="px-4 py-3 text-gray-300">
-                            {s.cpu_cores ? `${s.cpu_cores} núcleos` : '—'}
+                            {av?.cpu?.relogio_mhz ? (
+                              <>
+                                <span className="font-black text-white">
+                                  {fmt(av.cpu.relogio_mhz)} MHz
+                                </span>
+                                {s.cpu_cores ? (
+                                  <span className="text-gray-500"> · {s.cpu_cores} núc.</span>
+                                ) : null}
+                              </>
+                            ) : s.cpu_cores ? (
+                              `${s.cpu_cores} núcleos`
+                            ) : (
+                              '—'
+                            )}
                           </td>
                           <td className="px-4 py-3 text-gray-300">
-                            {s.ram_gb ? `${s.ram_gb} GB` : '—'}
+                            {av?.ram?.aplicada_mhz ? (
+                              <>
+                                <span className="font-black text-white">
+                                  {fmt(av.ram.aplicada_mhz)} MHz
+                                </span>
+                                <span className="text-gray-500">
+                                  {' '}
+                                  · {s.ram_gb || '—'} GB
+                                </span>
+                              </>
+                            ) : s.ram_gb ? (
+                              `${s.ram_gb} GB`
+                            ) : (
+                              '—'
+                            )}
                           </td>
                           <td className="max-w-[220px] truncate px-4 py-3 text-gray-300">
                             {s.gpu || '—'}
                           </td>
-                          <td className="px-4 py-3 text-right font-display font-black text-white">
-                            {s.cpu_score ? fmt(s.cpu_score) : '—'}
-                            {vsGrupo != null && (
-                              <span className="ml-1.5 text-[10px] font-bold text-gray-500">
-                                {vsGrupo > 0 ? '+' : ''}
-                                {vsGrupo}%
-                              </span>
-                            )}
-                          </td>
                           <td className="px-4 py-3 text-right">
                             <span className="inline-flex items-center gap-1.5">
-                              {oc ? (
-                                <Badge tom="perigo">Overclock</Badge>
-                              ) : alterado ? (
-                                <Badge tom="aviso">Alterado</Badge>
-                              ) : (
-                                <Badge tom="ok">Normal</Badge>
-                              )}
+                              {badgeDe(s)}
                               <ChevronDown
                                 className={`h-3.5 w-3.5 text-gray-500 transition-transform ${expandido ? 'rotate-180' : ''}`}
                               />
@@ -779,54 +732,23 @@ export default function PcsPage() {
                         {/* detalhe da máquina */}
                         {expandido && (
                           <tr>
-                            <td colSpan={8} className="bg-black/40 px-4 py-4">
+                            <td colSpan={7} className="bg-black/40 px-4 py-4">
                               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                 <div className="space-y-1.5">
                                   <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
-                                    Valores atuais vs original (baseline)
-                                  </p>
-                                  {Object.keys(ROTULOS).map((campo) => (
-                                    <LinhaSpec
-                                      key={campo}
-                                      campo={campo}
-                                      atual={s[campo]}
-                                      base={s.baseline?.[campo]}
-                                    />
-                                  ))}
-                                </div>
-                                <div className="space-y-2">
-                                  <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
                                     Leitura do site
                                   </p>
-                                  {oc && (
-                                    <div className="rounded-xl bg-red-500/15 px-3 py-2.5 text-[13px] font-bold text-red-400">
-                                      ⚠ OVERCLOCK — o score está {delta}% acima da baseline deste PC.
-                                    </div>
-                                  )}
-                                  {alterado && (
-                                    <div className="rounded-xl bg-yellow-500/10 px-3 py-2.5 text-[13px] text-yellow-300">
-                                      {s.comparacao.campos
-                                        .map((c) => `${ROTULOS[c.campo] || c.campo}: “${c.antes ?? '—'}” → “${c.agora ?? '—'}”`)
-                                        .join(' · ')}
-                                    </div>
-                                  )}
-                                  {!oc && !alterado && (
-                                    <div className="rounded-xl bg-emerald-500/10 px-3 py-2.5 text-[13px] text-emerald-300">
-                                      Sem alterações face à primeira leitura.
-                                    </div>
-                                  )}
-                                  <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[12px] text-gray-400">
-                                    <MemoryStick className="mr-1.5 inline h-3.5 w-3.5 text-violet-400" />
-                                    Memória: {s.ram_gb ? `${s.ram_gb} GB (anunciados pelo sistema)` : '—'}
-                                  </div>
-                                  <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[12px] text-gray-400">
-                                    <HardDrive className="mr-1.5 inline h-3.5 w-3.5 text-violet-400" />
-                                    Armazenamento: {s.storage_gb ? `${s.storage_gb} GB (quota do browser)` : '—'}
-                                  </div>
-                                  <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[12px] text-gray-400">
-                                    <Monitor className="mr-1.5 inline h-3.5 w-3.5 text-violet-400" />
-                                    Ecrã: {s.screen || '—'} · {s.browser || '—'}
-                                  </div>
+                                  {Object.keys(ROTULOS).map((campo) => (
+                                    <LinhaReal
+                                      key={campo}
+                                      rotulo={ROTULOS[campo]}
+                                      valor={
+                                        campo === 'ram_gb' && s[campo]
+                                          ? `${s[campo]} GB`
+                                          : (s[campo] ?? '—')
+                                      }
+                                    />
+                                  ))}
                                   <p className="text-[11px] text-gray-600">
                                     Última leitura:{' '}
                                     {s.updated_at
@@ -834,20 +756,29 @@ export default function PcsPage() {
                                       : '—'}
                                   </p>
                                 </div>
-                              </div>
 
-                              {/* valores reais (PowerShell) quando existem */}
-                              {s.details ? (
-                                <div className="mt-4 border-t border-white/10 pt-4">
-                                  <LeituraReal d={s.details} />
+                                <div className="space-y-2">
+                                  {s.details ? (
+                                    <LeituraReal d={s.details} />
+                                  ) : (
+                                    <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[12px] text-gray-500">
+                                      <Terminal className="mr-1.5 inline h-3.5 w-3.5 text-emerald-400" />
+                                      Sem leitura real — este PC ainda não correu o script.
+                                    </div>
+                                  )}
+                                  {av?.cpu?.estado === 'overclock' || av?.ram?.estado === 'xmp' ? (
+                                    <div className="rounded-xl bg-red-500/15 px-3 py-2.5 text-[13px] font-bold text-red-400">
+                                      <AlertTriangle className="mr-1.5 inline h-3.5 w-3.5" />
+                                      Overclock detetado
+                                      {av.cpu?.estado === 'overclock' ? ' na CPU' : ''}
+                                      {av.cpu?.estado === 'overclock' && av.ram?.estado === 'xmp'
+                                        ? ' e na RAM'
+                                        : av.ram?.estado === 'xmp' ? ' na RAM (XMP)' : ''}
+                                      .
+                                    </div>
+                                  ) : null}
                                 </div>
-                              ) : (
-                                <div className="mt-4 rounded-xl bg-white/5 px-3 py-2.5 text-[12px] text-gray-500">
-                                  <Terminal className="mr-1.5 inline h-3.5 w-3.5 text-emerald-400" />
-                                  Sem leitura real ainda — este PC ainda não correu o script do
-                                  PowerShell (botão lá em cima, no PC do membro).
-                                </div>
-                              )}
+                              </div>
                             </td>
                           </tr>
                         )}
@@ -859,6 +790,7 @@ export default function PcsPage() {
             </div>
           )}
         </div>
+
       </div>
     </section>
   )

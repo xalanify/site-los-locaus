@@ -354,10 +354,19 @@ router.get('/r6/status', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------- Rainbow Six: atualização (manual pelo painel) ----------
+   O POST arranca a ida ao tracker.gg e responde logo; o painel
+   faz polling a /r6/status e mostra a barra + os logs a andar. */
 router.post('/r6/refresh', requireAdmin, async (req, res) => {
   try {
-    const r = await require('../r6auto').refreshNow();
-    res.json(r);
+    const r6 = require('../r6auto');
+    const st = r6.status();
+    if (st.trabalho && st.trabalho.aCorrer) {
+      return res.status(409).json({ ok: false, motivo: 'em-curso', ...st });
+    }
+    // arranca e não espera: o painel vê o progresso pelo /status
+    r6.refreshNow({ manual: true }).catch((e) => console.error('R6 manual:', e.message));
+    res.json({ ok: true, aCorrer: true, ...r6.status() });
   } catch (error) {
     console.error('Erro r6/refresh:', error.message);
     res.status(500).json({ ok: false, error: 'Não foi possível atualizar.' });

@@ -8,6 +8,7 @@ import {
   Users,
   Gamepad2,
   Cpu,
+  Wrench,
 } from 'lucide-react'
 
 /* ============================================================
@@ -37,18 +38,22 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isMembers = location.pathname === '/membros'
   const isGames = location.pathname === '/jogos'
   const isPcs = location.pathname === '/pcs'
+  const isFerramentas = location.pathname === '/ferramentas'
 
   const links = [
     { name: 'Página inicial', icon: Home, action: () => goTo('#home'), active: isHome && !location.hash },
     { name: 'Clips e Publicações', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
     { name: 'Atualizações', icon: History, action: () => navigate('/atualizacoes'), active: isUpdates },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
-    // Jogos e Specs: as contas de jogo ficam no backend — só o admin abre
+    // Jogos, Specs e Ferramentas: só o admin abre
     ...(isAdmin
       ? [{ name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames }]
       : []),
     ...(isAdmin
       ? [{ name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs }]
+      : []),
+    ...(isAdmin
+      ? [{ name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas }]
       : []),
   ]
 
