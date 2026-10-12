@@ -1,14 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Youtube, Clapperboard, History, Home, User } from 'lucide-react'
 import Sino from './Sino'
+import AvatarImg from './AvatarImg'
 
 /* ============================================================
-   Barra de topo (só a marca) + barra de navegação flutuante
-   em pílula, em baixo ao centro — PC e telemóvel.
+   Barra de topo (foto que abre o menu lateral + marca) + barra
+   de navegação flutuante em pílula, em baixo ao centro.
    Só a aba ativa fica em roxo/brilho; as restantes ficam cinza.
    O ícone de Conta abre o perfil da conta (/perfil).
    ============================================================ */
-export default function Navbar({ isAdmin = false, user = null }) {
+export default function Navbar({ isAdmin = false, user = null, onMenu }) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -54,13 +55,26 @@ export default function Navbar({ isAdmin = false, user = null }) {
     <>
       {/* ---------------- Barra de topo (só no telemóvel) ---------------- */}
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-black/85 backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
+          {/* Foto — abre o menu lateral (estilo X) */}
+          <button
+            onClick={onMenu}
+            aria-label="Abrir menu"
+            className="shrink-0 rounded-full transition-transform active:scale-95"
+          >
+            <AvatarImg
+              src={user?.avatar_url}
+              name={user?.username || '?'}
+              className="h-9 w-9 ring-1 ring-white/20"
+            />
+          </button>
+
           {/* Marca */}
-          <Link to="/" className="flex shrink-0 items-center gap-2.5">
+          <Link to="/" className="flex min-w-0 items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500/15 ring-1 ring-orange-500/30 sm:h-9 sm:w-9">
               <Youtube className="h-4 w-4 text-orange-400 sm:h-5 sm:w-5" />
             </span>
-            <span className="gradient-text font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
+            <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
               Ashow e Jazer Site
             </span>
           </Link>

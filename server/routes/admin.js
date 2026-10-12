@@ -345,6 +345,25 @@ router.get('/game-names', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------- Rainbow Six: atualização automática ---------- */
+router.get('/r6/status', requireAdmin, async (req, res) => {
+  try {
+    res.json(require('../r6auto').status());
+  } catch {
+    res.json({ ligado: false });
+  }
+});
+
+router.post('/r6/refresh', requireAdmin, async (req, res) => {
+  try {
+    const r = await require('../r6auto').refreshNow();
+    res.json(r);
+  } catch (error) {
+    console.error('Erro r6/refresh:', error.message);
+    res.status(500).json({ ok: false, error: 'Não foi possível atualizar.' });
+  }
+});
+
 /* ---------- Estatísticas (aba "Estatísticas" do painel) ---------- */
 router.get('/stats', requireAdmin, async (req, res) => {
   try {

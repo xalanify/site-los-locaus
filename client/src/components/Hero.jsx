@@ -98,6 +98,16 @@ export default function Hero() {
             </div>
           </div>
         </motion.div>
+
+        {/* legenda — estes números vêm do canal em tempo real */}
+        <p className="mt-3 flex items-center justify-center gap-2 text-[11px] font-semibold text-gray-500">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          Informações do canal <span className="text-emerald-400">ao vivo</span> — atualizadas em
+          tempo real
+        </p>
       </div>
     </section>
   )

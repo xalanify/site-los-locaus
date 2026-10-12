@@ -61,9 +61,28 @@ create table if not exists public.user_badges (
 
 -- ---------- dados extras do perfil ----------
 create table if not exists public.user_profiles (
+  user_id      bigint primary key references public.users(id) on delete cascade,
+  avatar_url   text,
+  game_nick    text,
+  -- experimentação: banner do perfil + cor/efeito do nome
+  banner_id    text,
+  name_color   text,
+  name_effect  text,
+  updated_at   timestamptz not null default now()
+);
+
+-- ---------- specs dos PCs dos membros (recolhidas no browser) ----------
+create table if not exists public.user_specs (
   user_id    bigint primary key references public.users(id) on delete cascade,
-  avatar_url text,
-  game_nick  text,
+  os         text,
+  browser    text,
+  cpu_cores  integer,
+  ram_gb     integer,
+  gpu        text,
+  screen     text,
+  storage_gb integer,
+  cpu_score  bigint,       -- ops/segundo do stress test (valor grande)
+  baseline   jsonb,          -- primeira leitura (para comparar e marcar alterações)
   updated_at timestamptz not null default now()
 );
 

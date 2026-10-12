@@ -296,7 +296,14 @@ router.get('/r6', (req, res) => {
   try {
     const data = tracker.readJson(tracker.R6_FILE);
     if (!data) return res.json({ configured: false, missing: tracker.missing(tracker.R6_FILE) });
-    res.json(data);
+    // estado da atualização automática (tracker API, a cada X min)
+    let auto = null;
+    try {
+      auto = require('../r6auto').status();
+    } catch {
+      auto = null;
+    }
+    res.json({ ...data, auto });
   } catch (error) {
     console.error('Erro games/r6:', error.message);
     res.status(500).json({ configured: false, error: 'Não foi possível ler os dados do Rainbow Six.' });

@@ -34,14 +34,31 @@
       position: relative;
     }
 
-    /* fundo: brilhos violeta (como no site) */
+    /* fundo: gif animado (com véu escuro para o texto continuar legível) */
+    .fundo {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: #000 url('https://i.pinimg.com/originals/45/98/6d/45986d3cf4d64299869db2be4704719e.gif') center center / cover no-repeat;
+    }
+    .fundo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(120% 90% at 50% 35%, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.85) 100%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0.8) 100%);
+    }
+
+    /* brilhos violeta (como no site) — por cima do gif */
     body::before,
     body::after {
       content: '';
       position: fixed;
       border-radius: 50%;
       filter: blur(120px);
-      opacity: 0.22;
+      opacity: 0.18;
       z-index: 0;
       pointer-events: none;
     }
@@ -144,6 +161,7 @@
 </head>
 
 <body>
+  <div class="fundo" aria-hidden="true"></div>
   <main>
     <h1>Ashow e Jazer</h1>
   </main>

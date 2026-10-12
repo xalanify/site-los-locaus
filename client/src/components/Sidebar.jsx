@@ -1,5 +1,14 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Youtube, Clapperboard, History, Home, User } from 'lucide-react'
+import {
+  Youtube,
+  Clapperboard,
+  History,
+  Home,
+  User,
+  Users,
+  Gamepad2,
+  Cpu,
+} from 'lucide-react'
 import Sino from './Sino'
 
 /* ============================================================
@@ -26,11 +35,22 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isClips = location.pathname === '/clips'
   const isUpdates = location.pathname === '/atualizacoes'
   const isProfile = location.pathname === '/perfil'
+  const isMembers = location.pathname === '/membros'
+  const isGames = location.pathname === '/jogos'
+  const isPcs = location.pathname === '/pcs'
 
   const links = [
     { name: 'Página inicial', icon: Home, action: () => goTo('#home'), active: isHome && !location.hash },
     { name: 'Clips e Publicações', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
     { name: 'Atualizações', icon: History, action: () => navigate('/atualizacoes'), active: isUpdates },
+    { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
+    // Jogos e Specs: as contas de jogo ficam no backend — só o admin abre
+    ...(isAdmin
+      ? [{ name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames }]
+      : []),
+    ...(isAdmin
+      ? [{ name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs }]
+      : []),
   ]
 
   return (

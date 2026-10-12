@@ -5,6 +5,8 @@ import { Loader2 } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import RightColumn from './components/RightColumn'
+import MobileMenu from './components/MobileMenu'
+import BetaBadge from './components/BetaBadge'
 import Hero from './components/Hero'
 import VideosSection from './components/VideosSection'
 import BarraAnuncios from './components/BarraAnuncios'
@@ -14,9 +16,11 @@ import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
 import BootScreen from './components/BootScreen'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
+import { enviarSpecs } from './lib/specs'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
+const PcsPage = lazy(() => import('./pages/PcsPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
@@ -26,6 +30,7 @@ const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 function App() {
   const [entered, setEntered] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false) // menu lateral (telemóvel)
   const [user, setUser] = useState(null) // conta de utilizador (obrigatória)
   const [showAuth, setShowAuth] = useState(false)
   // false enquanto ainda não sabemos se há sessão guardada
@@ -66,6 +71,23 @@ function App() {
     window.scrollTo(0, 0)
   }, [location.pathname])
 
+  // Specs do PC — recolhidas no browser, enviadas de 3 em 3 dias
+  // (ou logo na primeira entrada); o servidor guarda a baseline.
+  useEffect(() => {
+    if (!sessionChecked || !user) return
+    try {
+      const ultimo = Number(localStorage.getItem('specsAt') || 0)
+      if (Date.now() - ultimo < 3 * 24 * 3600 * 1000) return
+      enviarSpecs()
+        .then((d) => {
+          if (d && d.ok) localStorage.setItem('specsAt', String(Date.now()))
+        })
+        .catch(() => {})
+    } catch {
+      /* nada a fazer */
+    }
+  }, [sessionChecked, user])
+
   // Conta de utilizador (a sessão é obrigatória para entrar)
   const handleAuthed = (data) => {
     setUserSession(data.token, data.user)
@@ -103,6 +125,8 @@ function App() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="origin-center"
           >
+            {/* Etiqueta BETA — em todos os ecrãs */}
+            <BetaBadge />
             {/* A verificar sessão guardada */}
             {!sessionChecked && (
               <div className="flex min-h-screen flex-col items-center justify-center gap-3">
@@ -125,7 +149,19 @@ function App() {
             {authed && !needsRecovery && (
               <>
                 {/* Barra de navegação (só no telemóvel) */}
-                <Navbar isAdmin={isAdmin} user={user} />
+                <Navbar
+                  isAdmin={isAdmin}
+                  user={user}
+                  onMenu={() => setMenuOpen(true)}
+                />
+                {/* Menu lateral estilo X (só no telemóvel) */}
+                <MobileMenu
+                  open={menuOpen}
+                  onClose={() => setMenuOpen(false)}
+                  user={user}
+                  isAdmin={isAdmin}
+                  onLogout={handleUserLogout}
+                />
                 {/* Sidebar lateral (só no PC) */}
                 <Sidebar user={user} isAdmin={isAdmin} />
                 {/* Coluna direita (só em ecrãs largos) */}
@@ -166,6 +202,11 @@ function App() {
                     <Route
                       path="/jogos"
                       element={isAdmin ? <GamesPage /> : <Navigate to="/" replace />}
+                    />
+                    {/* PCs dos membros: dashboard de specs — só o admin */}
+                    <Route
+                      path="/pcs"
+                      element={isAdmin ? <PcsPage /> : <Navigate to="/" replace />}
                     />
                     <Route path="/atualizacoes" element={<UpdatesPage />} />
                     <Route

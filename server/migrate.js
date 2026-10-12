@@ -14,6 +14,27 @@ const { initDatabase, getDb, closeDatabase } = require('./database');
 const PASSOS = [
   // Contador de visualizações nos clips
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS views integer NOT NULL DEFAULT 0',
+  // Experimentação: banner do perfil + cor/efeito do nome
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_effect text',
+  // Specs dos PCs (recolhidas no browser, com baseline para comparar)
+  `CREATE TABLE IF NOT EXISTS public.user_specs (
+     user_id    bigint primary key references public.users(id) on delete cascade,
+     os         text,
+     browser    text,
+     cpu_cores  integer,
+     ram_gb     integer,
+     gpu        text,
+     screen     text,
+     storage_gb integer,
+     cpu_score  bigint,
+     baseline   jsonb,
+     updated_at timestamptz not null default now()
+   )`,
+  // score em ops/segundo: um integer não chega (valores na casa dos
+  // mil milhões) — corrige BDs já criadas com o tipo antigo
+  'ALTER TABLE public.user_specs ALTER COLUMN cpu_score TYPE bigint',
 ];
 
 (async () => {

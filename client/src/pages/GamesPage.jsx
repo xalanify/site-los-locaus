@@ -1645,6 +1645,42 @@ function R6Page() {
         </p>
       </div>
 
+      {/* estado da atualização automática */}
+      {d.auto && (
+        <div
+          className={`flex items-center gap-2.5 rounded-xl border px-4 py-2.5 text-[13px] ${
+            d.auto.ligado
+              ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-300'
+              : 'border-white/10 bg-white/5 text-gray-400'
+          }`}
+        >
+          <span className="relative flex h-2 w-2 shrink-0">
+            {d.auto.ligado && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            )}
+            <span
+              className={`relative inline-flex h-2 w-2 rounded-full ${
+                d.auto.ligado ? 'bg-emerald-400' : 'bg-gray-500'
+              }`}
+            />
+          </span>
+          {d.auto.ligado ? (
+            <span>
+              Atualização automática ligada — a cada {d.auto.intervaloMin} min
+              {d.auto.ultimaTentativa
+                ? ` · última tentativa ${new Date(d.auto.ultimaTentativa).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
+                : ''}
+            </span>
+          ) : (
+            <span>
+              Atualização automática desligada — falta a chave{' '}
+              <code className="text-orange-400">TRACKER_API_KEY</code> no servidor (snapshot
+              guardado mantido).
+            </span>
+          )}
+        </div>
+      )}
+
       <R6Squad players={d.players || []} maxRp={maxRp} />
 
       <p className="text-center text-xs text-gray-500">
@@ -1683,6 +1719,19 @@ export default function GamesPage() {
             Jogos
           </h1>
         </motion.div>
+
+        {/* Dados NÃO ao vivo — dito logo no início */}
+        <div className="mx-auto mb-8 flex max-w-3xl items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/5 px-4 py-3 text-left text-sm text-gray-300">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
+          <p>
+            <span className="font-bold text-yellow-400">Estas informações não são ao vivo.</span>{' '}
+            As estatísticas do <span className="font-bold text-white">CS2</span> e da{' '}
+            <span className="font-bold text-white">EA FC</span> vêm da Steam e dos registos do
+            grupo; as do <span className="font-bold text-white">Rainbow Six</span> vêm do
+            tracker.gg (atualizado automaticamente de 3 em 3 minutos). Só mudam quando há dados
+            novos.
+          </p>
+        </div>
 
         {tab === null ? (
           <GameChooser onPick={setTab} />

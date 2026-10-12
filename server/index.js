@@ -15,6 +15,7 @@ const { usersRouter } = require('./routes/users');
 const { clipsRouter } = require('./routes/clips');
 const { adminRouter } = require('./routes/admin');
 const { notificationsRouter } = require('./routes/notifications');
+const { specsRouter } = require('./routes/specs');
 const { trackVisitor } = require('./middleware/tracker');
 const { backendInfo } = require('./usersStore');
 
@@ -139,6 +140,9 @@ app.use('/api/notifications', notificationsRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/games', gamesRouter);
+// /api/users/specs tem de vir ANTES de /api/users — senão "specs"
+// seria interpretado como um :username.
+app.use('/api/users/specs', specsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/clips', clipsRouter);
 
@@ -174,6 +178,13 @@ if (!IS_VERCEL) {
   app.listen(PORT, () => {
     console.log(`Servidor a correr em http://localhost:${PORT}`);
   });
+}
+
+// R6 automático — atualiza o r6.json de 3 em 3 minutos (com TRACKER_API_KEY)
+try {
+  require('./r6auto').start();
+} catch (e) {
+  console.warn('R6 automático (a ignorar):', e.message);
 }
 
 module.exports = app;
