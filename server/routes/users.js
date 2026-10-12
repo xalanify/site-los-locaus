@@ -34,24 +34,21 @@ const signUser = (u) =>
     { expiresIn: '30d' },
   );
 
-/* Dados extras do perfil (foto + nick no CS2 + banner/cor do nome) — guardados no Supabase. */
+/* Dados extras do perfil (foto + nick no CS2) — guardados no Supabase. */
 const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, banner_id, name_color, name_effect
+        `SELECT avatar_url, game_nick
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
     return {
       avatar_url: (row && row.avatar_url) || null,
       game_nick: (row && row.game_nick) || null,
-      banner_id: (row && row.banner_id) || null,
-      name_color: (row && row.name_color) || null,
-      name_effect: (row && row.name_effect) || null,
     };
   } catch {
-    return { avatar_url: null, game_nick: null, banner_id: null, name_color: null, name_effect: null };
+    return { avatar_url: null, game_nick: null };
   }
 };
 
@@ -224,8 +221,7 @@ router.post(
   },
 );
 
-// Guardar dados do perfil (nick no CS2, avatar_url opcional para limpar,
-// e a experimentação: banner + cor/efeito do nome)
+// Guardar dados do perfil (nick no CS2, avatar_url opcional para limpar)
 router.put('/me/profile', attachAuth, async (req, res) => {
   if (!req.auth || !req.auth.uid) {
     return res.status(401).json({ error: 'Sessão não iniciada' });
@@ -235,10 +231,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const body = req.body || {};
     const hasNick = Object.prototype.hasOwnProperty.call(body, 'game_nick');
     const hasAvatar = Object.prototype.hasOwnProperty.call(body, 'avatar_url');
-    const hasBanner = Object.prototype.hasOwnProperty.call(body, 'banner_id');
-    const hasColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
-    const hasEffect = Object.prototype.hasOwnProperty.call(body, 'name_effect');
-    if (!hasNick && !hasAvatar && !hasBanner && !hasColor && !hasEffect) {
+    if (!hasNick && !hasAvatar) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
 
@@ -279,26 +272,6 @@ router.put('/me/profile', attachAuth, async (req, res) => {
         )
         .run(avatar || null, uid);
       if (cur && cur.avatar_url && cur.avatar_url !== avatar) removeAvatarFile(cur.avatar_url);
-    }
-
-    // Experimentação: banner do perfil + cor e efeito do nome
-    if (hasBanner) {
-      const b = String(body.banner_id || '').trim().slice(0, 30) || null;
-      await db
-        .prepare('UPDATE user_profiles SET banner_id = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
-        .run(b, uid);
-    }
-    if (hasColor) {
-      const c = String(body.name_color || '').trim().slice(0, 20) || null;
-      await db
-        .prepare('UPDATE user_profiles SET name_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
-        .run(c, uid);
-    }
-    if (hasEffect) {
-      const e = String(body.name_effect || '').trim().slice(0, 20) || null;
-      await db
-        .prepare('UPDATE user_profiles SET name_effect = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
-        .run(e, uid);
     }
 
     const user = await store.findById(uid);
@@ -424,7 +397,7 @@ router.get('/list', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT u.id, u.username, p.avatar_url, p.banner_id, p.name_color, p.name_effect,
+        `SELECT u.id, u.username, p.avatar_url,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online
          FROM users u
          LEFT JOIN user_profiles p ON p.user_id = u.id
@@ -441,9 +414,6 @@ router.get('/list', attachAuth, async (req, res) => {
         id: Number(r.id),
         username: r.username,
         avatar_url: r.avatar_url || null,
-        banner_id: r.banner_id || null,
-        name_color: r.name_color || null,
-        name_effect: r.name_effect || null,
         online: Boolean(r.online),
         badges: byUser[r.id] || [],
       })),

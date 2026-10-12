@@ -11,6 +11,9 @@ import {
   ChevronDown,
   Activity,
   ShieldCheck,
+  Terminal,
+  Copy,
+  Check,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
@@ -108,12 +111,177 @@ function LinhaSpec({ campo, atual, base }) {
   )
 }
 
+/* uma linha do bloco "leitura real" */
+function LinhaReal({ rotulo, valor, tom = 'text-white' }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2 text-[13px]">
+      <span className="text-gray-400">{rotulo}</span>
+      <span className={`text-right font-bold ${tom}`}>{valor}</span>
+    </div>
+  )
+}
+
+/* ============================================================
+   Leitura REAL do PC — o que o PowerShell mandou (relógios,
+   módulos de RAM, discos, motherboard) com o veredito de overclock
+   ============================================================ */
+function LeituraReal({ d }) {
+  if (!d) return null
+  const av = d.avaliacao || {}
+
+  return (
+    <div className="space-y-2">
+      <p className="mb-2 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-gray-500">
+        <Terminal className="h-3.5 w-3.5 text-emerald-400" /> Leitura real (PowerShell)
+      </p>
+
+      {/* CPU: atual vs de fábrica */}
+      {d.cpu?.nome && (
+        <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
+          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
+            <Cpu className="h-3.5 w-3.5 text-orange-400" /> {String(d.cpu.nome).trim()}
+          </p>
+          {av.cpu ? (
+            <p className="text-gray-400">
+              Relógio atual{' '}
+              <span className="font-bold text-white">{fmt(av.cpu.atual_mhz)} MHz</span> · de fábrica{' '}
+              <span className="font-bold text-white">{fmt(av.cpu.fabrica_mhz)} MHz</span>{' '}
+              {av.cpu.estado === 'overclock' ? (
+                <Badge tom="perigo">+{av.cpu.desvio_pct}% — overclock</Badge>
+              ) : (
+                <Badge tom="ok">dentro do normal</Badge>
+              )}
+            </p>
+          ) : (
+            <p className="text-gray-500">Sem relógios para comparar.</p>
+          )}
+          <p className="mt-1 text-[11px] text-gray-500">
+            {d.cpu.nucleos || '—'} núcleos · {d.cpu.logicos || '—'} lógicos
+            {d.cpu.socket ? ` · ${d.cpu.socket}` : ''}
+          </p>
+        </div>
+      )}
+
+      {/* RAM: módulos, MHz, CAS */}
+      {d.ram?.modulos?.length > 0 && (
+        <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
+          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
+            <MemoryStick className="h-3.5 w-3.5 text-violet-400" /> Memória — {d.ram.total_gb} GB ·{' '}
+            {d.ram.slots} módulos
+            {av.ram?.estado === 'overclock' && <Badge tom="perigo">overclock</Badge>}
+          </p>
+          <ul className="space-y-1 text-gray-400">
+            {d.ram.modulos.map((m, i) => {
+              const oc = (m.desvio_pct ?? 0) >= 5
+              return (
+                <li key={i} className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-white">{m.tamanho_gb || '—'} GB</span>
+                  <span>
+                    {m.velocidade_mhz ? `${fmt(m.velocidade_mhz)} MHz` : '—'}
+                    {m.aplicada_mhz && m.aplicada_mhz !== m.velocidade_mhz
+                      ? ` (a correr a ${fmt(m.aplicada_mhz)} MHz)`
+                      : ''}
+                  </span>
+                  {m.cas && <span className="text-gray-500">CAS {m.cas}</span>}
+                  {m.tensao_v && <span className="text-gray-500">{m.tensao_v} V</span>}
+                  {oc && <Badge tom="perigo">+{m.desvio_pct}%</Badge>}
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-1.5 text-[11px] text-gray-600">
+            {d.ram.modulos[0]?.referencia ? `Ref. ${d.ram.modulos[0].referencia}` : ''}
+            {d.ram.modulos[0]?.fabricante ? ` · ${d.ram.modulos[0].fabricante}` : ''}
+          </p>
+        </div>
+      )}
+
+      {/* GPU */}
+      {d.gpu?.nome && (
+        <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
+          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
+            <Monitor className="h-3.5 w-3.5 text-sky-400" /> {d.gpu.nome}
+            {d.gpu.memoria_gb ? ` · ${d.gpu.memoria_gb} GB` : ''}
+          </p>
+          {d.gpu.clock_atual_mhz ? (
+            <p className="text-gray-400">
+              Relógio <span className="font-bold text-white">{fmt(d.gpu.clock_atual_mhz)} MHz</span>
+              {d.gpu.clock_mem_mhz ? ` · memória ${fmt(d.gpu.clock_mem_mhz)} MHz` : ''}
+              {d.gpu.temperatura ? ` · ${d.gpu.temperatura} °C` : ''}
+              {d.gpu.potencia_atual_w && d.gpu.limite_w
+                ? ` · ${d.gpu.potencia_atual_w} W de ${d.gpu.limite_w} W`
+                : ''}
+              <span className="ml-1 text-[11px] text-gray-500">
+                (sem valor de fábrica para comparar)
+              </span>
+            </p>
+          ) : (
+            <p className="text-[12px] text-gray-500">
+              Sem relógios — o Windows só os dá com NVIDIA (nvidia-smi). Dizemo-lo em vez de
+              inventar.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Discos + placa + BIOS */}
+      {d.discos?.length > 0 && (
+        <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
+          <p className="mb-1 flex items-center gap-1.5 font-bold text-white">
+            <HardDrive className="h-3.5 w-3.5 text-emerald-400" /> Discos
+          </p>
+          <ul className="space-y-0.5 text-gray-400">
+            {d.discos.map((x, i) => (
+              <li key={i} className="truncate">
+                <span className="font-bold text-white">{x.tamanho_gb || '—'} GB</span>{' '}
+                {x.modelo || 'sem nome'} {x.interface ? `· ${x.interface}` : ''}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {(d.placa || d.bios) && (
+        <LinhaReal
+          rotulo="Motherboard / BIOS"
+          tom="text-gray-300"
+          valor={
+            [
+              d.placa?.fabricante,
+              d.placa?.modelo,
+              d.bios?.versao ? `BIOS ${d.bios.versao}` : null,
+              d.bios?.data ? `(${d.bios.data})` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ') || '—'
+          }
+        />
+      )}
+
+      <p className="text-[11px] leading-relaxed text-gray-600">
+        Estes valores vêm do Windows (WMI/CIM), não do browser — por isso é que dá para falar de
+        relógios e timings.
+        {d.recolhido ? ` Recolhido em ${new Date(d.recolhido).toLocaleString('pt-PT')}.` : ''}
+      </p>
+    </div>
+  )
+}
+
 export default function PcsPage() {
   const [lista, setLista] = useState([])
   const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(null) // linha expandida
   const [testando, setTestando] = useState(false)
   const [resultado, setResultado] = useState(null)
+
+  /* leitura real do PC (PowerShell) */
+  const [podeLocal, setPodeLocal] = useState(null) // null = ainda não sabemos
+  const [lendo, setLendo] = useState(false)
+  const [passos, setPassos] = useState([])
+  const [lido, setLido] = useState(null) // { passos, spec, details }
+  const [erroLeitura, setErroLeitura] = useState(null)
+  const [comando, setComando] = useState('')
+  const [copiado, setCopiado] = useState(false)
 
   const carregar = () => {
     fetch('/api/users/specs', { headers: authHeaders() })
@@ -124,6 +292,77 @@ export default function PcsPage() {
   }
 
   useEffect(carregar, [])
+
+  /* dá para correr o PowerShell no PC onde está o servidor? */
+  useEffect(() => {
+    fetch('/api/users/specs/status', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d) {
+          setPodeLocal(Boolean(d.podeLocal))
+          if (Array.isArray(d.passos) && d.aCorrer) setPassos(d.passos)
+        }
+      })
+      .catch(() => setPodeLocal(false))
+  }, [])
+
+  /* comando copiável para correr noutro PC (a Vercel não tem PowerShell) */
+  useEffect(() => {
+    fetch('/api/users/specs/script?como=comando', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.text() : ''))
+      .then((t) => setComando(t.trim()))
+      .catch(() => setComando(''))
+  }, [])
+
+  const copiarComando = async () => {
+    if (!comando) return
+    try {
+      await navigator.clipboard.writeText(comando)
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2200)
+    } catch {
+      /* o utilizador pode selecionar à mão a caixa do comando */
+    }
+  }
+
+  /* corre o script no PC do servidor e mostra o que ele vai fazendo */
+  const lerPC = async () => {
+    if (lendo) return
+    setLendo(true)
+    setLido(null)
+    setErroLeitura(null)
+    setPassos([])
+
+    const iv = setInterval(() => {
+      fetch('/api/users/specs/status', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d && Array.isArray(d.passos)) setPassos(d.passos)
+        })
+        .catch(() => {})
+    }, 700)
+
+    try {
+      const r = await fetch('/api/users/specs/deep', {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) {
+        setErroLeitura(d?.error || 'Não deu para ler o PC.')
+        if (r.status === 501) setPodeLocal(false)
+      } else {
+        if (Array.isArray(d.passos) && d.passos.length) setPassos(d.passos)
+        setLido(d)
+        carregar()
+      }
+    } catch {
+      setErroLeitura('Não deu para falar com o servidor.')
+    } finally {
+      clearInterval(iv)
+      setLendo(false)
+    }
+  }
 
   /* média do grupo (só quem já tem score) */
   const mediaGrupo = useMemo(() => {
@@ -246,9 +485,104 @@ export default function PcsPage() {
             placa gráfica via WebGL, ecrã e armazenamento). Não há como ler clocks nem timings da
             RAM — por isso o <span className="font-bold text-red-400">OVERCLOCK</span> é detetado
             pelo desempenho: um resultado muito acima da baseline ou da média do grupo aparece a
-            vermelho.
+            vermelho. Em baixo há o botão que lê os valores <span className="font-bold text-white">à
+            verdade</span> com um script do Windows.
           </p>
         </div>
+
+        {/* ---------------- Leitura real do PC (PowerShell) ---------------- */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="glass mb-6 rounded-2xl p-4 sm:p-5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase text-white">
+                <Terminal className="h-5 w-5 text-emerald-400" />
+                Leitura real do PC
+              </h2>
+              <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-gray-500">
+                O site, sozinho, não chega aos relógios nem aos timings — o browser não os expõe. Este
+                botão corre um script do Windows <span className="text-gray-300">no PC onde está o
+                servidor</span>: mostra aqui cada passo que dá, lê CPU (relógio atual vs de fábrica),
+                RAM (módulos em MHz, CAS, tensão), GPU e discos, e guarda tudo no teu PC.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {podeLocal && (
+                <button
+                  onClick={lerPC}
+                  disabled={lendo}
+                  className="flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
+                >
+                  <RefreshCcw className={`h-4 w-4 ${lendo ? 'animate-spin' : ''}`} />
+                  {lendo ? 'A ler o PC…' : 'Ler o meu PC agora'}
+                </button>
+              )}
+              <button
+                onClick={copiarComando}
+                disabled={!comando}
+                className="btn-glass flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-gray-300 disabled:opacity-60"
+                title="Copia o comando para correr no PowerShell do qualquer PC"
+              >
+                {copiado ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copiado ? 'Copiado' : 'Copiar comando'}
+              </button>
+            </div>
+          </div>
+
+          {/* terminal com os passos do PowerShell */}
+          {(lendo || passos.length > 0) && (
+            <div className="mt-4 rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400/80">
+                <span className={`h-2 w-2 rounded-full ${lendo ? 'animate-pulse bg-emerald-400' : 'bg-gray-600'}`} />
+                PowerShell — o que está a fazer
+              </div>
+              <ul className="space-y-0.5">
+                {passos.map((p, i) => (
+                  <li key={i} className="text-gray-300">
+                    <span className="text-emerald-500">›</span> {p}
+                  </li>
+                ))}
+                {lendo && <li className="text-gray-500">› …</li>}
+              </ul>
+            </div>
+          )}
+
+          {erroLeitura && (
+            <p className="mt-3 text-sm font-bold text-red-400">{erroLeitura}</p>
+          )}
+
+          {!podeLocal && !lendo && (
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+              <p className="mb-2 text-[13px] leading-relaxed text-gray-400">
+                Este servidor não está num Windows local (a Vercel não tem PowerShell). Nesse caso,
+                corre o comando abaixo <span className="font-bold text-white">no PowerShell do teu
+                PC</span> — ele mostra tudo o que vai buscar e envia o resultado para o site.
+              </p>
+              {comando ? (
+                <button
+                  onClick={copiarComando}
+                  className="group block w-full overflow-x-auto rounded-lg border border-emerald-500/30 bg-black/60 px-3 py-2.5 text-left font-mono text-[11.5px] leading-relaxed text-emerald-300 transition-colors hover:border-emerald-500/60"
+                  title="Clicar para copiar"
+                >
+                  {copiado ? '✓ copiado' : comando}
+                </button>
+              ) : (
+                <p className="text-[12px] text-gray-600">A preparar o comando…</p>
+              )}
+            </div>
+          )}
+
+          {lido?.details && (
+            <div className="mt-4">
+              <LeituraReal d={lido.details} />
+            </div>
+          )}
+        </motion.div>
 
         {/* ---------------- Teste de CPU ---------------- */}
         <motion.div
@@ -501,6 +835,19 @@ export default function PcsPage() {
                                   </p>
                                 </div>
                               </div>
+
+                              {/* valores reais (PowerShell) quando existem */}
+                              {s.details ? (
+                                <div className="mt-4 border-t border-white/10 pt-4">
+                                  <LeituraReal d={s.details} />
+                                </div>
+                              ) : (
+                                <div className="mt-4 rounded-xl bg-white/5 px-3 py-2.5 text-[12px] text-gray-500">
+                                  <Terminal className="mr-1.5 inline h-3.5 w-3.5 text-emerald-400" />
+                                  Sem leitura real ainda — este PC ainda não correu o script do
+                                  PowerShell (botão lá em cima, no PC do membro).
+                                </div>
+                              )}
                             </td>
                           </tr>
                         )}

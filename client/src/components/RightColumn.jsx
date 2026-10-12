@@ -12,7 +12,6 @@ import {
   UserPlus,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
-import Nome from './Nome'
 import { authHeaders } from '../lib/auth'
 
 /* ============================================================
@@ -176,12 +175,9 @@ export default function RightColumn() {
                       />
                       <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0e0e11] bg-emerald-400" />
                     </span>
-                    <Nome
-                      nome={m.display_name || m.username}
-                      color={m.name_color}
-                      effect={m.name_effect}
-                      className="min-w-0 flex-1 truncate text-[13px] font-semibold text-gray-200"
-                    />
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-gray-200">
+                      {m.display_name || m.username}
+                    </span>
                   </button>
                 </li>
               ))}

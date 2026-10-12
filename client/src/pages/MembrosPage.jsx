@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Users, Search, Loader2 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import Nome from '../components/Nome'
 import { BADGES, BadgeGem } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
-import { bannerStyle } from '../lib/banners'
 
 /* ============================================================
    Página de membros — lista toda a comunidade com o estado
@@ -64,15 +62,12 @@ export default function MembrosPage({ onProfile }) {
         ) : (
           <ul className="space-y-2">
             {filtrados.map((m) => {
-              const banner = bannerStyle(m.banner_id)
               return (
                 <li key={m.id}>
                   <button
                     onClick={() => onProfile?.(m.username)}
                     className="glass w-full overflow-hidden rounded-2xl text-left transition-colors hover:bg-white/5"
                   >
-                    {/* banner escolhido pelo membro (criado pelo site) */}
-                    {banner && <span className="block h-10 w-full" style={{ background: banner }} />}
                     <span className="flex w-full items-center gap-3 px-4 py-3">
                       <span className="relative shrink-0">
                         <AvatarImg name={m.username} src={m.avatar_url} className="h-11 w-11" />
@@ -83,12 +78,9 @@ export default function MembrosPage({ onProfile }) {
                         />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <Nome
-                          nome={m.username}
-                          color={m.name_color}
-                          effect={m.name_effect}
-                          className="block truncate text-sm font-bold text-white"
-                        />
+                        <span className="block truncate text-sm font-bold text-white">
+                          {m.username}
+                        </span>
                         <span className="block text-xs text-gray-500">
                           {m.online ? 'Online' : 'Offline'}
                         </span>

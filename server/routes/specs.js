@@ -12,10 +12,16 @@
 //    GET  /me          -> as minhas + detalhe da comparação
 // ============================================================
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const jwt = require('jsonwebtoken');
 const { getDb } = require('../database');
-const { requireUser, requireAdmin } = require('../middleware/auth');
+const { requireUser, requireAdmin, JWT_SECRET } = require('../middleware/auth');
+const pcs = require('../pcs');
 
 const router = express.Router();
+
+const SCRIPT_PS1 = path.join(__dirname, '..', 'scripts', 'lerpc.ps1');
 
 const safe = (fn) => async (req, res) => {
   try {
@@ -196,6 +202,178 @@ router.get(
   }),
 );
 
+/* ============================================================
+   Leitura REAL do PC (PowerShell) — relógios, timings, discos
+   ------------------------------------------------------------
+   O browser não chega a isto. O site corre o script no PC onde o
+   servidor está (Windows) e mostra os passos; para outro PC
+   existe o script para copiar (irm ... | iex).
+   ============================================================ */
+
+/* token curto só para o script enviar as specs (24 h) */
+function tokenDoScript(uid) {
+  return jwt.sign({ uid }, JWT_SECRET, { expiresIn: '24h' });
+}
+
+/* o `irm ... | iex` não manda cabeçalhos — aceitamos o token na query */
+function tokenNaQuery(req, res, next) {
+  if (!req.headers.authorization && req.query.token) {
+    req.headers.authorization = `Bearer ${String(req.query.token).slice(0, 400)}`;
+  }
+  next();
+}
+
+// GET /api/users/specs/script — o mesmo script, já com URL + token
+router.get(
+  '/script',
+  tokenNaQuery,
+  requireUser,
+  safe(async (req, res) => {
+    let txt;
+    try {
+      // o ficheiro leva BOM (o PowerShell 5.1 precisa para os acentos),
+      // mas no texto servido ele lixa o `param` — os acentos já vêm bem do HTTP
+      txt = fs.readFileSync(SCRIPT_PS1, 'utf8').replace(/^\uFEFF/, '');
+    } catch {
+      return res.status(500).json({ error: 'Script em falta no servidor.' });
+    }
+    const base = `${req.protocol}://${req.get('host')}`;
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem conta de utilizador.' });
+    const token = tokenDoScript(uid);
+
+    // forma de comando: uma linha só, para colar no PowerShell de qualquer PC
+    if (req.query.como === 'comando') {
+      const url = `${base}/api/users/specs/script?token=${encodeURIComponent(token)}`;
+      return res
+        .type('text/plain; charset=utf-8')
+        .send(
+          `powershell -NoProfile -ExecutionPolicy Bypass -Command "iex (iwr '${url}' -UseBasicParsing).Content"`,
+        );
+    }
+
+    const cabecalho = `param([string]$Url = '${base}/api/users/specs/deep', [string]$Token = '${token}')\n`;
+    const rodape = `
+# Envia para o site (o mesmo que o site faz ao clicar no botão)
+$___json = $out | ConvertTo-Json -Depth 6 -Compress
+if ($Token) {
+  Passo 'A enviar para o site...'
+  try {
+    Invoke-RestMethod -Uri $Url -Method Post -Headers @{ Authorization = "Bearer $Token" } -ContentType 'application/json' -Body $___json | Out-Null
+    Passo 'Envio feito. Vai ver o resultado na pagina PCs / Specs.'
+  } catch {
+    Write-Output "[passo] Falhou o envio: $($_.Exception.Message)"
+  }
+}
+`;
+    res.type('text/plain; charset=utf-8').send(cabecalho + txt + rodape);
+  }),
+);
+
+// GET /api/users/specs/status — como vai a leitura local (para mostrar os passos)
+router.get('/status', requireUser, (req, res) => {
+  res.json(pcs.estadoPublico());
+});
+
+// POST /api/users/specs/deep — corre o PowerShell no PC do servidor
+router.post(
+  '/deep',
+  requireUser,
+  safe(async (req, res) => {
+    const uid = Number(req.auth.uid);
+    if (!pcs.podeLocal()) {
+      return res.status(501).json({
+        error:
+          'Este servidor não está num Windows local. Copia o comando de baixo e corre-o no PowerShell do teu PC.',
+      });
+    }
+    const r = await pcs.correr();
+    if (!r.ok) return res.status(500).json({ error: r.erro || 'Não deu para ler o PC.' });
+
+    const detalhes = { ...r.dados, avaliacao: pcs.analisar(r.dados) };
+    const guardado = await salvarDeep(uid, pcs.camposBasicos(r.dados), detalhes);
+    res.json({ ok: true, passos: r.passos, ...guardado });
+  }),
+);
+
+/** Grava a leitura detalhada (e o que ela disser das colunas básicas). */
+async function salvarDeep(uid, campos, detalhes) {
+  const db = getDb();
+  const cur = await db.prepare('SELECT * FROM user_specs WHERE user_id = ?').get(uid);
+  const valores = {
+    os: null,
+    browser: null,
+    cpu_cores: null,
+    ram_gb: null,
+    gpu: null,
+    screen: null,
+    storage_gb: null,
+    cpu_score: null,
+    ...(cur ? pick(cur) : {}),
+  };
+  for (const [k, v] of Object.entries(campos)) if (v != null) valores[k] = v;
+  delete valores.details;
+
+  if (!cur) {
+    await db
+      .prepare(
+        `INSERT INTO user_specs (user_id, os, browser, cpu_cores, ram_gb, gpu, screen, storage_gb, cpu_score, details, baseline, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, now())`,
+      )
+      .run(
+        uid,
+        valores.os,
+        valores.browser,
+        valores.cpu_cores,
+        valores.ram_gb,
+        valores.gpu,
+        valores.screen,
+        valores.storage_gb,
+        valores.cpu_score,
+        JSON.stringify(detalhes),
+        JSON.stringify({ ...valores, detalhado: true }),
+      );
+    return { primeiraLeitura: true, spec: valores, details: detalhes };
+  }
+
+  await db
+    .prepare(
+      `UPDATE user_specs SET os = ?, browser = ?, cpu_cores = ?, ram_gb = ?, gpu = ?,
+              screen = ?, storage_gb = ?, cpu_score = ?, details = ?::jsonb, updated_at = now()
+       WHERE user_id = ?`,
+    )
+    .run(
+      valores.os,
+      valores.browser,
+      valores.cpu_cores,
+      valores.ram_gb,
+      valores.gpu,
+      valores.screen,
+      valores.storage_gb,
+      valores.cpu_score,
+      JSON.stringify(detalhes),
+      uid,
+    );
+
+  // A baseline antiga vinha do browser (estimativa). Com uma leitura
+  // real passa a usá-la — é a primeira medição fiável.
+  const baseAntiga = json(cur.baseline);
+  let base = baseAntiga;
+  if (!baseAntiga || !baseAntiga.detalhado) {
+    base = { ...valores, detalhado: true };
+    await db
+      .prepare('UPDATE user_specs SET baseline = ?::jsonb WHERE user_id = ?')
+      .run(JSON.stringify(base), uid);
+  }
+
+  return {
+    primeiraLeitura: false,
+    spec: valores,
+    details: detalhes,
+    comparacao: comparar(valores, base),
+  };
+}
+
 /* ---------- ajudas ---------- */
 function pick(r) {
   return {
@@ -207,6 +385,7 @@ function pick(r) {
     screen: r.screen || null,
     storage_gb: r.storage_gb == null ? null : Number(r.storage_gb),
     cpu_score: r.cpu_score == null ? null : Number(r.cpu_score),
+    details: json(r.details),
   };
 }
 function json(v) {

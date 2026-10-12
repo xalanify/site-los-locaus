@@ -405,6 +405,19 @@
         }
       ],
       "maxRank": null
+    },
+    {
+      "key": "take.easy._",
+      "id": "TaKe.EASy._",
+      "handle": "TaKe.EASy._",
+      "avatar": null,
+      "level": null,
+      "season": null,
+      "rank": null,
+      "overview": {},
+      "modes": [],
+      "maxRank": null,
+      "semDados": true
     }
   ],
   "matches": [

@@ -9,7 +9,6 @@ import {
   Gamepad2,
   Cpu,
 } from 'lucide-react'
-import Sino from './Sino'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -88,11 +87,8 @@ export default function Sidebar({ user = null, isAdmin = false }) {
         </nav>
       </div>
 
-      {/* Conta + sino em baixo */}
+      {/* Conta em baixo (as notificações vivem no cartão da coluna da direita) */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between px-2">
-          <Sino user={user} posicao="lateral" />
-        </div>
         <button
           onClick={() => navigate('/perfil')}
           className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${

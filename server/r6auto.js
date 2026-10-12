@@ -15,6 +15,8 @@ const { R6_FILE, DATA_DIR } = require('./trackerdata');
 
 const API = 'https://public-api.tracker.gg/v2/r6siege/standard/profile';
 const MIN = Math.max(1, Number(process.env.R6_REFRESH_MIN) || 3);
+/** Quem faz parte do esquadrão (server/data/r6-jogadores.json). */
+const LISTA_FILE = path.join(DATA_DIR, 'r6-jogadores.json');
 
 /* ---------- estado (para mostrar na página) ---------- */
 const estado = {
@@ -153,6 +155,9 @@ function mapPlayer(api, antigo) {
     });
   }
 
+  // já há dados reais — deixa de contar como "à espera de dados"
+  if (p.semDados) delete p.semDados;
+
   return p;
 }
 
@@ -169,6 +174,49 @@ function guardar(dados) {
   const tmp = path.join(DATA_DIR, 'r6.json.tmp');
   fs.writeFileSync(tmp, JSON.stringify(dados, null, 2), 'utf8');
   fs.renameSync(tmp, R6_FILE);
+}
+
+/* ---------- esquadrão: quem está a ser seguido ---------- */
+function lerLista() {
+  try {
+    const l = JSON.parse(fs.readFileSync(LISTA_FILE, 'utf8'));
+    return Array.isArray(l) ? l.map((h) => String(h).trim()).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Garante que TODOS os nomes da lista estão no r6.json.
+ * Os que ainda não foram caçados entram com os campos a null —
+ * a página mostra "—" até o tracker.gg devolver os números.
+ * Devolve true se o ficheiro mudou.
+ */
+function sincronizarLista(dados) {
+  const lista = lerLista();
+  if (!lista.length) return false;
+  const temos = new Set(dados.players.map((p) => String(p.key || p.handle).toLowerCase()));
+  let mudou = false;
+  for (const handle of lista) {
+    if (temos.has(handle.toLowerCase())) continue;
+    dados.players.push({
+      key: handle.toLowerCase(),
+      id: handle,
+      handle,
+      avatar: null,
+      level: null,
+      season: null,
+      rank: null,
+      overview: {},
+      modes: [],
+      maxRank: null,
+      semDados: true,
+    });
+    temos.add(handle.toLowerCase());
+    console.log(`R6: "${handle}" juntou-se ao esquadrão (à espera de dados do tracker.gg).`);
+    mudou = true;
+  }
+  return mudou;
 }
 
 async function buscarJogador(p, chave) {
@@ -192,12 +240,17 @@ async function refreshNow() {
     return { ok: false, motivo: 'sem-chave' };
   }
   const dados = lerJson();
-  if (!dados || !Array.isArray(dados.players) || !dados.players.length) {
+  if (!dados || !Array.isArray(dados.players)) {
+    estado.ultimoErro = 'Sem jogadores no r6.json';
+    return { ok: false, motivo: 'sem-jogadores' };
+  }
+  if (!dados.players.length) {
     estado.ultimoErro = 'Sem jogadores no r6.json';
     return { ok: false, motivo: 'sem-jogadores' };
   }
 
-  let mudou = false;
+  // primeiro: garante que a lista do esquadrão está toda no ficheiro
+  let mudou = sincronizarLista(dados);
   let n = 0;
   for (const p of dados.players) {
     try {
@@ -229,6 +282,18 @@ async function refreshNow() {
 
 /** Arranca o ciclo (a cada MIN minutos) — só com chave presente. */
 function start() {
+  // Esquadrão: sincroniza a lista primeiro, mesmo sem chave — assim
+  // um nome novo aparece logo na página (com "—" até vir dado).
+  try {
+    const dados = lerJson();
+    if (dados && Array.isArray(dados.players) && sincronizarLista(dados)) {
+      guardar(dados);
+      console.log('R6: lista do esquadrão sincronizada com r6-jogadores.json.');
+    }
+  } catch (e) {
+    console.warn('R6 (lista):', e.message);
+  }
+
   const chave = process.env.TRACKER_API_KEY;
   estado.chave = Boolean(chave);
   if (!chave) {
@@ -242,12 +307,13 @@ function start() {
     refreshNow().catch((e) => console.warn('R6 auto:', e.message));
   };
   setInterval(ciclo, MIN * 60 * 1000).unref();
+  setTimeout(ciclo, 20 * 1000).unref(); // primeira passada pouco depois de arrancar
   console.log(`R6 automático: a cada ${MIN} min (tracker.gg).`);
   return true;
 }
 
 function status() {
-  return { ...estado, agora: new Date().toISOString() };
+  return { ...estado, agora: new Date().toISOString(), jogadores: lerLista() };
 }
 
 module.exports = { start, refreshNow, status };

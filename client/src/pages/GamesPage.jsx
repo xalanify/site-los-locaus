@@ -202,6 +202,7 @@ function GameChooser({ onPick }) {
       ring: 'hover:border-yellow-500',
       bg: 'bg-yellow-500/10',
       desc: 'Pro Clubs — estatísticas em breve.',
+      emBreve: true,
     },
     {
       id: 'r6',
@@ -211,6 +212,26 @@ function GameChooser({ onPick }) {
       ring: 'hover:border-red-500',
       bg: 'bg-red-500/10',
       desc: 'R6 Siege — só o esquadrão, com nível, rank e números de cada um (tracker.gg).',
+    },
+    {
+      id: 'fortnite',
+      name: 'Fortnite',
+      icon: Flame,
+      color: 'text-purple-400',
+      ring: 'hover:border-purple-500',
+      bg: 'bg-purple-500/10',
+      desc: 'Estatísticas — em desenvolvimento.',
+      emBreve: true,
+    },
+    {
+      id: 'bf',
+      name: 'Battlefield',
+      icon: Target,
+      color: 'text-sky-400',
+      ring: 'hover:border-sky-500',
+      bg: 'bg-sky-500/10',
+      desc: 'BF1 / BFV / BF6 — estatísticas em desenvolvimento.',
+      emBreve: true,
     },
   ]
 
@@ -239,6 +260,12 @@ function GameChooser({ onPick }) {
               </div>
               <div className="mb-1 text-xl font-black text-white sm:text-2xl">{g.name}</div>
               <p className="text-sm leading-relaxed text-gray-400">{g.desc}</p>
+              {g.emBreve && (
+                <div className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide ${g.color}`}>
+                  <Clock className="h-3.5 w-3.5" />
+                  Em desenvolvimento
+                </div>
+              )}
             </motion.button>
           )
         })}
@@ -248,29 +275,65 @@ function GameChooser({ onPick }) {
 }
 
 /* ============================================================
-   EA FC 26 — ainda não implementado
+   Jogos por implementar — o mesmo aviso para todos
    ============================================================ */
-function EafcPage() {
+function EmBreve({ nome, sub, Icon, cor, bg }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="glass mx-auto max-w-xl rounded-2xl p-8 text-center"
     >
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-500/10">
-        <Trophy className="h-8 w-8 text-yellow-400" />
+      <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${bg}`}>
+        <Icon className={`h-8 w-8 ${cor}`} />
       </div>
-      <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl">EA FC 26 — Pro Clubs</h3>
+      <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl">{nome}</h3>
       <p className="text-sm leading-relaxed text-gray-400 sm:text-base">
-        As estatísticas do EA FC 26 ainda não estão implementadas.
+        {sub}
         <br />
         Em breve fica disponível!
       </p>
-      <div className="mt-6 flex items-center justify-center gap-2 text-xs text-yellow-500/80">
+      <div className={`mt-6 flex items-center justify-center gap-2 text-xs ${cor}`}>
         <Clock className="h-4 w-4" />
         Em desenvolvimento
       </div>
     </motion.div>
+  )
+}
+
+function EafcPage() {
+  return (
+    <EmBreve
+      nome="EA FC 26 — Pro Clubs"
+      sub="As estatísticas do EA FC 26 ainda não estão implementadas."
+      Icon={Trophy}
+      cor="text-yellow-400"
+      bg="bg-yellow-500/10"
+    />
+  )
+}
+
+function FortnitePage() {
+  return (
+    <EmBreve
+      nome="Fortnite"
+      sub="As estatísticas do Fortnite ainda não estão implementadas."
+      Icon={Flame}
+      cor="text-purple-400"
+      bg="bg-purple-500/10"
+    />
+  )
+}
+
+function BattlefieldPage() {
+  return (
+    <EmBreve
+      nome="Battlefield"
+      sub="As estatísticas do Battlefield (BF1, BFV e BF6) ainda não estão implementadas."
+      Icon={Target}
+      cor="text-sky-400"
+      bg="bg-sky-500/10"
+    />
   )
 }
 
@@ -934,47 +997,25 @@ function Cs2Page() {
 
   return (
     <div className="space-y-6">
-      {/* ---------- Aviso de atualização de estatísticas ---------- */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass rounded-2xl p-4 mb-4 border-l-4 border-red-500/50 bg-red-500/5"
-      >
-        <div className="flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 text-red-400" />
-          <div>
-            <p className="font-bold text-red-400">Estatísticas não atualizadas</p>
-            <p className="text-sm text-gray-300">
-              As estatísticas atuais vêm da conta do xalanix no tracker.gg e ainda não foram atualizadas.
-              Serão atualizadas o mais rapidamente possível e, em breve, incluirão também as
-              estatísticas da FACEIT.
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      {/* ---------- Aviso: não é ao vivo ---------- */}
+      <div className="flex items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/5 px-4 py-3 text-sm text-gray-300">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
+        <p>
+          <span className="font-bold text-yellow-400">Estas informações não são ao vivo.</span> As
+          estatísticas do <span className="font-bold text-white">CS2</span> vêm da Steam e dos
+          registos do grupo — só mudam quando há dados novos.
+        </p>
+      </div>
 
-      {/* Aviso: o futuro das partidas (só FACEIT) */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass rounded-2xl p-4 border-l-4 border-yellow-500/50 bg-yellow-500/5"
-      >
-        <div className="flex items-start gap-3">
-          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
-          <div>
-            <p className="font-bold text-yellow-400">Mudança a caminho</p>
-            <p className="text-sm text-gray-300">
-              Mais à frente, aqui só vai dar para ver partidas{' '}
-              <span className="font-bold text-white">FACEIT</span> — as partidas e o placar do
-              histórico Steam deixam de ser vistos.
-            </p>
-            <p className="mt-2 text-sm text-gray-300">
-              As <span className="font-bold text-white">estatísticas mantêm-se</span>: vêm do
-              CS:GO até hoje, por modos, exatamente como estão.
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      {/* Aviso: estatísticas ao vivo da FACEIT a caminho */}
+      <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+        <p>
+          Mais à frente passam a existir{' '}
+          <span className="font-bold text-white">estatísticas ao vivo da FACEIT</span> — ainda por
+          implementar. As estatísticas atuais mantêm-se: vêm do CS:GO até hoje, por modos.
+        </p>
+      </div>
 
       {/* Aviso: dados vêm todos da conta do xalanix */}
       <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm text-gray-300">
@@ -1720,19 +1761,6 @@ export default function GamesPage() {
           </h1>
         </motion.div>
 
-        {/* Dados NÃO ao vivo — dito logo no início */}
-        <div className="mx-auto mb-8 flex max-w-3xl items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/5 px-4 py-3 text-left text-sm text-gray-300">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
-          <p>
-            <span className="font-bold text-yellow-400">Estas informações não são ao vivo.</span>{' '}
-            As estatísticas do <span className="font-bold text-white">CS2</span> e da{' '}
-            <span className="font-bold text-white">EA FC</span> vêm da Steam e dos registos do
-            grupo; as do <span className="font-bold text-white">Rainbow Six</span> vêm do
-            tracker.gg (atualizado automaticamente de 3 em 3 minutos). Só mudam quando há dados
-            novos.
-          </p>
-        </div>
-
         {tab === null ? (
           <GameChooser onPick={setTab} />
         ) : (
@@ -1748,6 +1776,8 @@ export default function GamesPage() {
                   { id: 'cs2', label: 'CS2', Icon: Gamepad2 },
                   { id: 'eafc', label: 'EA FC 26', Icon: Trophy },
                   { id: 'r6', label: 'Rainbow Six', Icon: Crosshair },
+                  { id: 'fortnite', label: 'Fortnite', Icon: Flame },
+                  { id: 'bf', label: 'Battlefield', Icon: Target },
                 ]}
               />
               <button
@@ -1770,6 +1800,10 @@ export default function GamesPage() {
               >
                 {tab === 'eafc' ? (
                   <EafcPage />
+                ) : tab === 'fortnite' ? (
+                  <FortnitePage />
+                ) : tab === 'bf' ? (
+                  <BattlefieldPage />
                 ) : tab === 'r6' ? (
                   <R6Page />
                 ) : (

@@ -14,10 +14,8 @@ import {
 import AvatarImg from '../components/AvatarImg'
 import ClipCard from '../components/ClipCard'
 import Estado from '../components/Estado'
-import Nome from '../components/Nome'
 import { BadgeGem } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
-import { bannerStyle } from '../lib/banners'
 
 /* Contador de uma estatística (rótulo em baixo, número em cima) */
 function Stat({ valor, rotulo, Icon }) {
@@ -107,7 +105,6 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
         year: 'numeric',
       })
     : '—'
-  const bannerBg = bannerStyle(p.banner_id)
 
   return (
     <section className="mx-auto max-w-4xl px-4 pb-24 pt-20 sm:px-6 sm:pt-24">
@@ -120,10 +117,6 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
 
       {/* Cabeçalho do perfil */}
       <div className="glass overflow-hidden rounded-3xl">
-        {/* banner escolhido pelo membro (criado pelo site) */}
-        {bannerBg && (
-          <div className="h-24 w-full sm:h-28" style={{ background: bannerBg }} />
-        )}
         <div className="p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-4 sm:gap-5">
           <div className="relative">
@@ -143,11 +136,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate font-display text-2xl font-black uppercase tracking-wide text-white sm:text-3xl">
-                <Nome
-                  nome={p.username}
-                  color={p.name_color}
-                  effect={p.name_effect}
-                />
+                {p.username}
               </h1>
               {souEu && (
                 <span className="rounded-full bg-violet-500/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-200 ring-1 ring-violet-400/30">
@@ -208,8 +197,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
       {/* Clips do perfil */}
       <div className="mb-4 mt-8 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
-          Clips de{' '}
-          <Nome nome={p.username} color={p.name_color} effect={p.name_effect} />
+          Clips de <span>{p.username}</span>
         </h2>
         <span className="text-sm text-gray-500">{clips.length}</span>
       </div>

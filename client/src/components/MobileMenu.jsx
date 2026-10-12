@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AvatarImg from './AvatarImg'
-import Nome from './Nome'
 
 /* ============================================================
    Menu lateral do telemóvel (abre pela foto na barra de topo).
@@ -85,12 +84,9 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
                 className="h-14 w-14"
               />
               <span className="min-w-0">
-                <Nome
-                  nome={user?.username || 'Conta'}
-                  color={user?.name_color}
-                  effect={user?.name_effect}
-                  className="block truncate font-display text-lg font-black uppercase text-white"
-                />
+                <span className="block truncate font-display text-lg font-black uppercase text-white">
+                  {user?.username || 'Conta'}
+                </span>
                 <span className="block text-sm text-gray-500">
                   @{user?.username || ''}
                 </span>

@@ -82,6 +82,7 @@ create table if not exists public.user_specs (
   screen     text,
   storage_gb integer,
   cpu_score  bigint,       -- ops/segundo do stress test (valor grande)
+  details    jsonb,        -- leitura real via PowerShell (relógios, timings, discos)
   baseline   jsonb,          -- primeira leitura (para comparar e marcar alterações)
   updated_at timestamptz not null default now()
 );

@@ -35,6 +35,8 @@ const PASSOS = [
   // score em ops/segundo: um integer não chega (valores na casa dos
   // mil milhões) — corrige BDs já criadas com o tipo antigo
   'ALTER TABLE public.user_specs ALTER COLUMN cpu_score TYPE bigint',
+  // leitura real do PC (PowerShell): relógios, timings e discos
+  'ALTER TABLE public.user_specs ADD COLUMN IF NOT EXISTS details jsonb',
 ];
 
 (async () => {

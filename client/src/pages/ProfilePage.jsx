@@ -13,9 +13,7 @@ import {
 } from 'lucide-react'
 import { BadgeGem, BADGES, devLabelClass } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
-import Nome from '../components/Nome'
 import { svgAvatar } from '../lib/avatar'
-import { bannerStyle, BANNERS, CORES_NOME, EFEITOS_NOME } from '../lib/banners'
 
 /* ============================================================
    Perfil da conta — abre ao clicar no ícone de Conta.
@@ -97,16 +95,10 @@ export default function ProfilePage({
   const devBadge = BADGES.find((b) => b.id === 'dev')
 
   const avatarSrc = me.avatar_url || svgAvatar(me.username, '#8B5CF6')
-  const meuBanner = bannerStyle(me.banner_id)
 
   const abrirEditar = () => {
     // game_nick mantém-se guardado (liga o TOP 1 KILL ao CS2) — invisível no perfil
-    setForm({
-      game_nick: me.game_nick || '',
-      banner_id: me.banner_id || 'nenhum',
-      name_color: me.name_color || '',
-      name_effect: me.name_effect || 'nenhum',
-    })
+    setForm({ game_nick: me.game_nick || '' })
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     setAvatarPreview('')
@@ -171,9 +163,6 @@ export default function ProfilePage({
       //    (ligação ao CS2) é preservado sem nunca aparecer no perfil
       const body = {
         game_nick: form.game_nick,
-        banner_id: form.banner_id || 'nenhum',
-        name_color: form.name_color || '',
-        name_effect: form.name_effect || 'nenhum',
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -217,13 +206,7 @@ export default function ProfilePage({
           className="mb-6 font-display font-black"
           style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
         >
-          Bem-vindo,{' '}
-          <Nome
-            nome={me.username}
-            color={me.name_color}
-            effect={me.name_effect}
-            className="text-orange-400"
-          />
+          Bem-vindo, <span className="text-orange-400">{me.username}</span>
         </motion.h1>
 
         {/* ---------------- Cartão da conta ---------------- */}
@@ -234,14 +217,6 @@ export default function ProfilePage({
           className="glass relative mb-8 overflow-hidden rounded-3xl border border-orange-500/40 p-5 sm:p-6"
           style={{ boxShadow: '0 0 40px rgba(139,92,246,.15)' }}
         >
-          {/* banner escolhido (criado pelo site) */}
-          {meuBanner && (
-            <div
-              className="-mx-5 -mt-5 mb-4 h-16 sm:-mx-6 sm:-mt-6 sm:h-20"
-              style={{ background: meuBanner }}
-            />
-          )}
-
           {/* letra fantasma ao fundo */}
           <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
             {me.username}
@@ -271,12 +246,9 @@ export default function ProfilePage({
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Nome
-                  nome={me.username}
-                  color={me.name_color}
-                  effect={me.name_effect}
-                  className="truncate font-display text-xl font-black uppercase text-white"
-                />
+                <span className="truncate font-display text-xl font-black uppercase text-white">
+                  {me.username}
+                </span>
                 {temDev && (
                   <span
                     className="flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5"
@@ -393,115 +365,6 @@ export default function ProfilePage({
                   A tua foto atual será removida ao guardar.
                 </p>
               )}
-
-              {/* ---------- Aparência (experimental) ---------- */}
-              <div className="space-y-3 border-t border-white/10 pt-3">
-                <p className="text-xs font-black uppercase tracking-wider text-gray-400">
-                  Aparência
-                  <span className="ml-2 rounded bg-violet-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-300">
-                    experimental
-                  </span>
-                </p>
-
-                {/* banner do perfil */}
-                <div>
-                  <p className="mb-1.5 text-[11px] text-gray-500">
-                    Banner — desenhado pelo site (não usamos imagens dos membros)
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {BANNERS.map((b) => {
-                      const on = (form.banner_id || 'nenhum') === b.id
-                      return (
-                        <button
-                          key={b.id}
-                          type="button"
-                          onClick={() => setForm((f) => ({ ...f, banner_id: b.id }))}
-                          title={b.nome}
-                          className={`flex h-10 w-20 items-center justify-center overflow-hidden rounded-lg ring-1 transition-all ${
-                            on ? 'ring-2 ring-orange-500' : 'ring-white/15 hover:ring-white/40'
-                          }`}
-                          style={
-                            b.style
-                              ? { background: b.style }
-                              : { backgroundColor: '#0e0e11' }
-                          }
-                        >
-                          {!b.style && (
-                            <span className="text-[10px] font-bold text-gray-500">Nenhum</span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* cor do nome */}
-                <div>
-                  <p className="mb-1.5 text-[11px] text-gray-500">Cor do nome</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {CORES_NOME.map((c) => {
-                      const on = form.name_color === c.id
-                      return (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => setForm((f) => ({ ...f, name_color: c.id }))}
-                          title={c.nome}
-                          aria-label={`Cor ${c.nome}`}
-                          className={`h-7 w-7 rounded-full ring-1 transition-transform ${
-                            on ? 'scale-110 ring-2 ring-white' : 'ring-white/25 hover:scale-105'
-                          }`}
-                          style={{ backgroundColor: c.hex }}
-                        />
-                      )
-                    })}
-                    <button
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, name_color: '' }))}
-                      className={`h-7 rounded-full px-2.5 text-[10px] font-bold transition-colors ${
-                        form.name_color
-                          ? 'bg-white/10 text-gray-400 hover:bg-white/15'
-                          : 'bg-orange-500 text-white'
-                      }`}
-                    >
-                      Padrão
-                    </button>
-                  </div>
-                </div>
-
-                {/* efeito do nome */}
-                <div>
-                  <p className="mb-1.5 text-[11px] text-gray-500">Efeito da letra</p>
-                  <div className="flex flex-wrap gap-2">
-                    {EFEITOS_NOME.map((e) => {
-                      const on = (form.name_effect || 'nenhum') === e.id
-                      return (
-                        <button
-                          key={e.id}
-                          type="button"
-                          onClick={() => setForm((f) => ({ ...f, name_effect: e.id }))}
-                          className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
-                            on
-                              ? 'bg-orange-500 text-white'
-                              : 'bg-white/10 text-gray-300 hover:bg-white/15'
-                          }`}
-                        >
-                          {e.nome}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <p className="mt-2 text-[11px] text-gray-600">
-                    Pré-visualização:{' '}
-                    <Nome
-                      nome={me.username}
-                      color={form.name_color}
-                      effect={form.name_effect}
-                      className="font-bold"
-                    />
-                  </p>
-                </div>
-              </div>
 
               {err && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
