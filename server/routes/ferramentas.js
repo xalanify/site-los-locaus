@@ -14,6 +14,7 @@
 const express = require('express');
 const { requireUser, requireAdmin } = require('../middleware/auth');
 const ferramentas = require('../ferramentas');
+const store = require('../usersStore');
 
 const router = express.Router();
 
@@ -26,18 +27,35 @@ function quem(req) {
   return 'admin';
 }
 
-router.get('/', requireUser, (req, res) => {
+/* A sessão é de admin? (a sessão de utilizador não traz a flag,
+   por isso vemos a conta — a Otimização Xalana é só para admins). */
+async function eAdmin(req) {
+  try {
+    const a = req.auth || {};
+    if (a.admin) return true;
+    if (!a.uid) return false;
+    const u = await store.findById(a.uid);
+    return Boolean(u && u.is_admin);
+  } catch {
+    return false;
+  }
+}
+
+router.get('/', requireUser, async (req, res) => {
+  const admin = await eAdmin(req);
   res.json({
     podeLocal: ferramentas.podeLocal(),
-    ferramentas: ferramentas.listar(),
+    ferramentas: ferramentas.listar(admin),
+    admin,
     estado: ferramentas.estadoPublico(),
   });
 });
 
-router.post('/run', requireUser, (req, res) => {
+router.post('/run', requireUser, async (req, res) => {
   try {
     const { id, arg } = req.body || {};
-    const r = ferramentas.executar(String(id || ''), arg, quem(req));
+    const admin = await eAdmin(req);
+    const r = ferramentas.executar(String(id || ''), arg, quem(req), admin);
     res.status(r.ok ? 200 : 400).json(r);
   } catch (e) {
     console.error('Erro /run:', e);

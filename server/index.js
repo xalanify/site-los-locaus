@@ -94,7 +94,7 @@ if (emBreveHtml) {
 // O import do R6 manda páginas HTML grandes (dezenas de MB) — esse
 // caminho tem o seu próprio parser com limite maior na rota.
 app.use((req, res, next) => {
-  if (req.path === '/api/admin/r6/import') return next();
+  if (req.path === '/api/admin/r6/import' || req.path === '/api/clips/pub/confirm') return next();
   express.json({ limit: '32kb' })(req, res, next);
 });
 

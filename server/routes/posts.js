@@ -1,6 +1,6 @@
 const express = require('express');
 const { getDb } = require('../database');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, attachAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ async function avatarLookup(db) {
 
 // Obter todas as publicações (com gostos e comentários)
 // — aceita ?limit / ?offset para paginar o feed
-router.get('/', async (req, res) => {
+router.get('/', attachAuth, async (req, res) => {
   try {
     const db = getDb();
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
@@ -36,7 +36,13 @@ router.get('/', async (req, res) => {
           .all(limit, offset)
       : await db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
 
-    const ids = posts.map((p) => Number(p.id));
+    // O autor de um anúncio de clip não vê o próprio anúncio
+    const eu = req.auth && req.auth.username ? String(req.auth.username).toLowerCase() : null;
+    const filtrados = eu
+      ? posts.filter((p) => !(String(p.title || '').startsWith('Novo clip:') && String(p.author || '').toLowerCase() === eu))
+      : posts;
+
+    const ids = filtrados.map((p) => Number(p.id));
 
     // Tudo numa só passagem (antes eram N+1 consultas) — e só dos
     // posts desta página, em vez de a lista inteira da BD
@@ -66,7 +72,7 @@ router.get('/', async (req, res) => {
     }
     const likedSet = new Set(liked.map((r) => Number(r.post_id)));
 
-    const withExtras = posts.map((p) => {
+    const withExtras = filtrados.map((p) => {
       const cs = byPost.get(p.id) || [];
       return {
         ...p,

@@ -1,6 +1,6 @@
 {
   "source": "import",
-  "updatedAt": "2026-10-14T18:36:20.889Z",
+  "updatedAt": "2026-10-16T21:16:27.047Z",
   "players": [
     {
       "key": "xalana.",
@@ -194,26 +194,26 @@
       "id": "8703183b-d572-4796-bac7-bb68fe181525",
       "handle": "xalanix-",
       "avatar": "https://ubisoft-avatars.akamaized.net/8703183b-d572-4796-bac7-bb68fe181525/default_256_256.png",
-      "level": 80,
+      "level": 83,
       "season": 43,
       "rank": {
         "season": "Y11S3",
-        "points": 2669,
-        "name": "GOLD IV",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-4.png?v=5"
+        "points": 2800,
+        "name": "GOLD II",
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-2.png?v=5"
       },
       "overview": {
-        "matchesPlayed": 359,
-        "matchesWon": 193,
-        "matchesLost": 128,
+        "matchesPlayed": 380,
+        "matchesWon": 204,
+        "matchesLost": 138,
         "matchesAbandoned": 38,
-        "kills": 2735,
-        "deaths": 1874,
+        "kills": 2866,
+        "deaths": 1957,
         "assists": 5,
         "headshots": 429,
         "timePlayed": 273133,
         "kdRatio": 1.46,
-        "killsPerMatch": 7.62
+        "killsPerMatch": 7.5
       },
       "modes": [
         {
@@ -272,8 +272,8 @@
       "maxRank": {
         "name": "GOLD II",
         "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-2.png?v=5",
-        "rp": 2800,
-        "season": "Y11S2"
+        "rp": 2836,
+        "season": "Split Fire"
       }
     },
     {
@@ -411,30 +411,30 @@
       "id": "TaKe.EASy._",
       "handle": "TaKe.EASy._",
       "avatar": "https://ubisoft-avatars.akamaized.net/52a61a07-67ff-4eb2-bb32-2c6cdbb7040e/default_256_256.png",
-      "level": 63,
+      "level": 71,
       "season": null,
       "rank": {
         "season": "Y11S3",
-        "points": 1462,
-        "name": "COPPER I",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/copper-1.png?v=5"
+        "points": 2190,
+        "name": "SILVER IV",
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-4.png?v=5"
       },
       "overview": {
-        "matchesPlayed": 145,
-        "matchesWon": 71,
-        "matchesLost": 66,
+        "matchesPlayed": 177,
+        "matchesWon": 93,
+        "matchesLost": 76,
         "matchesAbandoned": 8,
-        "kills": 649,
-        "deaths": 475,
+        "kills": 826,
+        "deaths": 601,
         "kdRatio": 1.37,
-        "killsPerMatch": 4.5
+        "killsPerMatch": 4.7
       },
       "modes": [],
       "maxRank": {
-        "name": "BRONZE IV",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/bronze-4.png?v=5",
-        "rp": 1680,
-        "season": "Silent Hunt"
+        "name": "SILVER IV",
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-4.png?v=5",
+        "rp": 2190,
+        "season": "Split Fire"
       }
     }
   ],

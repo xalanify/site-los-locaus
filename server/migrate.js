@@ -23,6 +23,10 @@ const PASSOS = [
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_effect text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS mouse text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS dpi integer',
+  'ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS author text',
+  "DELETE FROM public.posts WHERE title LIKE 'Novo clip:%' AND author IS NULL",
   // Specs dos PCs (recolhidas no browser, com baseline para comparar)
   `CREATE TABLE IF NOT EXISTS public.user_specs (
      user_id    bigint primary key references public.users(id) on delete cascade,

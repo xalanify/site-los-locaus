@@ -181,25 +181,10 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
                 } catch {}
                 if (e.data === 1) {
                   forcerQualidade(e.target)
-                  /* o leitor remoto mostra título, canal e logótipo
-                     nos primeiros segundos — tapamos com o NOSSO véu
-                     (capa + título) e só o levantamos quando eles
-                     já desapareceram (5 s); volta a tapar se a
-                     pessoa pausar com ele de pé */
-                  try {
-                    const t = e.target.getCurrentTime() || 0
-                    if (t < 1.5 || (veu === 'inicio' && !veuSai)) {
-                      setVeuSai(false)
-                      setVeu('inicio')
-                      clearTimeout(veuTempo.current[0])
-                      veuTempo.current[0] = setTimeout(() => setVeuSai(true), 5000)
-                    }
-                  } catch {}
-                }
-                if (e.data === 2 && veu === 'inicio' && !veuSai) {
-                  // pausa logo no arranque: o véu fica de pé
-                  clearTimeout(veuTempo.current[0])
+                  // o vídeo começou a tocar: levanta qualquer véu anterior
+                  setVeu('nada')
                   setVeuSai(false)
+                  clearTimeout(veuTempo.current[0])
                 }
                 if (e.data === 0) {
                   // fim do vídeo: entra o ecrã nosso (o deles não aparece)
@@ -354,9 +339,11 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
     return (
       <div
         ref={moldura}
-        className="group/vid relative mt-3 aspect-video w-full overflow-hidden rounded-xl bg-black"
+        className="player-ecra group/vid relative mt-3 aspect-video w-full overflow-hidden rounded-xl bg-black"
       >
-        <div ref={caixa} className="absolute inset-0 h-full w-full" />
+        {/* caixa do vídeo — em ecrã inteiro fica 16:9 ao centro, com
+            barras pretas NOSSAS (nada da plataforma aparece) */}
+        <div ref={caixa} className="player-caixa absolute inset-0 h-full w-full" />
 
         {!pronto && (
           <span className="pointer-events-none absolute inset-0 grid place-items-center">
@@ -379,7 +366,11 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
           aria-label={estado === 0 ? 'Repetir' : tocando ? 'Pausar' : 'Reproduzir'}
         />
 
-        {/* VÉU NOSSO — tapa o título/canal/logotipo que o leitor
+        {/* Máscaras permanentes: escondem título, "não listado" e logótipo
+            que o leitor remoto insiste em mostrar (topo e canto inferior
+            direito), sem tapar o vídeo. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-20 bg-gradient-to-b from-black/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-16 bg-gradient-to-t from-black/90 to-transparent" />
             remoto mostra no arranque e substitui o ecrã de fim deles */}
         {veu !== 'nada' && (
           <button
@@ -431,7 +422,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
             (ou sempre que o vídeo está pausado) */}
         <div
           className={
-            'pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/55 to-transparent px-3 pb-2 pt-10 transition-opacity duration-200 group-focus-within/vid:opacity-100 group-hover/vid:opacity-100 ' +
+            'player-controlos pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/55 to-transparent px-3 pb-2 pt-10 transition-opacity duration-200 group-focus-within/vid:opacity-100 group-hover/vid:opacity-100 ' +
             (tocando ? 'opacity-0' : 'opacity-100')
           }
         >

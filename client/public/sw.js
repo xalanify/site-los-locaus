@@ -7,7 +7,7 @@
    • recebe os pushes do servidor e mostra a notificação
    ============================================================ */
 
-const CACHE = 'locaus-v1';
+const CACHE = 'locaus-v5';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -50,19 +50,19 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Resto (js, css, imagens): cache primeiro, rede a seguir
+  // Resto (js, css, imagens): SIEMPRE rede primeiro — assim
+  // reiniciar o servidor com um build novo basta para atualizar o site.
+  // A casca (/index.html, /) continua em cache para abrir offline.
   e.respondWith(
-    caches.match(req).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((r) => {
-          if (r && r.status === 200 && r.type === 'basic') {
-            const copia = r.clone();
-            caches.open(CACHE).then((c) => c.put(req, copia)).catch(() => {});
-          }
-          return r;
-        }),
-    ),
+    fetch(req)
+      .then((r) => {
+        if (r && r.status === 200 && r.type === 'basic') {
+          const copia = r.clone();
+          caches.open(CACHE).then((c) => c.put(req, copia)).catch(() => {});
+        }
+        return r;
+      })
+      .catch(() => caches.match(req)),
   );
 });
 

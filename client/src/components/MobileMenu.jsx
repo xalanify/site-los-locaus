@@ -3,6 +3,7 @@ import {
   Home,
   Clapperboard,
   History,
+  Trophy,
   Users,
   Gamepad2,
   Cpu,
@@ -32,13 +33,11 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
   const itens = [
     { name: 'Página inicial', icon: Home, path: '/' },
     { name: 'Clips e Publicações', icon: Clapperboard, path: '/clips' },
-    { name: 'Atualizações', icon: History, path: '/atualizacoes' },
+    { name: 'Distinções', icon: Trophy, path: '/distincoes' },
     { name: 'Membros', icon: Users, path: '/membros' },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' },
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
-    { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
-    { name: 'Novidades do site', icon: Sparkles, path: '/novidades' },
     { name: 'Conta', icon: User, path: '/perfil' },
   ]
 

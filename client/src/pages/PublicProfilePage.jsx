@@ -16,6 +16,7 @@ import ClipCard from '../components/ClipCard'
 import Estado from '../components/Estado'
 import { BadgeGem, BADGES, distincoesOverclock } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
+import { searchMice } from '../data/mice'
 
 /* Contador de uma estatística (rótulo em baixo, número em cima) */
 function Stat({ valor, rotulo, Icon }) {
@@ -154,6 +155,20 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" /> desde {desde}
               </span>
+              {p.mouse && (
+                <span className="inline-flex items-center gap-1.5">
+                  {(() => {
+                    const m = (searchMice(p.mouse) || []).find(
+                      (x) => `${x.brand} ${x.model}` === p.mouse,
+                    )
+                    return m && m.logo ? (
+                      <img src={m.logo} alt="" className="h-4 w-4 rounded-sm object-contain" />
+                    ) : null
+                  })()}
+                  <span className="font-bold text-gray-200">{p.mouse}</span>
+                  {p.dpi ? <span>· {p.dpi} DPI</span> : null}
+                </span>
+              )}
             </div>
 
             {(() => {

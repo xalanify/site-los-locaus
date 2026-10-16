@@ -4,6 +4,7 @@ import {
   Clapperboard,
   History,
   Home,
+  Trophy,
   User,
   Users,
   Gamepad2,
@@ -34,24 +35,22 @@ export default function Sidebar({ user = null, isAdmin = false }) {
 
   const isHome = location.pathname === '/'
   const isClips = location.pathname === '/clips'
-  const isUpdates = location.pathname === '/atualizacoes'
+  const isDistincoes = location.pathname === '/distincoes'
   const isProfile = location.pathname === '/perfil'
   const isMembers = location.pathname === '/membros'
   const isGames = location.pathname === '/jogos'
   const isPcs = location.pathname === '/pcs'
   const isFerramentas = location.pathname === '/ferramentas'
-  const isNovidades = location.pathname === '/novidades'
 
   const links = [
     { name: 'Página inicial', icon: Home, action: () => goTo('#home'), active: isHome && !location.hash },
     { name: 'Clips e Publicações', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
-    { name: 'Atualizações', icon: History, action: () => navigate('/atualizacoes'), active: isUpdates },
+    { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
     { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
     { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
-    { name: 'Novidades do site', icon: Sparkles, action: () => navigate('/novidades'), active: isNovidades },
   ]
 
   return (

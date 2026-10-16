@@ -1,685 +1,127 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  History,
-  Plus,
-  Sparkles,
-  Wrench,
-  Trash2,
-  Calendar,
-  Gamepad2,
-  Monitor,
-  Users,
-  RotateCcw,
-  ExternalLink,
-  Newspaper,
-  TrendingUp,
-  Trophy,
-  Loader2,
-} from 'lucide-react'
-import TabBar from '../components/TabBar'
-import Estado from '../components/Estado'
-import { updates, CHANGE_TYPES } from '../data/updates'
+import { useState, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { Trophy, Users, Loader2 } from 'lucide-react'
 import { BADGES, BadgeTile, OVERCLOCK_BADGES } from '../components/BadgeGem'
-import { GAMES, gameCirculo } from '../data/gameUpdates'
-
-const TYPE_ICONS = {
-  novo: Plus,
-  melhoria: Sparkles,
-  correcao: Wrench,
-  remocao: Trash2,
-}
-
-/* Histórico do site: mostra apenas o mês e o ano (sem horas) */
-const fmtDate = (iso) => {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' })
-}
-
-const fmtShort = (iso) => {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString('pt-PT', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const fmtNum = (n) => (n == null ? '—' : Number(n).toLocaleString('pt-PT'))
-
-const fmtTime = (iso) => {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
-}
-
-/* Filtros de tempo das atualizações de jogos */
-const TIME_FILTERS = [
-  { id: 'recentes', label: 'Recentes', hint: '7 dias', days: 7 },
-  { id: 'ultimas', label: 'Últimas', hint: '30 dias', days: 30 },
-  { id: 'todas', label: 'Todas', hint: 'sem limite', days: null },
-]
+import { authHeaders } from '../lib/auth'
 
 /* ============================================================
-   Cartão de uma alteração (tipo + texto)
-   ============================================================ */
-function ChangeRow({ c, showGame = false }) {
-  const meta = CHANGE_TYPES[c.type] || CHANGE_TYPES.melhoria
-  const Icon = TYPE_ICONS[c.type] || Sparkles
-  return (
-    <li className="flex items-start gap-3">
-      <span
-        className={`mt-0.5 flex shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-black uppercase ${meta.color}`}
-      >
-        <Icon className="h-3 w-3" />
-        {meta.label}
-      </span>
-      <span className="text-sm leading-relaxed text-gray-300">
-        <span className="font-semibold text-white">{c.title}</span>
-        {c.text ? ` — ${c.text}` : ''}
-      </span>
-      {showGame && c.game && (
-        <span className="ml-auto shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-400">
-          {c.game}
-        </span>
-      )}
-    </li>
-  )
-}
-
-/* ============================================================
-   Âmbito SITE — histórico de alterações ao site
-   ============================================================ */
-function SiteScope() {
-  const [filter, setFilter] = useState('todas')
-
-  const counts = useMemo(() => {
-    const c = { todas: 0 }
-    for (const k of Object.keys(CHANGE_TYPES)) c[k] = 0
-    for (const u of updates) {
-      c.todas += u.changes.length
-      for (const ch of u.changes) if (c[ch.type] !== undefined) c[ch.type] += 1
-    }
-    return c
-  }, [])
-
-  const list = useMemo(() => {
-    if (filter === 'todas') return updates
-    return updates
-      .map((u) => ({ ...u, changes: u.changes.filter((c) => c.type === filter) }))
-      .filter((u) => u.changes.length > 0)
-  }, [filter])
-
-  const filters = [{ id: 'todas', label: 'Todas' }].concat(
-    Object.entries(CHANGE_TYPES).map(([id, v]) => ({ id, label: v.label })),
-  )
-
-  return (
-    <div>
-      {/* Filtros por tipo */}
-      <div className="mb-8 flex justify-center">
-        <TabBar
-          ariaLabel="Filtrar atualizações"
-          value={filter}
-          onChange={setFilter}
-          items={filters.map((f) => ({ id: f.id, label: f.label, cont: counts[f.id] ?? 0 }))}
-        />
-      </div>
-
-      {/* Timeline */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={filter}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.25 }}
-          className="relative space-y-6 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-white/10 sm:before:left-[19px]"
-        >
-          {list.map((u, i) => (
-            <div key={u.id} className="relative pl-10 sm:pl-12">
-              <span className="absolute left-0 top-1 h-8 w-8 rounded-full border-2 border-violet-500 bg-dark sm:h-10 sm:w-10" />
-              <span className="absolute left-2.5 top-3.5 h-2 w-2 rounded-full bg-violet-500 sm:left-3 sm:top-5" />
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="glass rounded-2xl p-5 sm:p-6"
-              >
-                <h2 className="mb-1 text-lg font-black text-white sm:text-xl">{u.title}</h2>
-                <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
-                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
-                  <span className="first-letter:uppercase">{fmtDate(u.date)}</span>
-                </div>
-                <ul className="space-y-2.5">
-                  {u.changes.map((c, idx) => (
-                    <ChangeRow key={idx} c={c} />
-                  ))}
-                </ul>
-              </motion.div>
-            </div>
-          ))}
-
-          {list.length === 0 && (
-            <Estado
-              compacto
-              icon={History}
-              titulo="Sem alterações deste tipo"
-              texto="Não há registos com este tipo no histórico."
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  )
-}
-
-/* ============================================================
-   ÂMBITO JOGOS — números reais + atualizações com fonte (PC)
+   Página Distinções
+   ------------------------------------------------------------
+   Mostra TODAS as distinções que existem no site (as normais
+   e as de overclock automáticas), com a lista de quem já as
+   tem. Sem histórico de atualizações nem notícias dos jogos.
    ============================================================ */
 
-/* Cartão de número real (agora / pico 24h / pico máximo) */
-function LiveStat({ icon: Icon, label, value, accent, dot = false }) {
-  return (
-    <div className="glass rounded-2xl p-4 text-center sm:p-5">
-      <div
-        className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full"
-        style={{ backgroundColor: `${accent}22` }}
-      >
-        <Icon className="h-5 w-5" style={{ color: accent }} />
-      </div>
-      <div className="text-2xl font-black text-white sm:text-3xl">
-        {dot && value != null && (
-          <span className="mr-1.5 inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-green-500 align-middle" />
-        )}
-        {fmtNum(value)}
-      </div>
-      <div className="mt-1 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-        {label}
-      </div>
-    </div>
-  )
-}
-
-function GameChooser({ live, loading, error, onRetry, onPick }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-4xl text-center"
-    >
-      <div className="mb-6">
-        <h2 className="text-xl font-black text-white sm:text-2xl">Escolhe o jogo</h2>
-        <p className="mt-1 text-sm text-gray-400">
-          Atualizações das versões de <span className="font-bold text-violet-400">PC</span> com
-          fonte e link — com os números reais de jogadores da{' '}
-          <span className="font-bold text-violet-400">Steam</span>.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {GAMES.map((g, i) => {
-          const nums = live?.games?.[g.id]
-          return (
-            <motion.button
-              key={g.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i }}
-              onClick={() => onPick(g.id)}
-              className="glass group rounded-2xl border-2 border-transparent p-5 transition-all duration-300 hover:scale-[1.03] hover:border-violet-500"
-            >
-              <div
-                className="relative mx-auto mb-3 h-14 w-14 overflow-hidden rounded-full"
-                style={{ backgroundColor: `${g.color}22` }}
-              >
-                <Gamepad2
-                  className="absolute inset-0 m-auto h-7 w-7"
-                  style={{ color: g.color }}
-                />
-                <img
-                  src={(live?.covers?.[g.id] || gameCirculo(g)) || undefined}
-                  alt=""
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                  }}
-                  className="relative h-full w-full object-cover"
-                />
-              </div>
-              <div className="mb-1 text-lg font-black text-white">{g.name}</div>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500">
-                <Monitor className="h-3 w-3" />
-                Apenas PC
-              </div>
-              <div className="mt-3 border-t border-white/5 pt-2 text-[11px] text-gray-400">
-                {loading ? (
-                  <span className="inline-flex items-center gap-1 text-gray-500">
-                    <Loader2 className="h-3 w-3 animate-spin" /> a carregar…
-                  </span>
-                ) : nums && nums.now != null ? (
-                  <span>
-                    <span className="font-bold text-green-400">●</span> agora:{' '}
-                    <span className="font-bold text-white">{fmtNum(nums.now)}</span>
-                    {nums.peak24 != null && (
-                      <span className="block text-gray-500">
-                        pico 24h: {fmtNum(nums.peak24)}
-                      </span>
-                    )}
-                  </span>
-                ) : (
-                  <span className="text-gray-600">sem números</span>
-                )}
-              </div>
-            </motion.button>
-          )
-        })}
-      </div>
-
-      {error && (
-        <div className="mt-6 flex flex-col items-center gap-2">
-          <p className="text-xs text-amber-400">{error}</p>
-          <button
-            onClick={onRetry}
-            className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-violet-500 hover:text-violet-400"
-          >
-            <RotateCcw className="mr-1 inline h-3 w-3" />
-            Tentar novamente
-          </button>
-        </div>
-      )}
-    </motion.div>
-  )
-}
-
-function GameScope() {
-  const [gameId, setGameId] = useState(null)
-  const [time, setTime] = useState('todas')
-
-  // Números reais (Steam + Steam Charts)
-  const [live, setLive] = useState(null)
-  const [liveLoading, setLiveLoading] = useState(true)
-  const [liveError, setLiveError] = useState('')
-
-  // Notícias oficiais do jogo
-  const [news, setNews] = useState(null)
-  const [newsLoading, setNewsLoading] = useState(false)
-  const [newsError, setNewsError] = useState('')
-
-  const loadLive = useCallback(async () => {
-    setLiveLoading(true)
-    setLiveError('')
-    try {
-      const r = await fetch('/api/games/live')
-      const d = await r.json()
-      if (d?.error) setLiveError(d.error)
-      else setLive(d)
-    } catch {
-      setLiveError('Sem ligação à Steam. Tenta novamente.')
-    } finally {
-      setLiveLoading(false)
-    }
-  }, [])
-
-  const loadNews = useCallback(async (id) => {
-    if (!id) return
-    setNewsLoading(true)
-    setNewsError('')
-    setNews(null)
-    try {
-      const r = await fetch(`/api/games/news?game=${encodeURIComponent(id)}`)
-      const d = await r.json()
-      if (d?.error) setNewsError(d.error)
-      else setNews(d)
-    } catch {
-      setNewsError('Sem ligação à Steam. Tenta novamente.')
-    } finally {
-      setNewsLoading(false)
-    }
-  }, [])
+export default function UpdatesPage() {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadLive()
-  }, [loadLive])
+    let alive = true
+    fetch('/api/users/list', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => {
+        if (!alive) return
+        setUsers(Array.isArray(d) ? d : d?.users || [])
+      })
+      .catch(() => {})
+      .finally(() => alive && setLoading(false))
+    return () => {
+      alive = false
+    }
+  }, [])
 
-  useEffect(() => {
-    if (gameId) loadNews(gameId)
-  }, [gameId, loadNews])
+  // Map badge id -> array de usernames que o têm
+  const holders = useMemo(() => {
+    const m = {}
+    for (const u of users) {
+      const bs = Array.isArray(u.badges) ? u.badges : []
+      for (const b of bs) {
+        if (!m[b]) m[b] = []
+        m[b].push(u.username || u.name || 'utilizador')
+      }
+    }
+    return m
+  }, [users])
 
-  const meta = GAMES.find((g) => g.id === gameId)
-  const nums = gameId ? live?.games?.[gameId] : null
-
-  const filtered = useMemo(() => {
-    if (!news?.items) return []
-    const tf = TIME_FILTERS.find((t) => t.id === time)
-    const list = [...news.items].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    if (!tf || !tf.days) return list
-    const limit = Date.now() - tf.days * 24 * 60 * 60 * 1000
-    return list.filter((u) => new Date(u.date).getTime() >= limit)
-  }, [news, time])
-
-  if (!gameId)
-    return (
-      <GameChooser
-        live={live}
-        loading={liveLoading}
-        error={liveError}
-        onRetry={loadLive}
-        onPick={setGameId}
-      />
-    )
-
-  return (
+  const renderGroup = (title, subtitle, list, accent = 'violet') => (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="space-y-6"
+      className="glass mb-8 rounded-3xl p-5 sm:p-6"
     >
-      {/* Cabeçalho do jogo */}
-      <div className="glass rounded-2xl p-5 text-center sm:p-6">
-        <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-          <span
-            className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full"
-            style={{ backgroundColor: `${meta?.color || '#f97316'}22` }}
-          >
-            <Gamepad2 className="h-5 w-5" style={{ color: meta?.color }} />
-            {meta && (live?.covers?.[meta.id] || gameCirculo(meta)) && (
-              <img
-                src={live?.covers?.[meta.id] || gameCirculo(meta)}
-                alt=""
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
-          </span>
-          <h2 className="text-2xl font-black text-white sm:text-3xl">{meta?.name}</h2>
-          <span className="flex items-center gap-1 rounded-md bg-blue-500/20 px-2 py-1 text-[11px] font-black text-blue-400">
-            <Monitor className="h-3 w-3" />
-            PC
-          </span>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
+            {title}
+          </h2>
+          {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
         </div>
-        <p className="text-xs text-gray-500">
-          Todas as atualizações desta página são para a versão de PC.
-        </p>
-        <button
-          onClick={() => setGameId(null)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 transition-colors hover:border-violet-500 hover:text-violet-400"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Trocar de jogo
-        </button>
+        <Trophy className="h-6 w-6 shrink-0 text-violet-400" />
       </div>
-
-      {/* NÚMEROS REAIS — Steam / Steam Charts */}
-      <div className="glass rounded-2xl p-5 sm:p-6">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Users className="h-5 w-5 text-green-400" />
-          <h4 className="text-lg font-bold text-white sm:text-xl">Jogadores</h4>
-          <span className="ml-auto text-[11px] text-gray-500">
-            {live?.updated ? `atualizado às ${fmtTime(live.updated)}` : ''}
-          </span>
-        </div>
-
-        {liveLoading ? (
-          <div className="flex items-center justify-center gap-2 py-6 text-sm text-gray-500">
-            <Loader2 className="h-4 w-4 animate-spin" /> A obter números reais da Steam…
-          </div>
-        ) : nums && (nums.now != null || nums.peak24 != null) ? (
-          <>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <LiveStat
-                icon={Users}
-                label="A jogar agora"
-                value={nums.now}
-                accent="#22c55e"
-                dot
-              />
-              <LiveStat
-                icon={TrendingUp}
-                label="Pico últimas 24h"
-                value={nums.peak24}
-                accent="#38bdf8"
-              />
-              <LiveStat
-                icon={Trophy}
-                label="Pico máximo"
-                value={nums.peakAll}
-                accent="#a855f7"
-              />
-            </div>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-gray-500">
-              <span>
-                Fonte:{' '}
-                <a
-                  href="https://store.steampowered.com/charts"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 underline decoration-dotted hover:text-violet-400"
-                >
-                  Steam
-                </a>
-                {' · '}
-                <a
-                  href={nums.url || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-gray-400 underline decoration-dotted hover:text-violet-400"
-                >
-                  Steam Charts
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="py-4 text-center">
-            <p className="mb-2 text-sm text-amber-400">
-              {liveError || 'Sem dados disponíveis para este jogo.'}
-            </p>
-            <button
-              onClick={loadLive}
-              className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-violet-500 hover:text-violet-400"
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {list.map((b) => {
+          const hs = holders[b.id] || []
+          return (
+            <div
+              key={b.id}
+              className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
             >
-              <RotateCcw className="mr-1 inline h-3 w-3" />
-              Tentar novamente
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Filtros de tempo */}
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Calendar className="h-4 w-4 text-gray-500" />
-        {TIME_FILTERS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTime(t.id)}
-            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-300 sm:text-sm ${
-              time === t.id
-                ? 'bg-violet-500 text-white glow-violet scale-105'
-                : 'glass text-gray-300 hover:text-white'
-            }`}
-          >
-            {t.label}
-            <span className="text-[10px] font-normal opacity-70">({t.hint})</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Atualizações do jogo — cada uma com a SUA fonte */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={gameId + time}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.25 }}
-          className="space-y-4"
-        >
-          {newsLoading ? (
-            <div className="flex items-center justify-center gap-2 py-8 text-sm text-gray-500">
-              <Loader2 className="h-4 w-4 animate-spin" /> A obter atualizações da Steam…
-            </div>
-          ) : newsError ? (
-            <div className="py-6 text-center">
-              <p className="mb-2 text-sm text-amber-400">{newsError}</p>
-              <button
-                onClick={() => loadNews(gameId)}
-                className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-violet-500 hover:text-violet-400"
-              >
-                <RotateCcw className="mr-1 inline h-3 w-3" />
-                Tentar novamente
-              </button>
-            </div>
-          ) : filtered.length === 0 ? (
-            <Estado
-              compacto
-              icon={Newspaper}
-              titulo="Sem atualizações neste período"
-              texto="Experimenta o filtro «Todas» para ver tudo."
-            />
-          ) : (
-            filtered.map((u, i) => (
-              <motion.article
-                key={u.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                className="glass rounded-2xl p-5"
-              >
-                <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
-                  <h3 className="text-base font-black text-white sm:text-lg">{u.title}</h3>
-                  <span
-                    className={`flex shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-black uppercase ${
-                      u.patch
-                        ? 'border-violet-500/40 bg-violet-500/10 text-violet-400'
-                        : 'border-sky-500/40 bg-sky-500/10 text-sky-400'
-                    }`}
-                  >
-                    <Newspaper className="h-3 w-3" />
-                    {u.patch ? 'Patch' : 'Notícia'}
-                  </span>
-                </div>
-                <div className="mb-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5 text-violet-400" />
-                    <span className="first-letter:uppercase">{fmtShort(u.date)}</span>
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Monitor className="h-3.5 w-3.5" />
-                    PC
-                  </span>
-                </div>
-                {u.text && (
-                  <p className="mb-3 line-clamp-3 text-sm leading-relaxed text-gray-300">
-                    {u.text}
-                  </p>
+              <BadgeTile badge={b} size={44} />
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-sm font-black uppercase tracking-wide text-white">
+                  {b.label}
+                </p>
+                {b.desc && (
+                  <p className="mt-0.5 text-xs leading-relaxed text-gray-400">{b.desc}</p>
                 )}
-                {/* SEMPRE com a fonte */}
-                <a
-                  href={u.url || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold text-gray-400 transition-colors hover:border-violet-500 hover:text-violet-400"
-                >
-                  Fonte: {u.source || 'Steam'}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </motion.article>
-            ))
-          )}
-        </motion.div>
-      </AnimatePresence>
+                <p className="mt-1.5 text-[11px] text-gray-500">
+                  {hs.length === 0
+                    ? 'Ainda ninguém a tem.'
+                    : hs.length === 1
+                    ? `Tem-na: ${hs[0]}`
+                    : `${hs.length} contas: ${hs.join(', ')}`}
+                </p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </motion.div>
   )
-}
 
-/* ============================================================
-   Página de Atualizações — Site ou Jogos
-   ============================================================ */
-export default function UpdatesPage() {
   return (
-    <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
-      <div className="mx-auto max-w-4xl">
+    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+      <div className="mx-auto max-w-5xl">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center sm:mb-10"
+          className="mb-8"
         >
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-500/10">
-            <History className="h-8 w-8 text-violet-400" />
-          </div>
-          <h1
-            className="mb-3 font-black gradient-text"
-            style={{ fontSize: 'clamp(1.9rem, 7vw, 3.2rem)' }}
-          >
-            Atualizações
+          <h1 className="font-black gradient-text" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}>
+            Distinções
           </h1>
-          <p className="mx-auto max-w-2xl text-base text-gray-400 sm:text-lg">
-            As notícias dos jogos com fonte e as distinções do site — cada uma com a sua cor.
+          <p className="mt-2 max-w-2xl text-sm text-gray-400">
+            Todas as insígnias do site e quem já as tem. Aparecem no perfil de cada conta.
           </p>
         </motion.div>
 
-        {/* Distinções existentes — para todos verem quais há */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass mb-8 rounded-3xl p-5 sm:p-6"
-        >
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
-                Distinções
-              </h2>
-              <p className="text-xs text-gray-500">
-                Insígnias que existem no site — cada uma com a sua cor. Ficam visíveis no
-                perfil de cada conta.
-              </p>
-            </div>
-            <Trophy className="h-6 w-6 shrink-0 text-violet-400" />
+        {loading && (
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" /> a carregar detentores…
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {BADGES.map((b) => (
-              <BadgeTile key={b.id} badge={b} size={48} />
-            ))}
-          </div>
+        )}
 
-          <div className="mt-6">
-            <h3 className="mb-1 font-display text-sm font-black uppercase tracking-wide text-violet-300">
-              Overclock (automáticas)
-            </h3>
-            <p className="mb-3 text-xs text-gray-500">
-              Ganhas conforme as tuas specs reais: CPU acima do de fábrica, memórias com overclock
-              e/ou XMP ligado.
-            </p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {OVERCLOCK_BADGES.map((b) => (
-                <BadgeTile key={b.id} badge={b} size={48} />
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="jogos"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25 }}
-          >
-            <GameScope />
-          </motion.div>
-        </AnimatePresence>
+        {renderGroup(
+          'Distinções',
+          'Insígnias que existem no site — cada uma com a sua cor.',
+          BADGES,
+        )}
+        {renderGroup(
+          'Overclock (automáticas)',
+          'Ganhas conforme as specs reais: CPU acima do de fábrica, memórias com overclock e/ou XMP ligado.',
+          OVERCLOCK_BADGES,
+        )}
       </div>
     </section>
   )

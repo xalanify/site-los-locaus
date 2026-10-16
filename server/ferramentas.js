@@ -31,6 +31,189 @@ $elevado = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIden
 if (-not $elevado) { Write-Output 'Aviso: sem privilegios de administrador - operacoes no sistema podem falhar.' }
 `;
 
+/* ============================================================
+   OTIMIZAÇÃO XALANA — três níveis cumulativos
+   ------------------------------------------------------------
+   Os blocos reutilizam-se: o NORMAL = mínima + extras; o
+   EXTREMO = mínima + extras + extras pesados. Cada ação
+   escreve [ok]/[!] para o log, para se ver exatamente o que
+   correu. soAdmin: true — por agora só os admins veem e correm
+   (a rota filtra; serve para testar e ver logs na consola).
+   ============================================================ */
+
+/* ---- bloco 1: sempre igual (o nível 1) ---- */
+const XALANA_BASE = `
+Write-Output '=== OTIMIZACAO XALANA - NIVEL 1: MINIMA ==='
+Write-Output 'So o essencial: nada de servicos nem tarefas, so ajustes de desempenho.'
+Write-Output ''
+
+Write-Output '[1/4] Plano de energia: alto desempenho'
+try {
+  powercfg /setactive SCHEME_MIN
+  if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] CPU deixa de dormir - resposta mais rapida ao toque.' }
+  else { Write-Output ('  [!] powercfg devolveu ' + $LASTEXITCODE + ' (precisa de administrador).') }
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[2/4] Efeitos visuais: melhor desempenho'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name VisualFXSetting -Value 2 -Type DWord
+  Write-Output '  [ok] Animacoes pesadas desligadas (menus e janelas mais leves).'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[3/4] Rato sem aceleração (1:1)'
+try {
+  $m = 'HKCU:\\Control Panel\\Mouse'
+  Set-ItemProperty -Path $m -Name MouseSpeed -Value '0'
+  Set-ItemProperty -Path $m -Name MouseThreshold1 -Value '0'
+  Set-ItemProperty -Path $m -Name MouseThreshold2 -Value '0'
+  Write-Output '  [ok] O rato anda exatamente a distancia que o moves.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[4/4] Temporários do utilizador limpos'
+try {
+  Get-ChildItem -Path $env:TEMP -Force -ErrorAction SilentlyContinue |
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+  Write-Output ('  [ok] %TEMP% limpo (ficaram so ficheiros em uso).')
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+`;
+
+/* ---- bloco 2: extras do nível 2 ---- */
+const XALANA_NORMAL = `
+Write-Output ''
+Write-Output '--- NIVEL 2: extras de telemetria e jogos ---'
+
+Write-Output '[5/10] Telemetria: DiagTrack parado'
+try {
+  Stop-Service -Name DiagTrack -Force -ErrorAction SilentlyContinue
+  Set-Service -Name DiagTrack -StartupType Disabled -ErrorAction SilentlyContinue
+  Write-Output '  [ok] DiagTrack parado e desligado no arranque (menos disco e CPU em fundo).'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[6/10] Aplicações em segundo plano: suspensas'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name GlobalUserDisabled -Value 1 -Type DWord
+  Write-Output '  [ok] Apps deixam de correr as costas.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[7/10] Xbox Game Bar e gravação (GameDVR): desligados'
+try {
+  $a = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR'
+  New-Item -Path $a -Force | Out-Null
+  Set-ItemProperty -Path $a -Name AppCaptureEnabled -Value 0 -Type DWord
+  $b = 'HKCU:\\System\\GameConfigStore'
+  New-Item -Path $b -Force | Out-Null
+  Set-ItemProperty -Path $b -Name GameDVR_Enabled -Value 0 -Type DWord
+  Write-Output '  [ok] Sem overlay nem gravacao de fundo a roubar recursos.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[8/10] Sugestões e apps recomendadas: desligadas'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager'
+  if (Test-Path $p) {
+    Set-ItemProperty -Path $p -Name SystemPaneSuggestionsEnabled -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $p -Name SubscribedContent-338388Enabled -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $p -Name SubscribedContent-338389Enabled -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  }
+  Write-Output '  [ok] Menu Inicio sem apps a serem promovidas.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[9/10] Transparência e demoras de menu: desligadas'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name EnableTransparency -Value 0 -Type DWord
+  Set-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop' -Name MenuShowDelay -Value '0'
+  Write-Output '  [ok] Sem transparencia; menus abrem de estalar.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[10/10] Tarefas de diagnóstico/telemetria: desativadas'
+try {
+  $tarefas = @(
+    @('\\Microsoft\\Windows\\Application Experience\\', 'Microsoft Compatibility Appraiser'),
+    @('\\Microsoft\\Windows\\Application Experience\\', 'ProgramDataUpdater'),
+    @('\\Microsoft\\Windows\\Customer Experience Improvement Program\\', 'Consolidator'),
+    @('\\Microsoft\\Windows\\Customer Experience Improvement Program\\', 'UsbCeip'),
+    @('\\Microsoft\\Windows\\DiskDiagnostic\\', 'Microsoft-Windows-DiskDiagnosticDataCollector')
+  )
+  foreach ($t in $tarefas) {
+    Disable-ScheduledTask -TaskPath $t[0] -TaskName $t[1] -ErrorAction SilentlyContinue | Out-Null
+  }
+  Write-Output '  [ok] 5 tarefas de telemetria paradas.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+`;
+
+/* ---- bloco 3: extras pesados do nível 3 ---- */
+const XALANA_EXTREMO = `
+Write-Output ''
+Write-Output '--- NIVEL 3: debloat e servicos pesados ---'
+
+Write-Output '[11/15] Debloat: apps pré-instaladas removidas'
+try {
+  $alvos = @(
+    'Microsoft.XboxApp', 'Microsoft.XboxGameOverlay', 'Microsoft.XboxGamingOverlay',
+    'Microsoft.XboxSpeechToTextOverlay', 'Microsoft.GamingApp', 'Microsoft.WindowsWidgets',
+    'Microsoft.GetHelp', 'Microsoft.Getstarted', 'Microsoft.MicrosoftSolitaireCollection',
+    'Microsoft.People', 'Microsoft.WindowsMaps', 'Microsoft.Clipchamp', 'Microsoft.549981C3F5F10'
+  )
+  $n = 0
+  foreach ($a in $alvos) {
+    $pkg = Get-AppxPackage -Name $a -ErrorAction SilentlyContinue
+    if ($pkg) { Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction SilentlyContinue; $n++ }
+  }
+  Write-Output ('  [ok] ' + $n + ' pacote(s) removidos (só o que existia neste PC).')
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[12/15] Serviços pesados: parados e desligados'
+try {
+  $svcs = @('SysMain', 'WSearch', 'Fax', 'RetailDemo', 'MapsBroker', 'lfsvc',
+            'XblAuthManager', 'XblGameSave', 'XboxGipSvc', 'XboxNetApiSvc',
+            'wisvc', 'dmwappushservice')
+  foreach ($s in $svcs) {
+    Stop-Service -Name $s -Force -ErrorAction SilentlyContinue
+    Set-Service -Name $s -StartupType Disabled -ErrorAction SilentlyContinue
+  }
+  Write-Output '  [ok] SysMain, Pesquisa indexada, Xbox, Fax, Mapas... desligados.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[13/15] Perfil de multimedia/jogo: sem limitações'
+try {
+  $p = 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name NetworkThrottlingIndex -Value -1 -Type DWord
+  Set-ItemProperty -Path $p -Name SystemResponsiveness -Value 10 -Type DWord
+  $g = $p + '\\Tasks\\Games'
+  New-Item -Path $g -Force | Out-Null
+  Set-ItemProperty -Path $g -Name 'GPU Priority' -Value 8 -Type DWord
+  Set-ItemProperty -Path $g -Name 'Priority' -Value 6 -Type DWord
+  Set-ItemProperty -Path $g -Name 'Scheduling Category' -Value 'High' -Type String
+  Set-ItemProperty -Path $g -Name 'SFIO Priority' -Value 'High' -Type String
+  Write-Output '  [ok] Windows deixa de engonhar a rede e poe os jogos em prioridade alta.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[14/15] Prioridade de processos: desempenho'
+try {
+  Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl' -Name PrioritySeparation -Value 38 -Type DWord
+  Write-Output '  [ok] CPU da prioridade a correr programas (38 = modo desempenho).'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[15/15] Hibernação e arranque rápido: desligados'
+try {
+  powercfg /h off
+  Write-Output '  [ok] hiberfil.sys libertado; o PC desliga mesmo.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+`;
+
+const XALANA_FIM = `
+Write-Output ''
+Write-Output '=== CONCLUIDO ==='
+Write-Output 'As mudancas de servicos e tarefas so ficam 100% apos REINICIAR o PC.'
+`;
+
+
 const FERRAMENTAS = [
   /* ---------------- Rede ---------------- */
   {
@@ -758,6 +941,78 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     tempo: 300000,
     cmd: `Invoke-Expression (Invoke-RestMethod -Uri https://christitus.com/win).ToString()`,
   },
+
+  /* ============================================================
+     OTIMIZAÇÃO XALANA — três níveis cumulativos
+     ------------------------------------------------------------
+     Os blocos reutilizam-se: o NORMAL = mínima + extras; o
+     EXTREMO = mínima + extras + extras pesados. Cada ação
+     escreve [ok]/[!] para o log, para se ver exatamente o que
+     correu. soAdmin: true — por agora só os admins veem e correm
+     (a rota filtra; serve para testar e ver logs na consola).
+     ============================================================ */
+
+  
+
+  /* ---- nível 1: mínima ---- */
+  {
+    id: 'xalana-minima',
+    cat: 'Otimização Xalana',
+    nome: 'Otimização mínima',
+    desc: 'Nível 1 — o básico bem feito. Só ajustes de desempenho seguros, sem mexer em serviços nem em tarefas.',
+    perigo: 'baixo',
+    soAdmin: true,
+    tempo: 150000,
+    icone: 'Gauge',
+    passos: [
+      'Plano de energia em alto desempenho (a CPU não dorme)',
+      'Efeitos visuais em modo leve (menus e janelas mais rápidos)',
+      'Rato 1:1 — sem aceleração, resposta exata',
+      'Temporários do utilizador limpos',
+    ],
+    cmd: XALANA_BASE + XALANA_FIM,
+  },
+  /* ---- nível 2: normal (tudo da mínima + telemetria e jogos) ---- */
+  {
+    id: 'xalana-normal',
+    cat: 'Otimização Xalana',
+    nome: 'Otimização normal',
+    desc: 'Nível 2 — tudo do nível 1 + telemetria parada, apps de fundo, Game Bar, sugestões e tarefas de diagnóstico. O equilíbrio para jogar e trabalhar.',
+    perigo: 'medio',
+    soAdmin: true,
+    tempo: 300000,
+    icone: 'Rocket',
+    passos: [
+      'Tudo do nível 1 (energia, visuais, rato, temporários)',
+      'Telemetria DiagTrack parada',
+      'Aplicações em segundo plano suspensas',
+      'Xbox Game Bar e gravação (GameDVR) desligados',
+      'Sugestões/apps recomendadas do Início desligadas',
+      'Transparência e demoras de menu desligadas',
+      '5 tarefas de diagnóstico da Windows desativadas',
+    ],
+    cmd: XALANA_BASE + XALANA_NORMAL + XALANA_FIM,
+  },
+  /* ---- nível 3: extremo (tudo + debloat e serviços) ---- */
+  {
+    id: 'xalana-extremo',
+    cat: 'Otimização Xalana',
+    nome: 'Otimização extremo',
+    desc: 'Nível 3 — tudo dos níveis 1 e 2 + debloat de apps pré-instaladas, serviços pesados desligados e perfil de jogo sem limitações. Máxima fluidez (mexes em serviços: reinicia o PC no fim).',
+    perigo: 'alto',
+    soAdmin: true,
+    tempo: 600000,
+    icone: 'Swords',
+    passos: [
+      'Tudo do nível 1 e do nível 2 (10 ações)',
+      'Debloat: apps do Xbox, Widgets, Cortana, Solitaire, Maps... removidas',
+      'Serviços pesados parados (SysMain, Pesquisa, Xbox, Fax, Mapas...)',
+      'Rede sem limitação de multimedia + jogos em prioridade alta',
+      'Prioridade de processos em modo desempenho',
+      'Hibernação e arranque rápido desligados (liberta hiberfil.sys)',
+    ],
+    cmd: XALANA_BASE + XALANA_NORMAL + XALANA_EXTREMO + XALANA_FIM,
+  },
 ];
 
 /* ---------------- Programas (winget) — importados do catálogo com ícones ---------------- */
@@ -1111,8 +1366,10 @@ function estadoPublico() {
   };
 }
 
-function listar() {
-  return FERRAMENTAS.map(({ cmd, ...f }) => ({
+/* soAdmin: true -> só o admin vê a ferramenta no catálogo e só
+   ele a pode correr (Otimização Xalana, por agora em teste). */
+function listar(soAdmin) {
+  return FERRAMENTAS.filter((f) => !f.soAdmin || soAdmin).map(({ cmd, ...f }) => ({
     ...f,
     comando: f.livre || f.disco || f.normal ? null : cmd.split('\n')[0],
   }));
@@ -1173,7 +1430,7 @@ function detectarInstalados() {
    --------------------------------------------------------------- */
 let procAtual = null;
 
-function executar(id, arg, quem) {
+function executar(id, arg, quem, soAdmin) {
   if (!podeLocal()) {
     return { ok: false, erro: 'Este servidor não está num PC Windows (a Vercel não tem PowerShell).' };
   }
@@ -1181,6 +1438,11 @@ function executar(id, arg, quem) {
 
   const f = FERRAMENTAS.find((x) => x.id === id);
   if (!f) return { ok: false, erro: 'Ferramenta desconhecida.' };
+  if (f.soAdmin && !soAdmin) {
+    console.log('[ferramentas] bloqueado (soAdmin):', id, '->', quem);
+    return { ok: false, erro: 'Esta ferramenta está reservada a administradores (em teste).' };
+  }
+  if (f.soAdmin) console.log('[xalana] a correr', id, '->', quem);
 
   let cmd = f.cmd;
   if (f.livre) {
@@ -1227,9 +1489,34 @@ function desinstalar(ids, quem) {
 
   const blocos = validos.map((f) => {
     const nb = f.wingetId.split('.').pop();
+    const nomeEsc = String(f.nome).replace(/'/g, "''");
     return `
 Write-Output "=== A desinstalar ${f.nome} ==="
-try { winget uninstall --id "${f.wingetId}" -e --accept-package-agreements --accept-source-agreements --disable-interactivity } catch { Write-Output ("  winget: " + $_.Exception.Message) }
+# 1) tenta winget
+$r = winget uninstall --id "${f.wingetId}" -e --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
+if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] desinstalado pelo winget' } else {
+  Write-Output "  winget nao encontrou o programa, a procurar desinstalador no registo do Windows..."
+  $nome = '${nomeEsc}'
+  $chaves = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
+  )
+  $encontrado = $false
+  foreach ($chave in $chaves) {
+    Get-ItemProperty $chave -ErrorAction SilentlyContinue |
+      Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" } |
+      ForEach-Object {
+        $encontrado = $true
+        $str = $_.UninstallString
+        if ($str) {
+          Write-Output "  a executar desinstalador: $str"
+          Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "$str" -Wait -NoNewWindow
+        }
+      }
+  }
+  if (-not $encontrado) { Write-Output "  [!] nao encontrou desinstalador no registo - desinstala manualmente nas Definicoes do Windows." }
+}
 $nb = "${nb}"
 foreach ($pasta in @((Join-Path $env:ProgramFiles $nb), (Join-Path ($env:ProgramFiles + '(x86)') $nb), (Join-Path $env:LOCALAPPDATA $nb), (Join-Path $env:APPDATA $nb))) {
   if ($pasta -and (Test-Path $pasta)) { try { Remove-Item $pasta -Recurse -Force -ErrorAction Stop; Write-Output ("  pasta removida: " + $pasta) } catch {} }

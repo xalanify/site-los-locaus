@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
+import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -42,12 +43,12 @@ export default function ProfilePage({
 }) {
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(false)
-  const [form, setForm] = useState({ game_nick: '' })
+  const [form, setForm] = useState({ game_nick: '', mouse: '', dpi: '' })
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [err, setErr] = useState('')
+  const [mouseSug, setMouseSug] = useState([])
   const [myClips, setMyClips] = useState([]) // publicações desta conta
   const fileRef = useRef(null)
 
@@ -102,7 +103,7 @@ export default function ProfilePage({
 
   const abrirEditar = () => {
     // game_nick mantém-se guardado (liga o TOP 1 KILL ao CS2) — invisível no perfil
-    setForm({ game_nick: me.game_nick || '' })
+    setForm({ game_nick: me.game_nick || '', mouse: me.mouse || '', dpi: me.dpi || '' })
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     setAvatarPreview('')
@@ -167,6 +168,8 @@ export default function ProfilePage({
       //    (ligação ao CS2) é preservado sem nunca aparecer no perfil
       const body = {
         game_nick: form.game_nick,
+        mouse: form.mouse,
+        dpi: form.dpi,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -277,6 +280,20 @@ export default function ProfilePage({
                   ID {me.id}
                 </span>
               </p>
+              {me.mouse && (
+                <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
+                  {(() => {
+                    const m = (searchMice(me.mouse) || []).find(
+                      (x) => `${x.brand} ${x.model}` === me.mouse,
+                    )
+                    return m && m.logo ? (
+                      <img src={m.logo} alt="" className="h-5 w-5 rounded-sm object-contain" />
+                    ) : null
+                  })()}
+                  <span className="font-bold">{me.mouse}</span>
+                  {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
+                </p>
+              )}
             </div>
           </div>
 
@@ -304,7 +321,8 @@ export default function ProfilePage({
 
           {/* editar foto (ficheiro) */}
           {edit && (
-            <div className="relative mt-4 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+              <div className="glass w-full max-w-lg space-y-4 rounded-3xl border border-violet-500/30 p-6 shadow-2xl">
               <p className="text-xs text-gray-400">
                 Escolhe uma foto tua — o site guarda o ficheiro e fica associado à tua conta.
               </p>
@@ -370,6 +388,59 @@ export default function ProfilePage({
                 </p>
               )}
 
+              {/* Rato + DPI */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-gray-400">O teu rato (mouse)</label>
+                <div className="relative">
+                  <input
+                    value={form.mouse}
+                    onChange={(e) => {
+                      setForm((f) => ({ ...f, mouse: e.target.value }))
+                      setMouseSug(searchMice(e.target.value))
+                    }}
+                    onFocus={() => setMouseSug(searchMice(form.mouse))}
+                    onBlur={() => setTimeout(() => setMouseSug([]), 150)}
+                    placeholder="Ex.: Razer Viper V3 Pro"
+                    className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white focus:border-violet-500/50 focus:outline-none"
+                  />
+                  {mouseSug.length > 0 && (
+                    <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#1a1428] py-1 shadow-lg">
+                      {mouseSug.map((m, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            onMouseDown={() => {
+                              setForm((f) => ({ ...f, mouse: `${m.brand} ${m.model}` }))
+                              setMouseSug([])
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-gray-200 hover:bg-white/10"
+                          >
+                            {m.logo && (
+                              <img src={m.logo} alt="" className="h-4 w-4 rounded-sm object-contain" />
+                            )}
+                            <span>
+                              <span className="font-bold">{m.brand}</span> {m.model}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400">DPI</label>
+                  <input
+                    type="number"
+                    min="100"
+                    max="50000"
+                    value={form.dpi}
+                    onChange={(e) => setForm((f) => ({ ...f, dpi: e.target.value }))}
+                    placeholder="Ex.: 800"
+                    className="w-32 rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white focus:border-violet-500/50 focus:outline-none"
+                  />
+                </div>
+              </div>
+
               {err && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
                   {err}
@@ -395,6 +466,7 @@ export default function ProfilePage({
                   Guardar
                 </button>
               </div>
+            </div>
             </div>
           )}
         </motion.div>

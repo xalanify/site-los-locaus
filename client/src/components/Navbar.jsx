@@ -25,7 +25,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
     }
   }
 
-  const isUpdates = location.pathname === '/atualizacoes'
+  const isDistincoes = location.pathname === '/distincoes'
   const isHome = location.pathname === '/'
   const isProfile = location.pathname === '/perfil'
   const isClips = location.pathname === '/clips'
@@ -44,10 +44,10 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
       active: isClips,
     },
     {
-      name: 'Atualizações',
+      name: 'Distinções',
       icon: History,
-      action: () => navigate('/atualizacoes'),
-      active: isUpdates,
+      action: () => navigate('/distincoes'),
+      active: isDistincoes,
     },
   ]
 

@@ -39,16 +39,18 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick
+        `SELECT avatar_url, game_nick, mouse, dpi
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
     return {
       avatar_url: (row && row.avatar_url) || null,
       game_nick: (row && row.game_nick) || null,
+      mouse: (row && row.mouse) || null,
+      dpi: (row && row.dpi) || null,
     };
   } catch {
-    return { avatar_url: null, game_nick: null };
+    return { avatar_url: null, game_nick: null, mouse: null, dpi: null };
   }
 };
 
@@ -260,7 +262,9 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const body = req.body || {};
     const hasNick = Object.prototype.hasOwnProperty.call(body, 'game_nick');
     const hasAvatar = Object.prototype.hasOwnProperty.call(body, 'avatar_url');
-    if (!hasNick && !hasAvatar) {
+    const hasMouse = Object.prototype.hasOwnProperty.call(body, 'mouse');
+    const hasDpi = Object.prototype.hasOwnProperty.call(body, 'dpi');
+    if (!hasNick && !hasAvatar && !hasMouse && !hasDpi) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
 
@@ -301,6 +305,20 @@ router.put('/me/profile', attachAuth, async (req, res) => {
         )
         .run(avatar || null, uid);
       if (cur && cur.avatar_url && cur.avatar_url !== avatar) removeAvatarFile(cur.avatar_url);
+    }
+
+    if (hasMouse) {
+      const mouse = String(body.mouse || '').trim().slice(0, 80);
+      await db
+        .prepare('UPDATE user_profiles SET mouse = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
+        .run(mouse || null, uid);
+    }
+    if (hasDpi) {
+      const dpi = Number(body.dpi);
+      const safe = Number.isFinite(dpi) && dpi > 0 && dpi < 100000 ? Math.round(dpi) : null;
+      await db
+        .prepare('UPDATE user_profiles SET dpi = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
+        .run(safe, uid);
     }
 
     const user = await store.findById(uid);
@@ -426,7 +444,7 @@ router.get('/list', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT u.id, u.username, p.avatar_url,
+        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online
          FROM users u
          LEFT JOIN user_profiles p ON p.user_id = u.id
@@ -445,6 +463,8 @@ router.get('/list', attachAuth, async (req, res) => {
         id: Number(r.id),
         username: r.username,
         avatar_url: r.avatar_url || null,
+        mouse: r.mouse || null,
+        dpi: r.dpi || null,
         online: Boolean(r.online),
         badges: byUser[r.id] || [],
         distincoes: dists[i] || null,

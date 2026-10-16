@@ -528,3 +528,57 @@ button[class~='bg-violet-500']:active {
     transform: none;
   }
 }
+
+/* ------------------------------------------------------------
+   Leitor de clips — ECRÃ INTEIRO
+   O moldura preenche o ecrã todo e a caixa do vídeo fica 16:9
+   ao centro com barras pretas NOSSAS (letterbox). O rato nunca
+   chega ao iframe, por isso não aparece nada da plataforma:
+   nem título, nem controlos, nem marca de água.
+   ------------------------------------------------------------ */
+.player-ecra:fullscreen,
+.player-ecra:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+}
+
+/* caixa do vídeo: 16:9 centrado, com as barras laterais/em cima
+   e em baixo feitas por nós (fundo preto do moldura) */
+.player-ecra:fullscreen .player-caixa,
+.player-ecra:-webkit-full-screen .player-caixa {
+  position: absolute !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  width: min(100vw, 177.777vh) !important;
+  height: min(100vh, 56.25vw) !important;
+  transform: translate(-50%, -50%);
+}
+
+/* controlos nossos em ecrã inteiro: maiores e com mais respiro */
+.player-ecra:fullscreen .player-controlos,
+.player-ecra:-webkit-full-screen .player-controlos {
+  padding: 4rem 1.5rem 1.5rem;
+}
+
+.player-ecra:fullscreen .player-controlos button,
+.player-ecra:-webkit-full-screen .player-controlos button {
+  width: 3rem;
+  height: 3rem;
+}
+
+.player-ecra:fullscreen .player-controlos button svg,
+.player-ecra:-webkit-full-screen .player-controlos button svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.player-ecra:fullscreen .player-controlos span,
+.player-ecra:-webkit-full-screen .player-controlos span {
+  font-size: 13px;
+}

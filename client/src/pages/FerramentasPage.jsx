@@ -104,13 +104,14 @@ const ICON_MAP = {
    logs aparecem a andar aqui em baixo.
    ============================================================ */
 
-const CATS = ['Rede', 'Debloat', 'Otimização', 'Sistema', 'Programas', 'Limpeza', 'Scan vírus']
+const CATS = ['Rede', 'Debloat', 'Otimização', 'Otimização Xalana', 'Sistema', 'Programas', 'Limpeza', 'Scan vírus']
 
 /* icone pequeno ao lado do nome de cada categoria */
 const CAT_ICONES = {
   Rede: Wifi,
   Debloat: Trash2,
   Otimização: Zap,
+  'Otimização Xalana': Gauge,
   Sistema: Gauge,
   Programas: Package,
   Limpeza: Eraser,
@@ -411,9 +412,9 @@ export default function FerramentasPage() {
             Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-yellow-300 ring-1 ring-yellow-400/30">
-              <AlertTriangle className="h-3 w-3" />
-              Ferramentas em desenvolvimento
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1 text-[12px] font-bold tracking-wide text-yellow-300 ring-1 ring-yellow-400/30">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              Ferramentas Windows em desenvolvimento ainda. Otimizações e opções ainda serão melhoradas e adicionadas.
             </span>
           </div>
         </motion.div>
@@ -753,6 +754,26 @@ export default function FerramentasPage() {
                     </div>
                   )}
 
+                  {f.soAdmin && (
+                    <span className="inline-flex items-center rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-300 ring-1 ring-violet-400/40">
+                      <Lock className="mr-0.5 h-2.5 w-2.5" /> só admin · em teste
+                    </span>
+                  )}
+                  {f.passos && f.passos.length > 0 && (
+                    <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-[12px]">
+                      <p className="mb-1 text-[10px] font-black uppercase tracking-wide text-gray-500">
+                        O que vai fazer
+                      </p>
+                      <ul className="flex flex-col gap-0.5">
+                        {f.passos.map((p, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-gray-300">
+                            <Check className="mt-0.5 h-3 w-3 shrink-0 text-violet-400" />
+                            <span>{p}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   {f.disco ? (
                     <div className="flex gap-2">
                       <select
@@ -821,11 +842,7 @@ export default function FerramentasPage() {
         {/* ---------------- Nota ---------------- */}
         <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] leading-relaxed text-gray-400">
           <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
-          <p>
-            Scripts puros — vê o que cada um faz no fim do cartão. Para mexer no sistema, corre o
-            site <span className="font-bold text-white">como administrador</span>; sem isso, o
-            script avisa e segue.
-          </p>
+          <p>Scripts puros — vê o que cada um faz no fim do cartão.</p>
         </div>
 
         <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-gray-600">
