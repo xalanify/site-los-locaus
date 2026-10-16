@@ -58,7 +58,7 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
       <div className="glass w-full max-w-sm rounded-2xl p-6">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <User className="h-5 w-5 text-orange-400" />
+            <User className="h-5 w-5 text-violet-400" />
             {mode === 'login' ? 'Entrar' : 'Criar conta'}
           </h2>
           <button
@@ -73,7 +73,7 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
           <button
             onClick={() => switchMode('login')}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm font-bold transition-colors ${
-              mode === 'login' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'
+              mode === 'login' ? 'bg-violet-500 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             <LogIn className="h-4 w-4" /> Entrar
@@ -81,7 +81,7 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
           <button
             onClick={() => switchMode('register')}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm font-bold transition-colors ${
-              mode === 'register' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'
+              mode === 'register' ? 'bg-violet-500 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
             <UserPlus className="h-4 w-4" /> Criar conta
@@ -116,7 +116,7 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
           <button
             type="submit"
             disabled={busy || !username.trim() || !password}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
           >
             {busy ? (
               <Loader2 className="h-4 w-4 animate-spin" />

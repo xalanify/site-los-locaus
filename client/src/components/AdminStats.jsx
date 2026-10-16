@@ -82,7 +82,7 @@ export default function AdminStats() {
   if (!carregado) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
       </div>
     )
   }
@@ -114,7 +114,7 @@ export default function AdminStats() {
           <Cartao Icon={Eye} cor="bg-emerald-400/15 text-emerald-300" valor={r.clipsPublicos} rotulo="públicos" />
           <Cartao Icon={Heart} cor="bg-rose-400/15 text-rose-300" valor={r.likes} rotulo="gostos" />
           <Cartao Icon={Download} cor="bg-sky-400/15 text-sky-300" valor={r.downloads} rotulo="transferidos" />
-          <Cartao Icon={Eye} cor="bg-orange-400/15 text-orange-300" valor={r.views} rotulo="visualizações" />
+          <Cartao Icon={Eye} cor="bg-violet-400/15 text-violet-300" valor={r.views} rotulo="visualizações" />
           <Cartao Icon={Save} cor="bg-amber-400/15 text-amber-300" valor={r.saves} rotulo="guardados" />
           <Cartao Icon={MessageSquare} cor="bg-indigo-400/15 text-indigo-300" valor={r.comentarios} rotulo="comentários" />
           <Cartao Icon={Clapperboard} cor="bg-fuchsia-400/15 text-fuchsia-300" valor={r.posts} rotulo="publicações" />

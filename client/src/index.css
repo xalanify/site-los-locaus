@@ -14,12 +14,13 @@
   --aj-600: 124 58 237;
   --aj-700: 109 40 217;
 
-  /* Superfícies — preto puro, cartões ligeiramente mais claros
-     (mesma leitura da referência: fundo escuro, blocos definidos) */
-  --aj-bg: #000000;
-  --aj-card: #0e0e11;
-  --aj-card-hi: #16161b;
-  --aj-line: rgba(255, 255, 255, 0.07);
+  /* Superfícies — preto com tom violeta (não é preto puro) e cartões
+     mais claros, à imagem da referência: fundo escuro, blocos com
+     definição e um fio de luz roxa na borda */
+  --aj-bg: #0a0813;
+  --aj-card: #141020;
+  --aj-card-hi: #1b1630;
+  --aj-line: rgba(167, 139, 250, 0.16);
 }
 
 * {
@@ -34,9 +35,9 @@ body {
   /* brilho ambiente violeta muito discreto no topo — dá profundidade
      ao preto puro sem virar banner */
   background-image: radial-gradient(
-    56rem 26rem at 50% -6rem,
-    rgb(var(--aj-600) / 0.12),
-    transparent 68%
+    64rem 30rem at 50% -7rem,
+    rgb(var(--aj-600) / 0.2),
+    transparent 70%
   );
   background-attachment: fixed;
   color: white;
@@ -107,7 +108,7 @@ h4 {
    há mais conteúdo para baixo. */
 .scroll-forte {
   scrollbar-width: thin;
-  scrollbar-color: #f97316 rgba(255, 255, 255, 0.08);
+  scrollbar-color: #7c3aed rgba(255, 255, 255, 0.08);
 }
 .scroll-forte::-webkit-scrollbar {
   width: 12px;
@@ -117,13 +118,13 @@ h4 {
   border-radius: 999px;
 }
 .scroll-forte::-webkit-scrollbar-thumb {
-  background: #f97316;
+  background: #7c3aed;
   border: 3px solid transparent;
   background-clip: padding-box;
   border-radius: 999px;
 }
 .scroll-forte::-webkit-scrollbar-thumb:hover {
-  background: #fb923c;
+  background: #a78bfa;
   background-clip: padding-box;
 }
 /* setas — só aparecem quando a área do rato está em cima */
@@ -132,14 +133,16 @@ h4 {
 }
 
 /* Glow — discreto: só um halo curto para destacar o elemento ativo */
-.glow-orange {
+.glow-violet {
   box-shadow: 0 2px 12px rgb(var(--aj-600) / 0.4);
 }
 
-/* Cartão — superfície sólida, borda fina e um cantinho suave.
-   Sem desfoque nem reflexo: leitura limpa em qualquer fundo. */
+/* Cartão — superfície sólida com um leve véu violeta no topo (dá
+   profundidade sem ruído), borda fina e cantinho suave. */
 .glass {
-  background: var(--aj-card);
+  background:
+    linear-gradient(180deg, rgb(var(--aj-400) / 0.07), rgb(var(--aj-400) / 0) 45%),
+    var(--aj-card);
   border: 1px solid var(--aj-line);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   transition:
@@ -150,8 +153,10 @@ h4 {
 }
 
 .glass:hover {
-  border-color: rgba(255, 255, 255, 0.13);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  border-color: rgb(var(--aj-500) / 0.45);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgb(var(--aj-600) / 0.25);
   transform: translateY(-2px);
 }
 
@@ -500,15 +505,15 @@ button[class~='border-white/15']:active {
    Botões principais (violeta): cor chapada, sombra curta e
    encolhe um pouco ao premir.
    ------------------------------------------------------------ */
-button[class~='bg-orange-500'] {
+button[class~='bg-violet-500'] {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
-button[class~='bg-orange-500']:hover {
+button[class~='bg-violet-500']:hover {
   box-shadow: 0 6px 18px rgb(var(--aj-600) / 0.35);
 }
 
-button[class~='bg-orange-500']:active {
+button[class~='bg-violet-500']:active {
   transform: scale(0.97);
   filter: brightness(1.06);
 }

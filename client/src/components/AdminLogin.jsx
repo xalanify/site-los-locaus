@@ -39,7 +39,7 @@ export default function AdminLogin({ onLogin, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0813]/85 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <motion.div
@@ -70,7 +70,7 @@ export default function AdminLogin({ onLogin, onClose }) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-dark/50 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full bg-dark/50 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:border-violet-500 focus:outline-none transition-colors"
                 placeholder="Palavra-passe"
                 required
               />
@@ -87,7 +87,7 @@ export default function AdminLogin({ onLogin, onClose }) {
                 type="text"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                className="w-full bg-dark/50 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full bg-dark/50 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:border-violet-500 focus:outline-none transition-colors"
                 placeholder="Chave secreta"
                 required
               />
@@ -103,7 +103,7 @@ export default function AdminLogin({ onLogin, onClose }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 bg-violet-500 hover:bg-violet-600 text-white font-bold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>

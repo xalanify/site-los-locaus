@@ -68,7 +68,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   if (!carregado) {
     return (
       <section className="flex min-h-screen flex-col items-center justify-center gap-3 pt-14">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
         <p className="text-sm text-gray-500">A abrir o perfil…</p>
       </section>
     )

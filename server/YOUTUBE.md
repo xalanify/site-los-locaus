@@ -23,7 +23,12 @@ Por cada contador (1, 2, 3):
 3. **APIs e serviços → Ecrã de consentimento OAuth**:
    - Utilizador: **Externo**; preencher nome da app, email e pagina inicial
      (`https://locaus.vercel.app`).
-   - Escopos → adicionar `youtube.upload` (*Manage your YouTube videos*).
+   - Escopos → adicionar os três:
+     `youtube.upload` (*Manage your YouTube videos*),
+     `youtube.readonly` (*View your YouTube account*) e
+     `youtube.force-ssl` (*Manage your YouTube account* — **obrigatório para
+     APAGAR** o vídeo quando o membro apaga o clip; sem ele o site apaga o
+     clip mas deixa o vídeo órfão).
    - **Utilizadores de teste**: adicionar o email da conta Google do canal.
    - Deixar em **Testing** para obter o token; depois passar a **Publicado**
      (*Publish App*) para o refresh token **não expirar aos 7 dias**.
@@ -34,10 +39,12 @@ Por cada contador (1, 2, 3):
 5. Obter o **refresh token** (uma vez):
    - Abrir <https://developers.google.com/oauthplayground> → ⚙ →
      **Use your own OAuth credentials** → colar Client ID e Client Secret.
-   - À esquerda marcar `https://www.googleapis.com/auth/youtube.upload`
-     **E** `https://www.googleapis.com/auth/youtube.readonly` (a 2.ª é
+   - À esquerda marcar `https://www.googleapis.com/auth/youtube.upload`,
+     `https://www.googleapis.com/auth/youtube.readonly` **E**
+     `https://www.googleapis.com/auth/youtube.force-ssl` (a 2.ª é
      obrigatória: sem ela o servidor não consegue *conferir* o vídeo que o
-     browser subiu) → **Authorize APIs** → entrar na conta do canal →
+     browser subiu; a 3.ª é obrigatória para **apagar**) → **Authorize APIs**
+     → entrar na conta do canal →
      **Exchange authorization code for tokens** → copiar **Refresh token**.
    - ⚠️ O passo acima tem de ser com **“Use your own OAuth credentials”**
      ligado **antes** de autorizar (⚙ no canto superior direito). Sem isso o
@@ -83,10 +90,16 @@ limite de MB e o aviso laranja no formulário. Não é preciso tocar em nada.
 - **Corte sem perda de qualidade**: o corte do site re-grava o vídeo (usa
   `MediaRecorder`). Para cortar sem re-encriptar era preciso `ffmpeg.wasm`
   com `-c copy`, e isso só corta em keyframes. Dá para fazer, é à parte.
-- **"Não parecer do YouTube"**: a capa aparece com um botão de play nosso e o
-  iframe só carrega ao tocar. Depois de tocar, o logótipo do YouTube no
-  próprio leitor **não é possível esconder** (e descarregar a stream do
-  YouTube seria contra os termos de serviço).
+- **Não parecer do YouTube**: o site tem **leitor próprio** — o iframe é pedido
+  com `controls=0&modestbranding=1&fs=0&disablekb=1` (YouTube nocookie) e o
+  play/pause, a barra de progresso, o tempo, o som e o ecrã inteiro são do
+  site. Depois de tocar **não aparece logótipo, botão, título nem canal**.
+  O único vestígio é o próprio domínio do iframe (`youtube-nocookie.com`),
+  que é inevitável: o vídeo tem de ir do CDN deles (mais não seria contra os
+  termos de serviço).
+- **Apagar**: quando o membro apaga o clip, o site apaga o clip **e** o vídeo
+  (tenta todos os contadores; se um devolver 403 de escopo, o clip é apagado
+  na mesma e o admin é avisado). Sem `youtube.force-ssl`, o vídeo fica órfão.
 - **Processamento**: o vídeo fica disponível logo, mas o YouTube demora
   uns minutos a processar a versão HD. Durante esse tempo o leitor mostra o
   aviso de processamento do próprio YouTube.

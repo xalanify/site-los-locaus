@@ -34,7 +34,7 @@ export default function BackToTop() {
           transition={{ duration: 0.22, ease: 'easeOut' }}
           aria-label="Voltar ao topo"
           title="Voltar ao topo"
-          className="fixed bottom-6 right-5 z-[60] flex h-11 w-11 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/30 transition-colors hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300/60"
+          className="fixed bottom-6 right-5 z-[60] flex h-11 w-11 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg shadow-violet-500/30 transition-colors hover:bg-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-300/60"
         >
           <ArrowUp className="h-5 w-5" />
         </motion.button>

@@ -105,12 +105,12 @@ function EmailRow({ user, onSaved }) {
           }}
           placeholder="nome@dominio.com"
           maxLength={254}
-          className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white outline-none placeholder:text-gray-600 focus:bg-white/15 focus:ring-1 focus:ring-orange-500/40"
+          className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white outline-none placeholder:text-gray-600 focus:bg-white/15 focus:ring-1 focus:ring-violet-500/40"
         />
         <button
           onClick={save}
           disabled={busy}
-          className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
         >
           {busy && <Loader2 className="h-3 w-3 animate-spin" />}
           Guardar
@@ -692,14 +692,14 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       icon: <Globe className="w-6 h-6" />,
       label: 'Último Ano',
       value: stats?.lastYear || 0,
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-400/10',
+      color: 'text-violet-400',
+      bgColor: 'bg-violet-400/10',
     },
   ]
 
   /* Cartões da visão geral do site */
   const OVERVIEW_CARDS = [
-    { key: 'contas', label: 'Contas', Icon: Users, color: 'text-orange-400', bg: 'bg-orange-400/10' },
+    { key: 'contas', label: 'Contas', Icon: Users, color: 'text-violet-400', bg: 'bg-violet-400/10' },
     { key: 'administradores', label: 'Admins', Icon: ShieldCheck, color: 'text-red-400', bg: 'bg-red-400/10' },
     { key: 'anuncios', label: 'Anúncios', Icon: StickyNote, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
     { key: 'comentarios', label: 'Comentários', Icon: MessageSquare, color: 'text-blue-400', bg: 'bg-blue-400/10' },
@@ -716,7 +716,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0813]/85 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <motion.div
@@ -728,7 +728,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       >
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Users className="w-6 h-6 text-orange-500" />
+            <Users className="w-6 h-6 text-violet-500" />
             Painel Admin
           </h2>
           <div className="flex items-center gap-2">
@@ -765,7 +765,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         {tab === 'painel' ? (
           loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
             </div>
           ) : (
             <>
@@ -832,7 +832,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             {/* ----- Pedidos de recuperação de palavra-passe ----- */}
             <div className="glass mb-5 rounded-xl p-4">
               <h3 className="mb-2 flex items-center gap-2 font-bold text-white">
-                <KeyRound className="h-4 w-4 text-orange-400" /> Pedidos de recuperação
+                <KeyRound className="h-4 w-4 text-violet-400" /> Pedidos de recuperação
               </h3>
               {requests.length === 0 ? (
                 <p className="text-xs text-gray-400">
@@ -871,7 +871,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                         className={`ml-auto rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
                           r.recovery
                             ? 'border border-red-500/40 text-red-400 hover:bg-red-500/15'
-                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                            : 'bg-violet-500 text-white hover:bg-violet-600'
                         }`}
                       >
                         {r.recovery ? 'Desativar recovery' : 'Ativar modo recovery'}
@@ -888,7 +888,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
             {usersLoading ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-violet-500"></div>
               </div>
             ) : userList.length === 0 ? (
               <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
@@ -899,7 +899,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 {userList.map((u) => (
                   <div key={u.id} className="glass rounded-xl p-4">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-500/20 text-sm font-black text-white">
+                      <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-violet-500/20 text-sm font-black text-white">
                         {u.username.slice(0, 2).toUpperCase()}
                         {u.avatar_url && (
                           <img
@@ -940,7 +940,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                         className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
                           u.is_admin
                             ? 'border border-red-500/40 text-red-400 hover:bg-red-500/15'
-                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                            : 'bg-violet-500 text-white hover:bg-violet-600'
                         }`}
                       >
                         <ShieldCheck className="h-3.5 w-3.5" />
@@ -996,7 +996,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                             key={a.id}
                             className="flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-gray-200"
                           >
-                            <Gamepad2 className="h-3 w-3 text-orange-400" />
+                            <Gamepad2 className="h-3 w-3 text-violet-400" />
                             {gameLabel(a.game)} · {a.nick}
                             <button
                               onClick={() => removeGameAccount(u, a.id)}
@@ -1033,7 +1033,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                             className="rounded-lg bg-white/10 px-2 py-1.5 text-xs text-white outline-none"
                           >
                             {CLIP_GAMES.map((g) => (
-                              <option key={g.id} value={g.id} className="bg-[#131316]">
+                              <option key={g.id} value={g.id} className="bg-[#1b1630]">
                                 {g.label}
                               </option>
                             ))}
@@ -1053,15 +1053,15 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                             title="Jogadores que aparecem nas estatísticas deste jogo"
                             className="min-w-0 max-w-[16rem] flex-1 rounded-lg bg-white/10 px-2 py-1.5 text-xs text-white outline-none"
                           >
-                            <option value="" className="bg-[#131316]">
+                            <option value="" className="bg-[#1b1630]">
                               {nomesJogo.length ? 'Escolhe o jogador…' : 'Sem lista para este jogo'}
                             </option>
                             {nomesJogo.map((n) => (
-                              <option key={n} value={n} className="bg-[#131316]">
+                              <option key={n} value={n} className="bg-[#1b1630]">
                                 {n}
                               </option>
                             ))}
-                            <option value="__outro__" className="bg-[#131316]">
+                            <option value="__outro__" className="bg-[#1b1630]">
                               Outro nome / conta secundária…
                             </option>
                           </select>
@@ -1079,7 +1079,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                           <button
                             onClick={() => addGameAccount(u)}
                             disabled={accBusy || !accForm.nick.trim()}
-                            className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                            className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
                           >
                             {accBusy && <Loader2 className="h-3 w-3 animate-spin" />} Ligar
                           </button>
@@ -1101,7 +1101,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           <div>
             <div className="glass rounded-xl p-4">
               <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
-                <Plus className="h-4 w-4 text-orange-400" /> Novo anúncio
+                <Plus className="h-4 w-4 text-violet-400" /> Novo anúncio
               </h3>
               <div className="space-y-3">
                 <input
@@ -1135,7 +1135,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   <button
                     onClick={createPost}
                     disabled={saving}
-                    className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2 text-sm font-bold text-white hover:bg-violet-600 disabled:opacity-50"
                   >
                     <StickyNote className="h-4 w-4" />
                     {saving ? 'A guardar…' : 'Publicar anúncio'}
@@ -1179,7 +1179,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           <div>
             <div className="glass rounded-xl p-4">
               <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
-                <Gamepad2 className="h-4 w-4 text-orange-400" /> Rainbow Six — tracker.gg
+                <Gamepad2 className="h-4 w-4 text-violet-400" /> Rainbow Six — tracker.gg
               </h3>
               <p className="text-[13px] text-gray-400">
                 As estatísticas do esquadrão são atualizadas ao importar o JSON de cada jogador.
@@ -1209,7 +1209,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   accept=".html,.htm,.json,.txt,text/html,application/json"
                   multiple
                   onChange={importarR6}
-                  className="block w-full text-[12px] text-gray-400 file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-[12px] file:font-black file:text-white hover:file:bg-orange-400"
+                  className="block w-full text-[12px] text-gray-400 file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-violet-500 file:px-4 file:py-2 file:text-[12px] file:font-black file:text-white hover:file:bg-violet-400"
                 />
                 {r6ImportMsg && (
                   <p
@@ -1288,7 +1288,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-black uppercase tracking-wider text-gray-400">
-                <ScrollText className="mr-1.5 inline h-4 w-4 text-orange-400" />
+                <ScrollText className="mr-1.5 inline h-4 w-4 text-violet-400" />
                 Registo de execuções
               </h3>
               <button
@@ -1313,7 +1313,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
             {ferrLoading ? (
               <div className="flex justify-center py-10">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-400" />
+                <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
               </div>
             ) : ferrRuns.length === 0 ? (
               <p className="py-10 text-center text-sm text-gray-400">
@@ -1384,7 +1384,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           <div>
             <div className="glass rounded-xl p-4">
               <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
-                <Film className="h-4 w-4 text-orange-400" /> Novo clip (teste)
+                <Film className="h-4 w-4 text-violet-400" /> Novo clip (teste)
               </h3>
               <div className="space-y-3">
                 <input
@@ -1399,7 +1399,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 {!clipPreview ? (
                   <button
                     onClick={() => clipInputRef.current && clipInputRef.current.click()}
-                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-orange-500/60 hover:text-orange-400"
+                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-violet-500/60 hover:text-violet-400"
                   >
                     <Upload className="h-7 w-7" />
                     <span className="text-sm font-bold">Escolher vídeo</span>
@@ -1418,7 +1418,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                       className="max-h-64 w-full rounded-xl bg-black"
                     />
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
-                      <span className="truncate font-semibold text-orange-400">
+                      <span className="truncate font-semibold text-violet-400">
                         {clipFile?.name}
                       </span>
                       <button
@@ -1501,7 +1501,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 {clipProg >= 0 && (
                   <div className="h-2 overflow-hidden rounded-full bg-white/10">
                     <div
-                      className="h-full bg-orange-500 transition-all"
+                      className="h-full bg-violet-500 transition-all"
                       style={{ width: `${clipProg}%` }}
                     />
                   </div>
@@ -1519,7 +1519,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   <button
                     onClick={submitClip}
                     disabled={clipProg >= 0}
-                    className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2 text-sm font-bold text-white hover:bg-violet-600 disabled:opacity-50"
                   >
                     {clipProg >= 0 ? (
                       <>

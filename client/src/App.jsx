@@ -132,7 +132,7 @@ function App() {
             {/* A verificar sessão guardada */}
             {!sessionChecked && (
               <div className="flex min-h-screen flex-col items-center justify-center gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
                 <p className="text-[11px] uppercase tracking-[0.3em] text-gray-500">
                   A verificar sessão
                 </p>
@@ -172,7 +172,7 @@ function App() {
                   <Suspense
                     fallback={
                       <div className="flex min-h-[60vh] items-center justify-center">
-                        <Loader2 className="h-7 w-7 animate-spin text-orange-500" />
+                        <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
                       </div>
                     }
                   >

@@ -104,7 +104,7 @@ const ICON_MAP = {
    logs aparecem a andar aqui em baixo.
    ============================================================ */
 
-const CATS = ['Rede', 'Debloat', 'Otimização', 'Sistema', 'Programas', 'Limpeza', 'Segurança']
+const CATS = ['Rede', 'Debloat', 'Otimização', 'Sistema', 'Programas', 'Limpeza', 'Scan vírus']
 
 /* icone pequeno ao lado do nome de cada categoria */
 const CAT_ICONES = {
@@ -114,7 +114,7 @@ const CAT_ICONES = {
   Sistema: Gauge,
   Programas: Package,
   Limpeza: Eraser,
-  Segurança: ShieldAlert,
+  'Scan vírus': ShieldAlert,
 }
 
 const PERIGO = {
@@ -408,20 +408,13 @@ export default function FerramentasPage() {
             Ferramentas Windows
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-400">
-            Otimizações, rede, debloat e instalação de programas — tudo por script, sem setup.
-            Corre no PC onde está o servidor.
+            Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-yellow-300 ring-1 ring-yellow-400/30">
               <AlertTriangle className="h-3 w-3" />
               Ferramentas em desenvolvimento
             </span>
-            {podeLocal && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                PowerShell ativo neste PC
-              </span>
-            )}
           </div>
         </motion.div>
 
@@ -429,7 +422,7 @@ export default function FerramentasPage() {
           <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-[13px] text-yellow-200">
             <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
             <p>
-              Este servidor não tem PowerShell (Vercel) — as ferramentas só correm quando o site
+              Este site está alojado na nuvem (Vercel) — as ferramentas só correm quando o site
               está num PC Windows local (INICIAR.bat).
             </p>
           </div>
@@ -443,7 +436,7 @@ export default function FerramentasPage() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Procurar ferramenta (ex.: dns, onedrive, limpar…)"
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-9 text-[13px] text-white placeholder:text-gray-400 focus:border-orange-500/50 focus:bg-white/10 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-9 text-[13px] text-white placeholder:text-gray-400 focus:border-violet-500/50 focus:bg-white/10 focus:outline-none"
             />
             {busca && (
               <button
@@ -467,7 +460,7 @@ export default function FerramentasPage() {
                 onClick={() => setCat(c)}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-black uppercase tracking-wide transition-colors ${
                   cat === c
-                    ? 'bg-orange-500 text-white'
+                    ? 'bg-violet-500 text-white'
                     : 'btn-glass text-gray-400 hover:text-white'
                 }`}
               >
@@ -552,7 +545,7 @@ export default function FerramentasPage() {
                     executar(ids[0])
                   }}
                   disabled={aCorrer}
-                  className="rounded-lg bg-orange-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-50"
+                  className="rounded-lg bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
                   title="Corre os selecionados um de cada vez, por ordem"
                 >
                   <Play className="h-3.5 w-3.5" /> Executar selecionados ({selecionados.size})
@@ -570,8 +563,8 @@ export default function FerramentasPage() {
 
         {/* ---------------- Fila de execução ---------------- */}
         {fila.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-orange-500/25 bg-orange-500/10 px-4 py-2.5 text-[12px]">
-            <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-wide text-orange-300">
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-2.5 text-[12px]">
+            <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-wide text-violet-300">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Fila ({fila.length})
             </span>
@@ -650,7 +643,7 @@ export default function FerramentasPage() {
         {/* ---------------- Grelha ---------------- */}
         {!recarregado ? (
           <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
-            <RefreshCcw className="h-4 w-4 animate-spin text-orange-400" /> A carregar ferramentas…
+            <RefreshCcw className="h-4 w-4 animate-spin text-violet-400" /> A carregar ferramentas…
           </div>
         ) : visiveis.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -669,7 +662,7 @@ export default function FerramentasPage() {
               {busca.trim() && (
                 <button
                   onClick={() => setBusca('')}
-                  className="flex items-center gap-1.5 rounded-full bg-orange-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-orange-400"
+                  className="flex items-center gap-1.5 rounded-full bg-violet-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400"
                 >
                   <X className="h-3.5 w-3.5" /> Limpar pesquisa
                 </button>
@@ -696,10 +689,31 @@ export default function FerramentasPage() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                  className="glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/5 p-4 transition-colors hover:border-orange-500/25"
+                  className="glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/5 p-4 transition-colors hover:border-violet-500/25"
                 >
-                  <div className="mb-2 flex items-start justify-between gap-2">
-                    <label className="flex min-w-0 items-center gap-2 cursor-pointer select-none flex-1">
+                  <div className="mb-3 flex items-start gap-3">
+                    <label className="flex min-w-0 flex-1 cursor-pointer select-none items-start gap-3">
+                      {/* ícone no círculo — mesma linguagem visual do site */}
+                      <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/25">
+                        {f.logo && !logosFalha.has(f.id) ? (
+                          <img
+                            src={f.logo}
+                            alt=""
+                            loading="lazy"
+                            onError={() =>
+                              setLogosFalha((s) => new Set(s).add(f.id))
+                            }
+                            className="h-6 w-6 object-contain"
+                          />
+                        ) : f.icone && ICON_MAP[f.icone] ? (
+                          (() => { const I = ICON_MAP[f.icone]; return <I className="h-5 w-5" />; })()
+                        ) : (
+                          <Package className="h-5 w-5" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1 break-words pt-2 font-display text-[15px] font-black leading-tight text-white">
+                        {f.nome}
+                      </span>
                       <input
                         type="checkbox"
                         checked={selecionados.has(f.id)}
@@ -709,40 +723,23 @@ export default function FerramentasPage() {
                           else novo.add(f.id)
                           setSelecionados(novo)
                         }}
-                        className="rounded border border-white/10 w-4 h-4 p-0 cursor-pointer shrink-0"
+                        aria-label={`Selecionar ${f.nome}`}
+                        className="mt-2.5 h-4 w-4 shrink-0 cursor-pointer rounded border border-white/10"
                       />
-                      <p className="min-w-0 flex-1 font-display text-[15px] font-black leading-tight text-white break-words">
-                        {f.logo && !logosFalha.has(f.id) ? (
-                          <img
-                            src={f.logo}
-                            alt=""
-                            loading="lazy"
-                            onError={() =>
-                              setLogosFalha((s) => new Set(s).add(f.id))
-                            }
-                            className="mr-1.5 inline h-5 w-5 rounded object-contain"
-                          />
-                        ) : f.icone && ICON_MAP[f.icone] ? (
-                          (() => { const I = ICON_MAP[f.icone]; return <I className="mr-1.5 inline h-4 w-4 text-orange-400" />; })()
-                        ) : f.livre ? (
-                          <Package className="mr-1.5 inline h-4 w-4 text-orange-400" />
-                        ) : null}
-                        {f.nome}
-                      </p>
-                      {instalados.has(f.id) && (
-                        <span
-                          title="Já está instalado neste PC"
-                          className="ml-1.5 shrink-0 rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30"
-                        >
-                          instalado
-                        </span>
-                      )}
                     </label>
                   </div>
                   <p className="mb-3 flex-1 text-[12.5px] leading-relaxed text-gray-400">{f.desc}</p>
 
-                  {(mostrarCat || f.desenvolvimento || (f.perigo && f.perigo !== 'baixo')) && (
+                  {(instalados.has(f.id) || mostrarCat || f.desenvolvimento || (f.perigo && f.perigo !== 'baixo')) && (
                     <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                      {instalados.has(f.id) && (
+                        <span
+                          title="Já está instalado neste PC"
+                          className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30"
+                        >
+                          instalado
+                        </span>
+                      )}
                       {mostrarCat && (
                         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-400">
                           {(() => { const I = CAT_ICONES[f.cat]; return I ? <I className="h-3 w-3" /> : null })()}
@@ -763,7 +760,7 @@ export default function FerramentasPage() {
                         onChange={(e) => setDiscoSel(e.target.value)}
                         disabled={ocupado}
                         aria-label="Escolher disco"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white focus:border-orange-500/50 focus:outline-none"
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white focus:border-violet-500/50 focus:outline-none"
                       >
                         {discos.length === 0 && <option value="">sem discos</option>}
                         {discos.map((d) => (
@@ -773,9 +770,9 @@ export default function FerramentasPage() {
                       <button
                         onClick={() => executar(f.id)}
                         disabled={ocupado || !discoSel}
-                        className="flex items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-2 text-[12px] font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-lg bg-violet-500 px-3 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
                       >
-                        <Search className="h-3.5 w-3.5" /> Procurar
+                        <Search className="h-3.5 w-3.5" /> Scan
                       </button>
                     </div>
                   ) : f.livre ? (
@@ -784,13 +781,13 @@ export default function FerramentasPage() {
                         value={idLivre}
                         onChange={(e) => setIdLivre(e.target.value)}
                         placeholder="ShareX.ShareX"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white placeholder:text-gray-600 focus:border-orange-500/50 focus:outline-none"
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
                         disabled={ocupado}
                       />
                       <button
                         onClick={() => executar(f.id)}
                         disabled={ocupado || !idLivre.trim()}
-                        className="flex items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-2 text-[12px] font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-lg bg-violet-500 px-3 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
                       >
                         <Search className="h-3.5 w-3.5" /> Instalar
                       </button>
@@ -799,12 +796,12 @@ export default function FerramentasPage() {
                     <button
                       onClick={() => executar(f.id)}
                       disabled={ocupado || podeLocal === false}
-                      className="flex items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-orange-500 disabled:opacity-40 disabled:hover:bg-white/10"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
                     >
                       {aCorrer === f.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-orange-400" />
+                        <Loader2 className="h-4 w-4 animate-spin text-white/80" />
                       ) : (
-                        <Play className="h-4 w-4 text-orange-400" />
+                        <Play className="h-4 w-4" fill="currentColor" />
                       )}
                       {aCorrer === f.id ? 'A correr…' : 'Executar'}
                     </button>
@@ -836,7 +833,7 @@ export default function FerramentasPage() {
           {busca.trim()
             ? `${visiveis.length} de ${ferramentas.length} ferramentas`
             : `${ferramentas.length} ferramentas`} ·{' '}
-          {dados?.estado?.podeLocal ? 'PowerShell disponível' : aCorrer ? 'a correr' : 'estado desconhecido'}
+          {dados?.estado?.podeLocal ? 'pronto para executar' : aCorrer ? 'a correr' : 'estado desconhecido'}
         </p>
       </div>
 
@@ -871,7 +868,7 @@ export default function FerramentasPage() {
                   <p className="mt-0.5 truncate text-[12px] text-gray-300">{toast.detalhe}</p>
                 ) : null}
                 {fila.length > 0 && (
-                  <p className="mt-0.5 text-[11px] font-bold text-orange-300">
+                  <p className="mt-0.5 text-[11px] font-bold text-violet-300">
                     Fila: faltam {fila.length}
                   </p>
                 )}

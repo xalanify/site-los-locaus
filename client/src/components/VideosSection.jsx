@@ -81,7 +81,7 @@ export default function VideosSection() {
   if (loading) {
     return (
       <section id="videos" className="flex min-h-[30vh] items-center justify-center px-4 py-10">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
       </section>
     )
   }
@@ -169,7 +169,7 @@ export default function VideosSection() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setAberto(null)}
-            className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/85 p-3 pt-14 sm:p-6 sm:pt-20"
+            className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-[#0a0813]/88 p-3 pt-14 sm:p-6 sm:pt-20"
           >
             <motion.div
               initial={{ opacity: 0, y: 18, scale: 0.98 }}
@@ -288,7 +288,7 @@ export default function VideosSection() {
                   href={`https://www.youtube.com/watch?v=${aberto.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 transition-colors hover:text-orange-400"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 transition-colors hover:text-violet-400"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Ver no YouTube

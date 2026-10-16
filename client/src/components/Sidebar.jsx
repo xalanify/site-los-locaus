@@ -62,8 +62,8 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       {/* Marca */}
       <div>
         <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/15 ring-1 ring-orange-500/30">
-            <Youtube className="h-5 w-5 text-orange-400" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/30">
+            <Youtube className="h-5 w-5 text-violet-400" />
           </span>
           <span className="gradient-text font-display text-lg font-black uppercase tracking-wide">
             Ashow e Jazer
@@ -80,11 +80,11 @@ export default function Sidebar({ user = null, isAdmin = false }) {
                 onClick={link.action}
                 className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
                   link.active
-                    ? 'bg-orange-500/15 text-white'
+                    ? 'bg-violet-500/15 text-white'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'text-orange-400' : ''}`} />
+                <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'text-violet-400' : ''}`} />
                 <span className="text-[15px] font-bold">{link.name}</span>
               </button>
             )
@@ -98,7 +98,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
           onClick={() => navigate('/perfil')}
           className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
             isProfile
-              ? 'bg-orange-500/15 text-white'
+              ? 'bg-violet-500/15 text-white'
               : 'text-gray-400 hover:bg-white/5 hover:text-white'
           }`}
         >

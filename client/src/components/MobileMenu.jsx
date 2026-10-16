@@ -109,12 +109,12 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
                     onClick={() => go(it.path)}
                     className={`flex w-full items-center gap-4 rounded-xl px-3 py-3 text-left transition-colors ${
                       ativo
-                        ? 'bg-orange-500/15 text-white'
+                        ? 'bg-violet-500/15 text-white'
                         : 'text-gray-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
                     <Icon
-                      className={`h-5 w-5 shrink-0 ${ativo ? 'text-orange-400' : 'text-gray-500'}`}
+                      className={`h-5 w-5 shrink-0 ${ativo ? 'text-violet-400' : 'text-gray-500'}`}
                     />
                     <span className="text-[15px] font-bold">{it.name}</span>
                   </button>

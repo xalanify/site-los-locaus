@@ -13,7 +13,7 @@ function initialsOf(name) {
   return (clean[0][0] + clean[1][0]).toUpperCase()
 }
 
-export function svgAvatar(label = 'AJ', color = '#f97316') {
+export function svgAvatar(label = 'AJ', color = '#8b5cf6') {
   const initials = initialsOf(label)
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
   <defs>

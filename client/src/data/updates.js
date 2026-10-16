@@ -5,7 +5,7 @@
 
 export const CHANGE_TYPES = {
   novo: { label: 'Adição', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  melhoria: { label: 'Melhoria', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  melhoria: { label: 'Melhoria', color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
   correcao: { label: 'Correção', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
   remocao: { label: 'Remoção', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
 }

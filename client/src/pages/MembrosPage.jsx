@@ -61,13 +61,13 @@ export default function MembrosPage({ onProfile }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Procurar membro…"
             maxLength={30}
-            className="w-full rounded-2xl border border-white/10 bg-[#0e0e11] py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-gray-500 focus:border-orange-500/40"
+            className="w-full rounded-2xl border border-white/10 bg-[#141020] py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-gray-500 focus:border-violet-500/40"
           />
         </div>
 
         {aCarregar ? (
           <div className="flex justify-center py-16">
-            <Loader2 className="h-7 w-7 animate-spin text-orange-500" />
+            <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
           </div>
         ) : filtrados.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
@@ -78,7 +78,7 @@ export default function MembrosPage({ onProfile }) {
             {query.trim() && (
               <button
                 onClick={() => setQuery('')}
-                className="flex items-center gap-1.5 rounded-full bg-orange-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-orange-400"
+                className="flex items-center gap-1.5 rounded-full bg-violet-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400"
               >
                 <X className="h-3.5 w-3.5" /> Limpar pesquisa
               </button>

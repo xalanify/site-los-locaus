@@ -23,7 +23,7 @@ export default function Hero() {
   if (loading) {
     return (
       <section id="home" className="flex min-h-[45vh] items-center justify-center pt-20">
-        <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-orange-500" />
+        <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-violet-500" />
       </section>
     )
   }
@@ -69,7 +69,7 @@ export default function Hero() {
                 href={channelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 transition-colors hover:text-orange-400"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 transition-colors hover:text-violet-400"
               >
                 <Youtube className="h-3.5 w-3.5" />
                 Canal no YouTube

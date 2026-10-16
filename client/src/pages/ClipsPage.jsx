@@ -16,7 +16,7 @@ import {
   Scissors,
   AlertTriangle,
   Check,
-  Youtube,
+  Zap,
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
@@ -83,7 +83,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/85 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-[#0a0813]/88 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -104,7 +104,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
         {state.loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
           </div>
         ) : !d || !d.found ? (
           <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
@@ -124,7 +124,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
                   {d.profile.username}
                 </div>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-400">
-                  <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
                   Membro desde{' '}
                   {new Date(d.profile.created_at).toLocaleDateString('pt-PT', {
                     day: '2-digit',
@@ -144,7 +144,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
                 </div>
               </div>
               <div className="rounded-2xl bg-white/5 p-3 text-center">
-                <div className="text-lg font-black text-orange-400">{d.stats?.likes ?? 0}</div>
+                <div className="text-lg font-black text-violet-400">{d.stats?.likes ?? 0}</div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Gostos
                 </div>
@@ -160,7 +160,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             {/* Contas de jogo ligadas pelo admin */}
             <div className="rounded-2xl bg-white/5 p-4">
               <h3 className="mb-2.5 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
-                <Gamepad2 className="h-4 w-4 text-orange-400" /> Contas de jogo
+                <Gamepad2 className="h-4 w-4 text-violet-400" /> Contas de jogo
               </h3>
               {accounts.length === 0 ? (
                 <p className="text-sm text-gray-400">Ainda sem contas de jogo associadas.</p>
@@ -181,7 +181,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             {/* Distinções */}
             <div className="rounded-2xl bg-white/5 p-4">
               <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
-                <Award className="h-4 w-4 text-orange-400" /> Distinções
+                <Award className="h-4 w-4 text-violet-400" /> Distinções
               </h3>
               {badges.length === 0 ? (
                 <p className="text-sm text-gray-400">Ainda sem distinções.</p>
@@ -214,7 +214,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             {/* Clips */}
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
-                <Film className="h-4 w-4 text-orange-400" /> Clips
+                <Film className="h-4 w-4 text-violet-400" /> Clips
               </h3>
               {d.clips.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
@@ -346,7 +346,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       .catch(() => {})
     // publicação automática no YouTube (só para quem pode publicar)
     if (user) {
-      fetch('/api/clips/youtube/estado', { headers: authHeaders() })
+      fetch('/api/clips/pub/estado', { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => d && setYtEstado(d))
         .catch(() => {})
@@ -375,7 +375,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     setShowForm(true)
     setError('')
     // estado fresco da publicação automática (pode ter esgotado entretanto)
-    fetch('/api/clips/youtube/estado', { headers: authHeaders() })
+    fetch('/api/clips/pub/estado', { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setYtEstado(d))
       .catch(() => {})
@@ -500,7 +500,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     setYtEstado((s) => ({ ...(s || {}), disponivel: false, aviso: mensagem }))
     setError(mensagem)
     if (contador != null) {
-      fetch('/api/clips/youtube/esgotado', {
+      fetch('/api/clips/pub/esgotado', {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ contador, motivo: mensagem }),
@@ -527,7 +527,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
     try {
       // 1) token + contador livre
-      const t = await fetch('/api/clips/youtube/token', {
+      const t = await fetch('/api/clips/pub/token', {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: '{}',
@@ -540,7 +540,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         }
         if (t.status === 503) return false // não configurado -> Supabase
         setProgress(-1)
-        setError((td && td.error) || 'Não consegui autorizar no YouTube.')
+        setError((td && td.error) || 'Não consegui autorizar a publicação.')
         return true
       }
       if (td && td.estado) setYtEstado(td.estado)
@@ -583,14 +583,14 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         setProgress(-1)
         setError(
           (e && e.error && (e.error.message || e.error)) ||
-            'O YouTube recusou a subida (erro ' + ini.status + ').',
+            'A abertura da subida foi recusada (erro ' + ini.status + ').',
         )
         return true
       }
       const loc = ini.headers.get('location') || ini.headers.get('Location')
       if (!loc) {
         setProgress(-1)
-        setError('O YouTube não devolveu o endereço da subida. Tenta outra vez.')
+        setError('O endereço da subida não chegou. Tenta outra vez.')
         return true
       }
 
@@ -637,8 +637,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         setError(
           (corpoSub && corpoSub.error && (corpoSub.error.message || corpoSub.error)) ||
             (sub.status
-              ? 'O YouTube recusou o vídeo (erro ' + sub.status + '). Tenta outra vez.'
-              : 'A subida ao YouTube falhou — vê se tens internet e tenta outra vez.'),
+              ? 'A subida foi recusada (erro ' + sub.status + '). Tenta outra vez.'
+              : 'A subida falhou — vê se tens internet e tenta outra vez.'),
         )
         return true
       }
@@ -651,7 +651,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       }
       if (!videoId) {
         setProgress(-1)
-        setError('O YouTube não devolveu o id do vídeo. Espera uns segundos e tenta outra vez.')
+        setError('Não recebi o id do vídeo. Espera uns segundos e tenta outra vez.')
         return true
       }
 
@@ -659,7 +659,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       setProgress(96)
       setEnvio((s) => ({ ...s, fase: 'guardar' }))
       const pedirConfirm = () =>
-        fetch('/api/clips/youtube/confirm', {
+        fetch('/api/clips/pub/confirm', {
           method: 'POST',
           headers: { ...authHeaders(), 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -690,8 +690,21 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           await avisoQuota((cd && (cd.aviso || cd.error)) || 'Publicações esgotadas por hoje.', null)
         } else {
           const erro = (cd && cd.error) || 'Erro ao guardar o clip.'
-          // o vídeo JÁ foi para o YouTube — dizemos onde, para não ficar órfão
-          setError(erro + ' O vídeo ficou no YouTube: https://youtu.be/' + videoId)
+          // O vídeo já foi publicado mas o clip não se guardou: em vez de
+          // deixar órfão, tentamos apagar. Se não der, mostramos onde ficou.
+          let onde = ''
+          try {
+            const ap = await fetch('/api/clips/pub/apagar', {
+              method: 'POST',
+              headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+              body: JSON.stringify({ videoId, contador: td.contador }),
+            })
+            const ad = await ap.json().catch(() => null)
+            if (!(ad && ad.ok)) onde = ' O vídeo ficou publicado: https://youtu.be/' + videoId
+          } catch {
+            onde = ' O vídeo ficou publicado: https://youtu.be/' + videoId
+          }
+          setError(erro + onde)
         }
         return true
       }
@@ -704,7 +717,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       return true
     } catch {
       setProgress(-1)
-      setError('Não deu para publicar no YouTube — tenta outra vez.')
+      setError('Não deu para publicar — tenta outra vez.')
       return true
     }
   }
@@ -874,8 +887,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         )
       : 0
   const pctBar = file ? Math.min(100, (sizeMB / maxMB) * 100) : 0
-  const corBarra = over ? 'bg-red-500' : pctBar > 80 ? 'bg-orange-500' : 'bg-green-500'
-  const corTexto = over ? 'text-red-400' : pctBar > 80 ? 'text-orange-400' : 'text-green-400'
+  const corBarra = over ? 'bg-red-500' : pctBar > 80 ? 'bg-amber-500' : 'bg-green-500'
+  const corTexto = over ? 'text-red-400' : pctBar > 80 ? 'text-amber-400' : 'text-green-400'
 
   /* espera o vídeo chegar a um instante concreto */
   const seekTo = (v, t) =>
@@ -1217,7 +1230,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             </div>
             <button
               onClick={openForm}
-              className="flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-600"
+              className="flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-600"
             >
               <Plus className="h-4 w-4" /> Publicar clip
             </button>
@@ -1228,7 +1241,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             <div className="glass mb-6 rounded-2xl p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 font-bold text-white">
-                  <Film className="h-5 w-5 text-orange-400" /> Novo clip
+                  <Film className="h-5 w-5 text-violet-400" /> Novo clip
                 </h2>
                 <button
                   onClick={() => {
@@ -1245,13 +1258,11 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               {ytEstado && ytEstado.configurado ? (
                 ytEstado.disponivel ? (
                   <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-emerald-200">
-                    <Youtube className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                    <Zap className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                     <p>
                       <span className="font-black text-white">
-                        Publicação automática ligada.
-                      </span>{' '}
-                      O vídeo vai direto para o YouTube como <b>não listado</b> e o site guarda
-                      só o link — <b className="text-white">sem limite de MB</b>.
+                        Publicação de clip automática ativada.
+                      </span>
                       {typeof ytEstado.restantes === 'number' && ytEstado.restantes > 0 && (
                         <>
                           {' '}
@@ -1273,8 +1284,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   </div>
                 )
               ) : (
-                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-orange-500/25 bg-orange-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-orange-200">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-amber-200">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                   <p>
                     <span className="font-black text-white">
                       Máximo {maxMB} MB por vídeo.
@@ -1299,18 +1310,18 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   {/* jogo do clip — obrigatório */}
                   <label className="block">
                     <span className="mb-1 block text-xs font-bold uppercase text-gray-400">
-                      Jogo do clip <span className="text-orange-400">*</span>
+                      Jogo do clip <span className="text-violet-400">*</span>
                     </span>
                     <select
                       value={game}
                       onChange={(e) => setGame(e.target.value)}
                       className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none focus:bg-white/15"
                     >
-                      <option value="" className="bg-[#131316]">
+                      <option value="" className="bg-[#1b1630]">
                         Escolhe o jogo…
                       </option>
                       {CLIP_GAMES.map((g) => (
-                        <option key={g.id} value={g.id} className="bg-[#131316]">
+                        <option key={g.id} value={g.id} className="bg-[#1b1630]">
                           {g.label}
                         </option>
                       ))}
@@ -1322,7 +1333,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 {!preview ? (
                   <button
                     onClick={() => fileRef.current && fileRef.current.click()}
-                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-orange-500/60 hover:text-orange-400"
+                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-violet-500/60 hover:text-violet-400"
                   >
                     <Upload className="h-7 w-7" />
                     <span className="text-sm font-bold">Escolher vídeo</span>
@@ -1330,11 +1341,11 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       className={`rounded-full px-2.5 py-0.5 text-xs font-black ${
                         vaiParaYT
                           ? 'bg-emerald-500/15 text-emerald-300'
-                          : 'bg-white/10 text-orange-300'
+                          : 'bg-white/10 text-violet-300'
                       }`}
                     >
                       {vaiParaYT
-                        ? 'Vai para o YouTube · sem limite de MB'
+                        ? 'Publicação automática · sem limite de MB'
                         : `MP4, WebM ou MOV · até ${maxMB} MB`}
                     </span>
                   </button>
@@ -1350,7 +1361,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       className="max-h-72 w-full rounded-xl bg-black"
                     />
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
-                      <span className="truncate font-semibold text-orange-400">{file?.name}</span>
+                      <span className="truncate font-semibold text-violet-400">{file?.name}</span>
                       <div className="flex items-center gap-2">
                         {duration != null && <span>Duração {mmss(duration)}</span>}
                         <button
@@ -1376,7 +1387,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   <div className="rounded-xl border border-white/10 bg-black/40 p-3 sm:p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-gray-400">
-                        <Scissors className="h-4 w-4 text-orange-400" /> Peso e corte
+                        <Scissors className="h-4 w-4 text-violet-400" /> Peso e corte
                       </span>
                       <span className="text-xs font-bold">
                         {vaiParaYT ? (
@@ -1416,7 +1427,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                           onChange={(e) => setStartStr(e.target.value)}
                           placeholder="0:00"
                           disabled={!!trimming}
-                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-orange-300 outline-none focus:bg-white/15 disabled:opacity-50"
+                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-violet-300 outline-none focus:bg-white/15 disabled:opacity-50"
                         />
                         <input
                           type="range"
@@ -1430,7 +1441,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                             setStartStr(mmss(val))
                             if (val >= tB) setEndStr(mmss(Math.min(dur, val + 1)))
                           }}
-                          className="min-w-0 flex-1 accent-orange-500"
+                          className="min-w-0 flex-1 accent-violet-500"
                         />
                       </label>
                       <label className="flex items-center gap-2">
@@ -1442,7 +1453,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                           onChange={(e) => setEndStr(e.target.value)}
                           placeholder={duration != null ? mmss(duration) : 'fim'}
                           disabled={!!trimming}
-                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-orange-300 outline-none focus:bg-white/15 disabled:opacity-50"
+                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-violet-300 outline-none focus:bg-white/15 disabled:opacity-50"
                         />
                         <input
                           type="range"
@@ -1456,7 +1467,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                             if (val <= tA) setStartStr(mmss(Math.max(0, val - 1)))
                             setEndStr(mmss(val))
                           }}
-                          className="min-w-0 flex-1 accent-orange-500"
+                          className="min-w-0 flex-1 accent-violet-500"
                         />
                       </label>
                     </div>
@@ -1479,7 +1490,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       <button
                         onClick={cutVideo}
                         disabled={!!trimming || dur <= 0}
-                        className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-40"
+                        className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3.5 py-2 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-40"
                       >
                         <Scissors className="h-3.5 w-3.5" />
                         {trimming ? 'A cortar…' : over ? 'Cortar para caber' : 'Cortar vídeo'}
@@ -1494,7 +1505,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
                     {trimming && (
                       <div className="mt-3">
-                        <div className="mb-1 flex justify-between text-[11px] font-bold text-orange-300">
+                        <div className="mb-1 flex justify-between text-[11px] font-bold text-violet-300">
                           <span>
                             A cortar em tempo real…
                             {trimming.tentativa > 1 ? ` (tentativa ${trimming.tentativa}/4)` : ''}
@@ -1506,7 +1517,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-white/10">
                           <div
-                            className="h-full rounded-full bg-orange-500 transition-all"
+                            className="h-full rounded-full bg-violet-500 transition-all"
                             style={{
                               width: `${Math.min(100, (trimming.done / Math.max(0.01, trimming.total)) * 100)}%`,
                             }}
@@ -1625,7 +1636,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                     <button
                       onClick={submit}
                       disabled={progress >= 0}
-                      className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                      className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2 text-sm font-bold text-white hover:bg-violet-600 disabled:opacity-50"
                     >
                       {progress >= 0 ? (
                         <>
@@ -1651,7 +1662,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             />
             {jogosComClips.length > 0 && (
               <label className="ml-auto flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-gray-300 focus-within:bg-white/10">
-                <Gamepad2 className="h-4 w-4 text-orange-400" />
+                <Gamepad2 className="h-4 w-4 text-violet-400" />
                 <select
                   value={jogo}
                   onChange={(e) => setJogo(e.target.value)}
@@ -1679,7 +1690,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           {/* Lista */}
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-16 text-gray-400">
-              <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
               <span className="text-sm">A carregar clips…</span>
             </div>
           ) : filtered.length === 0 ? (
@@ -1733,7 +1744,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         <aside className="w-full shrink-0 lg:w-72">
           <div className="glass rounded-2xl p-4">
             <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-white">
-              <Users className="h-4 w-4 text-orange-400" /> Membros
+              <Users className="h-4 w-4 text-violet-400" /> Membros
               <span className="ml-auto rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-black text-gray-400">
                 {members.length}
               </span>
@@ -1753,7 +1764,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
             {membersLoading ? (
               <div className="flex justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
               </div>
             ) : shownMembers.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-5 text-center">
@@ -1763,7 +1774,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 {query.trim() && (
                   <button
                     onClick={() => setQuery('')}
-                    className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-orange-400"
+                    className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-violet-400"
                   >
                     <X className="h-3 w-3" /> Limpar pesquisa
                   </button>

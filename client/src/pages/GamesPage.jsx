@@ -152,7 +152,7 @@ function matchHasAll(m, keys) {
   return keys.every((k) => roster.some((p) => p.tracked === k))
 }
 
-function StatCard({ icon: Icon, label, value, color = 'text-orange-400', delay = 0 }) {
+function StatCard({ icon: Icon, label, value, color = 'text-violet-400', delay = 0 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -174,9 +174,27 @@ function WinRateBar({ value, delay = 0 }) {
         initial={{ width: 0 }}
         animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         transition={{ delay, duration: 0.8, ease: 'easeOut' }}
-        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-fuchsia-500"
+        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
       />
     </div>
+  )
+}
+
+/* ============================================================
+   Logótipo do jogo dentro do círculo — se a imagem não carregar,
+   fica o ícone de sempre (nunca um círculo vazio).
+   ============================================================ */
+function LogoJogo({ logo, Icon, cor }) {
+  const [falhou, setFalhou] = useState(false)
+  if (!logo || falhou) return <Icon className={`h-8 w-8 ${cor}`} />
+  return (
+    <img
+      src={logo}
+      alt=""
+      loading="lazy"
+      onError={() => setFalhou(true)}
+      className="h-full w-full rounded-full object-cover"
+    />
   )
 }
 
@@ -189,15 +207,17 @@ function GameChooser({ onPick }) {
       id: 'cs2',
       name: 'CS2',
       icon: Gamepad2,
-      color: 'text-orange-400',
-      ring: 'hover:border-orange-500',
-      bg: 'bg-orange-500/10',
+      logo: 'https://cdn.cloudflare.steamstatic.com/steam/apps/730/library_600x900.jpg',
+      color: 'text-violet-400',
+      ring: 'hover:border-violet-500',
+      bg: 'bg-violet-500/10',
       desc: 'Partidas do histórico da Steam — Braço Direito, Competitivo, CS:GO e Premier.',
     },
     {
       id: 'eafc',
       name: 'EA FC 26',
       icon: Trophy,
+      logo: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/2d96aa1b06e453cd62dae9029d412f19e61932c3/header.jpg?t=1789751159',
       color: 'text-yellow-400',
       ring: 'hover:border-yellow-500',
       bg: 'bg-yellow-500/10',
@@ -208,6 +228,7 @@ function GameChooser({ onPick }) {
       id: 'r6',
       name: 'Rainbow Six',
       icon: Crosshair,
+      logo: 'https://cdn.cloudflare.steamstatic.com/steam/apps/359550/library_600x900.jpg',
       color: 'text-red-400',
       ring: 'hover:border-red-500',
       bg: 'bg-red-500/10',
@@ -217,6 +238,7 @@ function GameChooser({ onPick }) {
       id: 'fortnite',
       name: 'Fortnite',
       icon: Flame,
+      logo: 'https://cdn2.unrealengine.com/en-fn-og-42-10-c1sx-egs-launcher-blade-1200x1600-1200x1600-6e74a083a5cd.jpg',
       color: 'text-purple-400',
       ring: 'hover:border-purple-500',
       bg: 'bg-purple-500/10',
@@ -227,6 +249,7 @@ function GameChooser({ onPick }) {
       id: 'bf',
       name: 'Battlefield',
       icon: Target,
+      logo: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/library_600x900.jpg',
       color: 'text-sky-400',
       ring: 'hover:border-sky-500',
       bg: 'bg-sky-500/10',
@@ -254,9 +277,9 @@ function GameChooser({ onPick }) {
               className={`glass group rounded-2xl border-2 border-transparent p-6 transition-all duration-300 hover:scale-[1.03] ${g.ring}`}
             >
               <div
-                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${g.bg}`}
+                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full ${g.bg}`}
               >
-                <Icon className={`h-8 w-8 ${g.color}`} />
+                <LogoJogo logo={g.logo} Icon={Icon} cor={g.color} />
               </div>
               <div className="mb-1 text-xl font-black text-white sm:text-2xl">{g.name}</div>
               <p className="text-sm leading-relaxed text-gray-400">{g.desc}</p>
@@ -277,15 +300,15 @@ function GameChooser({ onPick }) {
 /* ============================================================
    Jogos por implementar — o mesmo aviso para todos
    ============================================================ */
-function EmBreve({ nome, sub, Icon, cor, bg }) {
+function EmBreve({ nome, sub, Icon, cor, bg, logo }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="glass mx-auto max-w-xl rounded-2xl p-8 text-center"
     >
-      <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${bg}`}>
-        <Icon className={`h-8 w-8 ${cor}`} />
+      <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full ${bg}`}>
+        <LogoJogo logo={logo} Icon={Icon} cor={cor} />
       </div>
       <h3 className="mb-3 text-xl font-bold text-white sm:text-2xl">{nome}</h3>
       <p className="text-sm leading-relaxed text-gray-400 sm:text-base">
@@ -309,6 +332,7 @@ function EafcPage() {
       Icon={Trophy}
       cor="text-yellow-400"
       bg="bg-yellow-500/10"
+      logo="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/2d96aa1b06e453cd62dae9029d412f19e61932c3/header.jpg?t=1789751159"
     />
   )
 }
@@ -321,6 +345,7 @@ function FortnitePage() {
       Icon={Flame}
       cor="text-purple-400"
       bg="bg-purple-500/10"
+      logo="https://cdn2.unrealengine.com/en-fn-og-42-10-c1sx-egs-launcher-blade-1200x1600-1200x1600-6e74a083a5cd.jpg"
     />
   )
 }
@@ -333,6 +358,7 @@ function BattlefieldPage() {
       Icon={Target}
       cor="text-sky-400"
       bg="bg-sky-500/10"
+      logo="https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/library_600x900.jpg"
     />
   )
 }
@@ -371,7 +397,7 @@ function SummaryCards({ s, delayBase = 0 }) {
           icon={Flame}
           label="Taxa Vitória"
           value={`${s.winRate}%`}
-          color="text-orange-400"
+          color="text-violet-400"
           delay={delayBase + 0.2}
         />
         <StatCard
@@ -385,7 +411,7 @@ function SummaryCards({ s, delayBase = 0 }) {
       <div className="glass rounded-2xl p-4 sm:p-5">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-semibold text-gray-300">Taxa de vitória</span>
-          <span className="font-black text-orange-400">{s.winRate}%</span>
+          <span className="font-black text-violet-400">{s.winRate}%</span>
         </div>
         <WinRateBar value={s.winRate} delay={0.3} />
         <p className="mt-2 text-xs text-gray-500">
@@ -405,7 +431,7 @@ function PlayersTable({ players, stats, subtitle }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
-        <Users className="h-5 w-5 text-orange-400" />
+        <Users className="h-5 w-5 text-violet-400" />
         <h4 className="text-lg font-bold text-white sm:text-xl">
           Jogadores
           <span className="ml-2 text-sm font-normal text-gray-400">{subtitle}</span>
@@ -464,7 +490,7 @@ function PlayersTable({ players, stats, subtitle }) {
                       </span>
                     )}
                   </td>
-                  <td className="py-3 pr-3 text-right font-bold text-orange-400">
+                  <td className="py-3 pr-3 text-right font-bold text-violet-400">
                     {empty ? '—' : `${s.winRate}%`}
                   </td>
                   <td className="py-3 pr-3 text-right text-gray-300">
@@ -506,7 +532,7 @@ function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
     <div className="glass rounded-2xl p-4 sm:p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h4 className="flex items-center gap-2 text-base font-bold text-white sm:text-lg">
-          <Filter className="h-4 w-4 text-orange-400" />
+          <Filter className="h-4 w-4 text-violet-400" />
           Jogadores
         </h4>
         {selected.length > 0 && (
@@ -526,7 +552,7 @@ function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
           onClick={onClear}
           className={`rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
             selected.length === 0
-              ? 'bg-orange-500 text-white glow-orange'
+              ? 'bg-violet-500 text-white glow-violet'
               : 'bg-white/5 text-gray-300 hover:bg-white/10'
           }`}
         >
@@ -566,7 +592,7 @@ function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
         ) : (
           <>
             <span className="font-bold text-white">{label.join(' + ')}</span>{' '}
-            <span className="font-bold text-orange-400">juntos</span> — {fmt(shown)} de{' '}
+            <span className="font-bold text-violet-400">juntos</span> — {fmt(shown)} de{' '}
             {fmt(total)}
           </>
         )}
@@ -582,7 +608,7 @@ function ModeCards({ modes, perMode, onSelect }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
-        <BarChart3 className="h-5 w-5 text-orange-400" />
+        <BarChart3 className="h-5 w-5 text-violet-400" />
         <h4 className="text-lg font-bold text-white sm:text-xl">Resumo por modo</h4>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -602,7 +628,7 @@ function ModeCards({ modes, perMode, onSelect }) {
                 <span
                   className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black ${
                     m.game === 'CS2'
-                      ? 'bg-orange-500/20 text-orange-400'
+                      ? 'bg-violet-500/20 text-violet-400'
                       : 'bg-blue-500/20 text-blue-400'
                   }`}
                 >
@@ -616,7 +642,7 @@ function ModeCards({ modes, perMode, onSelect }) {
                 <span className="font-bold text-green-400">{s.wins}V</span>
                 <span className="font-bold text-yellow-400">{s.draws}E</span>
                 <span className="font-bold text-red-400">{s.losses}D</span>
-                <span className="ml-auto font-black text-orange-400">{s.winRate}%</span>
+                <span className="ml-auto font-black text-violet-400">{s.winRate}%</span>
               </div>
               <WinRateBar value={s.winRate} delay={0.1 * i} />
             </motion.button>
@@ -635,14 +661,14 @@ function TeamBoard({ players, score, title, isOurs }) {
   return (
     <div
       className={`rounded-xl p-3 ${
-        isOurs ? 'bg-orange-500/10 ring-1 ring-orange-500/30' : 'bg-black/30'
+        isOurs ? 'bg-violet-500/10 ring-1 ring-violet-500/30' : 'bg-black/30'
       }`}
     >
       <div className="mb-2 flex items-center justify-between px-1">
-        <span className={`text-xs font-black uppercase ${isOurs ? 'text-orange-400' : 'text-gray-500'}`}>
+        <span className={`text-xs font-black uppercase ${isOurs ? 'text-violet-400' : 'text-gray-500'}`}>
           {title}
         </span>
-        <span className={`text-lg font-black ${isOurs ? 'text-orange-400' : 'text-gray-400'}`}>
+        <span className={`text-lg font-black ${isOurs ? 'text-violet-400' : 'text-gray-400'}`}>
           {score}
         </span>
       </div>
@@ -762,7 +788,7 @@ function MatchRow({ m, open, onToggle }) {
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
               title="Ver demo"
-              className="text-gray-500 transition-colors hover:text-orange-400"
+              className="text-gray-500 transition-colors hover:text-violet-400"
             >
               <Link className="h-4 w-4" />
             </a>
@@ -908,7 +934,7 @@ function Cs2Page() {
   if (state.loading) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
         <p className="text-sm text-gray-400">A analisar o histórico das partidas...</p>
       </div>
     )
@@ -923,8 +949,8 @@ function Cs2Page() {
         className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
       >
         <div className="mb-5 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
-            <KeyRound className="h-8 w-8 text-orange-500" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-500/10">
+            <KeyRound className="h-8 w-8 text-violet-500" />
           </div>
           <h3 className="mb-2 text-xl font-bold text-white sm:text-2xl">
             Faltam ficheiros do histórico
@@ -938,20 +964,20 @@ function Cs2Page() {
           {d.missing.map((f) => (
             <li
               key={f}
-              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-orange-400"
+              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-violet-400"
             >
               {f}
             </li>
           ))}
         </ul>
         <p className="mt-4 text-center text-xs text-gray-500">
-          Depois reinicia com o <code className="text-orange-500">INICIAR.bat</code> e os dados
+          Depois reinicia com o <code className="text-violet-500">INICIAR.bat</code> e os dados
           aparecem aqui.
         </p>
         <div className="mt-5 text-center">
           <button
             onClick={load}
-            className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+            className="rounded-full bg-violet-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-violet-600"
           >
             Tentar novamente
           </button>
@@ -1022,7 +1048,7 @@ function Cs2Page() {
         <Info className="h-4 w-4 shrink-0 text-blue-400" />
         <p>
           Dados da conta do{' '}
-          <span className="font-bold text-orange-400">xalanix</span> — ele aparece sempre.
+          <span className="font-bold text-violet-400">xalanix</span> — ele aparece sempre.
         </p>
       </div>
 
@@ -1037,7 +1063,7 @@ function Cs2Page() {
               <span
                 className={`rounded px-1.5 py-0.5 text-[10px] font-black ${
                   mode.game === 'CS2'
-                    ? 'bg-orange-500/20 text-orange-400'
+                    ? 'bg-violet-500/20 text-violet-400'
                     : 'bg-blue-500/20 text-blue-400'
                 }`}
               >
@@ -1083,7 +1109,7 @@ function Cs2Page() {
                 key={s.id}
                 onClick={() => setSection(s.id)}
                 className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-5 ${
-                  on ? 'bg-orange-500 text-white glow-orange' : 'text-gray-300 hover:text-white'
+                  on ? 'bg-violet-500 text-white glow-violet' : 'text-gray-300 hover:text-white'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -1118,7 +1144,7 @@ function Cs2Page() {
             }}
             className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
               view === 'global'
-                ? 'bg-orange-500 text-white glow-orange scale-105'
+                ? 'bg-violet-500 text-white glow-violet scale-105'
                 : 'glass text-gray-300 hover:text-white'
             }`}
           >
@@ -1135,7 +1161,7 @@ function Cs2Page() {
               }}
               className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 sm:px-6 ${
                 view === m.id
-                  ? 'bg-orange-500 text-white glow-orange scale-105'
+                  ? 'bg-violet-500 text-white glow-violet scale-105'
                   : 'glass text-gray-300 hover:text-white'
               }`}
             >
@@ -1197,7 +1223,7 @@ function Cs2Page() {
             <div className="glass rounded-2xl p-5 sm:p-6">
               <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
                 <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
-                  <Skull className="h-5 w-5 text-orange-400" />
+                  <Skull className="h-5 w-5 text-violet-400" />
                   Top 1 Kill — a melhor partida de cada jogador
                 </h4>
                 <span className="text-xs text-gray-500">todas as partidas · todos os modos</span>
@@ -1245,14 +1271,14 @@ function Cs2Page() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
-                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-orange-500/40 sm:gap-4 sm:p-4"
+                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-violet-500/40 sm:gap-4 sm:p-4"
                       >
                         <span
                           className={`w-7 shrink-0 text-center text-lg font-black sm:text-xl ${place}`}
                         >
                           {i + 1}
                         </span>
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-sm font-black text-orange-400 ring-1 ring-orange-500/30 sm:h-12 sm:w-12 sm:text-base">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-sm font-black text-violet-400 ring-1 ring-violet-500/30 sm:h-12 sm:w-12 sm:text-base">
                           {initials}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1271,7 +1297,7 @@ function Cs2Page() {
                           </div>
                         </div>
                         <div className="shrink-0 text-right">
-                          <div className="text-2xl font-black text-orange-400 sm:text-3xl">
+                          <div className="text-2xl font-black text-violet-400 sm:text-3xl">
                             {t.kills}
                           </div>
                           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
@@ -1291,7 +1317,7 @@ function Cs2Page() {
             <div className="glass rounded-2xl p-5 sm:p-6">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <h4 className="flex items-center gap-3 text-lg font-bold text-white sm:text-xl">
-                  <Swords className="h-5 w-5 text-orange-400" />
+                  <Swords className="h-5 w-5 text-violet-400" />
                   {mode ? `Partidas — ${mode.label}` : 'Todas as partidas'}
                 </h4>
                 <span className="text-xs text-gray-500">mais recentes primeiro</span>
@@ -1318,7 +1344,7 @@ function Cs2Page() {
                     <div className="mt-4 text-center">
                       <button
                         onClick={() => setShowAll(true)}
-                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-orange-500"
+                        className="rounded-full bg-white/10 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500"
                       >
                         Mostrar todas ({fmt(matches.length)})
                       </button>
@@ -1342,7 +1368,7 @@ function Cs2Page() {
       </AnimatePresence>
 
       <p className="text-center text-xs text-gray-500">
-        <Star className="mb-1 mr-1 inline h-3 w-3 text-orange-400" />
+        <Star className="mb-1 mr-1 inline h-3 w-3 text-violet-400" />
         Dados lidos das páginas do histórico da Steam guardadas no projeto
         {d.updatedAt && (
           <>
@@ -1428,7 +1454,7 @@ function R6Squad({ players, maxRp = {} }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
-        <Users className="h-5 w-5 text-orange-400" />
+        <Users className="h-5 w-5 text-violet-400" />
         <h4 className="text-lg font-bold text-white sm:text-xl">Esquadrão</h4>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1487,7 +1513,7 @@ function R6Squad({ players, maxRp = {} }) {
                   <div className="text-gray-500">Partidas</div>
                 </div>
                 <div>
-                  <div className="font-black text-orange-400">{wr}%</div>
+                  <div className="font-black text-violet-400">{wr}%</div>
                   <div className="text-gray-500">Vitórias</div>
                 </div>
                 <div>
@@ -1515,7 +1541,7 @@ function R6Squad({ players, maxRp = {} }) {
                 {rank ? rank.name : 'Sem rank'}
                 {rank && rank.season ? ` · ${rank.season}` : ''}
               </div>
-              <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-black text-orange-300">
+              <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-black text-violet-300">
                 {(() => {
                   // rank máximo: o melhor que a conta já teve (tracker)
                   const max = maxRankDe(p, maxRp[p.key])
@@ -1609,7 +1635,7 @@ function R6Page() {
   if (state.loading) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
         <p className="text-sm text-gray-400">A ler os dados do tracker.gg...</p>
       </div>
     )
@@ -1624,8 +1650,8 @@ function R6Page() {
         className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
       >
         <div className="mb-5 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
-            <KeyRound className="h-8 w-8 text-orange-500" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-500/10">
+            <KeyRound className="h-8 w-8 text-violet-500" />
           </div>
           <h2 className="mb-2 text-xl font-black text-white">Falta o snapshot do tracker.gg</h2>
           <p className="text-sm text-gray-400">
@@ -1636,20 +1662,20 @@ function R6Page() {
           {d.missing.map((f) => (
             <li
               key={f}
-              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-orange-400"
+              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-violet-400"
             >
               {f}
             </li>
           ))}
         </ul>
         <p className="mt-4 text-center text-xs text-gray-500">
-          Depois reinicia com o <code className="text-orange-500">INICIAR.bat</code> e os dados
+          Depois reinicia com o <code className="text-violet-500">INICIAR.bat</code> e os dados
           aparecem aqui.
         </p>
         <div className="mt-5 text-center">
           <button
             onClick={load}
-            className="rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+            className="rounded-full bg-violet-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-violet-600"
           >
             Tentar novamente
           </button>
@@ -1687,7 +1713,7 @@ function R6Page() {
       <R6Squad players={d.players || []} maxRp={maxRp} />
 
       <p className="text-center text-xs text-gray-500">
-        <Star className="mr-1 inline h-3 w-3 text-orange-400" />
+        <Star className="mr-1 inline h-3 w-3 text-violet-400" />
         Dados lidos no snapshot do tracker.gg guardado no projeto
         {d.updatedAt
           ? ' · atualizado a ' +

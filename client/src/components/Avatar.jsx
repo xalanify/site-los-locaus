@@ -14,10 +14,10 @@ export default function Avatar({ isAdmin, onClick }) {
     >
       <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
         isAdmin 
-          ? 'bg-orange-500 glow-orange' 
-          : 'glass hover:bg-orange-500/20'
+          ? 'bg-violet-500 glow-violet' 
+          : 'glass hover:bg-violet-500/20'
       }`}>
-        <Shield className={`w-8 h-8 ${isAdmin ? 'text-white' : 'text-gray-400 group-hover:text-orange-500'}`} />
+        <Shield className={`w-8 h-8 ${isAdmin ? 'text-white' : 'text-gray-400 group-hover:text-violet-500'}`} />
       </div>
       
       {/* Tooltip */}

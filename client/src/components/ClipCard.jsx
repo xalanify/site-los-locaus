@@ -13,6 +13,11 @@ import {
   Pencil,
   Loader2,
   Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import Estado from './Estado'
@@ -38,16 +43,289 @@ const fmtComment = fmtDate
 const PAGE_COMENT = 12
 
 /* ---------------------------------------------------------------
-   Clip publicado no YouTube (unlisted) — o site mostra só a
-   capa com o botão de play; o iframe só carrega quando alguém
-   dá play, por isso a grelha continua leve e não dá a bandeira
-   de que é um vídeo do YouTube antes de tocar.
+   Player próprio.
+
+   O vídeo vive fora do site, mas a cara é toda nossa: mostra-se a
+   capa com o nosso botão de play e, depois, os NOSSOS controlos
+   (play/pause, barra de progresso, som e ecrã inteiro). O leitor
+   remoto vem sem controlos, sem logotipo e sem canal — ninguém vê
+   de quem é a plataforma só de olhar para o vídeo.
+
+   A barra só aparece ao passar o rato (e sempre quando está
+   pausado), por isso o clip fica limpo.
    --------------------------------------------------------------- */
-function VideoYT({ id, titulo, aoDarPlay }) {
+let apiPronta = null
+function carregarApi() {
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT)
+  if (apiPronta) return apiPronta
+  apiPronta = new Promise((resolve, reject) => {
+    const anterior = window.onYouTubeIframeAPIReady
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof anterior === 'function') anterior()
+      resolve(window.YT)
+    }
+    const s = document.createElement('script')
+    s.src = 'https://www.youtube.com/iframe_api'
+    s.async = true
+    s.onerror = () => reject(new Error('sem api'))
+    document.head.appendChild(s)
+    // se em 8 s não der nada, quem chama cai no modo simples
+    setTimeout(() => {
+      if (window.YT && window.YT.Player) resolve(window.YT)
+      else reject(new Error('api lenta'))
+    }, 8000)
+  })
+  return apiPronta
+}
+
+function VideoRemoto({ id, titulo, aoDarPlay }) {
   const [aberto, setAberto] = useState(false)
   const [erroCapa, setErroCapa] = useState(false)
+  const [semApi, setSemApi] = useState(false)
+  const [pronto, setPronto] = useState(false)
+  const [tocando, setTocando] = useState(false)
+  const [mudo, setMudo] = useState(false)
+  const [tempo, setTempo] = useState(0)
+  const [dur, setDur] = useState(0)
+  const [cheio, setCheio] = useState(false)
+  const moldura = useRef(null)
+  const caixa = useRef(null)
+  const api = useRef(null)
 
-  if (aberto) {
+  const chamou = (fn, args) => {
+    const p = api.current
+    try {
+      if (p && typeof p[fn] === 'function') p[fn].apply(p, args || [])
+    } catch {
+      /* player ainda não pronto */
+    }
+  }
+
+  /* criar / limpar o leitor quando alguém dá play */
+  useEffect(() => {
+    if (!aberto || semApi) return
+    let vivo = true
+    carregarApi()
+      .then((YT) => {
+        if (!vivo || !caixa.current || !YT || !YT.Player) return
+        try {
+          api.current = new YT.Player(caixa.current, {
+            videoId: id,
+            host: 'https://www.youtube-nocookie.com',
+            playerVars: {
+              autoplay: 1,
+              controls: 0, // sem barra deles
+              modestbranding: 1, // sem logotipo
+              rel: 0,
+              showinfo: 0,
+              iv_load_policy: 3,
+              playsinline: 1,
+              fs: 0, // sem botão deles de ecrã inteiro
+              disablekb: 1,
+              enablejsapi: 1,
+              origin: window.location.origin,
+            },
+            events: {
+              onReady: (e) => {
+                if (!vivo) return
+                setPronto(true)
+                setTocando(true)
+                try {
+                  e.target.setVolume(100)
+                  e.target.unMute && e.target.unMute()
+                  setDur(e.target.getDuration() || 0)
+                } catch {}
+                const ifr = e.target.getIframe && e.target.getIframe()
+                if (ifr) ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0'
+              },
+              onStateChange: (e) => {
+                if (!vivo) return
+                setTocando(e.data === 1)
+                try {
+                  const d = e.target.getDuration()
+                  if (d) setDur(d)
+                } catch {}
+              },
+            },
+          })
+        } catch {
+          setSemApi(true)
+        }
+      })
+      .catch(() => {
+        if (vivo) setSemApi(true)
+      })
+
+    const t = setInterval(() => {
+      try {
+        const p = api.current
+        if (p && typeof p.getCurrentTime === 'function') {
+          setTempo(p.getCurrentTime() || 0)
+          const d = p.getDuration && p.getDuration()
+          if (d) setDur(d)
+        }
+      } catch {}
+    }, 400)
+
+    return () => {
+      vivo = false
+      clearInterval(t)
+      try {
+        api.current && typeof api.current.destroy === 'function' && api.current.destroy()
+      } catch {}
+      api.current = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aberto, semApi, id])
+
+  /* ecrã inteiro (nosso botão, não o deles) */
+  useEffect(() => {
+    const f = () => setCheio(!!(document.fullscreenElement || document.webkitFullscreenElement))
+    document.addEventListener('fullscreenchange', f)
+    document.addEventListener('webkitfullscreenchange', f)
+    return () => {
+      document.removeEventListener('fullscreenchange', f)
+      document.removeEventListener('webkitfullscreenchange', f)
+    }
+  }, [])
+
+  const alternarEcrã = () => {
+    const el = moldura.current
+    if (!el) return
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const sai = document.exitFullscreen || document.webkitExitFullscreen
+      try {
+        sai && sai.call(document)
+      } catch {}
+      return
+    }
+    const entra = el.requestFullscreen || el.webkitRequestFullscreen
+    try {
+      entra && entra.call(el)
+    } catch {}
+  }
+
+  const alternarSom = () => {
+    const novo = !mudo
+    setMudo(novo)
+    chamou(novo ? 'mute' : 'unMute')
+  }
+
+  const alternar = () => {
+    const novo = !tocando
+    setTocando(novo)
+    chamou(novo ? 'playVideo' : 'pauseVideo')
+  }
+
+  const procurar = (seg) => {
+    setTempo(seg)
+    chamou('seekTo', [seg, true])
+  }
+
+  if (aberto && !semApi) {
+    const pct = dur > 0 ? Math.min(100, (tempo / dur) * 100) : 0
+    return (
+      <div
+        ref={moldura}
+        className="group/vid relative mt-3 aspect-video w-full overflow-hidden rounded-xl bg-black"
+      >
+        <div ref={caixa} className="absolute inset-0 h-full w-full" />
+
+        {!pronto && (
+          <span className="pointer-events-none absolute inset-0 grid place-items-center">
+            <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+          </span>
+        )}
+
+        {/* sem som: aviso silencioso no canto */}
+        {mudo && (
+          <span className="pointer-events-none absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-gray-300">
+            <VolumeX className="h-4 w-4" />
+          </span>
+        )}
+
+        {/* clica no vídeo -> pausa / continua */}
+        <button
+          type="button"
+          onClick={alternar}
+          className="absolute inset-0 z-[5]"
+          aria-label={tocando ? 'Pausar' : 'Reproduzir'}
+        />
+
+        {/* OS NOSSOS controlos — só aparece ao passar o rato
+            (ou sempre que o vídeo está pausado) */}
+        <div
+          className={
+            'pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/55 to-transparent px-3 pb-2 pt-10 transition-opacity duration-200 group-focus-within/vid:opacity-100 group-hover/vid:opacity-100 ' +
+            (tocando ? 'opacity-0' : 'opacity-100')
+          }
+        >
+          <div className="pointer-events-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={alternar}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+              aria-label={tocando ? 'Pausar' : 'Reproduzir'}
+            >
+              {tocando ? (
+                <Pause className="h-4 w-4" fill="currentColor" />
+              ) : (
+                <Play className="ml-0.5 h-4 w-4" fill="currentColor" />
+              )}
+            </button>
+
+            <span className="shrink-0 text-[11px] font-bold tabular-nums text-gray-300">
+              {mmss(Math.floor(tempo))}
+            </span>
+
+            <div className="relative min-w-0 flex-1">
+              <span className="pointer-events-none absolute left-0 top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-white/20" />
+              <span
+                className="pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-violet-500"
+                style={{ width: pct + '%' }}
+              />
+              <input
+                type="range"
+                min={0}
+                max={dur > 0 ? dur : 1}
+                step={0.1}
+                value={Math.min(tempo, dur > 0 ? dur : 1)}
+                onChange={(e) => procurar(Number(e.target.value))}
+                aria-label="Barra de progresso"
+                className="relative h-1.5 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-300 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-violet-300"
+              />
+            </div>
+
+            <span className="shrink-0 text-[11px] font-bold tabular-nums text-gray-500">
+              {mmss(Math.floor(dur || 0))}
+            </span>
+
+            <button
+              type="button"
+              onClick={alternarSom}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+              aria-label={mudo ? 'Ligar som' : 'Desligar som'}
+            >
+              {mudo ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={alternarEcrã}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+              aria-label={cheio ? 'Sair do ecrã inteiro' : 'Ecrã inteiro'}
+            >
+              {cheio ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  /* sem API (rede/csp): o vídeo toca com os controlos do próprio
+     leitor — é a exceção, não a regra. */
+  if (aberto && semApi) {
     return (
       <div className="mt-3 aspect-video w-full overflow-hidden rounded-xl bg-black">
         <iframe
@@ -55,7 +333,6 @@ function VideoYT({ id, titulo, aoDarPlay }) {
           src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
           title={titulo || 'Clip'}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-          allowFullScreen
         />
       </div>
     )
@@ -82,7 +359,7 @@ function VideoYT({ id, titulo, aoDarPlay }) {
         className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
       />
       <span className="absolute inset-0 grid place-items-center bg-black/25 transition-colors group-hover:bg-black/45">
-        <span className="grid h-14 w-14 place-items-center rounded-full bg-orange-500 shadow-[0_8px_30px_rgba(249,115,22,0.5)] transition-transform group-hover:scale-110">
+        <span className="grid h-14 w-14 place-items-center rounded-full bg-violet-600 shadow-[0_8px_30px_rgba(139,92,246,0.55)] transition-transform group-hover:scale-110">
           <Play className="ml-0.5 h-6 w-6 text-white" fill="currentColor" />
         </span>
       </span>
@@ -214,11 +491,8 @@ export default function ClipCard({
 
   /* ---- transferir ---- */
   const download = async () => {
-    // Clip no YouTube: não há ficheiro nosso — abre o vídeo original.
-    if (c.youtube || !c.url) {
-      if (c.youtube) window.open('https://www.youtube.com/watch?v=' + c.youtube, '_blank', 'noopener')
-      return
-    }
+    // Sem ficheiro nosso (vídeo remoto): não há nada para transferir.
+    if (c.remoto || !c.url) return
     try {
       const res = await fetch(`/api/clips/${c.id}/download`, { headers: authHeaders() })
       if (!res.ok) {
@@ -396,7 +670,16 @@ export default function ClipCard({
         method: 'DELETE',
         headers: authHeaders(),
       })
-      if (res.ok && onDelete) onDelete(c.id)
+      if (!res.ok) return
+      const d = await res.json().catch(() => ({}))
+      // O clip sai do site e o vídeo remoto também — se o remoto não
+      // sair, dizemos (não pode ficar sem avisar).
+      if (d && d.remoto === false) {
+        window.alert(
+          'Clip apagado do site. O vídeo remoto ficou por apagar — falta de autorização (renova a autorização do servidor).',
+        )
+      }
+      if (onDelete) onDelete(c.id)
     } catch {
       /* sem rede */
     }
@@ -408,7 +691,7 @@ export default function ClipCard({
   const actionCls = (active) =>
     `flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-colors ${
       active
-        ? 'bg-orange-500/20 text-orange-400'
+        ? 'bg-violet-500/20 text-violet-400'
         : 'text-gray-400 hover:bg-white/10 hover:text-white'
     }`
 
@@ -420,7 +703,7 @@ export default function ClipCard({
           <div className="flex flex-wrap items-center gap-x-2">
             <button
               onClick={() => onProfile && onProfile(cm.author)}
-              className="text-xs font-bold text-orange-400 hover:underline"
+              className="text-xs font-bold text-violet-400 hover:underline"
             >
               {cm.author}
             </button>
@@ -446,7 +729,7 @@ export default function ClipCard({
               setReplyTo(replyTo === cm.id ? null : cm.id)
             }}
             title="Responder"
-            className="rounded p-1 text-gray-500 hover:bg-white/10 hover:text-orange-400"
+            className="rounded p-1 text-gray-500 hover:bg-white/10 hover:text-violet-400"
           >
             <Send className="h-3.5 w-3.5" />
           </button>
@@ -474,12 +757,12 @@ export default function ClipCard({
           className="group flex items-center gap-2.5"
         >
           <AvatarImg name={c.author} src={c.author_avatar} className="h-9 w-9" />
-          <span className="text-sm font-bold text-white group-hover:text-orange-400">
+          <span className="text-sm font-bold text-white group-hover:text-violet-400">
             {c.author}
           </span>
         </button>
         {c.game && (
-          <span className="flex items-center gap-1.5 rounded-full bg-orange-500/15 px-2.5 py-1 text-[11px] font-bold text-orange-300 ring-1 ring-orange-500/30">
+          <span className="flex items-center gap-1.5 rounded-full bg-violet-500/15 px-2.5 py-1 text-[11px] font-bold text-violet-300 ring-1 ring-violet-500/30">
             <Gamepad2 className="h-3 w-3" /> {gameLabel(c.game)}
           </span>
         )}
@@ -495,7 +778,7 @@ export default function ClipCard({
               <button
                 onClick={abrirEdicao}
                 title="Editar clip"
-                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-orange-500/15 hover:text-orange-400"
+                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-violet-500/15 hover:text-violet-400"
               >
                 <Pencil className="h-4 w-4" />
               </button>
@@ -520,14 +803,14 @@ export default function ClipCard({
               onChange={(e) => setNovoTitulo(e.target.value)}
               maxLength={100}
               placeholder="Título do clip"
-              className="w-full rounded-lg bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+              className="w-full rounded-lg bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
             />
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <select
                 value={novoJogo}
                 onChange={(e) => setNovoJogo(e.target.value)}
                 title="Jogo do clip"
-                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
               >
                 {!novoJogo && (
                   <option value="" className="bg-neutral-900">
@@ -544,7 +827,7 @@ export default function ClipCard({
                 value={novaVis}
                 onChange={(e) => setNovaVis(e.target.value)}
                 title="Visibilidade do clip"
-                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-orange-500/50"
+                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
               >
                 <option value="public" className="bg-neutral-900">
                   Público — vê toda a gente
@@ -558,7 +841,7 @@ export default function ClipCard({
               <button
                 onClick={guardarEdicao}
                 disabled={salvando}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-orange-500 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-violet-500 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-50"
               >
                 {salvando ? (
                   <>
@@ -581,9 +864,9 @@ export default function ClipCard({
         ) : (
           <h3 className="font-bold text-white">{c.title}</h3>
         )}
-        {c.youtube ? (
-          <VideoYT
-            id={c.youtube}
+        {c.remoto ? (
+          <VideoRemoto
+            id={c.remoto}
             titulo={c.title}
             aoDarPlay={() => registarVista(c.id, setC)}
           />
@@ -624,7 +907,7 @@ export default function ClipCard({
           {c.views || 0}
         </span>
         <button onClick={like} className={actionCls(c.liked)} title="Gosto">
-          <Heart className={`h-4 w-4 ${c.liked ? 'fill-orange-400 text-orange-400' : ''}`} />
+          <Heart className={`h-4 w-4 ${c.liked ? 'fill-violet-400 text-violet-400' : ''}`} />
           {c.likes || 0}
         </button>
         <button onClick={toggleComments} className={actionCls(showComments)} title="Comentários">
@@ -635,10 +918,12 @@ export default function ClipCard({
           <Bookmark className={`h-4 w-4 ${c.saved ? 'fill-yellow-400 text-yellow-400' : ''}`} />
           {c.saves || 0}
         </button>
-        <button onClick={download} className={actionCls(false)} title="Transferir">
-          <Download className="h-4 w-4" />
-          {c.downloads || 0}
-        </button>
+        {!c.remoto && (
+          <button onClick={download} className={actionCls(false)} title="Transferir">
+            <Download className="h-4 w-4" />
+            {c.downloads || 0}
+          </button>
+        )}
       </div>
 
       {/* Comentários */}
@@ -665,7 +950,7 @@ export default function ClipCard({
           )}
 
           {replyTo && (
-            <div className="mt-3 flex items-center justify-between rounded-lg bg-orange-500/10 px-3 py-1.5 text-xs text-orange-300">
+            <div className="mt-3 flex items-center justify-between rounded-lg bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300">
               A responder a {comments.find((x) => x.id === replyTo)?.author}
               <button onClick={() => setReplyTo(null)} className="hover:text-white">
                 <X className="h-3.5 w-3.5" />
@@ -686,7 +971,7 @@ export default function ClipCard({
               <button
                 onClick={send}
                 disabled={busy || !text.trim()}
-                className="rounded-full bg-orange-500 p-2.5 text-white transition-colors hover:bg-orange-600 disabled:opacity-40"
+                className="rounded-full bg-violet-500 p-2.5 text-white transition-colors hover:bg-violet-600 disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -694,7 +979,7 @@ export default function ClipCard({
           ) : (
             <button
               onClick={() => onRequestAuth && onRequestAuth()}
-              className="mt-3 w-full rounded-xl border border-dashed border-white/20 py-2.5 text-sm font-bold text-gray-400 transition-colors hover:border-orange-500/50 hover:text-orange-400"
+              className="mt-3 w-full rounded-xl border border-dashed border-white/20 py-2.5 text-sm font-bold text-gray-400 transition-colors hover:border-violet-500/50 hover:text-violet-400"
             >
               Entra na conta para comentar
             </button>

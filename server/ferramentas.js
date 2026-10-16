@@ -577,37 +577,42 @@ Write-Output 'Feito.'`,
 Write-Output 'Feito.'`,
   },
 
-  /* ---------------- Segurança (v0.1 — em desenvolvimento) ---------------- */
+  /* ---------------- Scan vírus (v0.2) ---------------- */
   {
     id: 'virus-scan-disco',
-    cat: 'Segurança',
-    nome: 'Procurar vírus num disco',
-    desc: 'Escolhe o disco e ele procura sinais suspeitos: entradas de arranque e tarefas apontando para pastas temporárias, processos a correr de lá e executáveis recentes. Rápido, só leitura.',
+    cat: 'Scan vírus',
+    nome: 'Scan vírus',
+    desc: 'Varredura rápida num disco: analisa sinais de trojan, malware e sequestro (arranque, tarefas, processos, extensões duplas, executáveis sem assinatura) e depois corre a verificação rápida do Windows Defender. Acaba com um veredito claro: LIMPO ou o que encontrou.',
     perigo: 'baixo',
-    tempo: 300000,
+    tempo: 600000,
     disco: true,
-    desenvolvimento: '0.1',
+    desenvolvimento: '0.2',
     cmd: `$disco = '{{DISCO}}'
 if ($disco -notmatch '^[A-Za-z]:$') { Write-Output 'Disco invalido.'; exit 1 }
-Write-Output "=== Procura de virus em $disco (v0.1 - em desenvolvimento) ==="
-Write-Output 'Analise rapida de heuristicas. NAO substitui o Windows Defender.'
+Write-Output "=== SCAN VIRUS em $disco (v0.2) ==="
+Write-Output 'Varredura rapida: heuristica de trojan/malware + verificacao rapida do Windows Defender.'
 Write-Output ''
 $suspeitos = @()
-$marcar = { param($t, $d) $script:suspeitos += [PSCustomObject]@{ tipo = $t; detalhe = $d } }
+$criticos = @()
+$marcar = { param($t, $d, $crit) if ($crit) { $script:criticos += [PSCustomObject]@{ tipo = $t; detalhe = $d } } else { $script:suspeitos += [PSCustomObject]@{ tipo = $t; detalhe = $d } } }
 
-# 1) Windows Defender: esta ligado e atualizado?
+Write-Output '--- 1) Protecao e ameacas do Defender ---'
 try {
   $mp = Get-MpComputerStatus -ErrorAction Stop
-  if (-not $mp.AntivirusEnabled) { & $marcar 'Defender' 'Windows Defender DESLIGADO neste PC.' }
-  elseif (-not $mp.RealTimeProtectionEnabled) { & $marcar 'Defender' 'Protecao em tempo real DESLIGADA.' }
+  if (-not $mp.AntivirusEnabled) { & $marcar 'Defender' 'Windows Defender DESLIGADO neste PC.' $true }
+  elseif (-not $mp.RealTimeProtectionEnabled) { & $marcar 'Defender' 'Protecao em tempo real DESLIGADA.' $true }
   $dias = -1
   if ($mp.AntivirusSignatureLastUpdated) { $dias = ((Get-Date) - $mp.AntivirusSignatureLastUpdated).Days }
-  if ($dias -gt 7) { & $marcar 'Defender' "Assinaturas com $dias dias (desatualizadas)." }
-  Write-Output "Defender: $(if ($mp.AntivirusEnabled) { 'ativo' } else { 'DESLIGADO' })$(if ($dias -ge 0) { ' | assinaturas ha ' + $dias + ' dia(s)' })"
-} catch { Write-Output 'Defender: nao foi possivel ler o estado.' }
-Write-Output ''
+  if ($dias -gt 7) { & $marcar 'Defender' "Assinaturas com $dias dias (desatualizadas)." $false }
+  Write-Output ('  Protecao: ' + $(if ($mp.AntivirusEnabled) { 'ativo' } else { 'DESLIGADO' }) + $(if ($dias -ge 0) { ' | assinaturas ha ' + $dias + ' dia(s)' }))
+} catch { Write-Output '  Protecao: nao foi possivel ler o estado.' }
+$ameacas = @()
+try { $ameacas = @(Get-MpThreat -ErrorAction Stop) } catch {}
+foreach ($a in $ameacas) { try { if ($a.ThreatName) { & $marcar 'Ameaca detetada' ([string]$a.ThreatName) $true } } catch {} }
+Write-Output ('  Ameacas que o Defender ja detetou: ' + $ameacas.Count)
 
-# 2) Entradas de arranque (Run/RunOnce) do disco escolhido
+Write-Output ''
+Write-Output '--- 2) Entradas de arranque ---'
 $chaves = @('HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce','HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run','HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce')
 foreach ($k in $chaves) {
   try {
@@ -617,66 +622,131 @@ foreach ($k in $chaves) {
       if (-not $v) { continue }
       $alvo = if ($v -match '^\\s*\\x22([^\\x22]+)') { $Matches[1] } else { ($v -split '\\s+')[0] }
       if (-not ($alvo -like "$disco\\*")) { continue }
-      if ($alvo -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Arranque' "$n -> $alvo" }
-      elseif (-not (Test-Path -LiteralPath $alvo)) { & $marcar 'Arranque' "$n aponta para ficheiro inexistente: $alvo" }
+      if ($alvo -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Arranque' "$n -> $alvo (pasta temporaria)" $true }
+      elseif (-not (Test-Path -LiteralPath $alvo)) { & $marcar 'Arranque' "$n aponta para ficheiro inexistente: $alvo" $false }
     }
   } catch {}
 }
-Write-Output 'Arranque: verificado.'
+try {
+  $sh = [Environment]::GetFolderPath('Startup')
+  if ($sh -and (Test-Path -LiteralPath $sh)) {
+    Get-ChildItem -LiteralPath $sh -File -ErrorAction SilentlyContinue |
+      Where-Object { $_.Extension -match '^\\.(exe|bat|cmd|ps1|vbs|js|pif|com)$' } |
+      ForEach-Object { & $marcar 'Arranque' ("Pasta Iniciar: " + $_.FullName) $true }
+  }
+} catch {}
+Write-Output '  Entradas de arranque: verificadas.'
 
-# 3) Tarefas agendadas a executar de pastas temporarias
+Write-Output ''
+Write-Output '--- 3) Tarefas, servicos e processos ---'
 try {
   Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
     $t = $_
     foreach ($a in @($t.Actions)) {
       $exe = [string]$a.Execute
-      if ($exe -and $exe -like "$disco\\*" -and $exe -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Tarefa' "$($t.TaskName) -> $exe" }
+      if ($exe -and $exe -like "$disco\\*" -and $exe -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Tarefa' "$($t.TaskName) -> $exe" $true }
     }
   }
-  Write-Output 'Tarefas agendadas: verificadas.'
-} catch { Write-Output 'Tarefas agendadas: nao foi possivel ler.' }
-
-# 4) Processos a correr de pastas temporarias
+  Write-Output '  Tarefas agendadas: verificadas.'
+} catch { Write-Output '  Tarefas agendadas: nao foi possivel ler.' }
 try {
   Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     $p = $_.Path
-    if ($p -and $p -like "$disco\\*" -and $p -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Processo' "$($_.Name) -> $p" }
+    if ($p -and $p -like "$disco\\*" -and $p -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Processo' "$($_.Name) -> $p" $true }
   }
-  Write-Output 'Processos: verificados.'
-} catch { Write-Output 'Processos: nao foi possivel ler.' }
+  Write-Output '  Processos: verificados.'
+} catch { Write-Output '  Processos: nao foi possivel ler.' }
+try {
+  Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+    Where-Object { $_.PathName -like "$disco\\*" -and $_.PathName -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\*" } |
+    ForEach-Object { & $marcar 'Servico' "$($_.Name) -> $($_.PathName)" $true }
+} catch {}
+Write-Output '  Servicos: verificados.'
 
-# 5) Executaveis recentes no Temp/Downloads do disco escolhido (ultimos 7 dias)
-$pastas = @("$disco\\Temp", "$disco\\Windows\\Temp", "$disco\\Users\\*\\Downloads", "$disco\\Users\\*\\AppData\\Local\\Temp")
+Write-Output ''
+Write-Output '--- 4) Ficheiros perigosos no disco ---'
+$duplas = @()
+foreach ($pasta in @("$disco\\Users\\*\\Downloads", "$disco\\Users\\*\\Desktop", "$disco\\Users\\*\\Documents")) {
+  try {
+    $duplas += @(Get-ChildItem -Path $pasta -File -Recurse -Depth 1 -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match '\\.(jpg|jpeg|png|pdf|docx|xlsx|mp4|txt|mp3|zip)\\.(exe|scr|bat|cmd|ps1|vbs|js|pif|com)$' })
+  } catch {}
+}
+foreach ($f in $duplas) { & $marcar 'Extensao dupla' $f.FullName $true }
+Write-Output ('  Extensao dupla (ex.: foto.jpg.exe): ' + $duplas.Count)
+
+$padraoNome = '(?i)(crack|keygen|loader|patcher|activator|wiper|ransom|stealer|backdoor|trojan|malware|payload|xmrig|cryptominer|meterpreter|infector)'
+$nomes = @()
+foreach ($pasta in @("$disco\\Temp", "$disco\\Windows\\Temp", "$disco\\Users\\*\\Downloads", "$disco\\Users\\*\\AppData\\Local\\Temp")) {
+  try {
+    $nomes += @(Get-ChildItem -Path $pasta -File -Recurse -Depth 2 -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match $padraoNome } | Select-Object -First 20)
+  } catch {}
+}
+foreach ($f in $nomes) { & $marcar 'Nome suspeito' $f.FullName $true }
+Write-Output ('  Ficheiros com nome de malware: ' + $nomes.Count)
+
+$semAss = 0
+foreach ($pasta in @("$disco\\Temp", "$disco\\Windows\\Temp", "$disco\\Users\\*\\AppData\\Local\\Temp")) {
+  try {
+    $alvos = @(Get-ChildItem -Path $pasta -File -Recurse -Depth 2 -Include *.exe,*.scr -ErrorAction SilentlyContinue | Select-Object -First 25)
+    foreach ($f in $alvos) {
+      $ass = $null
+      try { $ass = Get-AuthenticodeSignature -LiteralPath $f.FullName -ErrorAction Stop } catch {}
+      if ($ass -and $ass.Status -ne 'Valid') { $semAss = $semAss + 1; & $marcar 'Sem assinatura' ("$($f.FullName) [" + $ass.Status + "]") $true }
+    }
+  } catch {}
+}
+Write-Output ('  Executaveis temporarios SEM assinatura valida: ' + $semAss)
+
 $recentes = @()
-foreach ($pasta in $pastas) {
+foreach ($pasta in @("$disco\\Temp", "$disco\\Windows\\Temp", "$disco\\Users\\*\\Downloads", "$disco\\Users\\*\\AppData\\Local\\Temp")) {
   try {
     $encontrados = @(Get-ChildItem -Path $pasta -Include *.exe,*.scr,*.bat,*.cmd,*.ps1,*.vbs,*.js -File -Recurse -Depth 2 -ErrorAction SilentlyContinue |
       Where-Object { $_ -and $_.LastWriteTime -gt (Get-Date).AddDays(-7) })
     if ($encontrados.Count) { $recentes += $encontrados }
   } catch {}
 }
-foreach ($f in ($recentes | Where-Object { $_ } | Select-Object -First 40)) { & $marcar 'Ficheiro' ("$($f.FullName) ($($f.LastWriteTime.ToString('dd/MM')))") }
-Write-Output "Executaveis recentes: $($recentes.Count) no(s) nos ultimos 7 dias."
+foreach ($f in ($recentes | Where-Object { $_ } | Select-Object -First 30)) { & $marcar 'Recente' ("$($f.FullName) ($($f.LastWriteTime.ToString('dd/MM')))") $false }
+Write-Output ('  Executaveis novos (ultimos 7 dias): ' + $recentes.Count)
 
-# 6) Servicos a correr de pastas temporarias
 try {
-  Get-CimInstance Win32_Service -ErrorAction SilentlyContinue | Where-Object { $_.PathName -like "$disco\\*" -and $_.PathName -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\*" } |
-    ForEach-Object { & $marcar 'Servico' "$($_.Name) -> $($_.PathName)" }
+  $hosts = "$env:SystemRoot\\System32\\drivers\\etc\\hosts"
+  $linhas = @(Get-Content -LiteralPath $hosts -ErrorAction Stop | Where-Object { $_ -and $_ -notmatch '^\\s*#' })
+  if ($linhas.Count -gt 5) { & $marcar 'Hosts' ("O ficheiro hosts tem " + $linhas.Count + " entradas ativas (possivel sequestro DNS).") $false }
 } catch {}
-Write-Output 'Servicos: verificados.'
 
 Write-Output ''
-Write-Output '=== RESULTADO ==='
-if (-not $suspeitos.Count) {
-  Write-Output 'Sem sinais suspeitos encontrados nesta analise rapida.'
-} else {
-  Write-Output "$($suspeitos.Count) sinal(is) para verificar:"
-  foreach ($s in $suspeitos) { Write-Output ("  [" + $s.tipo + "] " + $s.detalhe) }
+Write-Output '--- 5) Verificacao rapida do Windows Defender ---'
+$correuDefender = $false
+try {
+  Start-MpScan -ScanType QuickScan -ErrorAction Stop
+  $correuDefender = $true
+  Write-Output '  Verificacao rapida CONCLUIDA.'
+} catch { Write-Output ('  Nao correu aqui: ' + $_.Exception.Message) }
+try {
+  $depois = @(Get-MpThreat -ErrorAction Stop)
+  foreach ($a in $depois) { try { if ($a.ThreatName) { & $marcar 'Ameaca detetada' ([string]$a.ThreatName) $true } } catch {} }
+} catch {}
+
+Write-Output ''
+Write-Output '=== RESULTADO FINAL ==='
+if ($criticos.Count) {
+  Write-Output ("ENCONTRADO: " + $criticos.Count + " sinal(is) grave(s) - pode ser virus, trojan ou malware:")
+  foreach ($s in $criticos) { Write-Output ("  [!] " + $s.tipo + ": " + $s.detalhe) }
+}
+if ($suspeitos.Count) {
+  Write-Output ("A VERIFICAR: " + $suspeitos.Count + " sinal(is) menor(es):")
+  foreach ($s in $suspeitos) { Write-Output ("  [-] " + $s.tipo + ": " + $s.detalhe) }
+}
+if (-not $criticos.Count -and -not $suspeitos.Count) {
+  Write-Output 'LIMPO - nao encontrei virus, trojan, malware nem outros sinais neste disco.'
+} elseif (-not $criticos.Count) {
+  Write-Output 'Sem virus encontrado - apenas sinais menores para confirmares.'
 }
 Write-Output ''
-Write-Output 'Nota: isto e uma heuristica v0.1. Para confirmar, corre a Verificacao Rapida do Windows Defender.'`,
+Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } else { 'Para confirmar, abre a Seguranca do Windows > Protecao contra virus e ameacas > Verificacao rapida.' })`,
   },
-
   /* ---------------- WinUtil (Chris Titus) ---------------- */
   {
     id: 'winutil',

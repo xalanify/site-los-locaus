@@ -57,8 +57,8 @@ export default function BootScreen({ visible, onEnter }) {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black px-6">
       {/* Brilho violeta muito subtil de fundo */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/10 blur-[110px]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
+        <div className="absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-[110px]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
       </div>
 
       <motion.div
@@ -69,7 +69,7 @@ export default function BootScreen({ visible, onEnter }) {
       >
         {/* Marca */}
         <div className="relative mb-8">
-          <div className="h-24 w-24 overflow-hidden rounded-full ring-1 ring-orange-500/50 sm:h-28 sm:w-28">
+          <div className="h-24 w-24 overflow-hidden rounded-full ring-1 ring-violet-500/50 sm:h-28 sm:w-28">
             <img
               src={photo || svgAvatar('AJ')}
               alt="Ashow e Jazer"
@@ -80,7 +80,7 @@ export default function BootScreen({ visible, onEnter }) {
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="pointer-events-none absolute -inset-3 rounded-full border border-orange-500/25 shadow-[0_0_40px_rgba(139,92,246,0.18)]" />
+          <div className="pointer-events-none absolute -inset-3 rounded-full border border-violet-500/25 shadow-[0_0_40px_rgba(139,92,246,0.18)]" />
         </div>
 
         <h1
@@ -97,7 +97,7 @@ export default function BootScreen({ visible, onEnter }) {
         {/* Barra de progresso fina */}
         <div className="mt-9 h-[3px] w-60 overflow-hidden rounded-full bg-white/10 sm:w-72">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 shadow-[0_0_12px_rgba(139,92,246,0.8)]"
+            className="h-full rounded-full bg-gradient-to-r from-violet-400 via-violet-500 to-violet-600 shadow-[0_0_12px_rgba(139,92,246,0.8)]"
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.15, ease: 'linear' }}
           />

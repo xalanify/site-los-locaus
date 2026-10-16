@@ -56,7 +56,7 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     // media-src: os vídeos dos clips vêm do Supabase Storage
     // worker-src: os Web Workers do bench da CPU (blob do próprio site)
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://*.supabase.co https://www.googleapis.com https://*.googleapis.com; frame-ancestors 'none';"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://*.supabase.co https://www.googleapis.com https://*.googleapis.com; frame-ancestors 'none';"
   );
   next();
 });

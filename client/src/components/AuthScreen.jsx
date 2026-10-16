@@ -170,11 +170,11 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
   }
 
   const inputCls =
-    'w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-orange-500/40'
+    'w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-violet-500/40'
 
   const tabCls = (on) =>
     `flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-bold transition-colors ${
-      on ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(139,92,246,0.5)]' : 'text-gray-400 hover:text-white'
+      on ? 'bg-violet-500 text-white shadow-[0_0_20px_rgba(139,92,246,0.5)]' : 'text-gray-400 hover:text-white'
     }`
 
   const isForgot = mode === 'forgot'
@@ -190,7 +190,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
     <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black px-4 py-8">
       {/* Brilho violeta subtil */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/10 blur-[110px]" />
+        <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-[110px]" />
       </div>
 
       <motion.div
@@ -201,8 +201,8 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
       >
         {/* Marca */}
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 ring-1 ring-orange-500/30">
-            <ShieldCheck className="h-6 w-6 text-orange-400" />
+          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
+            <ShieldCheck className="h-6 w-6 text-violet-400" />
           </span>
           <h1 className="gradient-text font-display text-2xl font-black uppercase tracking-wide">
             Ashow e Jazer
@@ -217,8 +217,8 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
           {isForgot ? (
             sentInfo ? (
               <div className="space-y-4 text-center">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 ring-1 ring-orange-500/30">
-                  <MailCheck className="h-6 w-6 text-orange-400" />
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
+                  <MailCheck className="h-6 w-6 text-violet-400" />
                 </span>
                 <p className="text-sm leading-relaxed text-gray-300">
                   O teu pedido foi <b className="text-white">enviado ao admin</b>.
@@ -266,7 +266,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                 <button
                   type="submit"
                   disabled={busy || !username.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Pedir recuperação'}
                 </button>
@@ -283,8 +283,8 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
           ) : isReset ? (
             /* ------------- Nova palavra-passe (modo recuperação) ------------- */
             <form onSubmit={submitReset} className="space-y-3">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/15 ring-1 ring-orange-500/30">
-                <KeyRound className="h-6 w-6 text-orange-400" />
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
+                <KeyRound className="h-6 w-6 text-violet-400" />
               </span>
               <p className="text-center text-xs leading-relaxed text-gray-400">
                 A recuperação foi aprovada pelo admin — cria já a tua nova palavra-passe.
@@ -328,7 +328,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
               <button
                 type="submit"
                 disabled={busy || !username.trim() || !password || !confirm}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar nova palavra-passe'}
               </button>
@@ -399,7 +399,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                       setSentInfo(null)
                       setMode('forgot')
                     }}
-                    className="text-center text-xs text-orange-400 underline cursor-pointer hover:text-orange-300"
+                    className="text-center text-xs text-violet-400 underline cursor-pointer hover:text-violet-300"
                   >
                     Esqueci a pass
                   </p>
@@ -419,7 +419,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                     !password ||
                     (mode === 'register' && !email.trim())
                   }
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
                 >
                   {busy ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

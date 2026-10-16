@@ -22,10 +22,10 @@ import { authHeaders } from '../lib/auth'
    ============================================================ */
 function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoTexto, acoes }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e0e11]">
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#141020]">
       <header className="flex items-center justify-between px-4 pb-1 pt-3.5">
         <h2 className="inline-flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-gray-300">
-          <Icon className="h-4 w-4 text-orange-400" />
+          <Icon className="h-4 w-4 text-violet-400" />
           {titulo}
         </h2>
         <span className="flex items-center gap-1.5">
@@ -33,7 +33,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
             <button
               key={i}
               onClick={a.acao}
-              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-orange-400"
+              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-violet-400"
             >
               {a.texto}
             </button>
@@ -41,7 +41,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
           {acao && (
             <button
               onClick={acao}
-              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-orange-400"
+              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-violet-400"
             >
               {acaoTexto}
             </button>
@@ -49,7 +49,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
           {link && (
             <Link
               to={link}
-              className="inline-flex items-center gap-0.5 text-[11px] font-bold text-gray-500 transition-colors hover:text-orange-400"
+              className="inline-flex items-center gap-0.5 text-[11px] font-bold text-gray-500 transition-colors hover:text-violet-400"
             >
               {linkTexto}
               <ChevronRight className="h-3 w-3" />
@@ -210,7 +210,7 @@ export default function RightColumn() {
             href="https://www.youtube.com/@AshoweJazer"
             target="_blank"
             rel="noopener noreferrer"
-            className="block rounded-xl bg-orange-500/10 p-3 text-center text-[13px] font-bold text-orange-400 transition-colors hover:bg-orange-500/20"
+            className="block rounded-xl bg-violet-500/10 p-3 text-center text-[13px] font-bold text-violet-400 transition-colors hover:bg-violet-500/20"
           >
             Subscrever o canal ↗
           </a>
@@ -243,7 +243,7 @@ export default function RightColumn() {
                         className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full ${
                           n.read
                             ? 'bg-white/5 text-gray-500'
-                            : 'bg-orange-500/15 text-orange-400'
+                            : 'bg-violet-500/15 text-violet-400'
                         }`}
                       >
                         <Icon className="h-3.5 w-3.5" />
@@ -266,7 +266,7 @@ export default function RightColumn() {
                         </span>
                       </span>
                       {!n.read && (
-                        <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-400" />
+                        <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-violet-400" />
                       )}
                     </button>
                   </li>

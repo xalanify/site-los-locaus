@@ -160,7 +160,7 @@ async function tokenDe(i) {
       s.esgotadoAte = Date.now() + msAteReset();
       s.motivo = 'refresh token inválido — renova as credenciais';
     }
-    throw Object.assign(new Error('Não consegui autorizar no YouTube (' + motivo + ')'), {
+    throw Object.assign(new Error('Falha a autorizar a publicação (' + motivo + ')'), {
       codigo: 'token',
       conta: p.n,
     });
@@ -329,7 +329,7 @@ async function verificar(videoId, contador) {
       r.status === 429 || /quota|ratelimit|daily.?limit|user.?rate/i.test(razao);
     if (quota) {
       marcarEsgotado(contador, 'quota esgotada no YouTube');
-      throw Object.assign(new Error('A quota do YouTube esgotou nesta conta.'), {
+      throw Object.assign(new Error('A cota de publicações esgotou nesta conta.'), {
         codigo: 'esgotado',
         resetEm: estadoPublico().resetEm,
       });
@@ -337,27 +337,27 @@ async function verificar(videoId, contador) {
     if (/insufficient|forbidden|permission|access/i.test(razao)) {
       throw Object.assign(
         new Error(
-          'O YouTube não deixou conferir o vídeo: a autorização não inclui ' +
-            'a leitura (escopo youtube.readonly). Renova o refresh token com os dois escopos.',
+          'A autorização não inclui a leitura do vídeo. Renova a autorização ' +
+            '(escopos: upload e leitura).',
         ),
         { codigo: 'permissao', razao },
       );
     }
     console.warn('YouTube: verificação recusada', r.status, razao || JSON.stringify(d).slice(0, 200));
-    throw Object.assign(new Error('O YouTube não deixou confirmar o vídeo agora.'), {
+    throw Object.assign(new Error('Não foi possível confirmar o vídeo agora.'), {
       codigo: 'api',
       razao,
     });
   }
   if (!r.ok) {
     console.warn('YouTube videos.list', r.status, (d.error && d.error.message) || '');
-    throw Object.assign(new Error('O YouTube não devolveu o vídeo.'), { codigo: 'api' });
+    throw Object.assign(new Error('O vídeo não respondeu à conferência.'), { codigo: 'api' });
   }
 
   const item = d.items && d.items[0];
   if (!item) {
     throw Object.assign(
-      new Error('O vídeo ainda não aparece no YouTube — espera uns segundos e tenta outra vez.'),
+      new Error('O vídeo ainda não ficou disponível — espera uns segundos e tenta outra vez.'),
       { codigo: 'nao_encontrado' },
     );
   }
@@ -380,6 +380,62 @@ async function verificar(videoId, contador) {
   };
 }
 
+/* ---------------------------------------------------------------
+    Apagar o vídeo do clip remoto (o dono é o único que pode).
+
+    Tenta TODOS os contadores: o vídeo pertence à conta que o subiu e
+    não guardamos qual foi — cada token tenta uma vez. Se nenhum
+    conseguir, devolve false e quem chamou continua (a BD segue em
+    frente; nunca ficamos presos por causa do vídeo).
+    --------------------------------------------------------------- */
+async function apagar(videoId) {
+  const id = String(videoId || '');
+  if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) return false;
+
+  const pubs = publicadores();
+  if (!pubs.length) return false;
+
+  for (let i = 0; i < pubs.length; i++) {
+    let token;
+    try {
+      token = await tokenDe(i);
+    } catch {
+      continue; // esta conta nem token dá — passa à seguinte
+    }
+    const url = URL_VIDEOS + '?id=' + encodeURIComponent(id);
+    let r;
+    try {
+      r = await httpFetch(url, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token },
+        signal: AbortSignal.timeout(20000),
+      });
+    } catch (e) {
+      console.warn('Apagar vídeo remoto (rede):', e.message);
+      continue;
+    }
+    if (r.ok) return true;
+    // já não existe = também contou
+    if (r.status === 404) return true;
+    const d = await r.json().catch(() => ({}));
+    const razao = String(
+      (d.error && d.error.errors && d.error.errors[0] && d.error.errors[0].reason) ||
+        (d.error && d.error.status) ||
+        '',
+    );
+    // 403 de escopo: a autorização não tem o apagar (youtube.force-ssl)
+    if (r.status === 403 && /insufficient|forbidden|scope|permission/i.test(razao)) {
+      console.warn(
+        'Apagar vídeo remoto: sem escopo de apagar — renova a autorização (youtube.force-ssl).',
+      );
+      return false;
+    }
+    console.warn('Apagar vídeo remoto (conta ' + pubs[i].n + ')', r.status, razao || '');
+    if (r.status !== 401) continue; // 401 = token desta conta → tenta a próxima
+  }
+  return false;
+}
+
 module.exports = {
   configurado,
   publicadores,
@@ -388,5 +444,6 @@ module.exports = {
   registarUpload,
   marcarEsgotado,
   verificar,
+  apagar,
   LIMITE,
 };

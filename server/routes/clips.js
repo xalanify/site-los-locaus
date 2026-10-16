@@ -111,8 +111,8 @@ async function decorate(db, rows, auth) {
     title: c.title,
     game: c.game || null,
     url: clipUrl(c),
-    // publicado no YouTube (sem ficheiro no Supabase) — o cliente monta o player
-    youtube: c.youtube_id || null,
+    // vídeo remoto (sem ficheiro no nosso storage) — o cliente monta o player
+    remoto: c.youtube_id || null,
     start: Number(c.start_sec) || 0,
     end: c.end_sec == null ? null : Number(c.end_sec),
     visibility: c.visibility === 'private' ? 'private' : 'public',
@@ -363,12 +363,12 @@ async function garantirColunaYT(db) {
 }
 
 // Estado da publicação automática (o botão e o aviso do frontend)
-router.get('/youtube/estado', requireUserOrAdmin, (req, res) => {
+router.get('/pub/estado', requireUserOrAdmin, (req, res) => {
   res.json(yt.estadoPublico());
 });
 
 // Dá o access token com que o browser sobe o vídeo (só a quem pode publicar)
-router.post('/youtube/token', requireUserOrAdmin, async (req, res) => {
+router.post('/pub/token', requireUserOrAdmin, async (req, res) => {
   try {
     const r = await yt.prepararToken();
     res.json({
@@ -386,15 +386,15 @@ router.post('/youtube/token', requireUserOrAdmin, async (req, res) => {
   }
 });
 
-// O browser avisa que o YouTube recusou por quota
-router.post('/youtube/esgotado', requireUserOrAdmin, (req, res) => {
+// O browser avisa que a publicação foi recusada por cota
+router.post('/pub/esgotado', requireUserOrAdmin, (req, res) => {
   const i = Number(req.body && req.body.contador);
   if (Number.isInteger(i)) yt.marcarEsgotado(i, String((req.body && req.body.motivo) || ''));
   res.json(yt.estadoPublico());
 });
 
-// Depois de o vídeo estar no YouTube, confere e guarda o clip
-router.post('/youtube/confirm', requireUserOrAdmin, async (req, res) => {
+// Depois de o vídeo estar publicado, confere e guarda o clip
+router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
   try {
     const db = getDb();
     const b = req.body || {};
@@ -413,7 +413,7 @@ router.post('/youtube/confirm', requireUserOrAdmin, async (req, res) => {
       return res.status(503).json({ error: 'Publicação automática por configurar.' });
     }
     if (!(await garantirColunaYT(db))) {
-      return res.status(503).json({ error: 'Coluna do YouTube por criar (corre migrate.js).' });
+      return res.status(503).json({ error: 'Base de dados por atualizar (corre migrate.js).' });
     }
 
     // confere com o YouTube: existe? é do nosso canal? ficou unlisted?
@@ -455,12 +455,25 @@ router.post('/youtube/confirm', requireUserOrAdmin, async (req, res) => {
     if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
     res.json({
       clip: (await decorate(db, [row], req.auth))[0],
-      youtube: { id: info.id, privacidade: info.privacidade, canal: info.canal },
+      remoto: { id: info.id, privacidade: info.privacidade, canal: info.canal },
       estado: yt.estadoPublico(),
     });
   } catch (error) {
-    console.error('Erro clips youtube confirm:', error.message);
+    console.error('Erro clips pub confirm:', error.message);
     res.status(500).json({ error: 'Erro ao guardar o clip.' });
+  }
+});
+
+// Vídeo publicado que afinal não deu para guardar o clip: apaga-se
+// para não ficar órfão (o link só aparece se isto falhar).
+router.post('/pub/apagar', requireUserOrAdmin, async (req, res) => {
+  try {
+    const id = String((req.body && req.body.videoId) || '');
+    const ok = await yt.apagar(id).catch(() => false);
+    res.json({ ok });
+  } catch (e) {
+    console.error('Erro clips pub apagar:', e.message);
+    res.json({ ok: false });
   }
 });
 
@@ -472,7 +485,8 @@ router.get('/:id/stream', attachAuth, async (req, res) => {
     const clip = await db.prepare('SELECT * FROM clips WHERE id = ?').get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
     if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
-    if (clip.youtube_id) return res.redirect('https://www.youtube.com/watch?v=' + clip.youtube_id);
+    // vídeo remoto: não tem ficheiro nosso para servir
+    if (clip.youtube_id) return res.status(404).json({ error: 'Sem ficheiro para transferir' });
     res.redirect(storage.publicUrl(BUCKET, clip.file));
   } catch (error) {
     console.error('Erro clip stream:', error.message);
@@ -888,9 +902,9 @@ router.get('/:id/download', attachAuth, async (req, res) => {
     const safe = String(clip.title || 'clip')
       .replace(/[^\p{L}\p{N} _-]/gu, '_')
       .slice(0, 60);
-    // Clip no YouTube: não tem ficheiro nosso para dar — manda para o vídeo.
+    // Sem ficheiro nosso (vídeo remoto): nada para transferir.
     if (clip.youtube_id || !clip.file) {
-      return res.redirect('https://www.youtube.com/watch?v=' + (clip.youtube_id || ''));
+      return res.status(404).json({ error: 'Este clip não tem ficheiro para transferir.' });
     }
     // Em vez de passar o vídeo pela função, mandamos o browser para o Storage
     res.redirect(storage.publicUrl(BUCKET, clip.file));
@@ -965,7 +979,14 @@ router.delete('/:id', attachAuth, async (req, res) => {
     await db.prepare('DELETE FROM clip_comments WHERE clip_id = ?').run(id);
     await db.prepare('DELETE FROM clips WHERE id = ?').run(id);
     if (clip.file) storage.remove(BUCKET, clip.file).catch(() => {});
-    res.json({ success: true });
+    // Vídeo remoto: apaga também do lado de lá (não pode ficar órfão).
+    // Melhor esforço — se falhar, o clip nosso já está fora.
+    let remoto = true;
+    if (clip.youtube_id) {
+      remoto = await yt.apagar(clip.youtube_id).catch(() => false);
+      if (!remoto) console.warn('Clip remoto não apagado (id', clip.youtube_id, ') — falta escopo?');
+    }
+    res.json({ success: true, remoto });
   } catch (error) {
     console.error('Erro clip DELETE:', error.message);
     res.status(500).json({ error: 'Erro interno' });

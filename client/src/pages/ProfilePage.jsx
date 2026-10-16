@@ -210,7 +210,7 @@ export default function ProfilePage({
           className="mb-6 font-display font-black"
           style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
         >
-          Bem-vindo, <span className="text-orange-400">{me.username}</span>
+          Bem-vindo, <span className="text-violet-400">{me.username}</span>
         </motion.h1>
 
         {/* ---------------- Cartão da conta ---------------- */}
@@ -218,7 +218,7 @@ export default function ProfilePage({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="glass relative mb-8 overflow-hidden rounded-3xl border border-orange-500/40 p-5 sm:p-6"
+          className="glass relative mb-8 overflow-hidden rounded-3xl border border-violet-500/40 p-5 sm:p-6"
           style={{ boxShadow: '0 0 40px rgba(139,92,246,.15)' }}
         >
           {/* letra fantasma ao fundo */}
@@ -232,7 +232,7 @@ export default function ProfilePage({
               <img
                 src={avatarSrc}
                 alt={me.username}
-                className="h-16 w-16 rounded-full object-cover ring-2 ring-orange-500/60"
+                className="h-16 w-16 rounded-full object-cover ring-2 ring-violet-500/60"
                 style={{ boxShadow: '0 0 26px rgba(139,92,246,.45)' }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
@@ -243,7 +243,7 @@ export default function ProfilePage({
               <button
                 onClick={abrirEditar}
                 title="Editar foto e perfil"
-                className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-black/85 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-orange-500 hover:text-white"
+                className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
               >
                 <Camera className="h-3 w-3" />
               </button>
@@ -267,7 +267,7 @@ export default function ProfilePage({
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
                   Membro desde {criado}
                 </span>
                 <span
@@ -344,7 +344,7 @@ export default function ProfilePage({
                   <img
                     src={avatarPreview}
                     alt="Pré-visualização"
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-orange-500/50"
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-violet-500/50"
                   />
                   <span className="text-xs text-gray-400">
                     Pré-visualização — será guardada ao clicar em Guardar.
@@ -356,7 +356,7 @@ export default function ProfilePage({
                   <img
                     src={me.avatar_url}
                     alt="Foto atual"
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-orange-500/50"
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-violet-500/50"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                     }}
@@ -385,7 +385,7 @@ export default function ProfilePage({
                 <button
                   onClick={guardar}
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-sm font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -411,8 +411,8 @@ export default function ProfilePage({
           </div>
 
           {myClips.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-orange-500/40 bg-orange-500/5 p-6 text-center">
-              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-orange-400" />
+            <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
+              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-violet-400" />
               <p className="font-bold text-white">Ainda sem clips</p>
               <p className="mx-auto max-w-md text-sm text-gray-400">
                 Publica o teu primeiro clip na aba{' '}
@@ -444,7 +444,7 @@ export default function ProfilePage({
           {isAdmin && (
             <button
               onClick={onPanelClick}
-              className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all hover:bg-orange-400 glow-orange"
+              className="flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all hover:bg-violet-400 glow-violet"
             >
               <LayoutDashboard className="h-4 w-4" />
               Painel Admin

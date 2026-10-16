@@ -21,7 +21,7 @@ import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
 import { updates, CHANGE_TYPES } from '../data/updates'
 import { BADGES, BadgeTile, OVERCLOCK_BADGES } from '../components/BadgeGem'
-import { GAMES, gameImg } from '../data/gameUpdates'
+import { GAMES, gameCirculo } from '../data/gameUpdates'
 
 const TYPE_ICONS = {
   novo: Plus,
@@ -142,8 +142,8 @@ function SiteScope() {
         >
           {list.map((u, i) => (
             <div key={u.id} className="relative pl-10 sm:pl-12">
-              <span className="absolute left-0 top-1 h-8 w-8 rounded-full border-2 border-orange-500 bg-dark sm:h-10 sm:w-10" />
-              <span className="absolute left-2.5 top-3.5 h-2 w-2 rounded-full bg-orange-500 sm:left-3 sm:top-5" />
+              <span className="absolute left-0 top-1 h-8 w-8 rounded-full border-2 border-violet-500 bg-dark sm:h-10 sm:w-10" />
+              <span className="absolute left-2.5 top-3.5 h-2 w-2 rounded-full bg-violet-500 sm:left-3 sm:top-5" />
 
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -153,7 +153,7 @@ function SiteScope() {
               >
                 <h2 className="mb-1 text-lg font-black text-white sm:text-xl">{u.title}</h2>
                 <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
-                  <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
                   <span className="first-letter:uppercase">{fmtDate(u.date)}</span>
                 </div>
                 <ul className="space-y-2.5">
@@ -216,9 +216,9 @@ function GameChooser({ live, loading, error, onRetry, onPick }) {
       <div className="mb-6">
         <h2 className="text-xl font-black text-white sm:text-2xl">Escolhe o jogo</h2>
         <p className="mt-1 text-sm text-gray-400">
-          Atualizações das versões de <span className="font-bold text-orange-400">PC</span> com
+          Atualizações das versões de <span className="font-bold text-violet-400">PC</span> com
           fonte e link — com os números reais de jogadores da{' '}
-          <span className="font-bold text-orange-400">Steam</span>.
+          <span className="font-bold text-violet-400">Steam</span>.
         </p>
       </div>
 
@@ -232,7 +232,7 @@ function GameChooser({ live, loading, error, onRetry, onPick }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 * i }}
               onClick={() => onPick(g.id)}
-              className="glass group rounded-2xl border-2 border-transparent p-5 transition-all duration-300 hover:scale-[1.03] hover:border-orange-500"
+              className="glass group rounded-2xl border-2 border-transparent p-5 transition-all duration-300 hover:scale-[1.03] hover:border-violet-500"
             >
               <div
                 className="relative mx-auto mb-3 h-14 w-14 overflow-hidden rounded-full"
@@ -243,7 +243,7 @@ function GameChooser({ live, loading, error, onRetry, onPick }) {
                   style={{ color: g.color }}
                 />
                 <img
-                  src={(live?.covers?.[g.id] || gameImg(g)) || undefined}
+                  src={(live?.covers?.[g.id] || gameCirculo(g)) || undefined}
                   alt=""
                   loading="lazy"
                   onError={(e) => {
@@ -286,7 +286,7 @@ function GameChooser({ live, loading, error, onRetry, onPick }) {
           <p className="text-xs text-amber-400">{error}</p>
           <button
             onClick={onRetry}
-            className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-orange-500 hover:text-orange-400"
+            className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-violet-500 hover:text-violet-400"
           >
             <RotateCcw className="mr-1 inline h-3 w-3" />
             Tentar novamente
@@ -389,9 +389,9 @@ function GameScope() {
             style={{ backgroundColor: `${meta?.color || '#f97316'}22` }}
           >
             <Gamepad2 className="h-5 w-5" style={{ color: meta?.color }} />
-            {meta && (live?.covers?.[meta.id] || gameImg(meta)) && (
+            {meta && (live?.covers?.[meta.id] || gameCirculo(meta)) && (
               <img
-                src={live?.covers?.[meta.id] || gameImg(meta)}
+                src={live?.covers?.[meta.id] || gameCirculo(meta)}
                 alt=""
                 loading="lazy"
                 onError={(e) => {
@@ -412,7 +412,7 @@ function GameScope() {
         </p>
         <button
           onClick={() => setGameId(null)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-400"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 transition-colors hover:border-violet-500 hover:text-violet-400"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           Trocar de jogo
@@ -447,7 +447,7 @@ function GameScope() {
                 icon={TrendingUp}
                 label="Pico últimas 24h"
                 value={nums.peak24}
-                accent="#f97316"
+                accent="#38bdf8"
               />
               <LiveStat
                 icon={Trophy}
@@ -463,7 +463,7 @@ function GameScope() {
                   href="https://store.steampowered.com/charts"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 underline decoration-dotted hover:text-orange-400"
+                  className="text-gray-400 underline decoration-dotted hover:text-violet-400"
                 >
                   Steam
                 </a>
@@ -472,7 +472,7 @@ function GameScope() {
                   href={nums.url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-gray-400 underline decoration-dotted hover:text-orange-400"
+                  className="inline-flex items-center gap-1 text-gray-400 underline decoration-dotted hover:text-violet-400"
                 >
                   Steam Charts
                   <ExternalLink className="h-3 w-3" />
@@ -487,7 +487,7 @@ function GameScope() {
             </p>
             <button
               onClick={loadLive}
-              className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-orange-500 hover:text-orange-400"
+              className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-violet-500 hover:text-violet-400"
             >
               <RotateCcw className="mr-1 inline h-3 w-3" />
               Tentar novamente
@@ -505,7 +505,7 @@ function GameScope() {
             onClick={() => setTime(t.id)}
             className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-300 sm:text-sm ${
               time === t.id
-                ? 'bg-orange-500 text-white glow-orange scale-105'
+                ? 'bg-violet-500 text-white glow-violet scale-105'
                 : 'glass text-gray-300 hover:text-white'
             }`}
           >
@@ -534,7 +534,7 @@ function GameScope() {
               <p className="mb-2 text-sm text-amber-400">{newsError}</p>
               <button
                 onClick={() => loadNews(gameId)}
-                className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-orange-500 hover:text-orange-400"
+                className="rounded-full border border-white/15 px-4 py-1.5 text-xs font-bold text-gray-400 hover:border-violet-500 hover:text-violet-400"
               >
                 <RotateCcw className="mr-1 inline h-3 w-3" />
                 Tentar novamente
@@ -561,7 +561,7 @@ function GameScope() {
                   <span
                     className={`flex shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-black uppercase ${
                       u.patch
-                        ? 'border-orange-500/40 bg-orange-500/10 text-orange-400'
+                        ? 'border-violet-500/40 bg-violet-500/10 text-violet-400'
                         : 'border-sky-500/40 bg-sky-500/10 text-sky-400'
                     }`}
                   >
@@ -571,7 +571,7 @@ function GameScope() {
                 </div>
                 <div className="mb-2 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                    <Calendar className="h-3.5 w-3.5 text-violet-400" />
                     <span className="first-letter:uppercase">{fmtShort(u.date)}</span>
                   </span>
                   <span className="flex items-center gap-1">
@@ -589,7 +589,7 @@ function GameScope() {
                   href={u.url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold text-gray-400 transition-colors hover:border-orange-500 hover:text-orange-400"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold text-gray-400 transition-colors hover:border-violet-500 hover:text-violet-400"
                 >
                   Fonte: {u.source || 'Steam'}
                   <ExternalLink className="h-3 w-3" />
@@ -615,8 +615,8 @@ export default function UpdatesPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 text-center sm:mb-10"
         >
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
-            <History className="h-8 w-8 text-orange-400" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-500/10">
+            <History className="h-8 w-8 text-violet-400" />
           </div>
           <h1
             className="mb-3 font-black gradient-text"
@@ -645,7 +645,7 @@ export default function UpdatesPage() {
                 perfil de cada conta.
               </p>
             </div>
-            <Trophy className="h-6 w-6 shrink-0 text-orange-400" />
+            <Trophy className="h-6 w-6 shrink-0 text-violet-400" />
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {BADGES.map((b) => (
@@ -654,7 +654,7 @@ export default function UpdatesPage() {
           </div>
 
           <div className="mt-6">
-            <h3 className="mb-1 font-display text-sm font-black uppercase tracking-wide text-orange-300">
+            <h3 className="mb-1 font-display text-sm font-black uppercase tracking-wide text-violet-300">
               Overclock (automáticas)
             </h3>
             <p className="mb-3 text-xs text-gray-500">
