@@ -50,6 +50,7 @@ export default function ProfilePage({
   const [saving, setSaving] = useState(false)
   const [mouseSug, setMouseSug] = useState([])
   const [myClips, setMyClips] = useState([]) // publicações desta conta
+  const [err, setErr] = useState('')
   const fileRef = useRef(null)
 
   /* Sempre que o perfil abre: dados frescos (distinções atribuídas

@@ -104,18 +104,32 @@ const ICON_MAP = {
    logs aparecem a andar aqui em baixo.
    ============================================================ */
 
-const CATS = ['Rede', 'Debloat', 'Otimização', 'Otimização Xalana', 'Sistema', 'Programas', 'Limpeza', 'Scan vírus']
+const CATS = ['Otimizador by Xalana', 'Programas', 'Limpeza']
 
 /* icone pequeno ao lado do nome de cada categoria */
 const CAT_ICONES = {
-  Rede: Wifi,
-  Debloat: Trash2,
-  Otimização: Zap,
-  'Otimização Xalana': Gauge,
-  Sistema: Gauge,
+  'Otimizador by Xalana': Gauge,
   Programas: Package,
   Limpeza: Eraser,
-  'Scan vírus': ShieldAlert,
+}
+
+/* ações individuais do Otimizador by Xalana (mesmo mapa do servidor) */
+const XALANA_ACOES = {
+  'xalana-a1': { nome: 'Plano de energia: alto desempenho', desc: 'A CPU deixa de dormir; resposta mais rápida ao toque.', nivel: 'minima' },
+  'xalana-a2': { nome: 'Efeitos visuais: modo leve', desc: 'Menus e janelas mais rápidos.', nivel: 'minima' },
+  'xalana-a3': { nome: 'Rato 1:1 — sem aceleração', desc: 'O rato anda exatamente a distância que move.', nivel: 'minima' },
+  'xalana-a4': { nome: 'Temporários do utilizador limpos', desc: 'Limpa %TEMP% (fica só o que está em uso).', nivel: 'minima' },
+  'xalana-a5': { nome: 'Telemetria DiagTrack parada', desc: 'Menos disco e CPU em fundo.', nivel: 'normal' },
+  'xalana-a6': { nome: 'Aplicações em segundo plano suspensas', desc: 'Apps deixam de correr às costas.', nivel: 'normal' },
+  'xalana-a7': { nome: 'Xbox Game Bar e GameDVR desligados', desc: 'Sem overlay nem gravação de fundo.', nivel: 'normal' },
+  'xalana-a8': { nome: 'Sugestões do Início desligadas', desc: 'Menu Início sem apps promovidas.', nivel: 'normal' },
+  'xalana-a9': { nome: 'Transparência e demoras de menu desligadas', desc: 'Sem transparência; menus abrem de estalar.', nivel: 'normal' },
+  'xalana-a10': { nome: 'Tarefas de diagnóstico desativadas', desc: '5 tarefas de telemetria paradas.', nivel: 'normal' },
+  'xalana-a11': { nome: 'Debloat: apps pré-instaladas removidas', desc: 'Xbox, Widgets, Cortana, Solitaire, Maps, etc.', nivel: 'extremo' },
+  'xalana-a12': { nome: 'Serviços pesados parados e desligados', desc: 'SysMain, Pesquisa indexada, Xbox, Fax, Mapas...', nivel: 'extremo' },
+  'xalana-a13': { nome: 'Perfil multimédia/jogo sem limitações', desc: 'Rede sem limitação; jogos em prioridade alta.', nivel: 'extremo' },
+  'xalana-a14': { nome: 'Prioridade de processos: desempenho', desc: 'CPU dá prioridade a correr programas.', nivel: 'extremo' },
+  'xalana-a15': { nome: 'Hibernação e arranque rápido desligados', desc: 'Liberta hiberfil.sys; o PC desliga mesmo.', nivel: 'extremo' },
 }
 
 const PERIGO = {
@@ -142,7 +156,7 @@ function Badge({ tom, children }) {
 export default function FerramentasPage() {
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
-  const [cat, setCat] = useState('Rede')
+  const [cat, setCat] = useState('Otimizador by Xalana')
   const [subCat, setSubCat] = useState('Todas')
   const [busca, setBusca] = useState('')
   const [idLivre, setIdLivre] = useState('')
@@ -164,6 +178,23 @@ export default function FerramentasPage() {
   const [nomeCorrer, setNomeCorrer] = useState(null)
   const [parando, setParando] = useState(false)
   const aCorrerRef = useRef(null)
+
+  /* ações selecionadas de cada nível do Otimizador by Xalana */
+  const [xalanaSel, setXalanaSel] = useState({
+    minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4'],
+    normal: ['xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
+    extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15'],
+  })
+
+  const toggleXalanaAcao = (nivel, id) => {
+    setXalanaSel((p) => {
+      const atual = [...(p[nivel] || [])]
+      const idx = atual.indexOf(id)
+      if (idx >= 0) atual.splice(idx, 1)
+      else atual.push(id)
+      return { ...p, [nivel]: atual }
+    })
+  }
 
   /* pergunta ao servidor quais programas do catálogo já estão no PC */
   const detectarInstalados = async () => {
@@ -672,13 +703,106 @@ export default function FerramentasPage() {
                 onClick={() => {
                   setBusca('')
                   setSubCat('Todas')
-                  setCat(cats[0] || 'Rede')
+                  setCat(cats[0] || 'Otimizador by Xalana')
                 }}
                 className="btn-glass rounded-full px-4 py-2 text-[12px] font-black text-gray-400 transition-colors hover:text-white"
               >
                 {busca.trim() ? 'Ver as ferramentas' : 'Mudar de categoria'}
               </button>
             </div>
+          </div>
+        ) : cat === 'Otimizador by Xalana' ? (
+          <div className="grid grid-cols-1 gap-4 py-10">
+            {(['minima', 'normal', 'extremo']).map((nivel) => {
+              const nivelLabel = { minima: 'Mínima', normal: 'Normal', extremo: 'Extremo' }[nivel]
+              const nivelDesc = {
+                minima: 'O básico bem feito — só ajustes de desempenho seguros, sem mexer em serviços nem tarefas.',
+                normal: 'Tudo do mínimo + telemetria parada, apps de fundo, Game Bar, sugestões e tarefas de diagnóstico. O equilíbrio para jogar e trabalhar.',
+                extremo: 'Tudo do mínimo e normal + debloat de apps pré-instaladas, serviços pesados desligados e perfil de jogo sem limitações. Máxima fluidez (reinicia o PC no fim).',
+              }[nivel]
+              const acoes = (xalanaSel[nivel] || []).sort()
+              const todasAcoesNivel = {
+                minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4'],
+                normal: ['xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
+                extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15'],
+              }[nivel]
+              return (
+                <motion.div
+                  key={nivel}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass flex flex-col overflow-hidden rounded-2xl border border-violet-500/30 p-5 transition-colors hover:border-violet-500/50"
+                >
+                  <div className="mb-3 flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/30">
+                      {nivel === 'minima' ? <Gauge className="h-5 w-5" /> : nivel === 'normal' ? <Rocket className="h-5 w-5" /> : <Swords className="h-5 w-5" />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-display text-[17px] font-black text-white">{nivelLabel}</span>
+                        <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-400">
+                          Nível {nivelLabel}
+                        </span>
+                      </div>
+                      <p className="text-[12.5px] leading-relaxed text-gray-400">{nivelDesc}</p>
+                    </div>
+                  </div>
+
+                  {/* ações selecionáveis deste nível */}
+                  <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <p className="mb-2 text-[10px] font-black uppercase tracking-wide text-gray-500">
+                      Escolhe as ações a executar (desmarca o que não queres)
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {todasAcoesNivel.map((aid) => {
+                        const acao = xalanaAcoes[aid]
+                        if (!acao) return null
+                        const marcada = acoes.includes(aid)
+                        return (
+                          <label
+                            key={aid}
+                            className="flex items-start gap-2 rounded-lg border p-2.5 cursor-pointer transition-colors hover:bg-white/5"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleXalanaAcao(nivel, aid)
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={marcada}
+                              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border border-white/10 text-violet-500"
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                toggleXalanaAcao(nivel, aid)
+                              }}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <span className="text-xs font-bold text-white leading-tight">{acao.nome}</span>
+                              <p className="text-[10.5px] text-gray-500 leading-relaxed">{acao.desc}</p>
+                            </div>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const ids = xalanaSel[nivel] || []
+                      if (ids.length === 0 || aCorrer) return
+                      setSelecionados(new Set([`xalana-${nivel}`]))
+                      programarFila([])
+                      executar(`xalana-${nivel}`, null, null, true, ids)
+                    }}
+                    disabled={aCorrer || acoes.length === 0}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
+                  >
+                    <Play className="h-4 w-4" fill="currentColor" />
+                    {aCorrer ? 'A correr…' : `Executar nível ${nivelLabel} (${acoes.length} ação${acoes.length !== 1 ? 's' : ''})`}
+                  </button>
+                </motion.div>
+              )
+            })}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
