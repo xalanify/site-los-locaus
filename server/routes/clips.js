@@ -113,6 +113,8 @@ async function decorate(db, rows, auth) {
     url: clipUrl(c),
     // vídeo remoto (sem ficheiro no nosso storage) — o cliente monta o player
     remoto: c.youtube_id || null,
+    // capa NOSSA: um frame do próprio vídeo (nunca a da plataforma)
+    thumb_url: c.thumb || null,
     start: Number(c.start_sec) || 0,
     end: c.end_sec == null ? null : Number(c.end_sec),
     visibility: c.visibility === 'private' ? 'private' : 'public',
@@ -348,18 +350,60 @@ router.post('/confirm', requireUserOrAdmin, async (req, res) => {
    ============================================================ */
 
 /* O clip pode ser novo (youtube_id) — a tabela já existe, mas a
-   coluna pode faltar numa BD antiga. Criamo-la à primeira vez. */
+   coluna pode faltar numa BD antiga. Criamo-la à primeira vez.
+   A `thumb` guarda a NOSSA capa (um frame do próprio vídeo, tirado
+   no browser) — nunca a capa da plataforma. */
 let colunaYT = false;
 async function garantirColunaYT(db) {
   if (colunaYT) return true;
   try {
     await db.prepare('ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_id text').run();
     await db.prepare('ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_thumb text').run();
+    await db.prepare('ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS thumb text').run();
     colunaYT = true;
   } catch (e) {
-    console.warn('YouTube (coluna) saltou:', String(e.message).slice(0, 120));
+    console.warn('Clips (coluna) saltou:', String(e.message).slice(0, 120));
   }
   return colunaYT;
+}
+
+/* Capa nossa: o browser manda um frame do vídeo (data URL JPEG) e
+   nós guardamo-lo no storage. Falhou? Segue sem capa — o cliente
+   mostra um fundo nosso por omissão. */
+async function guardarCapa(videoId, thumb) {
+  try {
+    const m = /^data:image\/(jpe?g|png|webp);base64,(.+)$/.exec(String(thumb || ''));
+    if (!m) return null;
+    const bin = Buffer.from(m[2], 'base64');
+    if (!bin.length || bin.length > 900 * 1024) return null; // capa pesada demais
+    const tipo = m[1] === 'png' ? 'image/png' : m[1] === 'webp' ? 'image/webp' : 'image/jpeg';
+    const ext = tipo === 'image/png' ? 'png' : tipo === 'image/webp' ? 'webp' : 'jpg';
+    return await storage.upload(
+      BUCKET,
+      `capa_${String(videoId).replace(/[^A-Za-z0-9_-]/g, '')}.${ext}`,
+      bin,
+      tipo,
+    );
+  } catch (e) {
+    console.warn('Capa do clip saltou:', String(e.message).slice(0, 120));
+    return null;
+  }
+}
+
+/* Anúncio automático: cada clip publicado em público aparece nos
+   anúncios do site, sem ninguém ter de escrever nada. */
+async function anunciarClip(db, { title, autor, capa }) {
+  try {
+    await db
+      .prepare('INSERT INTO posts (title, content, image_url) VALUES (?, ?, ?)')
+      .run(
+        'Novo clip: ' + String(title || '').slice(0, 120),
+        `${autor || 'Alguém do grupo'} publicou o clip "${String(title || '').slice(0, 80)}". Vai ver.`,
+        capa || null,
+      );
+  } catch (e) {
+    console.warn('Anúncio automático saltou:', String(e.message).slice(0, 120));
+  }
 }
 
 // Estado da publicação automática (o botão e o aviso do frontend)
@@ -433,26 +477,40 @@ router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
     if (!uid) return res.status(401).json({ error: 'Inicia sessão para continuares' });
 
     const meta = metaFromQuery(b);
+    // Capa NOSSA: um frame do vídeo que o browser guardou antes de subir
+    const capa = await guardarCapa(videoId, b.thumb);
     const result = await db
       .prepare(
-        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, youtube_id, youtube_thumb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, youtube_id, youtube_thumb, thumb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
       )
       .run(
         uid,
         title,
         game,
-        '', // sem ficheiro no Supabase — o vídeo vive no YouTube
+        '', // sem ficheiro no nosso storage — o vídeo vive no servidor remoto
         meta.start,
         meta.end,
         meta.visibility,
         info.id,
-        info.thumb || null,
+        null, // nunca guardamos a capa da plataforma
+        capa,
       );
 
     const row = await db
       .prepare(SELECT_SQL + ' WHERE c.id = ?')
       .get(Number(result.lastInsertRowid));
     if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
+
+    // Anúncio automático — clips públicos aparecem sozinhos nos anúncios
+    if (meta.visibility === 'public') {
+      const autor = await db
+        .prepare('SELECT username FROM users WHERE id = ?')
+        .get(uid)
+        .then((u) => (u && u.username) || '')
+        .catch(() => '');
+      await anunciarClip(db, { title, autor, capa });
+    }
+
     res.json({
       clip: (await decorate(db, [row], req.auth))[0],
       remoto: { id: info.id, privacidade: info.privacidade, canal: info.canal },
@@ -474,6 +532,21 @@ router.post('/pub/apagar', requireUserOrAdmin, async (req, res) => {
   } catch (e) {
     console.error('Erro clips pub apagar:', e.message);
     res.json({ ok: false });
+  }
+});
+
+/* O vídeo remoto está pronto a reproduzir? O leitor só abre quando
+   isto dá true — enquanto a plataforma ainda está a processar, o
+   site mostra o AVISO NOSSO e nunca o ecrã de processamento deles. */
+router.get('/pub/pronto/:videoId', requireUserOrAdmin, async (req, res) => {
+  try {
+    const id = String(req.params.videoId || '');
+    if (!yt.configurado()) return res.json({ pronto: true });
+    const r = await yt.processado(id).catch(() => ({ pronto: true }));
+    res.json(r);
+  } catch (e) {
+    console.error('Erro clips pub pronto:', e.message);
+    res.json({ pronto: true });
   }
 });
 
@@ -979,6 +1052,21 @@ router.delete('/:id', attachAuth, async (req, res) => {
     await db.prepare('DELETE FROM clip_comments WHERE clip_id = ?').run(id);
     await db.prepare('DELETE FROM clips WHERE id = ?').run(id);
     if (clip.file) storage.remove(BUCKET, clip.file).catch(() => {});
+    // Capa nossa (frame do vídeo) — apagar também do storage
+    if (clip.thumb) {
+      const ultima = clip.thumb.split('?')[0].split('/').pop();
+      if (/^capa_[A-Za-z0-9_-]+\.[a-z]+$/.test(ultima)) {
+        storage.remove(BUCKET, ultima).catch(() => {});
+      }
+    }
+    // Anúncio automático do clip — se o clip sai, o aviso sai também
+    try {
+      await db.prepare('DELETE FROM posts WHERE title = ?').run(
+        'Novo clip: ' + String(clip.title || '').slice(0, 120),
+      );
+    } catch (e) {
+      console.warn('Anúncio do clip não apagado:', String(e.message).slice(0, 100));
+    }
     // Vídeo remoto: apaga também do lado de lá (não pode ficar órfão).
     // Melhor esforço — se falhar, o clip nosso já está fora.
     let remoto = true;

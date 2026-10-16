@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { getDb } = require('../database');
-const { requireUser, requireAdmin, JWT_SECRET } = require('../middleware/auth');
+const { requireUser, JWT_SECRET } = require('../middleware/auth');
 const pcs = require('../pcs');
 
 const router = express.Router();
@@ -169,10 +169,10 @@ router.get(
   }),
 );
 
-// GET /api/users/specs — todos os membros (para o dashboard, só admin)
+// GET /api/users/specs — dashboard dos PCs do grupo (membro vê os outros)
 router.get(
   '/',
-  requireAdmin,
+  requireUser,
   safe(async (req, res) => {
     const rows = await getDb()
       .prepare(

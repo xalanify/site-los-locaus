@@ -14,9 +14,11 @@ const { initDatabase, getDb, closeDatabase } = require('./database');
 const PASSOS = [
   // Contador de visualizações nos clips
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS views integer NOT NULL DEFAULT 0',
-  // Publicação automática no YouTube: fica só o link do vídeo
+  // Publicação automática: fica só o link do vídeo
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_id text',
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_thumb text',
+  // Capa NOSSA do clip: um frame do próprio vídeo (tirado no browser)
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS thumb text',
   // Experimentação: banner do perfil + cor/efeito do nome
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',

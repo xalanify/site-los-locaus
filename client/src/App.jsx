@@ -28,6 +28,7 @@ const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
+const NovidadesPage = lazy(() => import('./pages/NovidadesPage'))
 
 function App() {
   const [entered, setEntered] = useState(false)
@@ -200,22 +201,14 @@ function App() {
                         </>
                       }
                     />
-                    {/* Contas de jogo: ficam no backend — só o admin abre */}
-                    <Route
-                      path="/jogos"
-                      element={isAdmin ? <GamesPage /> : <Navigate to="/" replace />}
-                    />
-                    {/* PCs dos membros: dashboard de specs — só o admin */}
-                    <Route
-                      path="/pcs"
-                      element={isAdmin ? <PcsPage /> : <Navigate to="/" replace />}
-                    />
-                    {/* Ferramentas Windows: scripts no PC do servidor — só o admin */}
-                    <Route
-                      path="/ferramentas"
-                      element={isAdmin ? <FerramentasPage /> : <Navigate to="/" replace />}
-                    />
+                    {/* Contas de jogo — aberto a todos os membros */}
+                    <Route path="/jogos" element={<GamesPage />} />
+                    {/* PCs dos membros: dashboard de specs — aberto a todos */}
+                    <Route path="/pcs" element={<PcsPage />} />
+                    {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}
+                    <Route path="/ferramentas" element={<FerramentasPage />} />
                     <Route path="/atualizacoes" element={<UpdatesPage />} />
+                    <Route path="/novidades" element={<NovidadesPage />} />
                     <Route
                       path="/membros"
                       element={<MembrosPage onProfile={openMember} />}

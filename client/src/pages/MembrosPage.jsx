@@ -119,8 +119,8 @@ export default function MembrosPage({ onProfile }) {
                         {distincoesOverclock(m.distincoes).map((b) => (
                           <span
                             key={b.id}
-                            title={b.desc}
-                            className="flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 ring-1"
+                            title={b.desc || b.label}
+                            className="flex items-center justify-center rounded-full p-[3px] ring-1"
                             style={{
                               background: `${b.color}18`,
                               boxShadow: `0 0 12px ${b.color}40`,
@@ -128,13 +128,8 @@ export default function MembrosPage({ onProfile }) {
                               ['--tw-ring-color']: `${b.color}66`,
                             }}
                           >
-                            <BadgeGem badge={b} size={16} />
-                            <span
-                              className="whitespace-nowrap font-display text-[9px] font-black uppercase leading-none tracking-wider"
-                              style={{ color: b.color }}
-                            >
-                              {b.label}
-                            </span>
+                            {/* só o ícone — o nome aparece no passar o rato */}
+                            <BadgeGem badge={b} size={18} />
                           </span>
                         ))}
                       </span>

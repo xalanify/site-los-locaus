@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Cpu,
   Wrench,
+  Sparkles,
 } from 'lucide-react'
 
 /* ============================================================
@@ -39,22 +40,18 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isGames = location.pathname === '/jogos'
   const isPcs = location.pathname === '/pcs'
   const isFerramentas = location.pathname === '/ferramentas'
+  const isNovidades = location.pathname === '/novidades'
 
   const links = [
     { name: 'Página inicial', icon: Home, action: () => goTo('#home'), active: isHome && !location.hash },
     { name: 'Clips e Publicações', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
     { name: 'Atualizações', icon: History, action: () => navigate('/atualizacoes'), active: isUpdates },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
-    // Jogos, Specs e Ferramentas: só o admin abre
-    ...(isAdmin
-      ? [{ name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames }]
-      : []),
-    ...(isAdmin
-      ? [{ name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs }]
-      : []),
-    ...(isAdmin
-      ? [{ name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas }]
-      : []),
+    // Jogos, Specs e Ferramentas: abertas a todos os membros
+    { name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
+    { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
+    { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
+    { name: 'Novidades do site', icon: Sparkles, action: () => navigate('/novidades'), active: isNovidades },
   ]
 
   return (

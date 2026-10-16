@@ -8,8 +8,6 @@ import {
   Lock,
   Loader2,
   Upload,
-  Search,
-  Users,
   Gamepad2,
   Calendar,
   Award,
@@ -252,11 +250,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [jogo, setJogo] = useState('') // filtro por jogo ('' = todos)
   const [showForm, setShowForm] = useState(false)
 
-  // lista lateral de membros (online/offline + pesquisa)
-  const [members, setMembers] = useState([])
-  const [membersLoading, setMembersLoading] = useState(true)
-  const [query, setQuery] = useState('')
-  const [member, setMember] = useState(null) // perfil público aberto
+  // perfil público aberto (clique no autor de um clip)
+  const [member, setMember] = useState(null)
 
   // formulário
   const [title, setTitle] = useState('')
@@ -279,6 +274,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [ytEstado, setYtEstado] = useState(null)
   const [trimming, setTrimming] = useState(null) // { done, total } enquanto corta
   const [nota, setNota] = useState('') // aviso depois de cortar
+  const [thumb, setThumb] = useState('') // capa nossa (frame do vídeo)
   const previewRef = useRef(null)
   const fileRef = useRef(null)
   const audioRef = useRef(null) // grafo de áudio usado no corte
@@ -320,23 +316,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     }
   }
 
-  const loadMembers = async () => {
-    try {
-      const res = await fetch('/api/users/list', { headers: authHeaders() })
-      if (res.ok) {
-        const d = await res.json()
-        setMembers(d.users || [])
-      }
-    } catch {
-      /* sem rede */
-    } finally {
-      setMembersLoading(false)
-    }
-  }
-
   useEffect(() => {
     load()
-    loadMembers()
     // limite real de tamanho (o servidor decide)
     fetch('/api/clips/limits')
       .then((r) => r.json())
@@ -344,15 +325,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         if (d && d.maxMB) setMaxMB(Number(d.maxMB))
       })
       .catch(() => {})
-    // publicação automática no YouTube (só para quem pode publicar)
+    // publicação automática (só para quem pode publicar)
     if (user) {
       fetch('/api/clips/pub/estado', { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => d && setYtEstado(d))
         .catch(() => {})
     }
-    const t = setInterval(loadMembers, 30000)
-    return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
@@ -394,6 +373,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     setError('')
     setTrimming(null)
     setNota('')
+    setThumb('')
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -406,7 +386,75 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     setStartStr('0:00')
     setEndStr('')
     setNota('')
+    setThumb('')
     setPreview(URL.createObjectURL(f))
+    // capa nossa: um frame qualquer do próprio vídeo (em paralelo)
+    gerarCapa(f)
+  }
+
+  /* ---------------------------------------------------------------
+     Capa do clip: tiramos UM FRAME do vídeo no próprio browser
+     (posição aleatória) e mandamos-guardamos no site. É isto que
+     aparece no cartão — nunca a capa da plataforma.
+     --------------------------------------------------------------- */
+  const gerarCapa = (f) => {
+    try {
+      const url = URL.createObjectURL(f)
+      const v = document.createElement('video')
+      v.preload = 'metadata'
+      v.muted = true
+      v.playsInline = true
+      v.src = url
+      let feito = false
+      const limpar = () => {
+        try {
+          URL.revokeObjectURL(url)
+        } catch {
+          /* nada */
+        }
+        v.removeAttribute('src')
+        v.load()
+      }
+      const apanhar = () => {
+        if (feito) return
+        feito = true
+        try {
+          const larg = Math.min(960, v.videoWidth || 960)
+          const alt = Math.max(1, Math.round((larg * (v.videoHeight || 540)) / (v.videoWidth || 960)))
+          const cv = document.createElement('canvas')
+          cv.width = larg
+          cv.height = alt
+          const ctx = cv.getContext('2d')
+          ctx.drawImage(v, 0, 0, larg, alt)
+          const data = cv.toDataURL('image/jpeg', 0.78)
+          if (data && data.length < 900 * 1024) setThumb(data)
+        } catch {
+          /* sem canvas — fica sem capa nossa */
+        }
+        limpar()
+      }
+      v.addEventListener('loadedmetadata', () => {
+        const d = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 1
+        // posição aleatória (entre 10% e 80% do vídeo)
+        try {
+          v.currentTime = d * (0.1 + Math.random() * 0.7)
+        } catch {
+          apanhar()
+        }
+      })
+      v.addEventListener('seeked', apanhar, { once: true })
+      v.addEventListener('loadeddata', () => setTimeout(apanhar, 400), { once: true })
+      v.addEventListener('error', () => {
+        feito = true
+        limpar()
+      })
+      // rede lenta: não fica preso à espera
+      setTimeout(() => {
+        if (!feito) apanhar()
+      }, 6000)
+    } catch {
+      /* sem suporte — segue sem capa */
+    }
   }
 
   const onPreviewMeta = () => {
@@ -670,6 +718,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             visibility: qs.get('visibility'),
             start: qs.get('start'),
             end: qs.get('end'),
+            thumb, // capa nossa (frame do vídeo) — sem ela o site mostra o fundo por omissão
           }),
         })
 
@@ -1179,10 +1228,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     }
   }
   jogosComClips.sort((a, b) => a.label.localeCompare(b.label, 'pt'))
-
-  const shownMembers = members.filter((m) =>
-    m.username.toLowerCase().includes(query.trim().toLowerCase()),
-  )
 
   const emptyMsg = jogo
     ? `Ainda não há clips de ${gameLabel(jogo)}.`
@@ -1739,84 +1784,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             </div>
           )}
         </div>
-
-        {/* ---------------- Membros (online/offline) ---------------- */}
-        <aside className="w-full shrink-0 lg:w-72">
-          <div className="glass rounded-2xl p-4">
-            <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-white">
-              <Users className="h-4 w-4 text-violet-400" /> Membros
-              <span className="ml-auto rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-black text-gray-400">
-                {members.length}
-              </span>
-            </h2>
-
-            {/* Pesquisa */}
-            <div className="relative mb-3">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Procurar membro…"
-                maxLength={30}
-                className="w-full rounded-xl bg-white/10 py-2 pl-9 pr-3 text-sm text-white outline-none placeholder:text-gray-400 focus:bg-white/15"
-              />
-            </div>
-
-            {membersLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-              </div>
-            ) : shownMembers.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-5 text-center">
-                <p className="text-xs text-gray-400">
-                  {query.trim() ? `Nenhum membro com “${query.trim()}”.` : 'Ainda sem membros.'}
-                </p>
-                {query.trim() && (
-                  <button
-                    onClick={() => setQuery('')}
-                    className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-violet-400"
-                  >
-                    <X className="h-3 w-3" /> Limpar pesquisa
-                  </button>
-                )}
-              </div>
-            ) : (
-              <ul className="scroll-forte max-h-[24rem] space-y-1 overflow-y-auto pr-1">
-                {shownMembers.map((m) => (
-                  <li key={m.id}>
-                    <button
-                      onClick={() => setMember(m.username)}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/10"
-                      title={`Ver o perfil de ${m.username}`}
-                    >
-                      <span className="relative shrink-0">
-                        <AvatarImg name={m.username} src={m.avatar_url} className="h-8 w-8" />
-                        <span
-                          className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-[#131316] ${
-                            m.online ? 'bg-green-500' : 'bg-gray-600'
-                          }`}
-                          title={m.online ? 'Online' : 'Offline'}
-                        />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-bold text-white">
-                        {m.username}
-                      </span>
-                      {m.badges.slice(0, 3).map((id) => {
-                        const b = BADGES.find((x) => x.id === id)
-                        return b ? <BadgeGem key={b.id} badge={b} size={15} /> : null
-                      })}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <p className="mt-3 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-gray-400">
-              <span className="h-2 w-2 rounded-full bg-green-500" /> online ·{' '}
-              <span className="h-2 w-2 rounded-full bg-gray-600" /> offline
-            </p>
-          </div>
-        </aside>
       </div>
 
       {/* Perfil público */}

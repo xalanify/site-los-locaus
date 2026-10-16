@@ -1,14 +1,18 @@
 // ============================================================
-//  Ferramentas Windows (admin)
+//  Ferramentas Windows (membro)
 // -------------------------------------------------------------
 //    GET  /api/ferramentas          -> catálogo + estado
 //    POST /api/ferramentas/run      -> { id, arg? } corre um script
 //    POST /api/ferramentas/stop     -> pára a execução em curso
 //    GET  /api/ferramentas/status   -> logs a andar (polling)
-//    GET  /api/ferramentas/historico-> registo de auditoria (admin)
+//    GET  /api/ferramentas/historico-> registo de auditoria (só admin)
+//
+//    Qualquer MEMBRO pode ver e correr as ferramentas (é um dos
+//    pedidos do site) — mas o histórico de quem correu o quê fica
+//    reservado ao admin, que é quem responde por isso.
 // ============================================================
 const express = require('express');
-const { requireAdmin } = require('../middleware/auth');
+const { requireUser, requireAdmin } = require('../middleware/auth');
 const ferramentas = require('../ferramentas');
 
 const router = express.Router();
@@ -22,7 +26,7 @@ function quem(req) {
   return 'admin';
 }
 
-router.get('/', requireAdmin, (req, res) => {
+router.get('/', requireUser, (req, res) => {
   res.json({
     podeLocal: ferramentas.podeLocal(),
     ferramentas: ferramentas.listar(),
@@ -30,7 +34,7 @@ router.get('/', requireAdmin, (req, res) => {
   });
 });
 
-router.post('/run', requireAdmin, (req, res) => {
+router.post('/run', requireUser, (req, res) => {
   try {
     const { id, arg } = req.body || {};
     const r = ferramentas.executar(String(id || ''), arg, quem(req));
@@ -42,7 +46,7 @@ router.post('/run', requireAdmin, (req, res) => {
 });
 
 // Pára a ferramenta que está a correr (mate o processo ou a tarefa)
-router.post('/stop', requireAdmin, (req, res) => {
+router.post('/stop', requireUser, (req, res) => {
   try {
     const r = ferramentas.parar();
     res.status(r.ok ? 200 : 400).json(r);
@@ -53,18 +57,18 @@ router.post('/stop', requireAdmin, (req, res) => {
 });
 
 // GET /api/ferramentas/instalados -> quais programas do catálogo já estão no PC
-router.get('/instalados', requireAdmin, async (req, res) => {
+router.get('/instalados', requireUser, async (req, res) => {
   const r = await ferramentas.detectarInstalados();
   res.status(r.ok ? 200 : 400).json(r);
 });
 
 // GET /api/ferramentas/discos -> letras dos discos fixos (seletor do scan de vírus)
-router.get('/discos', requireAdmin, (req, res) => {
+router.get('/discos', requireUser, (req, res) => {
   res.json(ferramentas.discosFixos());
 });
 
 // POST /api/ferramentas/desinstalar -> { ids: [...] } desinstala os selecionados (Revo)
-router.post('/desinstalar', requireAdmin, (req, res) => {
+router.post('/desinstalar', requireUser, (req, res) => {
   try {
     const { ids } = req.body || {};
     const r = ferramentas.desinstalar(Array.isArray(ids) ? ids : [], quem(req));
@@ -75,7 +79,7 @@ router.post('/desinstalar', requireAdmin, (req, res) => {
   }
 });
 
-router.get('/status', requireAdmin, (req, res) => {
+router.get('/status', requireUser, (req, res) => {
   res.json(ferramentas.estadoPublico());
 });
 

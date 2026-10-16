@@ -45,14 +45,15 @@ const PAGE_COMENT = 12
 /* ---------------------------------------------------------------
    Player próprio.
 
-   O vídeo vive fora do site, mas a cara é toda nossa: mostra-se a
-   capa com o nosso botão de play e, depois, os NOSSOS controlos
-   (play/pause, barra de progresso, som e ecrã inteiro). O leitor
-   remoto vem sem controlos, sem logotipo e sem canal — ninguém vê
-   de quem é a plataforma só de olhar para o vídeo.
-
-   A barra só aparece ao passar o rato (e sempre quando está
-   pausado), por isso o clip fica limpo.
+   O vídeo vive fora do site, mas a cara é toda nossa:
+   - a capa é UM FRAME DO PRÓPRIO VÍDEO (tirado no browser antes de
+     subir) — nunca a capa da plataforma;
+   - enquanto o vídeo ainda está a processar, mostramos o AVISO
+     NOSSO ("a processar") e o leitor remoto só carrega quando está
+     pronto — por isso nunca aparece o ecrã de processamento deles;
+   - depois de tocar, os controlos são todos nossos (play/pause,
+     barra, tempo, VOLUME, som e ecrã inteiro) e a qualidade fica
+     forçada ao máximo (1080p60 quando o vídeo tem).
    --------------------------------------------------------------- */
 let apiPronta = null
 function carregarApi() {
@@ -69,28 +70,41 @@ function carregarApi() {
     s.async = true
     s.onerror = () => reject(new Error('sem api'))
     document.head.appendChild(s)
-    // se em 8 s não der nada, quem chama cai no modo simples
+    // se em 12 s não der nada, quem chama cai no modo simples
     setTimeout(() => {
       if (window.YT && window.YT.Player) resolve(window.YT)
       else reject(new Error('api lenta'))
-    }, 8000)
+    }, 12000)
   })
   return apiPronta
 }
 
-function VideoRemoto({ id, titulo, aoDarPlay }) {
+function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
   const [aberto, setAberto] = useState(false)
   const [erroCapa, setErroCapa] = useState(false)
   const [semApi, setSemApi] = useState(false)
   const [pronto, setPronto] = useState(false)
   const [tocando, setTocando] = useState(false)
   const [mudo, setMudo] = useState(false)
+  const [volume, setVolume] = useState(100)
   const [tempo, setTempo] = useState(0)
   const [dur, setDur] = useState(0)
   const [cheio, setCheio] = useState(false)
+  /* estado do processamento: null = a perguntar, true = pronto,
+     false = ainda a processar (mostra o aviso nosso) */
+  const [processando, setProcessando] = useState(null)
+  /* estado do leitor: -1 arranque, 0 fim, 1 a tocar, 2 pausa,
+     3 a carregar, 5 pronto para tocar */
+  const [estado, setEstado] = useState(-1)
+  /* véu NOSSO: 'inicio' cobre o título/logótipo deles no arranque,
+     'fim' substitui o ecrã de fim deles (com o NOSSO botão) */
+  const [veu, setVeu] = useState('nada')
+  const [veuSai, setVeuSai] = useState(false)
   const moldura = useRef(null)
   const caixa = useRef(null)
   const api = useRef(null)
+  const qualidadeFeita = useRef(false)
+  const veuTempo = useRef([])
 
   const chamou = (fn, args) => {
     const p = api.current
@@ -101,9 +115,25 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
     }
   }
 
+  /* só depois de abrir é que perguntamos ao servidor se o vídeo
+     está pronto — assim o leitor remoto nunca aparece a meio */
+  useEffect(() => {
+    if (!aberto) return
+    let vivo = true
+    setProcessando(null)
+    fetch(`/api/clips/pub/pronto/${encodeURIComponent(id)}`, { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : { pronto: true }))
+      .then((d) => vivo && setProcessando(!!(d && d.pronto)))
+      .catch(() => vivo && setProcessando(true))
+    return () => {
+      vivo = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aberto, id])
+
   /* criar / limpar o leitor quando alguém dá play */
   useEffect(() => {
-    if (!aberto || semApi) return
+    if (!aberto || semApi || processando !== true) return
     let vivo = true
     carregarApi()
       .then((YT) => {
@@ -130,6 +160,7 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
                 if (!vivo) return
                 setPronto(true)
                 setTocando(true)
+                qualidadeFeita.current = false
                 try {
                   e.target.setVolume(100)
                   e.target.unMute && e.target.unMute()
@@ -137,14 +168,45 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
                 } catch {}
                 const ifr = e.target.getIframe && e.target.getIframe()
                 if (ifr) ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0'
+                /* qualidade máxima (1080p60 quando existe) */
+                forcerQualidade(e.target)
               },
               onStateChange: (e) => {
                 if (!vivo) return
+                setEstado(e.data)
                 setTocando(e.data === 1)
                 try {
                   const d = e.target.getDuration()
                   if (d) setDur(d)
                 } catch {}
+                if (e.data === 1) {
+                  forcerQualidade(e.target)
+                  /* o leitor remoto mostra título, canal e logótipo
+                     nos primeiros segundos — tapamos com o NOSSO véu
+                     (capa + título) e só o levantamos quando eles
+                     já desapareceram (5 s); volta a tapar se a
+                     pessoa pausar com ele de pé */
+                  try {
+                    const t = e.target.getCurrentTime() || 0
+                    if (t < 1.5 || (veu === 'inicio' && !veuSai)) {
+                      setVeuSai(false)
+                      setVeu('inicio')
+                      clearTimeout(veuTempo.current[0])
+                      veuTempo.current[0] = setTimeout(() => setVeuSai(true), 5000)
+                    }
+                  } catch {}
+                }
+                if (e.data === 2 && veu === 'inicio' && !veuSai) {
+                  // pausa logo no arranque: o véu fica de pé
+                  clearTimeout(veuTempo.current[0])
+                  setVeuSai(false)
+                }
+                if (e.data === 0) {
+                  // fim do vídeo: entra o ecrã nosso (o deles não aparece)
+                  clearTimeout(veuTempo.current[0])
+                  setVeuSai(false)
+                  setVeu('fim')
+                }
               },
             },
           })
@@ -170,13 +232,27 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
     return () => {
       vivo = false
       clearInterval(t)
+      clearTimeout(veuTempo.current[0])
       try {
         api.current && typeof api.current.destroy === 'function' && api.current.destroy()
       } catch {}
       api.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aberto, semApi, id])
+  }, [aberto, semApi, id, processando])
+
+  /* qualidade o mais alta possível: pede "highres" e, se o leitor
+     baixar, volta a pedir (só 2 tentativas para não loop). */
+  const forcerQualidade = (alvo) => {
+    if (!alvo || qualidadeFeita.current) return
+    qualidadeFeita.current = true
+    try {
+      if (typeof alvo.setPlaybackQualityRange === 'function') {
+        alvo.setPlaybackQualityRange('hd1080', 'highres')
+      }
+      if (typeof alvo.setPlaybackQuality === 'function') alvo.setPlaybackQuality('highres')
+    } catch {}
+  }
 
   /* ecrã inteiro (nosso botão, não o deles) */
   useEffect(() => {
@@ -217,12 +293,63 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
     chamou(novo ? 'playVideo' : 'pauseVideo')
   }
 
+  /* clique no vídeo: no fim, recomeça; noutro lado, pausa/continua.
+     O véu de início NÃO se deixa fechar ao clique — enquanto o
+     leitor remoto mostra o título/logótipo deles, tapamos sempre. */
+  const aoClicar = () => {
+    if (estado === 0) {
+      chamou('seekTo', [0, true])
+      chamou('playVideo')
+      return
+    }
+    alternar()
+  }
+
+  /* volume propriamente dito (0 a 100) — o botão de som só muda
+     o mudo; a barra ao lado é que mexe mesmo no volume */
+  const mexerVolume = (v) => {
+    const n = Math.max(0, Math.min(100, Math.round(v)))
+    setVolume(n)
+    if (n > 0 && mudo) setMudo(false)
+    try {
+      const p = api.current
+      if (p && typeof p.setVolume === 'function') {
+        p.setVolume(n)
+        if (n > 0 && typeof p.unMute === 'function') p.unMute()
+        if (n === 0 && typeof p.mute === 'function') p.mute()
+      }
+    } catch {
+      /* player ainda não pronto */
+    }
+  }
+
   const procurar = (seg) => {
     setTempo(seg)
     chamou('seekTo', [seg, true])
   }
 
-  if (aberto && !semApi) {
+  /* Ainda a processar: mostramos o AVISO NOSSO e nunca o leitor
+     remoto — assim não aparece o ecrã de processamento deles. */
+  if (aberto && processando === false) {
+    return (
+      <div className="mt-3 flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-xl bg-[#0f0b1c] px-6 text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
+        <p className="text-sm font-bold text-white">A processar o vídeo…</p>
+        <p className="text-xs text-gray-400">
+          Fica pronto dentro de uns minutos — enquanto isso dá para ver as outras coisas.
+        </p>
+        <button
+          type="button"
+          onClick={() => setProcessando(null)}
+          className="rounded-full bg-violet-600 px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-500"
+        >
+          Já deve estar — tentar outra vez
+        </button>
+      </div>
+    )
+  }
+
+  if (aberto && !semApi && processando !== false) {
     const pct = dur > 0 ? Math.min(100, (tempo / dur) * 100) : 0
     return (
       <div
@@ -244,13 +371,61 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
           </span>
         )}
 
-        {/* clica no vídeo -> pausa / continua */}
+        {/* clica no vídeo -> pausa / continua (ou repete, no fim) */}
         <button
           type="button"
-          onClick={alternar}
-          className="absolute inset-0 z-[5]"
-          aria-label={tocando ? 'Pausar' : 'Reproduzir'}
+          onClick={aoClicar}
+          className="absolute inset-0 z-[6]"
+          aria-label={estado === 0 ? 'Repetir' : tocando ? 'Pausar' : 'Reproduzir'}
         />
+
+        {/* VÉU NOSSO — tapa o título/canal/logotipo que o leitor
+            remoto mostra no arranque e substitui o ecrã de fim deles */}
+        {veu !== 'nada' && (
+          <button
+            type="button"
+            onClick={aoClicar}
+            className={
+              'absolute inset-0 z-[5] flex cursor-pointer flex-col justify-between bg-gradient-to-br from-[#1b1030] via-[#120d22] to-[#0d0a18] px-5 py-4 text-left transition-opacity duration-700 ' +
+              (veuSai ? 'pointer-events-none opacity-0' : 'opacity-100')
+            }
+            aria-label={veu === 'fim' ? 'Repetir vídeo' : 'Fechar aviso'}
+          >
+            {capa && (
+              <img
+                src={capa}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-30"
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+              <AvatarImg name={titulo || 'clip'} className="h-8 w-8" />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-black text-white">
+                  {titulo || 'Clip'}
+                </span>
+                <span className="block text-[11px] font-semibold text-gray-300">
+                  {veu === 'fim' ? 'Fim do vídeo' : tocando ? 'A reproduzir…' : 'Em pausa'}
+                </span>
+              </span>
+            </span>
+            <span className="relative z-10 grid place-items-center self-center pb-6">
+              {veu === 'fim' && (
+                <>
+                  <span className="grid h-16 w-16 place-items-center rounded-full bg-violet-600 shadow-[0_8px_30px_rgba(139,92,246,0.6)]">
+                    <Play className="ml-1 h-7 w-7 text-white" fill="currentColor" />
+                  </span>
+                  <span className="mt-2 text-xs font-black uppercase tracking-wider text-white">
+                    Ver outra vez
+                  </span>
+                </>
+              )}
+            </span>
+            <span className="relative z-10 text-[11px] font-bold uppercase tracking-wider text-violet-300">
+              Los Locaus
+            </span>
+          </button>
+        )}
 
         {/* OS NOSSOS controlos — só aparece ao passar o rato
             (ou sempre que o vídeo está pausado) */}
@@ -306,8 +481,27 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
               aria-label={mudo ? 'Ligar som' : 'Desligar som'}
             >
-              {mudo ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              {mudo || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </button>
+
+            {/* VOLUME a sério: barra ao lado do botão de som */}
+            <div className="relative hidden w-20 shrink-0 sm:block">
+              <span className="pointer-events-none absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-white/20" />
+              <span
+                className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-violet-400"
+                style={{ width: (mudo ? 0 : volume) + '%' }}
+              />
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={mudo ? 0 : volume}
+                onChange={(e) => mexerVolume(Number(e.target.value))}
+                aria-label="Volume"
+                className="relative h-1 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-violet-200"
+              />
+            </div>
 
             <button
               type="button"
@@ -338,9 +532,10 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
     )
   }
 
-  const capa = erroCapa
-    ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg`
-    : `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`
+  /* Capa NOSSA: um frame do próprio vídeo, guardado no site.
+     Se ainda não houver (clip antigo), mostramos um fundo nosso
+     com o ícone do jogo — nunca a capa da plataforma. */
+  const temCapa = !!capa && !erroCapa
 
   return (
     <button
@@ -348,16 +543,22 @@ function VideoRemoto({ id, titulo, aoDarPlay }) {
         aoDarPlay && aoDarPlay()
         setAberto(true)
       }}
-      className="group relative mt-3 block w-full overflow-hidden rounded-xl bg-black"
+      className="group relative mt-3 block w-full overflow-hidden rounded-xl bg-gradient-to-br from-[#1b1030] to-[#0d0a18]"
       aria-label={'Reproduzir ' + (titulo || 'clip')}
     >
-      <img
-        src={capa}
-        alt=""
-        loading="lazy"
-        onError={() => setErroCapa(true)}
-        className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-      />
+      {temCapa ? (
+        <img
+          src={capa}
+          alt=""
+          loading="lazy"
+          onError={() => setErroCapa(true)}
+          className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+        />
+      ) : (
+        <span className="grid aspect-video w-full place-items-center">
+          <Gamepad2 className="h-14 w-14 text-violet-500/40" />
+        </span>
+      )}
       <span className="absolute inset-0 grid place-items-center bg-black/25 transition-colors group-hover:bg-black/45">
         <span className="grid h-14 w-14 place-items-center rounded-full bg-violet-600 shadow-[0_8px_30px_rgba(139,92,246,0.55)] transition-transform group-hover:scale-110">
           <Play className="ml-0.5 h-6 w-6 text-white" fill="currentColor" />
@@ -868,6 +1069,7 @@ export default function ClipCard({
           <VideoRemoto
             id={c.remoto}
             titulo={c.title}
+            capa={c.thumb_url}
             aoDarPlay={() => registarVista(c.id, setC)}
           />
         ) : (

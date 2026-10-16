@@ -9,6 +9,7 @@ import {
   Wrench,
   User,
   LogOut,
+  Sparkles,
   X,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -33,10 +34,11 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'Clips e Publicações', icon: Clapperboard, path: '/clips' },
     { name: 'Atualizações', icon: History, path: '/atualizacoes' },
     { name: 'Membros', icon: Users, path: '/membros' },
-    // Jogos, Specs e Ferramentas: só o admin abre
-    ...(isAdmin ? [{ name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' }] : []),
-    ...(isAdmin ? [{ name: 'PCs / Specs', icon: Cpu, path: '/pcs' }] : []),
-    ...(isAdmin ? [{ name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' }] : []),
+    // Jogos, Specs e Ferramentas: abertas a todos os membros
+    { name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' },
+    { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
+    { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
+    { name: 'Novidades do site', icon: Sparkles, path: '/novidades' },
     { name: 'Conta', icon: User, path: '/perfil' },
   ]
 

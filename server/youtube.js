@@ -436,6 +436,77 @@ async function apagar(videoId) {
   return false;
 }
 
+/* ---------------------------------------------------------------
+    Estar o vídeo pronto a reproduzir.
+
+    Logo depois do upload o YouTube ainda está a processar: se o
+    leitor carregar nesse estado aparece "We're processing this
+    video" (com o título, o canal e a marca do YouTube — tudo o
+    que NÃO queremos mostrar). Por isso o site pergunta primeiro
+    aqui e só abre o leitor quando está "succeeded".
+
+    O resultado fica em memória alguns minutos: repetir a pergunta
+    ao mesmo vídeo não deve custar cota nenhuma.
+    --------------------------------------------------------------- */
+const PROCESSAMENTO = new Map(); // id -> { pronto, quando }
+const PROCESSAMENTO_TTL = 60 * 1000; // 1 minuto entre perguntas
+
+async function processado(videoId) {
+  const id = String(videoId || '');
+  if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) return { pronto: true };
+
+  const guardado = PROCESSAMENTO.get(id);
+  if (guardado && Date.now() - guardado.quando < PROCESSAMENTO_TTL) return { pronto: guardado.pronto };
+
+  const pubs = publicadores();
+  let ultimo = true; // sem contadores -> deixa passar (o leitor tenta)
+  for (let i = 0; i < pubs.length; i++) {
+    let token;
+    try {
+      token = await tokenDe(i);
+    } catch {
+      continue;
+    }
+    const url =
+      URL_VIDEOS +
+      '?id=' +
+      encodeURIComponent(id) +
+      '&part=status,processingDetails';
+    let r;
+    try {
+      r = await httpFetch(url, {
+        headers: { Authorization: 'Bearer ' + token },
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch {
+      continue;
+    }
+    if (r.status === 404) return { pronto: false }; // ainda não existe
+    if (!r.ok) continue; // 401/403 -> tenta a conta seguinte
+    const d = await r.json().catch(() => ({}));
+    const item = d.items && d.items[0];
+    if (!item) {
+      ultimo = false;
+      continue;
+    }
+    const estadoProc = String(
+      (item.processingDetails && item.processingDetails.processingStatus) || '',
+    ).toLowerCase();
+    const estadoSub = String((item.status && item.status.uploadStatus) || '').toLowerCase();
+    // "succeeded" = pronto; "processing"/"failed" e vazio = ainda não
+    const pronto = estadoProc === 'succeeded' || estadoSub === 'processed';
+    PROCESSAMENTO.set(id, { pronto, quando: Date.now() });
+    // limpeza simples do mapa (não cresce para sempre)
+    if (PROCESSAMENTO.size > 400) {
+      for (const [k, v] of PROCESSAMENTO) {
+        if (Date.now() - v.quando > 30 * 60000) PROCESSAMENTO.delete(k);
+      }
+    }
+    return { pronto };
+  }
+  return { pronto: ultimo };
+}
+
 module.exports = {
   configurado,
   publicadores,
@@ -445,5 +516,6 @@ module.exports = {
   marcarEsgotado,
   verificar,
   apagar,
+  processado,
   LIMITE,
 };
