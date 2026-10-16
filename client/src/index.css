@@ -31,10 +31,35 @@
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--aj-bg);
+  /* brilho ambiente violeta muito discreto no topo — dá profundidade
+     ao preto puro sem virar banner */
+  background-image: radial-gradient(
+    56rem 26rem at 50% -6rem,
+    rgb(var(--aj-600) / 0.12),
+    transparent 68%
+  );
+  background-attachment: fixed;
   color: white;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   /* espaço para a barra de navegação flutuante */
   padding-bottom: 6.5rem;
+}
+
+/* seleção de texto na cor do site */
+::selection {
+  background: rgb(var(--aj-600) / 0.55);
+  color: #fff;
+}
+
+/* foco visível (teclado) — só em botões/links: os inputs já têm
+   o próprio destaque de borda */
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid rgb(var(--aj-400) / 0.85);
+  outline-offset: 2px;
 }
 
 /* ============================================================
@@ -77,6 +102,35 @@ h4 {
   background: rgb(var(--aj-500));
 }
 
+/* Scrollbar forte — para os terminais/log, onde a fina não se vê.
+   Mais larga, mais clara e com trilho escuro para se notar que
+   há mais conteúdo para baixo. */
+.scroll-forte {
+  scrollbar-width: thin;
+  scrollbar-color: #f97316 rgba(255, 255, 255, 0.08);
+}
+.scroll-forte::-webkit-scrollbar {
+  width: 12px;
+}
+.scroll-forte::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+}
+.scroll-forte::-webkit-scrollbar-thumb {
+  background: #f97316;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+.scroll-forte::-webkit-scrollbar-thumb:hover {
+  background: #fb923c;
+  background-clip: padding-box;
+}
+/* setas — só aparecem quando a área do rato está em cima */
+.scroll-forte::-webkit-scrollbar-button:single-button {
+  display: none;
+}
+
 /* Glow — discreto: só um halo curto para destacar o elemento ativo */
 .glow-orange {
   box-shadow: 0 2px 12px rgb(var(--aj-600) / 0.4);
@@ -91,11 +145,14 @@ h4 {
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .glass:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  transform: translateY(-2px);
 }
 
 /* Gradient text */
@@ -458,7 +515,11 @@ button[class~='bg-orange-500']:active {
 
 @media (prefers-reduced-motion: reduce) {
   button,
-  .btn-glass {
+  .btn-glass,
+  .glass {
     transition-duration: 0.01ms !important;
+  }
+  .glass:hover {
+    transform: none;
   }
 }

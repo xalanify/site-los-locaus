@@ -63,8 +63,36 @@ const badgesOf = async (userId) => {
   }
 };
 
+/* Distinções de overclock lidas da leitura REAL do PC (specs.details.avaliacao).
+   Devolve o que o utilizador tem alterado: CPU acima do teto, memórias com
+   overclock e/ou perfil XMP ligado. Sem leitura -> null (não mostra nada). */
+const distincoesOverclock = async (userId) => {
+  try {
+    const row = await getDb()
+      .prepare('SELECT details FROM user_specs WHERE user_id = ?')
+      .get(userId);
+    let det = row && row.details;
+    if (det && typeof det === 'string') {
+      try { det = JSON.parse(det); } catch { det = null; }
+    }
+    const av = det && det.avaliacao;
+    if (!av) return null;
+    const ocCpu = av.cpu?.estado === 'overclock';
+    const ocRam = av.ram?.estado === 'overclock';
+    const xmp = Boolean(av.ram?.tem_xmp || av.ram?.estado === 'xmp');
+    if (!ocCpu && !ocRam && !xmp) return null;
+    return { oc_cpu: ocCpu, oc_ram: ocRam, xmp };
+  } catch {
+    return null;
+  }
+};
+
 const publicUser = async (u) => {
-  const [prof, badges] = await Promise.all([profileOf(u.id), badgesOf(u.id)]);
+  const [prof, badges, dist] = await Promise.all([
+    profileOf(u.id),
+    badgesOf(u.id),
+    distincoesOverclock(u.id),
+  ]);
   return {
     id: u.id,
     username: u.username,
@@ -75,6 +103,7 @@ const publicUser = async (u) => {
     created_at: u.created_at,
     ...prof,
     badges,
+    distincoes: dist,
   };
 };
 
@@ -409,13 +438,16 @@ router.get('/list', attachAuth, async (req, res) => {
     const badges = await db.prepare('SELECT user_id, badge FROM user_badges').all();
     const byUser = {};
     for (const b of badges) (byUser[b.user_id] = byUser[b.user_id] || []).push(b.badge);
+    // distinções de overclock (leitura real do PC) — para os membros
+    const dists = await Promise.all(rows.map((r) => distincoesOverclock(r.id)));
     res.json({
-      users: rows.map((r) => ({
+      users: rows.map((r, i) => ({
         id: Number(r.id),
         username: r.username,
         avatar_url: r.avatar_url || null,
         online: Boolean(r.online),
         badges: byUser[r.id] || [],
+        distincoes: dists[i] || null,
       })),
     });
   } catch (error) {
@@ -457,13 +489,14 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
-    const [badges, prof, pres] = await Promise.all([
+    const [badges, prof, pres, dist] = await Promise.all([
       badgesOf(user.id),
       profileOf(user.id),
       getDb()
         .prepare('SELECT last_seen FROM user_presence WHERE user_id = ?')
         .get(user.id)
         .catch(() => null),
+      distincoesOverclock(user.id),
     ]);
 
     // "online agora" — mesma regra da lista de membros (2 minutos)
@@ -480,6 +513,7 @@ router.get('/:username', attachAuth, async (req, res) => {
         username: user.username,
         created_at: user.created_at,
         badges,
+        distincoes: dist,
         online,
         ...prof,
         // as contas de jogo ficam no backend (painel admin) — não saem aqui

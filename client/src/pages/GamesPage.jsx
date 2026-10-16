@@ -1675,52 +1675,14 @@ function R6Page() {
 
   return (
     <div className="space-y-6">
-      {/* Aviso: fonte dos dados — só o esquadrão */}
-      <div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-2.5 text-sm text-gray-300">
-        <Info className="h-4 w-4 shrink-0 text-blue-400" />
-        <p>
-          <span className="font-bold text-orange-400">tracker.gg</span> — só o{' '}
-          <span className="font-bold text-white">Esquadrão</span>:{' '}
-          <span className="font-bold text-white">{d.players?.length || 0}</span> jogadores, com
-          nível, rank da temporada, rank máximo e números de carreira.
-        </p>
+      {/* estado da atualização (manual) */}
+      <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] text-gray-400">
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-500" />
+        <span>
+          Estatísticas atualizadas <span className="font-bold text-gray-300">manualmente</span> — o
+          admin carrega o JSON de cada jogador quando há novidades.
+        </span>
       </div>
-
-      {/* estado da atualização automática */}
-      {d.auto && (
-        <div
-          className={`flex items-center gap-2.5 rounded-xl border px-4 py-2.5 text-[13px] ${
-            d.auto.ligado
-              ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-300'
-              : 'border-white/10 bg-white/5 text-gray-400'
-          }`}
-        >
-          <span className="relative flex h-2 w-2 shrink-0">
-            {d.auto.ligado && (
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            )}
-            <span
-              className={`relative inline-flex h-2 w-2 rounded-full ${
-                d.auto.ligado ? 'bg-emerald-400' : 'bg-gray-500'
-              }`}
-            />
-          </span>
-          {d.auto.ligado ? (
-            <span>
-              Atualização automática ligada — a cada {d.auto.intervaloMin} min
-              {d.auto.ultimaTentativa
-                ? ` · última tentativa ${new Date(d.auto.ultimaTentativa).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
-                : ''}
-            </span>
-          ) : (
-            <span>
-              Atualização automática desligada — falta a chave{' '}
-              <code className="text-orange-400">TRACKER_API_KEY</code> no servidor (snapshot
-              guardado mantido).
-            </span>
-          )}
-        </div>
-      )}
 
       <R6Squad players={d.players || []} maxRp={maxRp} />
 

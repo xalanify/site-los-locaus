@@ -55,7 +55,8 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     // media-src: os vídeos dos clips vêm do Supabase Storage
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://*.supabase.co https://www.googleapis.com; frame-ancestors 'none';"
+    // worker-src: os Web Workers do bench da CPU (blob do próprio site)
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://*.supabase.co https://www.googleapis.com https://*.googleapis.com; frame-ancestors 'none';"
   );
   next();
 });
@@ -90,7 +91,12 @@ if (emBreveHtml) {
   });
 }
 
-app.use(express.json({ limit: '32kb' }));
+// O import do R6 manda páginas HTML grandes (dezenas de MB) — esse
+// caminho tem o seu próprio parser com limite maior na rota.
+app.use((req, res, next) => {
+  if (req.path === '/api/admin/r6/import') return next();
+  express.json({ limit: '32kb' })(req, res, next);
+});
 
 app.use(
   cors({

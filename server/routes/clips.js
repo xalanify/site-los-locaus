@@ -6,6 +6,7 @@ const storage = require('../storage');
 const { CLIP_GAME_IDS } = require('../clipGames');
 const { notify } = require('../notify');
 const { disponivel, transcodificar } = require('../transcode');
+const yt = require('../youtube');
 
 const router = express.Router();
 
@@ -31,7 +32,10 @@ function canSee(clip, auth) {
 }
 
 // URL de leitura do vídeo: público -> link público; privado -> temporário
+// Um clip publicado no YouTube não tem ficheiro nosso — o player vem de lá.
 function clipUrl(clip) {
+  if (clip.youtube_id) return null;
+  if (!clip.file) return null;
   if (clip.visibility === 'public') return storage.publicUrl(BUCKET, clip.file);
   try {
     // Sincronizar a assinatura custaria uma volta extra por clip; usamos o
@@ -43,7 +47,7 @@ function clipUrl(clip) {
 }
 
 /* ============================================================
-   Otimização em segundo plano (720p H.264)
+   Otimização em segundo plano (1080p H.264 + som)
 
    O clip já está publicado com o original; depois, sem o utilizador
    ficar à espera, busca-se o vídeo, comprime-se e substitui-se no
@@ -61,7 +65,7 @@ function otimizarClip(file) {
       if (!novo) return;
       await storage.upload(BUCKET, file, novo, 'video/mp4');
       const mb = (n) => Math.round((n / 1048576) * 10) / 10;
-      console.log(`Clip otimizado ${file}: ${mb(original)}MB -> ${mb(novo)}MB (720p H.264)`);
+      console.log(`Clip otimizado ${file}: ${mb(original)}MB -> ${mb(novo)}MB (1080p H.264 + som)`);
     } catch (erro) {
       console.warn('Otimização de vídeo saltou:', String(erro.message).slice(0, 160));
     }
@@ -107,6 +111,8 @@ async function decorate(db, rows, auth) {
     title: c.title,
     game: c.game || null,
     url: clipUrl(c),
+    // publicado no YouTube (sem ficheiro no Supabase) — o cliente monta o player
+    youtube: c.youtube_id || null,
     start: Number(c.start_sec) || 0,
     end: c.end_sec == null ? null : Number(c.end_sec),
     visibility: c.visibility === 'private' ? 'private' : 'public',
@@ -329,6 +335,135 @@ router.post('/confirm', requireUserOrAdmin, async (req, res) => {
   }
 });
 
+/* ============================================================
+   Publicação automática no YouTube (opção C)
+
+   O vídeo vai DIRETO do browser para o YouTube (nunca passa pelo
+   Vercel, que só aceita 4,5 MB). O servidor só:
+     1. dá um access token curto e escolhe o contador livre;
+     2. depois confere que o vídeo existe, é do nosso canal e
+        ficou unlisted;
+     3. guarda o ID na BD — é o único "ficheiro" que fica.
+
+   ============================================================ */
+
+/* O clip pode ser novo (youtube_id) — a tabela já existe, mas a
+   coluna pode faltar numa BD antiga. Criamo-la à primeira vez. */
+let colunaYT = false;
+async function garantirColunaYT(db) {
+  if (colunaYT) return true;
+  try {
+    await db.prepare('ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_id text').run();
+    await db.prepare('ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_thumb text').run();
+    colunaYT = true;
+  } catch (e) {
+    console.warn('YouTube (coluna) saltou:', String(e.message).slice(0, 120));
+  }
+  return colunaYT;
+}
+
+// Estado da publicação automática (o botão e o aviso do frontend)
+router.get('/youtube/estado', requireUserOrAdmin, (req, res) => {
+  res.json(yt.estadoPublico());
+});
+
+// Dá o access token com que o browser sobe o vídeo (só a quem pode publicar)
+router.post('/youtube/token', requireUserOrAdmin, async (req, res) => {
+  try {
+    const r = await yt.prepararToken();
+    res.json({
+      token: r.token,
+      contador: r.contador,
+      nome: r.nome,
+      // o browser submete com estes cabeçalhos (resumable)
+      uploadUrl: 'https://www.googleapis.com/upload/youtube/v3/videos',
+      expiresAt: new Date(Date.now() + 15 * 60000).toISOString(),
+      estado: yt.estadoPublico(),
+    });
+  } catch (e) {
+    const st = e.codigo === 'esgotado' ? 429 : e.codigo === 'nao_configurado' ? 503 : 502;
+    res.status(st).json({ error: e.message, codigo: e.codigo, resetEm: e.resetEm, aviso: e.aviso });
+  }
+});
+
+// O browser avisa que o YouTube recusou por quota
+router.post('/youtube/esgotado', requireUserOrAdmin, (req, res) => {
+  const i = Number(req.body && req.body.contador);
+  if (Number.isInteger(i)) yt.marcarEsgotado(i, String((req.body && req.body.motivo) || ''));
+  res.json(yt.estadoPublico());
+});
+
+// Depois de o vídeo estar no YouTube, confere e guarda o clip
+router.post('/youtube/confirm', requireUserOrAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const b = req.body || {};
+
+    const title = String(b.title || '').trim().slice(0, 100);
+    if (!title) return res.status(400).json({ error: 'Título em falta' });
+
+    const game = String(b.game || '').trim().toLowerCase();
+    if (!CLIP_GAME_IDS.has(game)) {
+      return res.status(400).json({ error: 'Escolhe o jogo do clip.' });
+    }
+
+    const videoId = String(b.videoId || '');
+    const contador = Number.isInteger(Number(b.contador)) ? Number(b.contador) : 0;
+    if (!yt.configurado()) {
+      return res.status(503).json({ error: 'Publicação automática por configurar.' });
+    }
+    if (!(await garantirColunaYT(db))) {
+      return res.status(503).json({ error: 'Coluna do YouTube por criar (corre migrate.js).' });
+    }
+
+    // confere com o YouTube: existe? é do nosso canal? ficou unlisted?
+    let info;
+    try {
+      info = await yt.verificar(videoId, contador);
+    } catch (e) {
+      const st = e.codigo === 'esgotado' ? 429 : 400;
+      return res
+        .status(st)
+        .json({ error: e.message, codigo: e.codigo, resetEm: e.resetEm, aviso: e.aviso });
+    }
+    yt.registarUpload(contador);
+
+    let uid = req.auth && req.auth.uid;
+    if (!uid && req.auth && req.auth.admin) uid = (await ensureAdminUser(db)).id;
+    if (!uid) return res.status(401).json({ error: 'Inicia sessão para continuares' });
+
+    const meta = metaFromQuery(b);
+    const result = await db
+      .prepare(
+        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, youtube_id, youtube_thumb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+      )
+      .run(
+        uid,
+        title,
+        game,
+        '', // sem ficheiro no Supabase — o vídeo vive no YouTube
+        meta.start,
+        meta.end,
+        meta.visibility,
+        info.id,
+        info.thumb || null,
+      );
+
+    const row = await db
+      .prepare(SELECT_SQL + ' WHERE c.id = ?')
+      .get(Number(result.lastInsertRowid));
+    if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
+    res.json({
+      clip: (await decorate(db, [row], req.auth))[0],
+      youtube: { id: info.id, privacidade: info.privacidade, canal: info.canal },
+      estado: yt.estadoPublico(),
+    });
+  } catch (error) {
+    console.error('Erro clips youtube confirm:', error.message);
+    res.status(500).json({ error: 'Erro ao guardar o clip.' });
+  }
+});
+
 // Streaming/redirecionamento de um clip privado
 router.get('/:id/stream', attachAuth, async (req, res) => {
   try {
@@ -337,6 +472,7 @@ router.get('/:id/stream', attachAuth, async (req, res) => {
     const clip = await db.prepare('SELECT * FROM clips WHERE id = ?').get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
     if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
+    if (clip.youtube_id) return res.redirect('https://www.youtube.com/watch?v=' + clip.youtube_id);
     res.redirect(storage.publicUrl(BUCKET, clip.file));
   } catch (error) {
     console.error('Erro clip stream:', error.message);
@@ -501,7 +637,11 @@ router.post('/:id/view', attachAuth, async (req, res) => {
     const db = getDb();
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ error: 'Id inválido' });
-    const clip = await db.prepare('SELECT id FROM clips WHERE id = ?').get(id);
+    // tem de ir visibility + user_id: o canSee() lê esses campos
+    // (com "SELECT id" dava 403 sempre e as vistas nunca contavam)
+    const clip = await db
+      .prepare('SELECT id, visibility, user_id FROM clips WHERE id = ?')
+      .get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
     if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
     await db.prepare('UPDATE clips SET views = COALESCE(views, 0) + 1 WHERE id = ?').run(id);
@@ -748,6 +888,10 @@ router.get('/:id/download', attachAuth, async (req, res) => {
     const safe = String(clip.title || 'clip')
       .replace(/[^\p{L}\p{N} _-]/gu, '_')
       .slice(0, 60);
+    // Clip no YouTube: não tem ficheiro nosso para dar — manda para o vídeo.
+    if (clip.youtube_id || !clip.file) {
+      return res.redirect('https://www.youtube.com/watch?v=' + (clip.youtube_id || ''));
+    }
     // Em vez de passar o vídeo pela função, mandamos o browser para o Storage
     res.redirect(storage.publicUrl(BUCKET, clip.file));
     void safe;
@@ -820,7 +964,7 @@ router.delete('/:id', attachAuth, async (req, res) => {
     await db.prepare('DELETE FROM clip_saves WHERE clip_id = ?').run(id);
     await db.prepare('DELETE FROM clip_comments WHERE clip_id = ?').run(id);
     await db.prepare('DELETE FROM clips WHERE id = ?').run(id);
-    storage.remove(BUCKET, clip.file).catch(() => {});
+    if (clip.file) storage.remove(BUCKET, clip.file).catch(() => {});
     res.json({ success: true });
   } catch (error) {
     console.error('Erro clip DELETE:', error.message);

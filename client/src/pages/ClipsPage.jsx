@@ -15,6 +15,8 @@ import {
   Award,
   Scissors,
   AlertTriangle,
+  Check,
+  Youtube,
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
@@ -38,13 +40,17 @@ const PAGE_CLIPS = 12
    /api/clips/limits — o Supabase Storage também tem um limite próprio). */
 const DEFAULT_MAX_MB = 50
 
-/* codecs possíveis para gravar o corte (o melhor primeiro) */
+/* codecs possíveis para gravar o corte (o melhor primeiro).
+   webm/opus primeiro: é o caminho que o MediaRecorder grava com
+   ÁUDIO fiável no Chrome. O MP4 do MediaRecorder costuma gravar sem
+   áudio (mux quebrado) — por isso o mp4 fica só como último recurso.
+   O servidor converte depois webm -> mp4 com ffmpeg, com som. */
 const MIMES = [
-  'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
-  'video/mp4',
   'video/webm;codecs=vp9,opus',
   'video/webm;codecs=vp8,opus',
   'video/webm',
+  'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+  'video/mp4',
 ]
 
 const pickMime = () => {
@@ -101,7 +107,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
           </div>
         ) : !d || !d.found ? (
-          <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+          <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
             {state.error || 'Perfil não encontrado.'}
           </p>
         ) : (
@@ -133,19 +139,19 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-2xl bg-white/5 p-3 text-center">
                 <div className="text-lg font-black text-white">{d.stats?.clips ?? 0}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Clips
                 </div>
               </div>
               <div className="rounded-2xl bg-white/5 p-3 text-center">
                 <div className="text-lg font-black text-orange-400">{d.stats?.likes ?? 0}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Gostos
                 </div>
               </div>
               <div className="rounded-2xl bg-white/5 p-3 text-center">
                 <div className="text-lg font-black text-yellow-400">{d.stats?.downloads ?? 0}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Transferências
                 </div>
               </div>
@@ -153,11 +159,11 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
             {/* Contas de jogo ligadas pelo admin */}
             <div className="rounded-2xl bg-white/5 p-4">
-              <h3 className="mb-2.5 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500">
+              <h3 className="mb-2.5 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
                 <Gamepad2 className="h-4 w-4 text-orange-400" /> Contas de jogo
               </h3>
               {accounts.length === 0 ? (
-                <p className="text-sm text-gray-500">Ainda sem contas de jogo associadas.</p>
+                <p className="text-sm text-gray-400">Ainda sem contas de jogo associadas.</p>
               ) : (
                 <ul className="space-y-1.5">
                   {accounts.map((a) => (
@@ -174,11 +180,11 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
             {/* Distinções */}
             <div className="rounded-2xl bg-white/5 p-4">
-              <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500">
+              <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
                 <Award className="h-4 w-4 text-orange-400" /> Distinções
               </h3>
               {badges.length === 0 ? (
-                <p className="text-sm text-gray-500">Ainda sem distinções.</p>
+                <p className="text-sm text-gray-400">Ainda sem distinções.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {badges.map((b) => (
@@ -207,11 +213,11 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
             {/* Clips */}
             <div>
-              <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500">
+              <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
                 <Film className="h-4 w-4 text-orange-400" /> Clips
               </h3>
               {d.clips.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+                <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
                   Ainda não há clips para ver.
                 </p>
               ) : (
@@ -268,6 +274,9 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const canceladoRef = useRef(false)
   const [error, setError] = useState('')
   const [maxMB, setMaxMB] = useState(DEFAULT_MAX_MB)
+  /* Publicação automática no YouTube (estado vem do servidor:
+     configurado? ainda há quota hoje? aviso quando esgota). */
+  const [ytEstado, setYtEstado] = useState(null)
   const [trimming, setTrimming] = useState(null) // { done, total } enquanto corta
   const [nota, setNota] = useState('') // aviso depois de cortar
   const previewRef = useRef(null)
@@ -335,6 +344,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         if (d && d.maxMB) setMaxMB(Number(d.maxMB))
       })
       .catch(() => {})
+    // publicação automática no YouTube (só para quem pode publicar)
+    if (user) {
+      fetch('/api/clips/youtube/estado', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setYtEstado(d))
+        .catch(() => {})
+    }
     const t = setInterval(loadMembers, 30000)
     return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -358,6 +374,11 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     if (!user) return onRequestAuth && onRequestAuth()
     setShowForm(true)
     setError('')
+    // estado fresco da publicação automática (pode ter esgotado entretanto)
+    fetch('/api/clips/youtube/estado', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setYtEstado(d))
+      .catch(() => {})
   }
 
   const resetForm = () => {
@@ -426,8 +447,10 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     if (!trimmed) return setError('Dá um título ao clip.')
     if (!game) return setError('Escolhe o jogo do clip.')
     if (!file) return setError('Escolhe um vídeo.')
-    // tamanho — avisa aqui em vez de esperar pelo erro do servidor
-    if (file.size > maxMB * 1048576) {
+    // Com o YouTube configurado não há limite de MB (o Google aceita
+    // até 256 GB) — o aviso de tamanho só serve para o Supabase.
+    const vaiParaYT = !!(ytEstado && ytEstado.configurado && ytEstado.disponivel)
+    if (file.size > maxMB * 1048576 && !vaiParaYT) {
       const agora = Math.round((file.size / 1048576) * 10) / 10
       return setError(
         `O vídeo tem ${agora} MB e o limite é ${maxMB} MB — corta o vídeo para ficar abaixo.`,
@@ -452,10 +475,238 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     canceladoRef.current = false
     setProgress(0)
     setEnvio({ total: file ? file.size : 0, enviado: 0, inicio: Date.now(), fase: 'enviar' })
-    // 1) tenta subir direto ao Supabase (o vídeo não passa pelo site)
+    // 1) publicação automática no YouTube (sem limite de tamanho)
+    if (await enviarParaYouTube(qs)) return
+    // 2) tenta subir direto ao Supabase (o vídeo não passa pelo site)
     if (await enviarDireto(qs)) return
-    // 2) fallback: envio pelo servidor (servidor local ou vídeos pequenos)
+    // 3) fallback: envio pelo servidor (servidor local ou vídeos pequenos)
     enviarPeloServidor(qs)
+  }
+
+  /* ============================================================
+     Publicação automática no YouTube (opção C)
+
+     O browser sobe o vídeo DIRETO para o YouTube (resumable):
+     1. o servidor dá um access token curto e diz que contador usar;
+     2. abre-se a sessão de subida com os metadados (unlisted);
+     3. faz-se PUT do ficheiro — há barra de progresso, sem limite;
+     4. o servidor confere e guarda o id do vídeo na BD.
+
+     O vídeo nunca passa pelo site, por isso funciona igual na
+     Vercel (que só aceita corpos de 4,5 MB).
+     ============================================================ */
+  const avisoQuota = async (mensagem, contador) => {
+    setProgress(-1)
+    setYtEstado((s) => ({ ...(s || {}), disponivel: false, aviso: mensagem }))
+    setError(mensagem)
+    if (contador != null) {
+      fetch('/api/clips/youtube/esgotado', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contador, motivo: mensagem }),
+      })
+        .then((r) => r.json())
+        .then((d) => d && setYtEstado(d))
+        .catch(() => {})
+    }
+  }
+
+  /* Só um 429 (ou um erro que fale em quota) é mesmo quota. Um 403
+     normalmente é permissão/escopo — marcar isso como "esgotado"
+     bloqueava as publicações todas até à meia-noite sem motivo. */
+  const eQuota = (status, corpo) => {
+    if (status === 429) return true
+    const s = typeof corpo === 'string' ? corpo : JSON.stringify(corpo || '')
+    return /quota|rate.?limit|upload.?limit|daily.?limit/i.test(s)
+  }
+
+  const enviarParaYouTube = async (qs) => {
+    // sem YouTube configurado -> continua pelo Supabase (como dantes)
+    if (!ytEstado || !ytEstado.configurado) return false
+    if (canceladoRef.current) return false
+
+    try {
+      // 1) token + contador livre
+      const t = await fetch('/api/clips/youtube/token', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: '{}',
+      })
+      const td = await t.json().catch(() => null)
+      if (!t.ok) {
+        if (t.status === 429) {
+          await avisoQuota((td && (td.aviso || td.error)) || 'Publicações esgotadas por hoje.', null)
+          return true
+        }
+        if (t.status === 503) return false // não configurado -> Supabase
+        setProgress(-1)
+        setError((td && td.error) || 'Não consegui autorizar no YouTube.')
+        return true
+      }
+      if (td && td.estado) setYtEstado(td.estado)
+
+      const titulo = (qs.get('title') || '').slice(0, 100)
+      const meta = {
+        snippet: {
+          title: titulo,
+          description: 'Clip de Los Locaus — ' + titulo,
+          categoryId: '20', // Gaming
+        },
+        status: {
+          privacyStatus: 'unlisted',
+          embeddable: true,
+          publicStatsViewable: false,
+          selfDeclaredMadeForKids: false,
+        },
+      }
+
+      // 2) abrir a sessão resumable (só metadados)
+      const ini = await fetch(
+        `${td.uploadUrl}?uploadType=resumable&part=snippet,status&notifySubscribers=false`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + td.token,
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-Upload-Content-Length': String(file.size),
+            'X-Upload-Content-Type': file.type || 'video/mp4',
+          },
+          body: JSON.stringify(meta),
+        },
+      )
+      if (!ini.ok) {
+        const e = await ini.json().catch(() => null)
+        if (eQuota(ini.status, e)) {
+          await avisoQuota('As publicações automáticas esgotaram por hoje.', td.contador)
+          return true
+        }
+        setProgress(-1)
+        setError(
+          (e && e.error && (e.error.message || e.error)) ||
+            'O YouTube recusou a subida (erro ' + ini.status + ').',
+        )
+        return true
+      }
+      const loc = ini.headers.get('location') || ini.headers.get('Location')
+      if (!loc) {
+        setProgress(-1)
+        setError('O YouTube não devolveu o endereço da subida. Tenta outra vez.')
+        return true
+      }
+
+      // 3) o vídeo em si, com barra de progresso
+      const sub = await new Promise((resolve) => {
+        const x = new XMLHttpRequest()
+        xhrRef.current = x
+        x.open('PUT', loc)
+        x.setRequestHeader('Content-Type', file.type || 'video/mp4')
+        x.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setProgress(Math.round((e.loaded / e.total) * 90))
+            setEnvio((s) => ({ ...s, total: e.total, enviado: e.loaded }))
+          }
+        }
+        x.onload = () => {
+          xhrRef.current = null
+          resolve({ ok: x.status >= 200 && x.status < 300, status: x.status, body: x.responseText })
+        }
+        x.onerror = () => {
+          xhrRef.current = null
+          resolve({ ok: false, status: 0 })
+        }
+        x.onabort = () => {
+          xhrRef.current = null
+          resolve({ ok: false, status: 0, cancelado: true })
+        }
+        x.send(file)
+      })
+
+      if (canceladoRef.current || sub.cancelado) return true
+      if (!sub.ok) {
+        let corpoSub = null
+        try {
+          corpoSub = JSON.parse(sub.body)
+        } catch {
+          /* corpo não é JSON */
+        }
+        if (eQuota(sub.status, corpoSub)) {
+          await avisoQuota('As publicações automáticas esgotaram por hoje.', td.contador)
+          return true
+        }
+        setProgress(-1)
+        setError(
+          (corpoSub && corpoSub.error && (corpoSub.error.message || corpoSub.error)) ||
+            (sub.status
+              ? 'O YouTube recusou o vídeo (erro ' + sub.status + '). Tenta outra vez.'
+              : 'A subida ao YouTube falhou — vê se tens internet e tenta outra vez.'),
+        )
+        return true
+      }
+
+      let videoId = null
+      try {
+        videoId = JSON.parse(sub.body).id
+      } catch {
+        /* corpo não é JSON */
+      }
+      if (!videoId) {
+        setProgress(-1)
+        setError('O YouTube não devolveu o id do vídeo. Espera uns segundos e tenta outra vez.')
+        return true
+      }
+
+      // 4) confere e guarda na BD do utilizador
+      setProgress(96)
+      setEnvio((s) => ({ ...s, fase: 'guardar' }))
+      const pedirConfirm = () =>
+        fetch('/api/clips/youtube/confirm', {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoId,
+            contador: td.contador,
+            title: qs.get('title'),
+            game: qs.get('game'),
+            visibility: qs.get('visibility'),
+            start: qs.get('start'),
+            end: qs.get('end'),
+          }),
+        })
+
+      // 4) confere e guarda na BD do utilizador (uma repetição para erros
+      //    passageiros do servidor — o vídeo já está no YouTube)
+      let conf = await pedirConfirm()
+      let cd = await conf.json().catch(() => null)
+      if (!conf.ok && conf.status >= 500) {
+        await new Promise((r) => setTimeout(r, 2000))
+        if (canceladoRef.current) return true
+        conf = await pedirConfirm()
+        cd = await conf.json().catch(() => null)
+      }
+
+      if (!conf.ok) {
+        setProgress(-1)
+        if (conf.status === 429) {
+          await avisoQuota((cd && (cd.aviso || cd.error)) || 'Publicações esgotadas por hoje.', null)
+        } else {
+          const erro = (cd && cd.error) || 'Erro ao guardar o clip.'
+          // o vídeo JÁ foi para o YouTube — dizemos onde, para não ficar órfão
+          setError(erro + ' O vídeo ficou no YouTube: https://youtu.be/' + videoId)
+        }
+        return true
+      }
+
+      if (cd.estado) setYtEstado(cd.estado)
+      setClips((prev) => [cd.clip, ...prev])
+      resetForm()
+      setShowForm(false)
+      setTab('todos')
+      return true
+    } catch {
+      setProgress(-1)
+      setError('Não deu para publicar no YouTube — tenta outra vez.')
+      return true
+    }
   }
 
   /* O vídeo vai direto do browser para o Supabase: o servidor só
@@ -595,8 +846,11 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
      Tamanho (MB em tempo real) e corte do vídeo no browser
      ============================================================ */
   const MAXB = maxMB * 1048576
+  /* Com o YouTube configurado não há limite de MB: a barra de aviso
+     de tamanho e a compressão automática ficam de fora. */
+  const vaiParaYT = !!(ytEstado && ytEstado.configurado && ytEstado.disponivel)
   const sizeMB = file ? Math.round((file.size / 1048576) * 10) / 10 : 0
-  const over = !!file && file.size > MAXB
+  const over = !!file && file.size > MAXB && !vaiParaYT
   const dur = duration || 0
   const tA = dur > 0 ? Math.min(Math.max(0, parseTime(startStr) ?? 0), dur) : 0
   const parsedEnd = endStr.trim() ? parseTime(endStr) : null
@@ -609,7 +863,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const bitrateMax = sel > 0 ? Math.max(300000, (MAXB * 0.75 * 8) / sel - 128000) : Infinity
   const vbps = Math.round(Math.max(Math.min(500000, base), Math.min(base, bitrateMax)))
   // sem compressão a fazer, o corte sai com o tamanho do original
-  const aComprimir = bitrateOrig > 0 && bitrateOrig * sel > MAXB * 0.75 * 8
+  const aComprimir = !vaiParaYT && bitrateOrig > 0 && bitrateOrig * sel > MAXB * 0.75 * 8
   const saidaMB =
     sel > 0
       ? Math.max(
@@ -693,6 +947,30 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     }
   }
 
+  /* O corte saiu com áudio? (decode do blob já gravado — se não houver
+     pista de som ou estiver digitalmente mudo, o utilizador tem de
+     saber já, em vez de só ao ver o clip.) */
+  const gravouAudio = async (blob) => {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext
+      if (!AC || !blob || !blob.size) return true
+      const ctx = new AC()
+      const buf = await ctx.decodeAudioData(await blob.arrayBuffer())
+      try { await ctx.close() } catch { /* já fechado */ }
+      let peak = 0
+      for (let c = 0; c < buf.numberOfChannels; c++) {
+        const d = buf.getChannelData(c)
+        for (let i = 0; i < d.length; i++) {
+          const a = d[i] < 0 ? -d[i] : d[i]
+          if (a > peak) peak = a
+        }
+      }
+      return peak > 0.00055 // abaixo de -55 dBFS = silêncio
+    } catch {
+      return false // sem pista de áudio (ou ilegível) — avisa
+    }
+  }
+
   /* Corta o vídeo no browser (grava o trecho escolhido) e troca o
      ficheiro pelo cortado — sai com o tamanho que couber no limite. */
   const cutVideo = async () => {
@@ -732,12 +1010,26 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       out.height = ch
       const ctxOut = out.getContext('2d')
 
+      // o elemento NÃO pode estar muted — senão o áudio que chega ao
+      // WebAudio/captureStream é silêncio e o corte sai sem som
+      try { v.muted = false } catch { /* nada */ }
+
       let stream = null
       let rec = null
       try {
         const cvStream = out.captureStream(qFps)
         stream = new MediaStream(cvStream.getVideoTracks())
-        if (graph) graph.dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t))
+        let temAudio = false
+        if (graph) {
+          graph.dest.stream.getAudioTracks().forEach((t) => { stream.addTrack(t); temAudio = true })
+        }
+        // rede de segurança: áudio direto do elemento se o gráfico falhar
+        if (!temAudio) {
+          try {
+            const el = v.captureStream ? v.captureStream() : (v.mozCaptureStream ? v.mozCaptureStream() : null)
+            if (el) el.getAudioTracks().forEach((t) => { stream.addTrack(t); temAudio = true })
+          } catch { /* segue sem áudio */ }
+        }
         rec = new MediaRecorder(
           stream,
           mime ? { mimeType: mime, videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 } : undefined,
@@ -818,9 +1110,11 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       for (let tent = 1; tent <= 4; tent++) {
         blob = await gravar(escala, FPS, tent)
         if (blob.size <= MAXB || tent === 4) break
-        // ficou acima do limite: volta a gravar com menos resolução
-        // (mantendo os 60 fps — qualidade acima de tudo)
-        escala = Math.max(0.2, escala * 0.6)
+        // ficou acima do limite: baixa a resolução (mantendo os 60 fps),
+        // mas NUNCA abaixo de metade — abaixo disso a qualidade fica má
+        const novoEscala = Math.max(0.5, escala * 0.75)
+        if (novoEscala === escala) break // já no mínimo — não baixa mais
+        escala = novoEscala
       }
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
@@ -842,7 +1136,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       )
       setStartStr('0:00')
       onPick(novo)
-      setNota(`Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}, ${FPS} fps).`)
+      const temSom = await gravouAudio(blob)
+      setNota(
+        `Cortado — agora tem ${ficou} MB (trecho de ${mmss(sel)}, ${FPS} fps).` +
+          (temSom
+            ? ''
+            : ' ⚠ Não detetei áudio no corte — se o original tem som, tenta outra vez (recarrega a página e repete).'),
+      )
     } catch {
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
@@ -941,6 +1241,50 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 </button>
               </div>
 
+              {/* o que vai acontecer ao vídeo — ANTES de escolher o ficheiro */}
+              {ytEstado && ytEstado.configurado ? (
+                ytEstado.disponivel ? (
+                  <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-emerald-200">
+                    <Youtube className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                    <p>
+                      <span className="font-black text-white">
+                        Publicação automática ligada.
+                      </span>{' '}
+                      O vídeo vai direto para o YouTube como <b>não listado</b> e o site guarda
+                      só o link — <b className="text-white">sem limite de MB</b>.
+                      {typeof ytEstado.restantes === 'number' && ytEstado.restantes > 0 && (
+                        <>
+                          {' '}
+                          Hoje ainda dá para publicar{' '}
+                          <b className="text-white">{ytEstado.restantes}</b>.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-yellow-200">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
+                    <p>
+                      <span className="font-black text-white">
+                        {ytEstado.aviso || 'Publicações esgotadas por hoje.'}
+                      </span>{' '}
+                      Podes guardar o clip e voltar a publicar quando o aviso desaparecer.
+                    </p>
+                  </div>
+                )
+              ) : (
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-orange-500/25 bg-orange-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-orange-200">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+                  <p>
+                    <span className="font-black text-white">
+                      Máximo {maxMB} MB por vídeo.
+                    </span>{' '}
+                    Se o ficheiro passar disto, o site avisa logo a seguir à escolha — corta o
+                    vídeo (ou grava em 720p) antes de publicar.
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {/* título + jogo */}
                 <div className="grid gap-4 sm:grid-cols-[1fr,14rem]">
@@ -949,12 +1293,12 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                     onChange={(e) => setTitle(e.target.value)}
                     maxLength={100}
                     placeholder="Título do clip"
-                    className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15"
+                    className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-400 focus:bg-white/15"
                   />
 
                   {/* jogo do clip — obrigatório */}
                   <label className="block">
-                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
+                    <span className="mb-1 block text-xs font-bold uppercase text-gray-400">
                       Jogo do clip <span className="text-orange-400">*</span>
                     </span>
                     <select
@@ -982,8 +1326,16 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   >
                     <Upload className="h-7 w-7" />
                     <span className="text-sm font-bold">Escolher vídeo</span>
-                    <span className="text-xs text-gray-500">
-                      MP4, WebM ou MOV · máx. {maxMB} MB
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-black ${
+                        vaiParaYT
+                          ? 'bg-emerald-500/15 text-emerald-300'
+                          : 'bg-white/10 text-orange-300'
+                      }`}
+                    >
+                      {vaiParaYT
+                        ? 'Vai para o YouTube · sem limite de MB'
+                        : `MP4, WebM ou MOV · até ${maxMB} MB`}
                     </span>
                   </button>
                 ) : (
@@ -1027,26 +1379,36 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         <Scissors className="h-4 w-4 text-orange-400" /> Peso e corte
                       </span>
                       <span className="text-xs font-bold">
-                        <span className={corTexto}>{sizeMB} MB</span>
-                        <span className="text-gray-500"> / {maxMB} MB</span>
-                        <span className={`ml-2 ${corTexto}`}>
-                          {over ? `${Math.round(sizeMB - maxMB)} MB acima` : 'cabe'}
-                        </span>
+                        {vaiParaYT ? (
+                          <span className="flex items-center gap-1.5 font-black text-emerald-300">
+                            <Check className="h-3.5 w-3.5" /> {sizeMB} MB · sem limite
+                          </span>
+                        ) : (
+                          <>
+                            <span className={corTexto}>{sizeMB} MB</span>
+                            <span className="text-gray-400"> / {maxMB} MB</span>
+                            <span className={`ml-2 ${corTexto}`}>
+                              {over ? `${Math.round(sizeMB - maxMB)} MB acima` : 'cabe'}
+                            </span>
+                          </>
+                        )}
                       </span>
                     </div>
 
-                    {/* barra de tamanho */}
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className={`h-full rounded-full transition-all ${corBarra}`}
-                        style={{ width: `${pctBar}%` }}
-                      />
-                    </div>
+                    {/* barra de tamanho (só quando há limite) */}
+                    {!vaiParaYT && (
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className={`h-full rounded-full transition-all ${corBarra}`}
+                          style={{ width: `${pctBar}%` }}
+                        />
+                      </div>
+                    )}
 
                     {/* trecho: hora editável + barra de arrastar */}
                     <div className="mt-3 space-y-2">
                       <label className="flex items-center gap-2">
-                        <span className="w-11 shrink-0 text-[11px] font-black uppercase text-gray-500">
+                        <span className="w-11 shrink-0 text-[11px] font-black uppercase text-gray-400">
                           Início
                         </span>
                         <input
@@ -1072,7 +1434,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         />
                       </label>
                       <label className="flex items-center gap-2">
-                        <span className="w-11 shrink-0 text-[11px] font-black uppercase text-gray-500">
+                        <span className="w-11 shrink-0 text-[11px] font-black uppercase text-gray-400">
                           Fim
                         </span>
                         <input
@@ -1123,7 +1485,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         {trimming ? 'A cortar…' : over ? 'Cortar para caber' : 'Cortar vídeo'}
                       </button>
                       {dur > 0 && (
-                        <span className="text-[11px] text-gray-500">
+                        <span className="text-[11px] text-gray-400">
                           trecho {mmss(sel)} · sai com{' '}
                           <span className={corTexto}>{saidaMB} MB</span>
                         </span>
@@ -1150,7 +1512,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                             }}
                           />
                         </div>
-                        <p className="mt-1.5 text-[11px] text-gray-500">
+                        <p className="mt-1.5 text-[11px] text-gray-400">
                           Deixa esta aba aberta — o vídeo tem de correr todo o trecho para ser
                           cortado (dura {mmss(sel)}) e o som não é reproduzido.
                         </p>
@@ -1158,7 +1520,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                     )}
 
                     {/* números técnicos — disponíveis mas fora do caminho */}
-                    <details className="mt-3 border-t border-white/10 pt-2 text-[11px] text-gray-500">
+                    <details className="mt-3 border-t border-white/10 pt-2 text-[11px] text-gray-400">
                       <summary className="cursor-pointer font-bold text-gray-400 hover:text-gray-200">
                         Detalhes técnicos
                       </summary>
@@ -1214,7 +1576,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       />
                     </div>
                     <div className="mt-1.5 flex items-center justify-between">
-                      <span className="text-[11px] text-gray-500">{restante}</span>
+                      <span className="text-[11px] text-gray-400">{restante}</span>
                       <button
                         onClick={cancelarEnvio}
                         className="text-[11px] font-bold text-gray-400 transition-colors hover:text-red-400"
@@ -1316,7 +1678,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
           {/* Lista */}
           {loading ? (
-            <div className="flex flex-col items-center gap-3 py-16 text-gray-500">
+            <div className="flex flex-col items-center gap-3 py-16 text-gray-400">
               <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
               <span className="text-sm">A carregar clips…</span>
             </div>
@@ -1379,13 +1741,13 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
             {/* Pesquisa */}
             <div className="relative mb-3">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Procurar membro…"
                 maxLength={30}
-                className="w-full rounded-xl bg-white/10 py-2 pl-9 pr-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15"
+                className="w-full rounded-xl bg-white/10 py-2 pl-9 pr-3 text-sm text-white outline-none placeholder:text-gray-400 focus:bg-white/15"
               />
             </div>
 
@@ -1394,9 +1756,21 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
               </div>
             ) : shownMembers.length === 0 ? (
-              <p className="py-4 text-center text-xs text-gray-500">Nenhum membro encontrado.</p>
+              <div className="flex flex-col items-center gap-2 py-5 text-center">
+                <p className="text-xs text-gray-400">
+                  {query.trim() ? `Nenhum membro com “${query.trim()}”.` : 'Ainda sem membros.'}
+                </p>
+                {query.trim() && (
+                  <button
+                    onClick={() => setQuery('')}
+                    className="flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-orange-400"
+                  >
+                    <X className="h-3 w-3" /> Limpar pesquisa
+                  </button>
+                )}
+              </div>
             ) : (
-              <ul className="max-h-[24rem] space-y-1 overflow-y-auto pr-1">
+              <ul className="scroll-forte max-h-[24rem] space-y-1 overflow-y-auto pr-1">
                 {shownMembers.map((m) => (
                   <li key={m.id}>
                     <button
@@ -1426,7 +1800,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               </ul>
             )}
 
-            <p className="mt-3 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-gray-500">
+            <p className="mt-3 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-gray-400">
               <span className="h-2 w-2 rounded-full bg-green-500" /> online ·{' '}
               <span className="h-2 w-2 rounded-full bg-gray-600" /> offline
             </p>

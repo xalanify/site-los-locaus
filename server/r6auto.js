@@ -7,11 +7,16 @@
      jogadores do r6.json e atualiza os campos que a API devolver.
      O que a API não devolver mantém-se: o rank máximo (maxRank) e as
      partidas guardadas (matches) são dados locais, não do tracker.
-   - Sem chave: fica desligado e só regista um aviso no log.
+   - Sem chave: usa o browser Edge local (CDP) para ler a mesma API em
+      api.tracker.gg, contornando o bloqueio Cloudflare de clientes de
+      programa. O JSON devolvido é idêntico à API oficial. O site mostra
+      os dados disponíveis; campos não obtidos aparecem como "—" até à
+      próxima atualização com chave.
    ============================================================ */
 const fs = require('fs');
 const path = require('path');
 const { R6_FILE, DATA_DIR } = require('./trackerdata');
+const { buscarJson } = require('./trackerbrowser');
 
 const API = 'https://public-api.tracker.gg/v2/r6siege/standard/profile';
 const MIN = Math.max(1, Number(process.env.R6_REFRESH_MIN) || 3);
@@ -56,6 +61,33 @@ const slugDeNome = (nome) => {
 };
 const rankImg = (slug) =>
   `https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/${slug}.png?v=5`;
+
+/* nome de rank só vale se for mesmo de rank — snapshots velhos já
+   trouxeram lixo como "0" (partia o ícone e mostrava "0" no card) */
+const RE_RANK_NOME = /^(COPPER|BRONZE|SILVER|GOLD|PLATINUM|EMERALD|DIAMOND|CHAMPION|UNRANKED|NO RANK)\b/i;
+
+/* rank a partir do RP (Ranked 2.0) — fallback quando o nome veio lixo */
+const DIV_R = ['V', 'IV', 'III', 'II', 'I'];
+const CAM_R = [
+  ['COPPER', 0, 1600],
+  ['BRONZE', 1600, 2100],
+  ['SILVER', 2100, 2600],
+  ['GOLD', 2600, 3200],
+  ['PLATINUM', 3200, 4100],
+  ['EMERALD', 4100, 4600],
+  ['DIAMOND', 4600, 5000],
+  ['CHAMPION', 5000, Infinity],
+];
+function rankDeRp(rp) {
+  const r = Number(rp) || 0;
+  if (r <= 0) return 'NO RANK';
+  const camada = CAM_R.find(([, min, max]) => r >= min && r < max);
+  if (!camada) return 'NO RANK';
+  const [nome, min, max] = camada;
+  if (max === Infinity) return 'CHAMPION';
+  const idx = Math.min(4, Math.max(0, Math.floor((r - min) / ((max - min) / 5))));
+  return `${nome} ${DIV_R[idx]}`;
+}
 
 /* ---------- leitura defensiva da resposta da API ---------- */
 const seg = (segs, tipo) => segs.find((s) => s && s.type === tipo);
@@ -148,12 +180,20 @@ function mapPlayer(api, antigo) {
     (temporada && temporada.metadata && (temporada.metadata.seasonName || temporada.metadata.name)) ||
     null;
   if (ri && (ri.nome || rp != null)) {
-    const nome = ri.nome || (p.rank && p.rank.name) || 'NO RANK';
+    // nome lixo (ex.: "0" de snapshots velhos) -> deriva do RP ou NO RANK
+    let nome = ri.nome || (p.rank && p.rank.name) || 'NO RANK';
+    if (!RE_RANK_NOME.test(String(nome))) nome = rankDeRp(rp);
     p.rank = {
       season: temporadaNome || (p.rank && p.rank.season) || null,
       points: Number(rp) || 0,
       name: nome,
-      img: ri.img || (/^https?:/.test(nome) ? null : rankImg(slugDeNome(nome))),
+      img:
+        ri.img ||
+        (/^https?:/.test(nome)
+          ? null
+          : /^NO RANK$/i.test(nome)
+            ? rankImg('unranked')
+            : rankImg(slugDeNome(nome))),
     };
   } else if (rp != null) {
     p.rank = { ...(p.rank || {}), points: Number(rp) || 0 };
@@ -240,12 +280,19 @@ function sincronizarLista(dados) {
 async function buscarJogador(p, chave) {
   const platform = (p.platform || 'uplay').toLowerCase();
   const id = encodeURIComponent(p.id || p.handle);
-  const r = await fetch(`${API}/${platform}/${id}`, {
-    headers: { 'TRN-Api-Key': chave, Accept: 'application/json' },
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!r.ok) throw new Error(`tracker devolveu ${r.status}`);
-  return r.json();
+  if (chave) {
+    // Caminho da API oficial com chave TRN-Api-Key
+    const r = await fetch(`${API}/${platform}/${id}`, {
+      headers: { 'TRN-Api-Key': chave, Accept: 'application/json' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) throw new Error(`tracker devolveu ${r.status}`);
+    return r.json();
+  }
+  // Fallback sem chave: usar browser Edge + CDP (trackerbrowser)
+  const url = `https://api.tracker.gg/api/v2/r6siege/standard/profile/ubi/${id}`;
+  const api = await buscarJson(url, p.handle);
+  return api;
 }
 
 /**
@@ -270,15 +317,6 @@ async function refreshNow(opcoes = {}) {
   estado.ultimaTentativa = new Date().toISOString();
 
   try {
-    if (!chave) {
-      estado.ultimoErro = 'Sem TRACKER_API_KEY no server/.env';
-      const d = lerJson();
-      if (d && Array.isArray(d.players)) trabalho.total = d.players.length;
-      log('Sem TRACKER_API_KEY em server/.env — sem chave não há como ir buscar.');
-      log('Chave grátis em tracker.network/developers.');
-      return { ok: false, motivo: 'sem-chave' };
-    }
-
     const dados = lerJson();
     if (!dados || !Array.isArray(dados.players) || !dados.players.length) {
       estado.ultimoErro = 'Sem jogadores no r6.json';
@@ -301,6 +339,8 @@ async function refreshNow(opcoes = {}) {
         const novo = mapPlayer(api, p);
         if (JSON.stringify(novo) !== antes) {
           Object.assign(p, novo);
+          // mapPlayer apaga semDados no objeto novo — e o assign não apaga
+          if (!('semDados' in novo)) delete p.semDados;
           mudou = true;
           alterados++;
           const extra = [p.level ? `nível ${p.level}` : null, p.rank && p.rank.name]
@@ -378,4 +418,306 @@ function status() {
   };
 }
 
-module.exports = { start, refreshNow, status };
+/* ============================================================
+   Importação manual (o utilizador guarda a página do tracker.gg
+   como HTML — ex. "TaKe.EASy._'s R6_ Siege Overview Stats...
+   .html" — ou o JSON, e carrega aqui)
+   ------------------------------------------------------------
+   Aceita string (HTML ou JSON) ou objeto. Devolve { data: {...} }
+   na forma que o mapPlayer lê, ou null se não der para extrair.
+   ============================================================ */
+
+/** procura recursivamente o objeto que tem platformInfo.platformUserHandle */
+function acharPerfil(obj, prof = 0) {
+  if (!obj || prof > 14) return null;
+  if (Array.isArray(obj)) {
+    for (const it of obj) {
+      const r = acharPerfil(it, prof + 1);
+      if (r) return r;
+    }
+    return null;
+  }
+  if (typeof obj === 'object') {
+    if (obj.platformInfo && obj.platformInfo.platformUserHandle) return obj;
+    for (const v of Object.values(obj)) {
+      const r = acharPerfil(v, prof + 1);
+      if (r) return r;
+    }
+  }
+  return null;
+}
+
+/* envolve o objeto achado na forma { data } que o mapPlayer espera */
+function embrulhar(j) {
+  if (!j || typeof j !== 'object') return null;
+  if (j.data && j.data.platformInfo) return j;
+  if (j.platformInfo) return { data: j };
+  const achado = acharPerfil(j);
+  return achado ? { data: achado } : null;
+}
+
+/* ---------- extrair do DOM renderizado (a overview do tracker.gg
+   não embute JSON do jogador — as stats só estão no HTML já
+   desenhado, em pares stat-name -> stat-value). Constrói a mesma
+   forma { data } da API para reutilizar o mapPlayer. ---------- */
+const limparTxt = (s) =>
+  String(s || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+
+/* pares rotulo=>valor do DOM (cada stat-name com o stat-value a seguir) */
+function paresDoDom(html) {
+  const re =
+    /class="[^"]*stat-name[^"]*"[^>]*>[\s\S]*?<span[^>]*class="truncate"[^>]*>([^<]*)<\/span>[\s\S]*?class="[^"]*stat-value[^"]*"[^>]*>[\s\S]*?<span[^>]*>([^<]*)</g;
+  const out = [];
+  for (const m of html.matchAll(re)) {
+    const rot = limparTxt(m[1]);
+    const val = limparTxt(m[2]);
+    if (rot) out.push({ rot, val });
+  }
+  return out;
+}
+
+const numDe = (s) => {
+  if (s == null) return null;
+  const m = String(s).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : null;
+};
+
+/* nomes de rank do R6 (para reconhecer alt="COPPER I" etc.) */
+const RE_RANK = /^(COPPER|BRONZE|SILVER|GOLD|PLATINUM|EMERALD|DIAMOND|CHAMPION|UNRANKED|NO RANK)\b/i;
+
+/* temporada visível no seletor (Y11S3 = a primeira sem display:none) */
+function temporadaVisivel(html) {
+  const re = /Y\d+S\d/gi;
+  let m;
+  while ((m = re.exec(html))) {
+    const perto = html.slice(Math.max(0, m.index - 300), m.index);
+    if (!/display:\s*none/.test(perto)) return m[0].toUpperCase();
+  }
+  return null;
+}
+
+/* monta { data:{ platformInfo, segments:[overview] } } a partir do DOM */
+function apiDoDom(html) {
+  const pares = paresDoDom(html);
+  if (!pares.length) return null;
+
+  // handle a partir do <title> ("Nome's R6: Siege Overview Stats…")
+  const t = html.match(/<title>([^<]*)<\/title>/i);
+  const hm = t && t[1].match(/^(.+?)'s\b/i);
+  const handle = hm ? hm[1].trim() : null;
+  if (!handle) return null;
+
+  // avatar Ubisoft
+  const av = html.match(/https:\\u002F\\u002Fubisoft-avatars[^"]*|https:\/\/ubisoft-avatars[^"]*/i);
+  const avatar = av ? av[0].replace(/\\u002F/g, '/') : null;
+
+  // bloco coerente = o resumo de carreira, que começa no "Level";
+  // lemos a PRIMEIRA ocorrência de cada rótulo a partir daí
+  const iLevel = pares.findIndex((p) => /^level$/i.test(p.rot));
+  const inicio = iLevel >= 0 ? iLevel : 0;
+  const primeiro = (rot) => {
+    const alvo = rot.toLowerCase();
+    const p = pares.slice(inicio).find((x) => x.rot.toLowerCase() === alvo);
+    return p ? p.val : null;
+  };
+
+  const stats = {};
+  const lvl = iLevel >= 0 ? numDe(pares[iLevel].val) : null;
+  if (lvl != null) stats.level = { value: lvl };
+  const mapear = {
+    matchesPlayed: 'Matches',
+    matchesWon: 'Wins',
+    matchesLost: 'Losses',
+    matchesAbandoned: 'Abandons',
+    kills: 'Kills',
+    deaths: 'Deaths',
+    killsPerMatch: 'Kills/Match',
+  };
+  for (const [dest, rot] of Object.entries(mapear)) {
+    const v = numDe(primeiro(rot));
+    if (v != null) stats[dest] = { value: v };
+  }
+  const kd = numDe(primeiro('K/D'));
+  if (kd != null) stats.kdRatio = { value: kd };
+
+  if (!Object.keys(stats).length) return null;
+
+  // ---------- rank ATUAL (cartão "Current Season") ----------
+  const segments = [{ type: 'overview', stats }];
+  const iCS = html.indexOf('Current Season');
+  if (iCS >= 0) {
+    const iFim = html.indexOf('Season Peaks', iCS);
+    const cartao = html.slice(iCS, iFim > iCS ? iFim : iCS + 6000);
+    const alts = [...cartao.matchAll(/<img[^>]*\balt="([^"]+)"/g)].map((x) =>
+      x[1].replace(/\s+background$/i, '').trim(),
+    );
+    const nome = alts.find((a) => RE_RANK.test(a)) || null;
+    const rpM = cartao.match(/>([\d.,]+)<\/span>\s*<sup[^>]*>RP/i);
+    if (nome) {
+      segments.push({
+        type: 'season',
+        metadata: { seasonName: temporadaVisivel(html) },
+        stats: {
+          rank: { value: null, displayValue: nome },
+          rankPoints: { value: rpM ? Number(rpM[1].replace(/[^\d]/g, '')) : 0 },
+        },
+      });
+    }
+  }
+
+  // ---------- rank MÁXIMO (cartão "Season Peaks" -> 1a linha = BEST) ----------
+  let maxRank = null;
+  const iPeaks = html.indexOf('Season Peaks');
+  if (iPeaks >= 0) {
+    const iFim = html.indexOf('v3-card__title', iPeaks);
+    const regiao = html.slice(iPeaks, iFim > iPeaks ? iFim : iPeaks + 12000);
+    for (const tr of regiao.match(/<tr[\s\S]*?<\/tr>/g) || []) {
+      const alt = (tr.match(/<img[^>]*\balt="([^"]+)"/) || [])[1];
+      if (!alt) continue;
+      const nome = alt.replace(/\s+background$/i, '').trim();
+      if (!RE_RANK.test(nome)) continue;
+      const txt = limparTxt(tr);
+      const mm = txt.match(/([\d.,]+)\s*RP/i);
+      const season = (txt.split(/\s*[\d.,]+\s*RP/i)[0] || '').trim() || null;
+      maxRank = {
+        name: nome,
+        img: rankImg(slugDeNome(nome)),
+        rp: mm ? Number(mm[1].replace(/[^\d]/g, '')) : 0,
+        season,
+      };
+      break; // a primeira linha com rank é a "BEST" (a máxima de sempre)
+    }
+  }
+
+  return {
+    data: {
+      platformInfo: { platformUserHandle: handle, avatarUrl: avatar },
+      segments,
+    },
+    extras: maxRank ? { maxRank } : null,
+  };
+}
+
+/* de um HTML, sai com o JSON embebido (__NEXT_DATA__ / scripts) */
+function extrairDeHtml(html) {
+  // 1) __NEXT_DATA__ (páginas Next.js do tracker.gg)
+  const m = html.match(/<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (m) {
+    try {
+      const r = embrulhar(JSON.parse(m[1]));
+      if (r) return r;
+    } catch { /* segue */ }
+  }
+  // 2) qualquer <script type="application/json">
+  for (const s of html.matchAll(/<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const r = embrulhar(JSON.parse(s[1]));
+      if (r) return r;
+    } catch { /* segue */ }
+  }
+  // 3) qualquer script cujo conteúdo traga platformInfo
+  for (const s of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)) {
+    const c = s[1];
+    if (c.includes('platformInfo')) {
+      try {
+        const r = embrulhar(JSON.parse(c));
+        if (r) return r;
+      } catch { /* segue */ }
+    }
+  }
+  // 4) página renderizada (sem JSON) — lê os pares do DOM
+  const dom = apiDoDom(html);
+  if (dom) return dom;
+  return null;
+}
+
+/** aceita objeto, JSON string ou HTML string -> { data } ou null */
+function extrairApi(conteudo) {
+  if (conteudo == null) return null;
+  if (typeof conteudo === 'object') return embrulhar(conteudo);
+  let txt = String(conteudo).trim();
+  if (txt.charCodeAt(0) === 0xfeff) txt = txt.slice(1).trim(); // tira BOM
+  if (!txt) return null;
+  // parece HTML? (página guardada do tracker.gg)
+  if (
+    /^<\s*(!doctype|html|head|body|script)/i.test(txt) ||
+    txt.includes('__INITIAL_STATE__') ||
+    txt.includes('__NEXT_DATA__') ||
+    /<title>[^<]*r6/i.test(txt) ||
+    txt.includes('stat-name')
+  ) {
+    return extrairDeHtml(txt);
+  }
+  // JSON puro
+  try {
+    return embrulhar(JSON.parse(txt));
+  } catch {
+    // pode ser JSON colado com lixo à volta — tenta extrair o objeto
+    const ini = txt.indexOf('{');
+    const fim = txt.lastIndexOf('}');
+    if (ini >= 0 && fim > ini) {
+      try { return embrulhar(JSON.parse(txt.slice(ini, fim + 1))); } catch { /* nada */ }
+    }
+    // último recurso: tratar como HTML
+    return extrairDeHtml(txt);
+  }
+}
+
+function importarJson(conteudo) {
+  try {
+    const api = extrairApi(conteudo);
+    if (!api) {
+      return { ok: false, erro: 'Não encontrei dados do jogador (platformInfo) neste ficheiro.' };
+    }
+    const d = api.data || {};
+    const info = d.platformInfo || {};
+    const handle = String(info.platformUserHandle || d.username || '').trim();
+    if (!handle) return { ok: false, erro: 'Ficheiro sem handle do jogador.' };
+
+    const dados = lerJson() || { players: [] };
+    if (!Array.isArray(dados.players)) dados.players = [];
+
+    const chave = handle.toLowerCase();
+    let p = dados.players.find(
+      (x) => String(x.key || x.handle).toLowerCase() === chave || String(x.handle).toLowerCase() === chave,
+    );
+    let novo = false;
+    if (!p) {
+      p = {
+        key: chave,
+        id: handle,
+        handle,
+        avatar: null,
+        level: null,
+        season: null,
+        rank: null,
+        overview: {},
+        modes: [],
+        maxRank: null,
+      };
+      dados.players.push(p);
+      novo = true;
+    }
+
+    const antes = JSON.stringify(p);
+    const atualizado = mapPlayer(api, p);
+    Object.assign(p, atualizado);
+    // mapPlayer apaga semDados no objeto novo — e o assign não apaga
+    if (!('semDados' in atualizado)) delete p.semDados;
+    // rank máximo colhido no HTML (Season Peaks) — o mapPlayer não o toca
+    if (api.extras && api.extras.maxRank) p.maxRank = api.extras.maxRank;
+    const mudou = JSON.stringify(p) !== antes;
+
+    if (mudou) {
+      dados.source = 'import';
+      dados.updatedAt = new Date().toISOString();
+      guardar(dados);
+      estado.atualizacoes++;
+    }
+    return { ok: true, handle: p.handle, novo, mudou };
+  } catch (e) {
+    return { ok: false, erro: e.message || 'Não deu para importar o ficheiro.' };
+  }
+}
+
+module.exports = { start, refreshNow, status, importarJson };

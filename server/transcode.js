@@ -1,9 +1,9 @@
 /* ============================================================
-   Transcodificação de clips — 720p H.264 + AAC
+   Transcodificação de clips — 1080p H.264 + AAC estéreo
 
    Depois de o vídeo chegar ao Storage, gera-se uma versão mais
-   leve no máximo 720p de altura, H.264 com faststart e áudio AAC.
-   Pesa menos e arranca muito mais rápido no telemóvel.
+   leve no máximo 1080p de altura, H.264 com faststart e áudio AAC.
+   Pesa menos e continua com qualidade alta e SOM garantido.
 
    Regras:
      - só troca se a versão nova for mesmo mais pequena;
@@ -62,15 +62,20 @@ async function transcodificar(buffer) {
     await correr([
       '-y',
       '-i', entrada,
-      // altura no máximo 720 (largura acompanha o formato)
-      '-vf', 'scale=-2:min(720\\,ih)',
+      // força só 1 vídeo + áudio (o '?' permite fontes sem áudio)
+      '-map', '0:v:0',
+      '-map', '0:a:0?',
+      // altura no máximo 1080 (largura acompanha o formato)
+      '-vf', 'scale=-2:min(1080\\,ih)',
       '-c:v', 'libx264',
-      '-preset', 'veryfast',
-      '-crf', '26',
+      '-preset', 'medium',
+      // CRF 20 = qualidade alta (quase transparente), em vez de 26
+      '-crf', '20',
       '-pix_fmt', 'yuv420p',
       '-profile:v', 'high',
+      // áudio sempre bom (AAC estéreo 192k)
       '-c:a', 'aac',
-      '-b:a', '128k',
+      '-b:a', '192k',
       '-ac', '2',
       // o cabeçalho vai para o início: o vídeo começa a dar antes de acabar de baixar
       '-movflags', '+faststart',
@@ -79,7 +84,9 @@ async function transcodificar(buffer) {
     ]);
 
     const out = await fs.promises.readFile(saida);
-    if (!out.length || out.length >= buffer.length) return null;
+    // só troca se for mesmo mais leve (poupança real e justa);
+    // assim um original já bom nunca é trocado por algo pior
+    if (!out.length || out.length >= buffer.length * 0.9) return null;
     return out;
   } catch (erro) {
     console.warn('Transcodificação saltou:', erro.message.slice(0, 200));

@@ -270,10 +270,68 @@ if ($Token) {
   }),
 );
 
+// POST /api/users/specs/bench — guarda o bench da CPU (ST + MT)
+// que o browser mediu. O número passa a ser o cpu_score: é a
+// medida que serve para comparar membros entre si.
+router.post(
+  '/bench',
+  requireUser,
+  safe(async (req, res) => {
+    const uid = Number(req.auth.uid);
+    const b = req.body || {};
+    const st = num(b.st);
+    const mt = num(b.mt);
+    if (!st || !mt || st <= 0 || mt <= 0 || st > 999999 || mt > 999999) {
+      return res.status(400).json({ error: 'Bench incompleto ou impossível.' });
+    }
+
+    const db = getDb();
+    const cur = await db.prepare('SELECT * FROM user_specs WHERE user_id = ?').get(uid);
+    const detalhes = (cur && json(cur.details)) || {};
+    detalhes.bench = {
+      st,
+      mt,
+      nucleos: num(b.nucleos) || null,
+      em: new Date().toISOString(),
+    };
+
+    if (!cur) {
+      await db
+        .prepare(
+          `INSERT INTO user_specs (user_id, cpu_score, details, baseline, updated_at)
+           VALUES (?, ?, ?::jsonb, ?::jsonb, now())`,
+        )
+        .run(uid, mt, JSON.stringify(detalhes), JSON.stringify({ cpu_score: mt }));
+      return res.json({ ok: true, bench: detalhes.bench, primeiraLeitura: true });
+    }
+
+    await db
+      .prepare(
+        `UPDATE user_specs SET cpu_score = ?, details = ?::jsonb, updated_at = now()
+         WHERE user_id = ?`,
+      )
+      .run(mt, JSON.stringify(detalhes), uid);
+
+    res.json({ ok: true, bench: detalhes.bench });
+  }),
+);
+
 // GET /api/users/specs/status — como vai a leitura local (para mostrar os passos)
 router.get('/status', requireUser, (req, res) => {
   res.json(pcs.estadoPublico());
 });
+
+// GET /api/users/specs/health — saúde do PC (discos, temps, boots)
+router.get(
+  '/health',
+  requireUser,
+  safe(async (req, res) => {
+    const saude = require('../saude');
+    const r = await saude.correr();
+    if (!r.ok) return res.status(500).json({ error: r.erro || 'Não deu para ler a saúde do PC.' });
+    res.json({ ok: true, dados: r.dados, cache: Boolean(r.cache) });
+  }),
+);
 
 // POST /api/users/specs/deep — corre o PowerShell no PC do servidor
 router.post(
@@ -300,6 +358,10 @@ router.post(
 async function salvarDeep(uid, campos, detalhes) {
   const db = getDb();
   const cur = await db.prepare('SELECT * FROM user_specs WHERE user_id = ?').get(uid);
+  // ler o PC de novo não apaga o bench — ele é medido no browser,
+  // noutro momento, e é o que serve para comparar membros
+  const detAntigo = (cur && json(cur.details)) || null;
+  if (detAntigo && detAntigo.bench) detalhes.bench = detAntigo.bench;
   const valores = {
     os: null,
     browser: null,

@@ -36,12 +36,57 @@ const num = (v) => {
 };
 
 /* ---------- análise: o que está a correr vs o de fábrica ----------
-   Duas fontes, por ordem de qualidade:
-   1) CPU-Z (cpu.real): relógio a trabalhar, teto de fábrica, tensão
-      e — para a RAM — o que está a correr vs o teto JEDEC do módulo
-      (é isso que prova o XMP/EXPO).
-   2) Contadores do Windows (repouso/carga) contra o clock nominal.
-   Sem nenhuma: dizemos "sem dados" em vez de inventar.            */
+   Fontes, por ordem:
+   1) Leitura nativa (cpu.real): contadores do Windows + SMBIOS —
+      relógio a medir e o TETO DE FÁBRICA real (o mesmo que o
+      CPU-Z mostra). O CPU-Z, se já estiver instalado, só acrescenta
+      tensão, temperatura e os TIMINGS da RAM.
+   2) Leitura antiga de contadores (linhas já guardadas).
+   3) Só o nome do Windows: dizemos "sem dados", nunca inventamos.
+
+   Regra da CPU — comparamos SEMPRE com o teto de fábrica:
+   • acima do teto -> overclock  (está acima do de fábrica)
+   • no teto       -> boost      (chega ao máximo de fábrica)
+   • abaixo        -> normal                                */
+function estadoRelogio(teto, base, atual) {
+  if (teto && atual) {
+    const desvio = Math.round(((atual - teto) / teto) * 100);
+    let estado = 'normal';
+    if (atual > teto * 1.005) estado = 'overclock';
+    else if (atual >= teto * 0.995) estado = 'boost';
+    return { estado, desvio };
+  }
+  if (base && atual) {
+    // sem teto confirmado só dá para comparar com o clock de fábrica —
+    // aí nunca afirmamos overclock, só "passa do base"
+    const desvio = Math.round(((atual - base) / base) * 100);
+    return { estado: desvio >= 8 ? 'boost' : 'normal', desvio };
+  }
+  return { estado: 'sem-dados', desvio: null };
+}
+
+/* RAM: o que está a correr vs o que é de origem.
+   "overclock de memórias" = timings diferentes dos de fábrica ou
+   MHz acima do que o kit declara. XMP/EXPO = acima do teto JEDEC. */
+function estadoMemoria(aplicada, jedec, kit, timings) {
+  const norm = (s) =>
+    String(s)
+      .split('-')
+      .map((x) => String(parseInt(x, 10)))
+      .join('-');
+  const temTimings =
+    Boolean(timings && timings.atual && timings.xmp) &&
+    norm(timings.atual) !== norm(timings.xmp);
+  const acimaKit = Boolean(kit && aplicada && aplicada > kit);
+  const temXmp = Boolean(jedec && aplicada && aplicada > jedec);
+  return {
+    estado: temTimings || acimaKit ? 'overclock' : temXmp ? 'xmp' : 'normal',
+    tem_xmp: temXmp,
+    timings_alterados: temTimings,
+    acima_do_kit: acimaKit,
+  };
+}
+
 function analisar(d) {
   const av = { cpu: null, ram: null, gpu: null, temOverclock: false, fonte: null };
 
@@ -49,20 +94,16 @@ function analisar(d) {
   const real = cpu.real || null;
 
   if (real && (real.relogio_max_mhz || real.relogio_mhz)) {
-    const teto = num(real.teto_fabrica_mhz);
     const atual = num(real.relogio_max_mhz) || num(real.relogio_mhz);
-    let desvio = null;
-    let estado = 'sem-dados';
-    if (teto && atual) {
-      desvio = Math.round(((atual - teto) / teto) * 100);
-      // boost/PBO mexe 2-4% acima do teto anunciado; overclock a sério passa disso
-      estado = desvio >= 5 ? 'overclock' : desvio >= 2 ? 'boost' : 'normal';
-    }
-    av.fonte = 'cpu-z';
+    const teto = num(real.teto_fabrica_mhz);
+    const { estado, desvio } = estadoRelogio(teto, num(cpu.clock_fabrica_mhz), atual);
+    av.fonte = real.fonte || 'nativo';
     av.cpu = {
-      fonte: 'cpu-z',
+      fonte: real.fonte || 'nativo',
       versao: real.versao || null,
       relogio_mhz: atual || null,
+      relogio_repouso_mhz: num(real.relogio_repouso_mhz),
+      relogio_carga_mhz: num(real.relogio_carga_mhz),
       teto_fabrica_mhz: teto || null,
       relogio_min_mhz: num(real.relogio_min_mhz),
       bclk_mhz: num(real.bclk_mhz),
@@ -74,16 +115,12 @@ function analisar(d) {
       estado,
     };
   } else if (num(cpu.relogio_carga_mhz) || num(cpu.relogio_repouso_mhz)) {
-    const fabrica = num(cpu.clock_fabrica_mhz);
+    const base = num(cpu.clock_fabrica_mhz);
     const carga = num(cpu.relogio_carga_mhz);
     const repouso = num(cpu.relogio_repouso_mhz);
     const atual = carga || repouso;
-    let desvio = null;
-    let estado = 'sem-dados';
-    if (atual && fabrica) {
-      desvio = Math.round(((atual - fabrica) / fabrica) * 100);
-      estado = desvio >= 5 ? 'overclock' : desvio >= 2 ? 'boost' : 'normal';
-    }
+    const teto = num(cpu.teto_fabrica);
+    const { estado, desvio } = estadoRelogio(teto, base, atual);
     av.fonte = 'contadores';
     av.cpu = {
       fonte: 'contadores',
@@ -91,7 +128,7 @@ function analisar(d) {
       relogio_mhz: atual,
       relogio_repouso_mhz: repouso,
       relogio_carga_mhz: carga,
-      teto_fabrica_mhz: fabrica,
+      teto_fabrica_mhz: teto,
       relogio_min_mhz: null,
       bclk_mhz: null,
       tensao_v: num(cpu.tensao_v),
@@ -119,13 +156,24 @@ function analisar(d) {
     };
   }
 
-  /* ---- RAM: o que corre vs o teto JEDEC (XMP/EXPO é isso) ---- */
+  /* ---- RAM: o que corre vs o de origem (JEDEC/XMP + timings) ---- */
   const mods = (d.ram && d.ram.modulos) || [];
+  const mapearModulos = (lista) =>
+    lista.map((m) => ({
+      referencia: m.referencia || null,
+      tamanho_gb: m.tamanho_gb || null,
+      mhz: num(m.velocidade_mhz),
+      aplicada_mhz: num(m.aplicada_mhz),
+      cas: m.cas || null,
+      tensao_v: num(m.tensao_v),
+    }));
+
   if (real && num(real.memoria_mhz)) {
     const aplicada = num(real.memoria_mhz);
     const jedec = num(real.memoria_jedec_mhz);
     const kit = num(real.memoria_kit_mhz);
-    const estado = jedec && aplicada > jedec ? 'xmp' : 'normal';
+    const timings = real.memoria_timings || null;
+    const r = estadoMemoria(aplicada, jedec, kit, timings);
     av.ram = {
       total_gb: (d.ram && d.ram.total_gb) || null,
       slots: (d.ram && d.ram.slots) || null,
@@ -134,22 +182,19 @@ function analisar(d) {
       kit_mhz: kit,
       tipo: real.memoria_tipo || (d.ram && d.ram.geracao) || null,
       tensao_xmp_v: num(real.memoria_xmp_v),
-      tem_xmp: Boolean(real.memoria_tem_xmp),
-      modulos: mods.map((m) => ({
-        referencia: m.referencia || null,
-        tamanho_gb: m.tamanho_gb || null,
-        mhz: num(m.velocidade_mhz),
-        aplicada_mhz: num(m.aplicada_mhz),
-        cas: m.cas || null,
-        tensao_v: num(m.tensao_v),
-      })),
-      estado,
+      cl_fabrica: num(real.memoria_cl_fabrica),
+      tem_xmp: r.tem_xmp || Boolean(real.memoria_tem_xmp && r.tem_xmp),
+      timings: timings && timings.atual
+        ? { atual: timings.atual, xmp: timings.xmp || null, alterado: r.timings_alterados }
+        : null,
+      modulos: mapearModulos(mods),
+      estado: r.estado,
     };
   } else if (mods.length) {
     const padrao = num((d.ram && d.ram.padrao_mhz) || 0) || null;
     const aplicada = num(mods[0].aplicada_mhz);
     const kit = num(mods[0].velocidade_mhz);
-    const estado = padrao && aplicada && aplicada > padrao ? 'xmp' : 'normal';
+    const r = estadoMemoria(aplicada, padrao, kit, null);
     av.ram = {
       total_gb: (d.ram && d.ram.total_gb) || null,
       slots: (d.ram && d.ram.slots) || null,
@@ -158,16 +203,11 @@ function analisar(d) {
       kit_mhz: kit,
       tipo: (d.ram && d.ram.geracao) || null,
       tensao_xmp_v: null,
-      tem_xmp: false,
-      modulos: mods.map((m) => ({
-        referencia: m.referencia || null,
-        tamanho_gb: m.tamanho_gb || null,
-        mhz: num(m.velocidade_mhz),
-        aplicada_mhz: num(m.aplicada_mhz),
-        cas: m.cas || null,
-        tensao_v: num(m.tensao_v),
-      })),
-      estado,
+      cl_fabrica: null,
+      tem_xmp: r.tem_xmp,
+      timings: null,
+      modulos: mapearModulos(mods),
+      estado: r.estado,
     };
   }
 
@@ -187,8 +227,30 @@ function analisar(d) {
     };
   }
 
-  av.temOverclock =
-    (av.cpu && av.cpu.estado === 'overclock') || (av.ram && av.ram.estado === 'xmp');
+  /* um destes basta para a linha contar como "não é de fábrica":
+     CPU acima do teto, RAM com perfil ligado ou RAM alterada */
+  av.temOverclock = Boolean(
+    (av.cpu && av.cpu.estado === 'overclock') ||
+      (av.ram && (av.ram.estado === 'xmp' || av.ram.estado === 'overclock')),
+  );
+
+  // --- Distinções automáticas ---
+  // 1) Qual componente tem overclock (cpu ou ram)
+  av.componentes_overclock = []
+  if (av.cpu && av.cpu.estado === 'overclock') av.componentes_overclock.push('CPU')
+  if (av.ram && av.ram.estado === 'overclock') av.componentes_overclock.push('RAM')
+
+  // 2) Tem algum overclock?
+  av.tem_overclock_qualquer = Boolean(
+    (av.cpu && av.cpu.estado === 'overclock') ||
+      (av.ram && av.ram.estado === 'overclock')
+  )
+
+  // 3) Melhor PC = quem tem o maior score MT no bench
+  if (av.bench && num(av.bench.mt)) {
+    av.melhor_pc = false // será comparado na lista abaixo
+  }
+
   return av;
 }
 

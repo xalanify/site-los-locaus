@@ -12,6 +12,7 @@ import {
   Gamepad2,
   Pencil,
   Loader2,
+  Play,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import Estado from './Estado'
@@ -35,6 +36,62 @@ const fmtComment = fmtDate
 
 /* Página de comentários (quantos comentários de topo por vez) */
 const PAGE_COMENT = 12
+
+/* ---------------------------------------------------------------
+   Clip publicado no YouTube (unlisted) — o site mostra só a
+   capa com o botão de play; o iframe só carrega quando alguém
+   dá play, por isso a grelha continua leve e não dá a bandeira
+   de que é um vídeo do YouTube antes de tocar.
+   --------------------------------------------------------------- */
+function VideoYT({ id, titulo, aoDarPlay }) {
+  const [aberto, setAberto] = useState(false)
+  const [erroCapa, setErroCapa] = useState(false)
+
+  if (aberto) {
+    return (
+      <div className="mt-3 aspect-video w-full overflow-hidden rounded-xl bg-black">
+        <iframe
+          className="h-full w-full"
+          src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
+          title={titulo || 'Clip'}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  const capa = erroCapa
+    ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg`
+    : `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`
+
+  return (
+    <button
+      onClick={() => {
+        aoDarPlay && aoDarPlay()
+        setAberto(true)
+      }}
+      className="group relative mt-3 block w-full overflow-hidden rounded-xl bg-black"
+      aria-label={'Reproduzir ' + (titulo || 'clip')}
+    >
+      <img
+        src={capa}
+        alt=""
+        loading="lazy"
+        onError={() => setErroCapa(true)}
+        className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+      />
+      <span className="absolute inset-0 grid place-items-center bg-black/25 transition-colors group-hover:bg-black/45">
+        <span className="grid h-14 w-14 place-items-center rounded-full bg-orange-500 shadow-[0_8px_30px_rgba(249,115,22,0.5)] transition-transform group-hover:scale-110">
+          <Play className="ml-0.5 h-6 w-6 text-white" fill="currentColor" />
+        </span>
+      </span>
+      <span className="pointer-events-none absolute bottom-2 right-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-black tracking-wide text-gray-200">
+        HD
+      </span>
+    </button>
+  )
+}
 
 /* Vistas já contadas nesta sessão — evita somar o mesmo clip duas
    vezes quando o utilizador dá play, pausa e volta a dar play. */
@@ -157,6 +214,11 @@ export default function ClipCard({
 
   /* ---- transferir ---- */
   const download = async () => {
+    // Clip no YouTube: não há ficheiro nosso — abre o vídeo original.
+    if (c.youtube || !c.url) {
+      if (c.youtube) window.open('https://www.youtube.com/watch?v=' + c.youtube, '_blank', 'noopener')
+      return
+    }
     try {
       const res = await fetch(`/api/clips/${c.id}/download`, { headers: authHeaders() })
       if (!res.ok) {
@@ -519,23 +581,31 @@ export default function ClipCard({
         ) : (
           <h3 className="font-bold text-white">{c.title}</h3>
         )}
-        <video
-          ref={videoRef}
-          src={c.url}
-          controls
-          preload="metadata"
-          playsInline
-          onLoadedMetadata={onMeta}
-          onTimeUpdate={onTime}
-          /* só um clip a tocar de cada vez (menos CPU e banda) */
-          onPlay={() => {
-            registarVista(c.id, setC)
-            document.querySelectorAll('video').forEach((v) => {
-              if (v !== videoRef.current && !v.paused) v.pause()
-            })
-          }}
-          className="mt-3 max-h-[65vh] w-full rounded-xl bg-black"
-        />
+        {c.youtube ? (
+          <VideoYT
+            id={c.youtube}
+            titulo={c.title}
+            aoDarPlay={() => registarVista(c.id, setC)}
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            src={c.url}
+            controls
+            preload="metadata"
+            playsInline
+            onLoadedMetadata={onMeta}
+            onTimeUpdate={onTime}
+            /* só um clip a tocar de cada vez (menos CPU e banda) */
+            onPlay={() => {
+              registarVista(c.id, setC)
+              document.querySelectorAll('video').forEach((v) => {
+                if (v !== videoRef.current && !v.paused) v.pause()
+              })
+            }}
+            className="mt-3 max-h-[65vh] w-full rounded-xl bg-black"
+          />
+        )}
         {(start > 0 || end != null) && (
           <p className="mt-1.5 text-xs text-gray-500">
             Trecho: {mmss(start)} – {end != null ? mmss(end) : 'fim'}

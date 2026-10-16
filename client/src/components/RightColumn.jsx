@@ -20,7 +20,7 @@ import { authHeaders } from '../lib/auth'
    canal do YouTube e, em baixo, as notificações (mesmo design
    dos outros cartões). No telemóvel/tablet não existe.
    ============================================================ */
-function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoTexto }) {
+function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoTexto, acoes }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e0e11]">
       <header className="flex items-center justify-between px-4 pb-1 pt-3.5">
@@ -28,7 +28,16 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
           <Icon className="h-4 w-4 text-orange-400" />
           {titulo}
         </h2>
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-1.5">
+          {acoes && acoes.map((a, i) => (
+            <button
+              key={i}
+              onClick={a.acao}
+              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-orange-400"
+            >
+              {a.texto}
+            </button>
+          ))}
           {acao && (
             <button
               onClick={acao}
@@ -121,6 +130,16 @@ export default function RightColumn() {
       .catch(() => {})
   }
 
+  const limparTudo = () => {
+    if (!window.confirm('Apagar TODAS as notificações? Esta ação não pode ser desfeita.')) return
+    fetch('/api/notifications', {
+      method: 'DELETE',
+      headers: authHeaders(),
+    })
+      .then(() => carregarNotifs())
+      .catch(() => {})
+  }
+
   const abrirNotificacao = (n) => {
     if (!n.read) {
       fetch(`/api/notifications/${n.id}/read`, {
@@ -201,8 +220,10 @@ export default function RightColumn() {
         <Cartao
           titulo="Notificações"
           icone={Bell}
-          acao={marcarTudo}
-          acaoTexto={notifs.unread > 0 ? 'Marcar tudo' : undefined}
+          acoes={[
+            { acao: marcarTudo, texto: notifs.unread > 0 ? 'Marcar tudo' : undefined },
+            { acao: limparTudo, texto: notifs.items.length > 0 ? 'Limpar' : undefined },
+          ].filter(a => a.texto)}
         >
           {notifs.items.length === 0 ? (
             <p className="py-2 text-[13px] text-gray-500">Sem notificações.</p>

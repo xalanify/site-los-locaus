@@ -14,6 +14,7 @@ import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
+import BackToTop from './components/BackToTop'
 import BootScreen from './components/BootScreen'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 import { enviarSpecs } from './lib/specs'
@@ -111,7 +112,7 @@ function App() {
   const openMember = (name) => navigate(`/perfil/${encodeURIComponent(name)}`)
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-screen">
       {/* Ecrã de carregamento — entra sozinho depois da barra encher */}
       <BootScreen visible={!entered} onEnter={() => setEntered(true)} />
 
@@ -180,10 +181,10 @@ function App() {
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={location.pathname}
-                      initial={{ opacity: 0, x: 26 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -26 }}
-                      transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
                     >
                     <Routes location={location}>
                     <Route
@@ -261,6 +262,7 @@ function App() {
                   </Suspense>
                 </main>
                 <Footer />
+                <BackToTop />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

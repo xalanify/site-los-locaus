@@ -20,7 +20,7 @@ import {
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
 import { updates, CHANGE_TYPES } from '../data/updates'
-import { BADGES, BadgeTile } from '../components/BadgeGem'
+import { BADGES, BadgeTile, OVERCLOCK_BADGES } from '../components/BadgeGem'
 import { GAMES, gameImg } from '../data/gameUpdates'
 
 const TYPE_ICONS = {
@@ -651,6 +651,21 @@ export default function UpdatesPage() {
             {BADGES.map((b) => (
               <BadgeTile key={b.id} badge={b} size={48} />
             ))}
+          </div>
+
+          <div className="mt-6">
+            <h3 className="mb-1 font-display text-sm font-black uppercase tracking-wide text-orange-300">
+              Overclock (automáticas)
+            </h3>
+            <p className="mb-3 text-xs text-gray-500">
+              Ganhas conforme as tuas specs reais: CPU acima do de fábrica, memórias com overclock
+              e/ou XMP ligado.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {OVERCLOCK_BADGES.map((b) => (
+                <BadgeTile key={b.id} badge={b} size={48} />
+              ))}
+            </div>
           </div>
         </motion.div>
 

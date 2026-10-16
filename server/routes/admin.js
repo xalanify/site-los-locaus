@@ -373,6 +373,33 @@ router.post('/r6/refresh', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------- Rainbow Six: importar JSON guardado (manual) ----------
+   O utilizador guarda a página do tracker.gg (JSON) jogador a
+   jogador e carrega aqui. O servidor identifica o handle e atualiza. */
+router.post(
+  '/r6/import',
+  express.json({ limit: '40mb' }),
+  requireAdmin,
+  async (req, res) => {
+  try {
+    const r6 = require('../r6auto');
+    const body = req.body || {};
+    // aceita um só JSON ou uma lista deles
+    const itens = Array.isArray(body) ? body : Array.isArray(body.jsons) ? body.jsons : [body];
+    const resultados = [];
+    for (const it of itens) {
+      const r = r6.importarJson(it);
+      resultados.push(r);
+    }
+    const ok = resultados.filter((r) => r.ok).length;
+    res.json({ ok: ok > 0, importados: ok, total: resultados.length, resultados });
+  } catch (error) {
+    console.error('Erro r6/import:', error.message);
+    res.status(500).json({ ok: false, error: 'Não foi possível importar.' });
+  }
+  },
+);
+
 /* ---------- Estatísticas (aba "Estatísticas" do painel) ---------- */
 router.get('/stats', requireAdmin, async (req, res) => {
   try {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Users, Search, Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Search, Loader2, X } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import { BADGES, BadgeGem } from '../components/BadgeGem'
+import { BADGES, BadgeGem, distincoesOverclock } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 
 /* ============================================================
@@ -28,18 +29,29 @@ export default function MembrosPage({ onProfile }) {
   const online = membros.filter((m) => m.online).length
 
   return (
-    <section className="px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28 lg:px-8">
       <div className="mx-auto max-w-2xl">
-        {/* Cabeçalho */}
-        <div className="mb-5 flex flex-wrap items-center gap-3">
-          <h1 className="flex items-center gap-2 font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
-            <Users className="h-5 w-5 text-orange-400" />
+        {/* Cabeçalho — mesmo padrão das outras páginas (título em gradiente) */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <h1
+            className="font-black gradient-text"
+            style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
+          >
             Membros
           </h1>
-          <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold text-gray-400">
-            {membros.length} · {online} online
-          </span>
-        </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-sm text-gray-400">
+              Toda a comunidade — clica num membro para ver o perfil.
+            </p>
+            <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold text-gray-400">
+              {membros.length} · {online} online
+            </span>
+          </div>
+        </motion.div>
 
         {/* Pesquisa */}
         <div className="relative mb-4">
@@ -58,7 +70,20 @@ export default function MembrosPage({ onProfile }) {
             <Loader2 className="h-7 w-7 animate-spin text-orange-500" />
           </div>
         ) : filtrados.length === 0 ? (
-          <p className="py-16 text-center text-sm text-gray-500">Nenhum membro encontrado.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <Search className="h-7 w-7 text-gray-400" />
+            <p className="text-sm text-gray-400">
+              {query.trim() ? `Nenhum membro com “${query.trim()}”.` : 'Ainda sem membros.'}
+            </p>
+            {query.trim() && (
+              <button
+                onClick={() => setQuery('')}
+                className="flex items-center gap-1.5 rounded-full bg-orange-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-orange-400"
+              >
+                <X className="h-3.5 w-3.5" /> Limpar pesquisa
+              </button>
+            )}
+          </div>
         ) : (
           <ul className="space-y-2">
             {filtrados.map((m) => {
@@ -85,12 +110,33 @@ export default function MembrosPage({ onProfile }) {
                           {m.online ? 'Online' : 'Offline'}
                         </span>
                       </span>
-                      {/* Distinções do membro */}
-                      <span className="flex shrink-0 items-center gap-1.5">
+                      {/* Distinções do membro (estáticas + overclock) */}
+                      <span className="flex max-w-[60%] shrink-0 flex-wrap items-center justify-end gap-1.5">
                         {m.badges.slice(0, 3).map((id) => {
                           const b = BADGES.find((x) => x.id === id)
                           return b ? <BadgeGem key={b.id} badge={b} size={22} /> : null
                         })}
+                        {distincoesOverclock(m.distincoes).map((b) => (
+                          <span
+                            key={b.id}
+                            title={b.desc}
+                            className="flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 ring-1"
+                            style={{
+                              background: `${b.color}18`,
+                              boxShadow: `0 0 12px ${b.color}40`,
+                              // eslint-disable-next-line react/forbid-dom-props
+                              ['--tw-ring-color']: `${b.color}66`,
+                            }}
+                          >
+                            <BadgeGem badge={b} size={16} />
+                            <span
+                              className="whitespace-nowrap font-display text-[9px] font-black uppercase leading-none tracking-wider"
+                              style={{ color: b.color }}
+                            >
+                              {b.label}
+                            </span>
+                          </span>
+                        ))}
                       </span>
                     </span>
                   </button>

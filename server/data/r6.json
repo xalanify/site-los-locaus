@@ -1,6 +1,6 @@
 {
-  "source": "tracker.gg",
-  "updatedAt": "2026-10-10T12:56:27.417Z",
+  "source": "import",
+  "updatedAt": "2026-10-14T18:36:20.889Z",
   "players": [
     {
       "key": "xalana.",
@@ -26,7 +26,7 @@
         "headshots": 1749,
         "timePlayed": 1727874,
         "kdRatio": 1.31,
-        "killsPerMatch": 6.39
+        "killsPerMatch": 6.4
       },
       "modes": [
         {
@@ -410,14 +410,32 @@
       "key": "take.easy._",
       "id": "TaKe.EASy._",
       "handle": "TaKe.EASy._",
-      "avatar": null,
-      "level": null,
+      "avatar": "https://ubisoft-avatars.akamaized.net/52a61a07-67ff-4eb2-bb32-2c6cdbb7040e/default_256_256.png",
+      "level": 63,
       "season": null,
-      "rank": null,
-      "overview": {},
+      "rank": {
+        "season": "Y11S3",
+        "points": 1462,
+        "name": "COPPER I",
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/copper-1.png?v=5"
+      },
+      "overview": {
+        "matchesPlayed": 145,
+        "matchesWon": 71,
+        "matchesLost": 66,
+        "matchesAbandoned": 8,
+        "kills": 649,
+        "deaths": 475,
+        "kdRatio": 1.37,
+        "killsPerMatch": 4.5
+      },
       "modes": [],
-      "maxRank": null,
-      "semDados": true
+      "maxRank": {
+        "name": "BRONZE IV",
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/bronze-4.png?v=5",
+        "rp": 1680,
+        "season": "Silent Hunt"
+      }
     }
   ],
   "matches": [

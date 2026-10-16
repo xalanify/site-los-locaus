@@ -25,6 +25,7 @@ import {
   KeyRound,
   BarChart3,
   RefreshCcw,
+  ScrollText,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
@@ -94,7 +95,7 @@ function EmailRow({ user, onSaved }) {
   return (
     <div className="mt-3 border-t border-white/10 pt-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Email</span>
+        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Email</span>
         <input
           type="email"
           value={value}
@@ -178,6 +179,11 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const [r6, setR6] = useState(null)
   const [r6Msg, setR6Msg] = useState('')
 
+  /* Registo de auditoria das ferramentas Windows (só admin) */
+  const [ferrRuns, setFerrRuns] = useState([])
+  const [ferrLoading, setFerrLoading] = useState(false)
+  const [ferrErro, setFerrErro] = useState('')
+
   const adminHeaders = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('adminToken')}`,
@@ -246,6 +252,20 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       .catch(() => {})
   }
 
+  /* ---------- Registo de auditoria das ferramentas Windows ---------- */
+  const fetchFerrRuns = () => {
+    setFerrLoading(true)
+    setFerrErro('')
+    fetch('/api/ferramentas/historico?limit=80', { headers: adminHeaders() })
+      .then((res) => {
+        if (!res.ok) throw new Error('http')
+        return res.json()
+      })
+      .then((d) => setFerrRuns(Array.isArray(d) ? d : []))
+      .catch(() => setFerrErro('Não foi possível ler o registo.'))
+      .finally(() => setFerrLoading(false))
+  }
+
   const atualizarR6 = async () => {
     setR6Msg('')
     try {
@@ -264,6 +284,60 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
     }
   }
 
+  /* ---------- Rainbow Six: importar JSON guardados (um a um) ----------
+     O utilizador abre a página do tracker.gg, guarda o JSON (ou copia),
+     e carrega aqui. Enviamos tudo ao servidor, que identifica cada
+     jogador pelo handle e atualiza o r6.json. */
+  const r6FileRef = useRef(null)
+  const [r6ImportMsg, setR6ImportMsg] = useState(null)
+
+  const importarR6 = async (ev) => {
+    const ficheiros = Array.from(ev.target.files || [])
+    if (!ficheiros.length) return
+    setR6ImportMsg(null)
+    const conteudos = []
+    for (const f of ficheiros) {
+      try {
+        // manda o texto bruto — o servidor lida com HTML (página
+        // guardada do tracker.gg) ou JSON e extrai os dados
+        conteudos.push(await f.text())
+      } catch {
+        setR6ImportMsg(`Não deu para ler "${f.name}" — ignorado.`)
+      }
+    }
+    if (!conteudos.length) return
+    try {
+      const res = await fetch('/api/admin/r6/import', {
+        method: 'POST',
+        headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsons: conteudos }),
+      })
+      const d = await res.json().catch(() => ({}))
+      const resul = d.resultados || []
+      const bons = resul.filter((r) => r.ok)
+      const maus = resul.filter((r) => !r.ok)
+      if (bons.length || maus.length) {
+        const partes = []
+        if (bons.length) {
+          partes.push(
+            `Importado: ${bons.map((r) => r.handle + (r.mudou ? '' : ' (sem mudanças)')).join(', ')} (${bons.length}/${resul.length}).`,
+          )
+        }
+        if (maus.length) {
+          partes.push(maus.map((r) => r.erro || 'falhou').join(' · '))
+        }
+        setR6ImportMsg({ ok: bons.length > 0, texto: partes.join(' ') })
+        fetchR6()
+      } else {
+        setR6ImportMsg({ ok: false, texto: d.error || 'Não deu para importar.' })
+      }
+    } catch {
+      setR6ImportMsg({ ok: false, texto: 'Sem ligação ao servidor.' })
+    } finally {
+      if (r6FileRef.current) r6FileRef.current.value = ''
+    }
+  }
+
   useEffect(() => {
     fetchStats()
     const interval = setInterval(fetchStats, 30000) // Atualizar a cada 30 segundos
@@ -279,6 +353,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
     if (tab === 'anuncios') fetchPosts()
     if (tab === 'clips') fetchClips()
     if (tab === 'r6') fetchR6()
+    if (tab === 'ferramentas') fetchFerrRuns()
   }, [tab])
 
   /* acompanha a atualização do R6 enquanto estiver a correr */
@@ -634,7 +709,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   ]
 
   const inputCls =
-    'w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15'
+    'w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-400 focus:bg-white/15'
 
   return (
     <motion.div
@@ -682,6 +757,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
+              { id: 'ferramentas', label: 'Auditoria', Icon: ScrollText },
             ]}
           />
         </div>
@@ -734,7 +810,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 </div>
               </div>
 
-              <div className="mt-6 text-center text-sm text-gray-500">
+              <div className="mt-6 text-center text-sm text-gray-400">
                 Os dados são atualizados automaticamente a cada 30 segundos
               </div>
             </>
@@ -742,7 +818,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         ) : tab === 'utilizadores' ? (
           /* ---------- UTILIZADORES: contas + distinções ---------- */
           <div>
-            <p className="mb-4 text-xs text-gray-500">
+            <p className="mb-4 text-xs text-gray-400">
               Clica numa joia para atribuir ou retirar a distinção de qualquer conta — até à tua
               própria.
             </p>
@@ -759,7 +835,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 <KeyRound className="h-4 w-4 text-orange-400" /> Pedidos de recuperação
               </h3>
               {requests.length === 0 ? (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   Ninguém pediu recuperação de palavra-passe. Quando alguém clicar em "Esqueci a
                   pass", o nome aparece aqui.
                 </p>
@@ -771,7 +847,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                       className="flex flex-wrap items-center gap-3 rounded-lg bg-white/5 px-3 py-2"
                     >
                       <span className="text-sm font-bold text-white">{r.username}</span>
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-gray-400">
                         pedido a {fmtUserDate(r.created_at)}
                       </span>
                       <span
@@ -804,7 +880,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   ))}
                 </ul>
               )}
-              <p className="mt-2 text-[11px] leading-relaxed text-gray-500">
+              <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
                 Com o modo recovery ativo, ao entrar no site essa conta aparece sempre no ecrã de
                 criar nova palavra-passe — sem email nenhum.
               </p>
@@ -815,7 +891,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
               </div>
             ) : userList.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
                 Ainda não há contas.
               </p>
             ) : (
@@ -855,7 +931,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-400">
                           ID {u.id} · criada a {fmtUserDate(u.created_at)}
                         </p>
                       </div>
@@ -884,7 +960,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
                     {/* Distinções manuais */}
                     <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/10 pt-3">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                         Distinções
                       </span>
                       {BADGES.map((b) => {
@@ -912,7 +988,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                     {/* Contas de jogo ligadas a esta conta */}
                     <div className="mt-3 border-t border-white/10 pt-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                           Contas de jogo
                         </span>
                         {(u.game_accounts || []).map((a) => (
@@ -925,7 +1001,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                             <button
                               onClick={() => removeGameAccount(u, a.id)}
                               title="Retirar esta ligação"
-                              className="ml-0.5 text-gray-500 transition-colors hover:text-red-400"
+                              className="ml-0.5 text-gray-400 transition-colors hover:text-red-400"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -1009,7 +1085,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                           </button>
                         </div>
                       )}
-                      <p className="mt-1.5 text-[10px] text-gray-500">
+                      <p className="mt-1.5 text-[10px] text-gray-400">
                         Os nomes são os que aparecem nas estatísticas de cada jogo (cada jogo tem
                         os seus) e um membro pode ter vários no mesmo jogo. É assim que o TOP 1
                         KILL muda sozinho quando o líder muda.
@@ -1072,7 +1148,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               Anúncios existentes ({posts.length})
             </h3>
             {posts.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
                 Ainda não há anúncios.
               </p>
             ) : (
@@ -1089,7 +1165,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                     <button
                       onClick={() => deletePost(p.id)}
                       title="Eliminar anúncio"
-                      className="rounded-full p-2 text-gray-500 transition-colors hover:bg-red-500/15 hover:text-red-400"
+                      className="rounded-full p-2 text-gray-400 transition-colors hover:bg-red-500/15 hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -1106,46 +1182,45 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 <Gamepad2 className="h-4 w-4 text-orange-400" /> Rainbow Six — tracker.gg
               </h3>
               <p className="text-[13px] text-gray-400">
-                Vai buscar os dados do esquadrão e atualiza as estatísticas no site.
+                As estatísticas do esquadrão são atualizadas ao importar o JSON de cada jogador.
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
-                    r6?.chave ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                  }`}
-                >
-                  {r6?.chave ? 'chave ligada' : 'sem chave'}
-                </span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
-                    r6?.ligado ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/10 text-gray-400'
-                  }`}
-                >
-                  {r6?.ligado ? `automático · ${r6.intervaloMin} min` : 'automático desligado'}
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-300">
+                  atualização manual
                 </span>
                 {r6?.atualizacoes ? (
-                  <span className="text-[11px] font-bold text-gray-500">
+                  <span className="text-[11px] font-bold text-gray-400">
                     {r6.atualizacoes} atualizações
                   </span>
                 ) : null}
               </div>
 
-              {!r6?.chave && (
-                <p className="mt-3 rounded-lg bg-yellow-500/10 px-3 py-2 text-[12px] leading-relaxed text-yellow-200">
-                  Sem <span className="font-bold">TRACKER_API_KEY</span> em server/.env não há como
-                  ir buscar. Chave grátis em tracker.network/developers.
+              {/* importar JSON guardados um a um */}
+              <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="mb-1 text-[13px] font-bold text-white">Atualizar estatísticas</p>
+                <p className="mb-3 text-[12px] leading-relaxed text-gray-400">
+                  Abre a página de cada jogador no tracker.gg e usa <b>Guardar como…</b> (HTML).
+                  Escolhe aqui os ficheiros guardados — o site lê os dados e atualiza os números.
                 </p>
-              )}
-
-              <button
-                onClick={atualizarR6}
-                disabled={r6ACorrer}
-                className="mt-3 flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-orange-400 disabled:opacity-60"
-              >
-                <RefreshCcw className={`h-4 w-4 ${r6ACorrer ? 'animate-spin' : ''}`} />
-                {r6ACorrer ? 'A atualizar…' : 'Atualizar agora'}
-              </button>
+                <input
+                  ref={r6FileRef}
+                  type="file"
+                  accept=".html,.htm,.json,.txt,text/html,application/json"
+                  multiple
+                  onChange={importarR6}
+                  className="block w-full text-[12px] text-gray-400 file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-[12px] file:font-black file:text-white hover:file:bg-orange-400"
+                />
+                {r6ImportMsg && (
+                  <p
+                    className={`mt-2 text-[12px] font-bold ${
+                      r6ImportMsg.ok ? 'text-emerald-400' : 'text-red-400'
+                    }`}
+                  >
+                    {r6ImportMsg.texto || r6ImportMsg}
+                  </p>
+                )}
+              </div>
               {r6Msg && <p className="mt-2 text-[13px] font-bold text-red-400">{r6Msg}</p>}
             </div>
 
@@ -1153,10 +1228,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             {(r6ACorrer || (r6?.trabalho?.logs?.length ?? 0) > 0) && (
               <div className="glass mt-4 rounded-xl p-4">
                 <div className="mb-2 flex items-center justify-between gap-2 text-[11px] font-black uppercase tracking-wider">
-                  <span className={r6ACorrer ? 'text-emerald-400' : 'text-gray-500'}>
+                  <span className={r6ACorrer ? 'text-emerald-400' : 'text-gray-400'}>
                     {r6ACorrer ? 'A ir buscar…' : 'Última atualização'}
                   </span>
-                  <span className="text-gray-500">
+                  <span className="text-gray-400">
                     {r6.trabalho.feitos}/{r6.trabalho.total} jogadores
                   </span>
                 </div>
@@ -1174,20 +1249,20 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   />
                 </div>
 
-                <div className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
+                <div className="scroll-forte max-h-56 space-y-1 overflow-y-auto rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
                   {r6.trabalho.logs.map((lg, i) => (
                     <p key={i} className="text-gray-300">
                       <span className="text-emerald-500">›</span> {lg.l}
                     </p>
                   ))}
-                  {r6ACorrer && <p className="text-gray-500">› …</p>}
+                  {r6ACorrer && <p className="text-gray-400">› …</p>}
                 </div>
               </div>
             )}
 
             {/* quem está a ser seguido */}
             <div className="glass mt-4 rounded-xl p-4">
-              <h4 className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
+              <h4 className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-400">
                 Esquadrão · {r6?.jogadores?.length || 0} jogadores
               </h4>
               <ul className="flex flex-wrap gap-2">
@@ -1208,6 +1283,102 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         ) : tab === 'stats' ? (
           /* ---------- ESTATÍSTICAS ---------- */
           <AdminStats />
+        ) : tab === 'ferramentas' ? (
+          /* ---------- AUDITORIA DAS FERRAMENTAS WINDOWS ---------- */
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-wider text-gray-400">
+                <ScrollText className="mr-1.5 inline h-4 w-4 text-orange-400" />
+                Registo de execuções
+              </h3>
+              <button
+                onClick={fetchFerrRuns}
+                disabled={ferrLoading}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 transition-colors hover:text-gray-300 disabled:opacity-50"
+              >
+                <RefreshCcw className={`h-3 w-3 ${ferrLoading ? 'animate-spin' : ''}`} /> atualizar
+              </button>
+            </div>
+
+            <p className="mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[12.5px] leading-relaxed text-gray-400">
+              Cada ferramenta que corre no PC fica aqui registada: quem a correu, quando,
+              quanto demorou e o que saiu no terminal. Só tu vês este registo.
+            </p>
+
+            {ferrErro && (
+              <p className="mb-4 rounded-xl bg-red-500/15 px-4 py-3 text-[13px] font-bold text-red-400">
+                {ferrErro}
+              </p>
+            )}
+
+            {ferrLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="h-6 w-6 animate-spin text-orange-400" />
+              </div>
+            ) : ferrRuns.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-400">
+                Ainda não há execuções registadas.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {ferrRuns.map((r) => {
+                  const ini = r.inicio ? new Date(r.inicio) : null
+                  const fim = r.fim ? new Date(r.fim) : null
+                  const dur =
+                    ini && fim ? Math.max(0, Math.round((fim - ini) / 1000)) : null
+                  const falhou =
+                    Boolean(r.erro) ||
+                    (r.codigo != null && r.codigo !== '' && Number(r.codigo) !== 0)
+                  return (
+                    <div key={r.id} className="glass rounded-xl p-3.5">
+                      <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                        <span
+                          className={`inline-flex h-2 w-2 shrink-0 rounded-full ${
+                            r.cancelado ? 'bg-yellow-400' : falhou ? 'bg-red-500' : 'bg-emerald-400'
+                          }`}
+                        />
+                        <span className="font-black text-white">{r.nome || r.ferramenta_id}</span>
+                        <span className="text-gray-400">·</span>
+                        <span className="text-gray-400">{r.username || 'admin'}</span>
+                        <span className="flex-1" />
+                        <span className="text-[11px] text-gray-400">
+                          {ini
+                            ? ini.toLocaleString('pt-PT', {
+                                day: '2-digit',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : '—'}
+                          {dur != null ? ` · ${dur}s` : ''}
+                        </span>
+                      </div>
+                      {r.arg && (
+                        <p className="mt-1 font-mono text-[11px] text-gray-400">arg: {r.arg}</p>
+                      )}
+                      {r.cancelado && (
+                        <p className="mt-1 text-[12px] font-bold text-yellow-400">
+                          Interrompido pelo admin
+                        </p>
+                      )}
+                      {r.erro && (
+                        <p className="mt-1.5 text-[12px] font-bold text-red-400">{r.erro}</p>
+                      )}
+                      {!r.cancelado && (r.codigo_texto || r.codigo != null) && (
+                        <p
+                          className={`mt-1 text-[12px] font-bold ${
+                            falhou ? 'text-red-400' : 'text-emerald-400'
+                          }`}
+                        >
+                          Resultado: {r.codigo_texto || `código ${r.codigo}`}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         ) : (
           /* ---------- CLIPS DE TESTE (admin publica direto) ---------- */
           <div>
@@ -1232,7 +1403,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   >
                     <Upload className="h-7 w-7" />
                     <span className="text-sm font-bold">Escolher vídeo</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-400">
                       MP4, WebM ou MOV · máx. 150 MB
                     </span>
                   </button>
@@ -1270,7 +1441,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 {/* corte do trecho */}
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
+                    <span className="mb-1 block text-xs font-bold uppercase text-gray-400">
                       Começa em
                     </span>
                     <input
@@ -1281,7 +1452,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1 block text-xs font-bold uppercase text-gray-500">
+                    <span className="mb-1 block text-xs font-bold uppercase text-gray-400">
                       Termina em
                     </span>
                     <input
@@ -1366,7 +1537,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
             <h3 className="mb-3 mt-6 font-bold text-white">Clips no site ({clips.length})</h3>
             {clips.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-500">
+              <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
                 Ainda não há clips.
               </p>
             ) : (
@@ -1388,14 +1559,14 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                       target="_blank"
                       rel="noreferrer"
                       title="Abrir vídeo"
-                      className="rounded-full p-2 text-gray-500 hover:bg-white/10 hover:text-white"
+                      className="rounded-full p-2 text-gray-400 hover:bg-white/10 hover:text-white"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </a>
                     <button
                       onClick={() => deleteClip(c.id)}
                       title="Eliminar clip"
-                      className="rounded-full p-2 text-gray-500 transition-colors hover:bg-red-500/15 hover:text-red-400"
+                      className="rounded-full p-2 text-gray-400 transition-colors hover:bg-red-500/15 hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

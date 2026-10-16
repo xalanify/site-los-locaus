@@ -13,6 +13,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { getDb } = require('./database');
 
 const podeLocal = () => process.platform === 'win32' && !process.env.VERCEL;
 
@@ -304,39 +305,9 @@ Write-Output 'Plano alterado.'`,
 if ($LASTEXITCODE -eq 0) { Write-Output 'Hibernacao desativada (espaco libertado).' }
 else { Write-Output "powercfg devolveu $LASTEXITCODE (precisa de admin)." }`,
   },
-  {
-    id: 'ot-temp',
-    cat: 'Otimização',
-    nome: 'Limpar ficheiros temporários',
-    desc: 'Apaga o teu %TEMP% (o que os programas guardam para aí).',
-    perigo: 'baixo',
-    tempo: 300000,
-    cmd: `$n = 0; $peso = 0
-Get-ChildItem -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-  try {
-    if ($_.PSIsContainer) { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop }
-    else { $peso += $_.Length; Remove-Item $_.FullName -Force -ErrorAction Stop }
-    $n++
-  } catch {}
-}
-Write-Output ("$n itens removidos (" + [math]::Round($peso / 1MB, 0) + " MB) de $env:TEMP")`,
-  },
-  {
-    id: 'ot-wu-cache',
-    cat: 'Otimização',
-    nome: 'Limpar cache da Windows Update',
-    desc: 'Apaga as descargas já usadas da loja de atualizações.',
-    perigo: 'medio',
-    tempo: 300000,
-    cmd: `try { Stop-Service wuauserv -Force -ErrorAction Stop } catch { Write-Output ("wuauserv: " + $_.Exception.Message) }
-$d = Join-Path $env:SystemRoot 'SoftwareDistribution\\Download'
-$antes = 0
-$medida = Get-ChildItem $d -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum
-if ($medida -and $medida.Sum) { $antes = $medida.Sum }
-Remove-Item (Join-Path $d '*') -Recurse -Force -ErrorAction SilentlyContinue
-try { Start-Service wuauserv -ErrorAction SilentlyContinue } catch {}
-Write-Output ("Cache limpo: " + [math]::Round($antes / 1MB, 0) + ' MB libertados')`,
-  },
+  /* (o "Limpar temporários" e a "cache da Windows Update" vivem já na
+     categoria Limpeza — limpeza-temp e limpeza-update — por isso não
+     são repetidos aqui.) */
   {
     id: 'ot-visual',
     cat: 'Otimização',
@@ -474,39 +445,277 @@ Write-Output "sfc terminou com codigo $LASTEXITCODE"`,
     cmd: `DISM /Online /Cleanup-Image /RestoreHealth
 Write-Output "DISM terminou com codigo $LASTEXITCODE"`,
   },
+
+  /* ---------------- Debloat (extra) ---------------- */
+  /* (a "Remover OneDrive" já existe acima em Debloat — não se repete.) */
+  {
+    id: 'debloat-sugestoes',
+    cat: 'Debloat',
+    nome: 'Bloquear apps de consumidor',
+    desc: 'Content Delivery Manager: desliga sugestões, apps promovidos e publicidade no Iniciar.',
+    perigo: 'baixo',
+    tempo: 120000,
+    cmd: `$p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager'
+try {
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty $p -Name SystemPaneSuggestionsEnabled -Value 0 -Type DWord
+  Set-ItemProperty $p -Name SubscribedContent-338388Enabled -Value 0 -Type DWord
+  Set-ItemProperty $p -Name SubscribedContent-338389Enabled -Value 0 -Type DWord
+  Set-ItemProperty $p -Name RotatingLockScreenEnabled -Value 0 -Type DWord
+  Write-Output 'Sugestoes e publicidade desligadas.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+  {
+    id: 'debloat-cortana',
+    cat: 'Debloat',
+    nome: 'Desativar Cortana',
+    desc: 'Permite que a Cortana fique desligada no Windows 10/11.',
+    perigo: 'baixo',
+    tempo: 90000,
+    cmd: `try {
+  New-Item -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search' -Force | Out-Null
+  Set-ItemProperty 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search' -Name AllowCortana -Value 0 -Type DWord
+  Write-Output 'Cortana desativada.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+
+  /* ---------------- Otimização (extra) ---------------- */
+  {
+    id: 'opt-plano-ultimate',
+    cat: 'Otimização',
+    nome: 'Plano de energia Ultimate',
+    desc: 'Cria e ativa o plano "Ultimate Performance" (máximo desempenho, gasta mais energia).',
+    perigo: 'baixo',
+    tempo: 90000,
+    cmd: `powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 2>$null
+$guid = (powercfg -l | Select-String 'Ultimate Performance' | Select-Object -First 1)
+if ($guid) {
+  $g = ([regex]::Match($guid.ToString(), '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')).Value
+  powercfg -setactive $g
+  Write-Output 'Plano Ultimate Performance ativo.'
+} else { Write-Output 'Nao foi possivel criar o plano.' }
+Write-Output 'Feito.'`,
+  },
+  {
+    id: 'opt-game-mode',
+    cat: 'Otimização',
+    nome: 'Ligar Game Mode + HAGS',
+    desc: 'Game Mode prioriza jogos; HAGS dá acesso da GPU à memória de vídeo.',
+    perigo: 'baixo',
+    tempo: 90000,
+    cmd: `try {
+  $g = 'HKCU:\\Software\\Microsoft\\GameBar'
+  New-Item -Path $g -Force | Out-Null
+  Set-ItemProperty $g -Name AutoGameModeEnabled -Value 1 -Type DWord
+  $d = 'HKLM:\\SOFTWARE\\Microsoft\\DirectX'
+  New-Item -Path $d -Force | Out-Null
+  Set-ItemProperty $d -Name HAGSEnabled -Value 1 -Type DWord
+  Write-Output 'Game Mode e HAGS ligados.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+  {
+    id: 'opt-fast-startup',
+    cat: 'Otimização',
+    nome: 'Desligar arranque rápido',
+    desc: 'O arranque rápido pode causar travamentos/dual-boot. Desligá-lo dá boots mais limpos.',
+    perigo: 'baixo',
+    tempo: 90000,
+    cmd: `try {
+  $p = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty $p -Name HiberbootEnabled -Value 0 -Type DWord
+  Write-Output 'Arranque rápido desligado.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+
+  /* ---------------- Sistema (extra) ---------------- */
+  {
+    id: 'sys-dark-mode',
+    cat: 'Sistema',
+    nome: 'Modo escuro',
+    desc: 'Aplica o tema escuro às apps e ao sistema.',
+    perigo: 'baixo',
+    tempo: 60000,
+    cmd: `try {
+  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name AppsUseLightTheme -Value 0 -Type DWord
+  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name SystemUsesLightTheme -Value 0 -Type DWord
+  Write-Output 'Modo escuro aplicado.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+  {
+    id: 'sys-long-paths',
+    cat: 'Sistema',
+    nome: 'Permitir caminhos longos',
+    desc: 'Remove o limite de 260 caracteres em caminhos de ficheiros.',
+    perigo: 'baixo',
+    tempo: 60000,
+    cmd: `try {
+  New-Item -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem' -Force | Out-Null
+  Set-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem' -Name LongPathsEnabled -Value 1 -Type DWord
+  Write-Output 'Caminhos longos permitidos.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+  {
+    id: 'sys-taskmgr-top',
+    cat: 'Sistema',
+    nome: 'Gestor de tarefas sempre à frente',
+    desc: 'O Gestor de Tarefas fica por cima das outras janelas.',
+    perigo: 'baixo',
+    tempo: 60000,
+    cmd: `try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\TaskManager'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty $p -Name AlwaysOnTop -Value 1 -Type DWord
+  Write-Output 'Gestor de tarefas sempre à frente.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }
+Write-Output 'Feito.'`,
+  },
+
+  /* ---------------- Segurança (v0.1 — em desenvolvimento) ---------------- */
+  {
+    id: 'virus-scan-disco',
+    cat: 'Segurança',
+    nome: 'Procurar vírus num disco',
+    desc: 'Escolhe o disco e ele procura sinais suspeitos: entradas de arranque e tarefas apontando para pastas temporárias, processos a correr de lá e executáveis recentes. Rápido, só leitura.',
+    perigo: 'baixo',
+    tempo: 300000,
+    disco: true,
+    desenvolvimento: '0.1',
+    cmd: `$disco = '{{DISCO}}'
+if ($disco -notmatch '^[A-Za-z]:$') { Write-Output 'Disco invalido.'; exit 1 }
+Write-Output "=== Procura de virus em $disco (v0.1 - em desenvolvimento) ==="
+Write-Output 'Analise rapida de heuristicas. NAO substitui o Windows Defender.'
+Write-Output ''
+$suspeitos = @()
+$marcar = { param($t, $d) $script:suspeitos += [PSCustomObject]@{ tipo = $t; detalhe = $d } }
+
+# 1) Windows Defender: esta ligado e atualizado?
+try {
+  $mp = Get-MpComputerStatus -ErrorAction Stop
+  if (-not $mp.AntivirusEnabled) { & $marcar 'Defender' 'Windows Defender DESLIGADO neste PC.' }
+  elseif (-not $mp.RealTimeProtectionEnabled) { & $marcar 'Defender' 'Protecao em tempo real DESLIGADA.' }
+  $dias = -1
+  if ($mp.AntivirusSignatureLastUpdated) { $dias = ((Get-Date) - $mp.AntivirusSignatureLastUpdated).Days }
+  if ($dias -gt 7) { & $marcar 'Defender' "Assinaturas com $dias dias (desatualizadas)." }
+  Write-Output "Defender: $(if ($mp.AntivirusEnabled) { 'ativo' } else { 'DESLIGADO' })$(if ($dias -ge 0) { ' | assinaturas ha ' + $dias + ' dia(s)' })"
+} catch { Write-Output 'Defender: nao foi possivel ler o estado.' }
+Write-Output ''
+
+# 2) Entradas de arranque (Run/RunOnce) do disco escolhido
+$chaves = @('HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce','HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run','HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce')
+foreach ($k in $chaves) {
+  try {
+    $it = Get-Item -Path $k -ErrorAction Stop
+    foreach ($n in $it.GetValueNames()) {
+      $v = [string]$it.GetValue($n)
+      if (-not $v) { continue }
+      $alvo = if ($v -match '^\\s*\\x22([^\\x22]+)') { $Matches[1] } else { ($v -split '\\s+')[0] }
+      if (-not ($alvo -like "$disco\\*")) { continue }
+      if ($alvo -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Arranque' "$n -> $alvo" }
+      elseif (-not (Test-Path -LiteralPath $alvo)) { & $marcar 'Arranque' "$n aponta para ficheiro inexistente: $alvo" }
+    }
+  } catch {}
+}
+Write-Output 'Arranque: verificado.'
+
+# 3) Tarefas agendadas a executar de pastas temporarias
+try {
+  Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
+    $t = $_
+    foreach ($a in @($t.Actions)) {
+      $exe = [string]$a.Execute
+      if ($exe -and $exe -like "$disco\\*" -and $exe -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Tarefa' "$($t.TaskName) -> $exe" }
+    }
+  }
+  Write-Output 'Tarefas agendadas: verificadas.'
+} catch { Write-Output 'Tarefas agendadas: nao foi possivel ler.' }
+
+# 4) Processos a correr de pastas temporarias
+try {
+  Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
+    $p = $_.Path
+    if ($p -and $p -like "$disco\\*" -and $p -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\") { & $marcar 'Processo' "$($_.Name) -> $p" }
+  }
+  Write-Output 'Processos: verificados.'
+} catch { Write-Output 'Processos: nao foi possivel ler.' }
+
+# 5) Executaveis recentes no Temp/Downloads do disco escolhido (ultimos 7 dias)
+$pastas = @("$disco\\Temp", "$disco\\Windows\\Temp", "$disco\\Users\\*\\Downloads", "$disco\\Users\\*\\AppData\\Local\\Temp")
+$recentes = @()
+foreach ($pasta in $pastas) {
+  try {
+    $encontrados = @(Get-ChildItem -Path $pasta -Include *.exe,*.scr,*.bat,*.cmd,*.ps1,*.vbs,*.js -File -Recurse -Depth 2 -ErrorAction SilentlyContinue |
+      Where-Object { $_ -and $_.LastWriteTime -gt (Get-Date).AddDays(-7) })
+    if ($encontrados.Count) { $recentes += $encontrados }
+  } catch {}
+}
+foreach ($f in ($recentes | Where-Object { $_ } | Select-Object -First 40)) { & $marcar 'Ficheiro' ("$($f.FullName) ($($f.LastWriteTime.ToString('dd/MM')))") }
+Write-Output "Executaveis recentes: $($recentes.Count) no(s) nos ultimos 7 dias."
+
+# 6) Servicos a correr de pastas temporarias
+try {
+  Get-CimInstance Win32_Service -ErrorAction SilentlyContinue | Where-Object { $_.PathName -like "$disco\\*" -and $_.PathName -match "^[A-Za-z]:\\\\.*\\\\(Temp|AppData\\\\Local\\\\Temp)\\\\*" } |
+    ForEach-Object { & $marcar 'Servico' "$($_.Name) -> $($_.PathName)" }
+} catch {}
+Write-Output 'Servicos: verificados.'
+
+Write-Output ''
+Write-Output '=== RESULTADO ==='
+if (-not $suspeitos.Count) {
+  Write-Output 'Sem sinais suspeitos encontrados nesta analise rapida.'
+} else {
+  Write-Output "$($suspeitos.Count) sinal(is) para verificar:"
+  foreach ($s in $suspeitos) { Write-Output ("  [" + $s.tipo + "] " + $s.detalhe) }
+}
+Write-Output ''
+Write-Output 'Nota: isto e uma heuristica v0.1. Para confirmar, corre a Verificacao Rapida do Windows Defender.'`,
+  },
+
+  /* ---------------- WinUtil (Chris Titus) ---------------- */
+  {
+    id: 'winutil',
+    cat: 'Otimização',
+    nome: 'WinUtil (Chris Titus)',
+    desc: 'Abre o WinUtil — ferramenta tudo-em-um com debloat, tweaks e tweaks de rede. Corre em modo normal.',
+    perigo: 'medio',
+    normal: true,
+    tempo: 300000,
+    cmd: `Invoke-Expression (Invoke-RestMethod -Uri https://christitus.com/win).ToString()`,
+  },
 ];
 
-/* ---------------- Programas (winget) e ferramentas de OC ---------------- */
-const PROGRAMAS = [
-  ['instalar-7zip', '7-Zip', '7zip.7zip', 'Programas'],
-  ['instalar-chrome', 'Google Chrome', 'Google.Chrome', 'Programas'],
-  ['instalar-firefox', 'Mozilla Firefox', 'Mozilla.Firefox', 'Programas'],
-  ['instalar-discord', 'Discord', 'Discord.Discord', 'Programas'],
-  ['instalar-steam', 'Steam', 'Valve.Steam', 'Programas'],
-  ['instalar-vlc', 'VLC (multimédia)', 'VideoLAN.VLC', 'Programas'],
-  ['instalar-obs', 'OBS Studio', 'OBSProject.OBSStudio', 'Programas'],
-  ['instalar-notepad', 'Notepad++', 'Notepad++.Notepad++', 'Programas'],
-  ['instalar-vscode', 'Visual Studio Code', 'Microsoft.VisualStudioCode', 'Programas'],
-  ['instalar-telegram', 'Telegram', 'Telegram.TelegramDesktop', 'Programas'],
-  ['instalar-spotify', 'Spotify', 'Spotify.Spotify', 'Programas'],
-  ['instalar-git', 'Git', 'Git.Git', 'Programas'],
-  ['instalar-cpuz', 'CPU-Z — relógios e tensões', 'CPUID.CPU-Z', 'Verificar OC'],
-  ['instalar-gpuz', 'GPU-Z — relógios da GPU', 'TechPowerUp.GPU-Z', 'Verificar OC'],
-  ['instalar-occt', 'OCCT — testes de estabilidade', 'OCBase.OCCT.Personal', 'Verificar OC'],
-  ['instalar-afterburner', 'MSI Afterburner', 'Guru3D.Afterburner', 'Verificar OC'],
-  ['instalar-hwmonitor', 'HWMonitor — sensores', 'CPUID.HWMonitor', 'Verificar OC'],
-  ['instalar-crystaldiskinfo', 'CrystalDiskInfo — saúde dos discos', 'CrystalDewWorld.CrystalDiskInfo', 'Verificar OC'],
-];
+/* ---------------- Programas (winget) — importados do catálogo com ícones ---------------- */
+const { PROGRAMAS: PROGRAMAS_RAW, LOGOS } = require('./ferramentas-programas.js');
+const PROGRAMAS_CATALOGO = PROGRAMAS_RAW.map((p) => ({
+  id: p[0],
+  nome: p[1],
+  subcategoria: p[2],
+  wingetId: p[3],
+  descricao: p[4],
+  icone: p[5],
+}));
+const logoDe = (id) =>
+  LOGOS[id] ? `https://www.google.com/s2/favicons?domain=${LOGOS[id]}&sz=160` : null;
 
-for (const [id, nome, wingetId, cat] of PROGRAMAS) {
+for (const p of PROGRAMAS_CATALOGO) {
   FERRAMENTAS.push({
-    id,
-    cat,
-    nome,
-    desc: `Instala via winget: ${wingetId} (sem installer manual).`,
+    id: p.id,
+    cat: 'Programas',
+    sub: p.subcategoria,
+    nome: p.nome,
+    desc: p.descricao,
     perigo: 'baixo',
     tempo: 600000,
-    cmd: `${WINGET(wingetId)}
+    icone: p.icone,
+    logo: logoDe(p.id),
+    wingetId: p.wingetId,
+    cmd: `${WINGET(p.wingetId)}
 Write-Output 'Instalacao terminada.'`,
   });
 }
@@ -534,6 +743,128 @@ FERRAMENTAS.push({
 Write-Output 'Atualizacoes terminadas.'`,
 });
 
+/* ---------------- Desinstalar com limpeza (estilo Revo) ---------------- */
+FERRAMENTAS.push({
+  id: 'desinstalar-limpeza',
+  cat: 'Programas',
+  nome: 'Desinstalar com limpeza total (Revo)',
+  desc: 'Desinstala via winget e limpa rastros: pastas, registo, tasks, serviços. Requer admin.',
+  perigo: 'alto',
+  livre: true,
+  tempo: 600000,
+  cmd: `$id = '{{ID}}'; if (-not $id) { Write-Output 'ID do winget obrigatorio.'; exit 1 }
+Write-Output "A desinstalar $id via winget..."
+try { winget uninstall --id $id -e --accept-package-agreements --accept-source-agreements --disable-interactivity } catch { Write-Output ("Winget: " + $_.Exception.Message) }
+Write-Output 'A limpar rastros...'
+$nomeBase = $id.Split('.')[-1]
+$pastas = @(
+  (Join-Path $env:ProgramFiles $nomeBase),
+  (Join-Path ($env:ProgramFiles + '(x86)') $nomeBase),
+  (Join-Path $env:LOCALAPPDATA $nomeBase),
+  (Join-Path $env:APPDATA $nomeBase)
+)
+foreach ($p in $pastas) {
+  if (Test-Path $p) {
+    try { Remove-Item $p -Recurse -Force -ErrorAction Stop; Write-Output ("Removido: " + $p) } catch { Write-Output ("Falha: " + $p) }
+  }
+}
+# Registo
+$regPaths = @(
+  "HKLM:\\SOFTWARE\\$nomeBase",
+  "HKLM:\\SOFTWARE\\WOW6432Node\\$nomeBase",
+  "HKCU:\\Software\\$nomeBase"
+)
+foreach ($r in $regPaths) {
+  if (Test-Path $r) {
+    try { Remove-Item $r -Recurse -Force -ErrorAction Stop; Write-Output ("Registo removido: " + $r) } catch { Write-Output ("Registo falha: " + $r) }
+  }
+}
+# Tasks agendadas
+Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -like "*$nomeBase*" } | ForEach-Object {
+  try { Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false -ErrorAction Stop; Write-Output ("Task removida: " + $_.TaskName) } catch { Write-Output ("Task falha: " + $_.TaskName) }
+}
+# Serviços
+Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$nomeBase*" } | ForEach-Object {
+  try { Stop-Service -Name $_.Name -Force -ErrorAction SilentlyContinue; Set-Service -Name $_.Name -StartupType Disabled -ErrorAction Stop; Write-Output ("Servico desativado: " + $_.Name) } catch { Write-Output ("Servico falha: " + $_.Name) }
+}
+Write-Output 'Limpeza completa.'`,
+});
+
+/* ---------------- Spotify Premium By Xalana ---------------- */
+FERRAMENTAS.push({
+  id: 'spotify-instalar',
+  cat: 'Spotify',
+  nome: 'Instalar Spotify Premium By Xalana',
+  desc: 'Instala o spicetify (motor do mod). TENS DE TER O SPOTIFY JÁ INSTALADO. Corre em modo normal (sem admin).',
+  perigo: 'baixo',
+  normal: true,
+  tempo: 300000,
+  cmd: `winget install Spicetify.Spicetify`,
+});
+
+FERRAMENTAS.push({
+  id: 'spotify-atualizar',
+  cat: 'Spotify',
+  nome: 'Atualizar e reaplicar Spotify Premium By Xalana',
+  desc: 'Atualiza o spicetify e reaplica o tema. TENS DE TER O SPOTIFY INSTALADO. Corre em modo normal (sem admin).',
+  perigo: 'baixo',
+  normal: true,
+  tempo: 300000,
+  cmd: `spicetify update
+spicetify apply`,
+});
+
+/* ---------------- Limpeza ---------------- */
+FERRAMENTAS.push({
+  id: 'limpeza-temp',
+  cat: 'Limpeza',
+  nome: 'Limpar ficheiros temporários',
+  desc: 'Apaga %TEMP%, Windows\\Temp e prefetch. Seguro, só lixo.',
+  perigo: 'baixo',
+  tempo: 180000,
+  cmd: `$ErrorActionPreference='Continue'
+Write-Output 'A limpar temporarios...'
+$pastas = @("$env:TEMP", "$env:SystemRoot\\Temp", "$env:SystemRoot\\Prefetch")
+foreach ($p in $pastas) {
+  try { Get-ChildItem $p -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue; Write-Output ("Limpo: " + $p) } catch { Write-Output ("Falha: " + $p) }
+}
+Write-Output 'Temporarios limpos.'`,
+});
+
+FERRAMENTAS.push({
+  id: 'limpeza-update',
+  cat: 'Limpeza',
+  nome: 'Limpar cache do Windows Update',
+  desc: 'Para os serviços, apaga a pasta de download do Update e volta a ligar.',
+  perigo: 'medio',
+  tempo: 180000,
+  cmd: `try {
+  Stop-Service wuauserv -Force -ErrorAction Stop
+  Stop-Service bits -Force -ErrorAction SilentlyContinue
+  Remove-Item "$env:SystemRoot\\SoftwareDistribution\\Download\\*" -Recurse -Force -ErrorAction SilentlyContinue
+  Start-Service wuauserv -ErrorAction SilentlyContinue
+  Start-Service bits -ErrorAction SilentlyContinue
+  Write-Output 'Cache do Windows Update limpo.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }`,
+});
+
+FERRAMENTAS.push({
+  id: 'limpeza-disco',
+  cat: 'Limpeza',
+  nome: 'Limpeza de disco (automática)',
+  desc: 'Corre o cleanmgr com as caixas todas marcadas: thumbnails, logs, Defender e miniaturas.',
+  perigo: 'baixo',
+  tempo: 600000,
+  cmd: `try {
+  $v = 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches'
+  Get-ChildItem $v -ErrorAction SilentlyContinue | ForEach-Object {
+    try { New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -Type DWord -Force -ErrorAction SilentlyContinue | Out-Null } catch {}
+  }
+  Start-Process cleanmgr.exe -ArgumentList '/sagerun:1' -Wait -ErrorAction SilentlyContinue
+  Write-Output 'Limpeza de disco concluida.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }`,
+});
+
 /* ---------------------------------------------------------------
    Estado (o site faz polling disto)
    --------------------------------------------------------------- */
@@ -546,6 +877,153 @@ const estado = {
   codigo: null,
 };
 
+/* ---------------------------------------------------------------
+   Registo de auditoria (histórico de execuções)
+   ---------------------------------------------------------------
+   Fica guardado na tabela tool_runs e é mostrado SÓ no painel de
+   admin (rota /api/ferramentas/historico, protegida por
+   requireAdmin). Tudo é best-effort: se não houver base de dados
+   o script corre na mesma e só não fica o histórico. */
+let regAtual = null; // Promise do id da linha desta execução
+
+/* ---------------------------------------------------------------
+   Tradução dos códigos de saída
+   ---------------------------------------------------------------
+   "código 1" não diz nada a quem não é de informática. Isto vira
+   uma frase — o mesmo texto aparece no terminal, no aviso de fim e
+   no histórico de auditoria. */
+function traduzCodigo(c) {
+  if (c == null || c === '') return 'sem código';
+  const n = Number(c);
+  if (Number.isNaN(n)) return String(c);
+  if (n === 0) return 'sucesso';
+  const conhecidos = {
+    1: 'erro genérico (o script falhou)',
+    2: 'erro de uso — o comando não aceitou os parâmetros',
+    3: 'erro interno do script',
+    5: 'sem acesso — tenta correr como administrador',
+    7: 'permissão negada',
+    9009: 'programa não encontrado neste PC',
+    1602: 'cancelado pelo utilizador',
+    1603: 'falha na instalação',
+    1618: 'já há uma instalação a correr — espera e tenta outra vez',
+    '-1073741510': 'fechado pelo utilizador (janela fechada)',
+    '-1073740791': 'falhou com erro interno do Windows',
+    255: 'falhou',
+  };
+  if (conhecidos[n]) return `${conhecidos[n]} (código ${n})`;
+  return n > 0 ? `falhou (código ${n})` : `falhou (código ${n})`;
+}
+
+/** Texto pronto a mostrar para um código (0 = sucesso). */
+function textoCodigo(c) {
+  return Number(c) === 0 ? 'sucesso' : traduzCodigo(c);
+}
+
+/* A tabela pode ainda não existir (BD criada antes disto). Em vez de
+   obrigar a correr migrate.js à mão, criamo-la aqui uma vez, à
+   primeira escrita. Se falhar, a auditoria desiste e o script corre
+   na mesma — nunca atrasa nem bloqueia nada. */
+let tabelaToolRuns = null;
+async function garantirToolRuns() {
+  if (tabelaToolRuns !== null) return tabelaToolRuns;
+  try {
+    await getDb().prepare(`CREATE TABLE IF NOT EXISTS public.tool_runs (
+       id           bigint generated always as identity primary key,
+       ferramenta_id text not null,
+       nome         text,
+       arg          text,
+       username     text,
+       inicio       timestamptz not null default now(),
+       fim          timestamptz,
+       codigo       integer,
+       erro         text,
+       cancelado    boolean not null default false,
+       logs         jsonb
+     )`).run();
+    await getDb()
+      .prepare('CREATE INDEX IF NOT EXISTS tool_runs_inicio_idx ON public.tool_runs (inicio DESC)')
+      .run();
+    tabelaToolRuns = true;
+  } catch (e) {
+    console.warn('Auditoria (criar tabela) saltou:', String(e.message).slice(0, 120));
+    tabelaToolRuns = false;
+  }
+  return tabelaToolRuns;
+}
+
+async function registarInicio({ id, nome, arg, quem }) {
+  try {
+    if (!(await garantirToolRuns())) return null;
+    const r = await getDb()
+      .prepare(
+        'INSERT INTO public.tool_runs (ferramenta_id, nome, arg, username, inicio) VALUES (?, ?, ?, ?, now()) RETURNING id',
+      )
+      .run(id, nome || id, arg || null, quem || null);
+    return Number(r.lastInsertRowid) || null;
+  } catch (e) {
+    console.warn('Auditoria (início) saltou:', String(e.message).slice(0, 120));
+    return null;
+  }
+}
+
+async function registarFim(regId, { codigo, erro, cancelado, logs }) {
+  if (!regId) return;
+  try {
+    await getDb()
+      .prepare(
+        'UPDATE public.tool_runs SET fim = now(), codigo = ?, erro = ?, cancelado = ?, logs = ?::jsonb WHERE id = ?',
+      )
+      .run(
+        codigo == null ? null : Number(codigo),
+        erro || null,
+        Boolean(cancelado),
+        JSON.stringify((logs || []).slice(-300)),
+        regId,
+      );
+  } catch (e) {
+    console.warn('Auditoria (fim) saltou:', String(e.message).slice(0, 120));
+  }
+}
+
+/** Últimas execuções — só para o painel admin. */
+async function historico(limite = 50) {
+  const n = Math.min(200, Math.max(1, Number(limite) || 50));
+  try {
+    if (!(await garantirToolRuns())) return [];
+    const linhas = await getDb()
+      .prepare('SELECT * FROM public.tool_runs ORDER BY id DESC LIMIT ?')
+      .all(n);
+    /* devolve também o texto do código — o painel não tem de traduzir */
+    return (linhas || []).map((r) => ({
+      ...r,
+      codigo_texto: r.codigo == null ? null : textoCodigo(r.codigo),
+    }));
+  } catch (e) {
+    console.warn('Auditoria (histórico) saltou:', String(e.message).slice(0, 120));
+    return [];
+  }
+}
+
+/* Para a ferramenta que está a correr (mate o processo ou a tarefa
+   agendada). O motor deixa `cancelarAtual` apontar para a rotina de
+   fim da execução em curso. */
+let cancelarAtual = null;
+
+function parar() {
+  if (!podeLocal()) {
+    return { ok: false, erro: 'Este servidor não está num PC Windows.' };
+  }
+  if (!estado.aCorrer) return { ok: false, erro: 'Não há nada a correr.' };
+  if (!cancelarAtual) return { ok: false, erro: 'Não deu para localizar o processo em curso.' };
+  try {
+    cancelarAtual();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erro: 'Não deu para parar: ' + e.message };
+  }
+}
+
 function estadoPublico() {
   return {
     aCorrer: estado.aCorrer,
@@ -555,13 +1033,69 @@ function estadoPublico() {
     fim: estado.fim,
     erro: estado.erro,
     codigo: estado.codigo,
+    codigoTexto: estado.codigo == null ? null : textoCodigo(estado.codigo),
+    interrompido: Boolean(estado.interrompido),
     podeLocal: podeLocal(),
+    podeParar: Boolean(estado.aCorrer && cancelarAtual),
     agora: new Date().toISOString(),
   };
 }
 
 function listar() {
-  return FERRAMENTAS.map(({ cmd, ...f }) => ({ ...f, comando: f.livre ? null : cmd.split('\n')[0] }));
+  return FERRAMENTAS.map(({ cmd, ...f }) => ({
+    ...f,
+    comando: f.livre || f.disco || f.normal ? null : cmd.split('\n')[0],
+  }));
+}
+
+/* Discos fixos do PC — serve o seletor da ferramenta de vírus.
+   Rápido: só lê as letras, sem varrer ficheiros. */
+function discosFixos() {
+  if (!podeLocal()) return { ok: false, erro: 'Sem PowerShell local.', discos: [] };
+  try {
+    const out = require('child_process')
+      .execFileSync('powershell.exe', [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object { $_.DeviceID }",
+      ], { windowsHide: true, timeout: 8000 })
+      .toString('utf8');
+    const discos = out.split(/\r?\n/).map((s) => s.trim().toUpperCase()).filter((s) => /^[A-Z]:$/.test(s));
+    return { ok: true, discos };
+  } catch (e) {
+    return { ok: false, erro: 'Não deu para listar os discos: ' + e.message, discos: [] };
+  }
+}
+
+/* ---------------------------------------------------------------
+   Programas já instalados no PC (via winget list)
+   ---------------------------------------------------------------
+   Corre `winget list` uma vez e devolve que IDs do catálogo já
+   estão instalados. O frontend usa isto para marcar os cards e
+   mostrar o botão de desinstalar os selecionados. */
+function detectarInstalados() {
+  return new Promise((resolve) => {
+    if (!podeLocal()) return resolve({ ok: false, erro: 'Sem PowerShell local.' });
+    const alvos = PROGRAMAS_CATALOGO.filter((p) => p.wingetId).map((p) => p.wingetId.toLowerCase());
+    if (!alvos.length) return resolve({ ok: true, instalados: [] });
+
+    const p = spawn('winget.exe', ['list', '--disable-interactivity'], { windowsHide: true });
+    let out = '';
+    let err = '';
+    const limite = setTimeout(() => { try { p.kill(); } catch { /* já saiu */ } }, 60000);
+    p.stdout.on('data', (b) => (out += String(b)));
+    p.stderr.on('data', (b) => (err += String(b)));
+    p.on('error', () => { clearTimeout(limite); resolve({ ok: false, erro: 'winget indisponível.' }); });
+    p.on('close', () => {
+      clearTimeout(limite);
+      const baixo = out.toLowerCase();
+      const instalados = PROGRAMAS_CATALOGO
+        .filter((x) => x.wingetId && baixo.includes(x.wingetId.toLowerCase()))
+        .map((x) => x.id);
+      resolve({ ok: true, instalados, _err: err.trim() ? err.trim().slice(0, 120) : null });
+    });
+  });
 }
 
 /* ---------------------------------------------------------------
@@ -569,7 +1103,7 @@ function listar() {
    --------------------------------------------------------------- */
 let procAtual = null;
 
-function executar(id, arg) {
+function executar(id, arg, quem) {
   if (!podeLocal()) {
     return { ok: false, erro: 'Este servidor não está num PC Windows (a Vercel não tem PowerShell).' };
   }
@@ -585,25 +1119,87 @@ function executar(id, arg) {
       return { ok: false, erro: 'ID do winget inválido (letras, números, ponto, hífen, ponto final).' };
     }
     cmd = cmd.replace('{{ID}}', v);
+  } else if (f.disco) {
+    const v = String(arg || '').trim().toUpperCase().replace(/^([A-Z])$/, '$1:');
+    if (!/^[A-Z]:$/.test(v)) {
+      return { ok: false, erro: 'Disco inválido — escolhe um disco (ex.: C: ou D:).' };
+    }
+    cmd = cmd.replace('{{DISCO}}', v);
   }
 
+  return arrancar(cmd, {
+    id,
+    nome: f.nome,
+    tempo: f.tempo || 180000,
+    normal: f.normal,
+    arg: f.livre || f.disco ? String(arg || '').trim() : null,
+    quem,
+  });
+}
+
+/* ---------------------------------------------------------------
+   Desinstalar vários programas selecionados (estilo Revo)
+   ---------------------------------------------------------------
+   Para cada programa: winget uninstall + limpa pastas, registo,
+   tasks e serviços. Corre tudo num script e mostra os logs. */
+function desinstalar(ids, quem) {
+  if (!podeLocal()) {
+    return { ok: false, erro: 'Este servidor não está num PC Windows.' };
+  }
+  if (estado.aCorrer) return { ok: false, erro: 'Já há uma ferramenta em curso.' };
+
+  const validos = (Array.isArray(ids) ? ids : [])
+    .map((id) => FERRAMENTAS.find((x) => x.id === id))
+    .filter((f) => f && f.cat === 'Programas' && f.wingetId);
+  if (!validos.length) {
+    return { ok: false, erro: 'Seleciona programas válidos para desinstalar.' };
+  }
+
+  const blocos = validos.map((f) => {
+    const nb = f.wingetId.split('.').pop();
+    return `
+Write-Output "=== A desinstalar ${f.nome} ==="
+try { winget uninstall --id "${f.wingetId}" -e --accept-package-agreements --accept-source-agreements --disable-interactivity } catch { Write-Output ("  winget: " + $_.Exception.Message) }
+$nb = "${nb}"
+foreach ($pasta in @((Join-Path $env:ProgramFiles $nb), (Join-Path ($env:ProgramFiles + '(x86)') $nb), (Join-Path $env:LOCALAPPDATA $nb), (Join-Path $env:APPDATA $nb))) {
+  if ($pasta -and (Test-Path $pasta)) { try { Remove-Item $pasta -Recurse -Force -ErrorAction Stop; Write-Output ("  pasta removida: " + $pasta) } catch {} }
+}
+foreach ($rg in @("HKLM:\\SOFTWARE\\$nb", "HKLM:\\SOFTWARE\\WOW6432Node\\$nb", "HKCU:\\Software\\$nb")) {
+  if (Test-Path $rg) { try { Remove-Item $rg -Recurse -Force -ErrorAction Stop; Write-Output ("  registo removido: " + $rg) } catch {} }
+}
+Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -like "*$nb*" } | ForEach-Object { try { Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false -ErrorAction SilentlyContinue } catch {} }
+Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$nb*" } | ForEach-Object { try { Stop-Service -Name $_.Name -Force -ErrorAction SilentlyContinue; Set-Service -Name $_.Name -StartupType Disabled -ErrorAction SilentlyContinue } catch {} }
+Write-Output "=== ${f.nome}: concluido ==="
+`;
+  });
+
+  const cmd = blocos.join('\n') + "\nWrite-Output 'Desinstalacao de todos os selecionados concluida.'";
+  return arrancar(cmd, {
+    id: 'desinstalar',
+    nome: `Desinstalar ${validos.length} programa(s)`,
+    tempo: 900000,
+    arg: validos.map((f) => f.wingetId).join(', '),
+    quem,
+  });
+}
+
+/* motor de execução partilhado (usado por executar e desinstalar) */
+function arrancar(cmd, { id, nome, tempo, normal, arg, quem }) {
   const dir = path.join(os.tmpdir(), 'aj-ferramentas');
   fs.mkdirSync(dir, { recursive: true });
-  const ficheiro = path.join(dir, `${id}-${Date.now()}.ps1`);
+  const stamp = Date.now();
+  const ficheiro = path.join(dir, `${id}-${stamp}.ps1`);
   fs.writeFileSync(ficheiro, Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(CABECALHO + cmd, 'utf8')]));
 
   estado.aCorrer = id;
-  estado.logs = [{ t: new Date().toISOString(), l: `A executar: ${f.nome}` }];
+  estado.logs = [{ t: new Date().toISOString(), l: `A executar: ${nome}` }];
   estado.inicio = new Date().toISOString();
   estado.fim = null;
   estado.erro = null;
   estado.codigo = null;
 
-  const tempo = f.tempo || 180000;
-  const p = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ficheiro], {
-    windowsHide: true,
-  });
-  procAtual = p;
+  /* registo de auditoria (fica no histórico do painel admin) */
+  regAtual = registarInicio({ id, nome, arg, quem });
 
   const push = (l) => {
     estado.logs.push({ t: new Date().toISOString(), l: String(l).slice(0, 500) });
@@ -618,41 +1214,142 @@ function executar(id, arg) {
   };
 
   let acabado = false;
+  let p = null;
+  let logFicheiro = null;
+  let helper = null;
+  let pollIv = null;
+  let interrompido = false; // true quando o admin carregou em "Parar"
+
   const terminar = (codigo, erro) => {
     if (acabado) return;
     acabado = true;
     clearTimeout(limite);
+    if (pollIv) clearInterval(pollIv);
     estado.aCorrer = null;
     estado.codigo = codigo;
     estado.erro = erro || null;
     estado.fim = new Date().toISOString();
+    estado.interrompido = interrompido;
     procAtual = null;
+    cancelarAtual = null;
     try {
       fs.unlinkSync(ficheiro);
-    } catch {
-      /* já foi */
+    } catch { /* já foi */ }
+    if (normal) {
+      try { if (logFicheiro) fs.unlinkSync(logFicheiro); } catch { /* já foi */ }
+      try { if (helper) fs.unlinkSync(helper); } catch { /* já foi */ }
     }
-    push(erro ? `Erro: ${erro}` : `Terminado (código ${codigo}).`);
+    push(interrompido ? 'Interrompido pelo admin.' : (erro ? `Erro: ${erro}` : `Concluído — ${traduzCodigo(codigo)}.`));
+    /* histórico do painel admin — best effort, nunca atrasa o fim */
+    Promise.resolve(regAtual)
+      .then((regId) => registarFim(regId, { codigo, erro, cancelado: interrompido, logs: estado.logs }))
+      .catch(() => {});
+    regAtual = null;
+  };
+
+  /* Parar a execução em curso: no modo elevado mata-se o powershell;
+     no modo normal pede-se ao Agendador para matar a tarefa criada. */
+  cancelarAtual = () => {
+    if (acabado) return;
+    interrompido = true;
+    if (normal && helper) {
+      spawn(
+        'powershell.exe',
+        [
+          '-NoProfile',
+          '-Command',
+          `Import-Module ScheduledTasks; Stop-ScheduledTask -TaskName '${helper}' -Force -ErrorAction SilentlyContinue; Unregister-ScheduledTask -TaskName '${helper}' -Confirm:$false -ErrorAction SilentlyContinue`,
+        ],
+        { windowsHide: true, stdio: 'ignore' },
+      );
+    }
+    if (p) {
+      try { p.kill(); } catch { /* já saiu */ }
+    }
+    terminar(null, 'Interrompido pelo admin.');
   };
 
   const limite = setTimeout(() => {
-    try {
-      p.kill();
-    } catch {
-      /* já saiu */
-    }
+    if (p) { try { p.kill(); } catch { /* já saiu */ } }
     terminar(null, 'Demorou demasiado e foi interrompido.');
   }, tempo);
+
+  if (normal) {
+    /* ---- modo NORMAL (sem admin) ----
+       Regista uma tarefa agendada com RunLevel Limited (não elevado)
+       e corre lá o script via cmd.exe, que redireciona o output para
+       um log que vamos lendo à medida que cresce. */
+    logFicheiro = path.join(dir, `${id}-${stamp}.log`);
+    helper = `aj-norm-${stamp}`;
+
+    // o script real: corre o comando e no fim escreve o marcador
+    const psConteudo = CABECALHO + cmd +
+      `\nWrite-Output ('__AJ_DONE__' + $LASTEXITCODE)\n`;
+    fs.writeFileSync(ficheiro, Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(psConteudo, 'utf8')]));
+
+    push('A executar em modo NORMAL (sem privilégios de administrador)…');
+
+    // action da tarefa: cmd.exe redireciona tudo para o log
+    const reg =
+      `$ErrorActionPreference='Stop';Import-Module ScheduledTasks;` +
+      `$a=New-ScheduledTaskAction -Execute 'cmd.exe' -Argument '/c powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${ficheiro}" > "${logFicheiro}" 2>&1';` +
+      `$p=New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited;` +
+      `Unregister-ScheduledTask -TaskName '${helper}' -Confirm:$false -ErrorAction SilentlyContinue;` +
+      `Register-ScheduledTask -TaskName '${helper}' -Action $a -Principal $p -Force | Out-Null;` +
+      `Start-ScheduledTask -TaskName '${helper}'`;
+
+    const pr = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', reg], {
+      windowsHide: true,
+    });
+    let regErr = '';
+    pr.stderr.on('data', (b) => (regErr += String(b)));
+    pr.on('error', (e) => terminar(null, `Não deu para criar a tarefa: ${e.message}`));
+    pr.on('close', (cod) => {
+      if (cod !== 0 && regErr.trim()) {
+        terminar(null, `Não deu para correr em modo normal: ${regErr.trim().slice(0, 200)}`);
+      }
+    });
+
+    // vamos lendo o log à medida que cresce
+    let lidoAte = 0;
+    pollIv = setInterval(() => {
+      let conteudo = '';
+      try { conteudo = fs.readFileSync(logFicheiro, 'utf8'); } catch { /* ainda não existe */ }
+      if (conteudo.length > lidoAte) {
+        const novo = conteudo.slice(lidoAte);
+        lidoAte = conteudo.length;
+        const linhasNovas = novo.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+        for (const ln of linhasNovas) {
+          const m = ln.match(/^__AJ_DONE__(-?\d+)$/);
+          if (m) {
+            const codigo = Number(m[1]);
+            spawn('powershell.exe', ['-NoProfile', '-Command', `Import-Module ScheduledTasks;Unregister-ScheduledTask -TaskName '${helper}' -Confirm:$false -ErrorAction SilentlyContinue`], { windowsHide: true, stdio: 'ignore' });
+            terminar(codigo, codigo !== 0 ? `O script saiu com ${traduzCodigo(codigo)}.` : null);
+            return;
+          }
+          push(ln);
+        }
+      }
+    }, 500);
+
+    return { ok: true, id, nome };
+  }
+
+  /* ---- modo normal do servidor: PowerShell direto ---- */
+  p = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ficheiro], {
+    windowsHide: true,
+  });
+  procAtual = p;
 
   p.stdout.on('data', linhas);
   p.stderr.on('data', linhas);
   p.on('error', (e) => terminar(null, `Não deu para abrir o PowerShell: ${e.message}`));
   p.on('close', (codigo) => {
     const falhou = codigo && codigo !== 0;
-    terminar(codigo, falhou ? `O script saiu com o código ${codigo}.` : null);
+    terminar(codigo, falhou ? `O script saiu com ${traduzCodigo(codigo)}.` : null);
   });
 
-  return { ok: true, id, nome: f.nome };
+  return { ok: true, id, nome };
 }
 
-module.exports = { podeLocal, listar, executar, estadoPublico };
+module.exports = { podeLocal, listar, executar, desinstalar, detectarInstalados, estadoPublico, parar, historico, discosFixos, textoCodigo };

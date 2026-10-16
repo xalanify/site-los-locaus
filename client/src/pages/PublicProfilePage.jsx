@@ -14,7 +14,7 @@ import {
 import AvatarImg from '../components/AvatarImg'
 import ClipCard from '../components/ClipCard'
 import Estado from '../components/Estado'
-import { BadgeGem } from '../components/BadgeGem'
+import { BadgeGem, BADGES, distincoesOverclock } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 
 /* Contador de uma estatística (rótulo em baixo, número em cima) */
@@ -156,19 +156,38 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               </span>
             </div>
 
-            {(p.badges || []).length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {p.badges.map((b) => (
-                  <span
-                    key={b}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-bold text-gray-200 ring-1 ring-white/10"
-                  >
-                    <BadgeGem badge={b} size={16} />
-                    {b === 'dev' ? 'Dev' : b === 'top1' ? 'Top 1' : 'Jogador'}
-                  </span>
-                ))}
-              </div>
-            )}
+            {(() => {
+              const estaticos = (p.badges || [])
+                .map((id) => BADGES.find((b) => b.id === id))
+                .filter(Boolean)
+              const dist = distincoesOverclock(p.distincoes)
+              const todos = [...estaticos, ...dist]
+              if (!todos.length) return null
+              return (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {todos.map((b) => (
+                    <span
+                      key={b.id}
+                      title={b.desc}
+                      className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 ring-1"
+                      style={{
+                        background: `${b.color}18`,
+                        boxShadow: `0 0 14px ${b.color}40`,
+                        ringColor: `${b.color}66`,
+                      }}
+                    >
+                      <BadgeGem badge={b} size={18} />
+                      <span
+                        className="font-display text-[10px] font-black uppercase tracking-wider"
+                        style={{ color: b.color }}
+                      >
+                        {b.label}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
 
           {souEu && (

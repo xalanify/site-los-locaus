@@ -11,7 +11,7 @@ import {
   Check,
   Upload,
 } from 'lucide-react'
-import { BadgeGem, BADGES, devLabelClass } from '../components/BadgeGem'
+import { BadgeGem, BADGES, devLabelClass, distincoesOverclock } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import { svgAvatar } from '../lib/avatar'
 
@@ -90,7 +90,11 @@ export default function ProfilePage({
 
   const badges = Array.isArray(me.badges) ? me.badges : []
   /* chips em baixo: todas menos a DEV (essa fica só ao lado do nome) */
-  const minhas = BADGES.filter((b) => badges.includes(b.id) && b.id !== 'dev')
+  const distOc = distincoesOverclock(me.distincoes)
+  const minhas = [
+    ...BADGES.filter((b) => badges.includes(b.id) && b.id !== 'dev'),
+    ...distOc,
+  ]
   const temDev = badges.includes('dev') || isAdmin
   const devBadge = BADGES.find((b) => b.id === 'dev')
 

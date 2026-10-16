@@ -14,6 +14,9 @@ const { initDatabase, getDb, closeDatabase } = require('./database');
 const PASSOS = [
   // Contador de visualizações nos clips
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS views integer NOT NULL DEFAULT 0',
+  // Publicação automática no YouTube: fica só o link do vídeo
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_id text',
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_thumb text',
   // Experimentação: banner do perfil + cor/efeito do nome
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',
@@ -37,6 +40,21 @@ const PASSOS = [
   'ALTER TABLE public.user_specs ALTER COLUMN cpu_score TYPE bigint',
   // leitura real do PC (PowerShell): relógios, timings e discos
   'ALTER TABLE public.user_specs ADD COLUMN IF NOT EXISTS details jsonb',
+  // Registo de auditoria das ferramentas Windows (vê-se no painel admin)
+  `CREATE TABLE IF NOT EXISTS public.tool_runs (
+     id           bigint generated always as identity primary key,
+     ferramenta_id text not null,
+     nome         text,
+     arg          text,
+     username     text,
+     inicio       timestamptz not null default now(),
+     fim          timestamptz,
+     codigo       integer,
+     erro         text,
+     cancelado    boolean not null default false,
+     logs         jsonb
+   )`,
+  'CREATE INDEX IF NOT EXISTS tool_runs_inicio_idx ON public.tool_runs (inicio DESC)',
 ];
 
 (async () => {
