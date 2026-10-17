@@ -131,9 +131,13 @@ async function aoVivo() {
   const res = await Promise.all(
     lista.map(async (m) => {
       const hit = cache.get(m.steam);
-      if (hit && agora - hit.t < 3 * 60 * 1000) return { ...hit.v, nick: m.nick };
+      // só cacheia SUCESSO: quem estiver privado volta a tentar
+      // no pedido seguinte, logo que os amigos tornem público
+      if (hit && hit.v.ok && agora - hit.t < 3 * 60 * 1000)
+        return { ...hit.v, nick: m.nick };
       const v = await statsSteam(m.steam, key);
-      cache.set(m.steam, { t: agora, v });
+      if (v.ok) cache.set(m.steam, { t: agora, v });
+      else cache.delete(m.steam);
       return { ...v, nick: m.nick };
     }),
   );
