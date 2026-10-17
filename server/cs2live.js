@@ -90,7 +90,8 @@ async function statsSteam(steamid, key) {
     const deaths = n('total_deaths');
     const tiros = n('total_shots_fired');
     const certos = n('total_shots_hit');
-    const horas = n('total_time_played');
+    const tempoMinutos = n('total_time_played');
+    const hs = n('total_kills_headshot');
     return {
       ok: true,
       steam: steamid,
@@ -101,8 +102,14 @@ async function statsSteam(steamid, key) {
       mvps: n('total_mvps'),
       tiros,
       precisao: tiros && certos != null ? Number(((certos / tiros) * 100).toFixed(1)) : null,
-      horas: horas != null ? Number((horas / 60).toFixed(0)) : null, // segundos → horas? Steam devolve minutos
-      plants: n('total_defusas') != null ? n('total_defusas') : n('total_planted_bombs'),
+      hs: hs != null && kills ? Number(((hs / kills) * 100).toFixed(1)) : null,
+      vitorias: n('total_wins'),
+      rondas: n('total_rounds_played'),
+      faca: n('total_kills_knife'),
+      pistola: n('total_kills_deagle') != null ? n('total_kills_deagle') : n('total_kills_pistol'),
+      planted: n('total_planted_bombs'),
+      defused: n('total_defused_bombs'),
+      horas: tempoMinutos != null ? Number((tempoMinutos / 60).toFixed(0)) : null,
     };
   } catch (e) {
     return { ok: false, steam: steamid, erro: String((e && e.message) || e) };

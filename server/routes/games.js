@@ -414,24 +414,68 @@ async function gtoolsStatsFor(g, handle) {
     if (!r.ok) throw new Error(`gametools ${r.status}`);
     const d = await r.json();
     // a API devolve um array por plataformas; usa o primeiro bloco útil
-    const bloco = Array.isArray(d) && d.length ? d[0] : d;
-    const rankObj = bloco?.rank || {};
+    const b = Array.isArray(d) && d.length ? d[0] : d;
     return {
       ok: true,
-      handle: bloco?.userName || handle,
-      nome: bloco?.userName || handle,
-      rank: PICKNUM(rankObj, ['rank', 'level']) ?? PICKNUM(bloco, ['rank', 'rankNumber']),
-      kd: PICKNUM(bloco, ['kdRatio', 'kd', 'killDeathRatio']),
-      kills: PICKNUM(bloco, ['kills', 'killCount']),
-      deaths: PICKNUM(bloco, ['deaths', 'deathCount']),
-      wins: PICKNUM(bloco, ['wins', 'winCount', 'matchesWon']),
-      losses: PICKNUM(bloco, ['losses', 'lossCount', 'matchesLost']),
-      score: PICKNUM(bloco, ['score', 'scoreValue']),
-      spm: PICKNUM(bloco, ['scorePerMinute', 'spd']),
-      segundos: PICKNUM(bloco, ['secondsPlayed', 'timePlayed']),
+      handle: b?.userName || handle,
+      nome: b?.userName || handle,
+      avatar: b?.avatar || null,
+      rank: PICKNUM(b, ['rank']),
+      rankNome: b?.rankName || null,
+      rankImg: b?.rankImg || null,
+      skill: PICKNUM(b, ['skill']),
+      kd: PICKNUM(b, ['killDeath', 'kdRatio', 'kd']),
+      kdInfantaria: PICKNUM(b, ['infantryKillDeath']),
+      kills: PICKNUM(b, ['kills']),
+      deaths: PICKNUM(b, ['deaths']),
+      killsMin: PICKNUM(b, ['killsPerMinute']),
+      vitorias: PICKNUM(b, ['wins']),
+      derrotas: PICKNUM(b, ['loses', 'losses']),
+      winPct: PICKNUM(b, ['winPercent']),
+      spm: PICKNUM(b, ['scorePerMinute']),
+      classeTop: b?.bestClass || null,
+      precisao: PICKNUM(b, ['accuracy']),
+      headshots: PICKNUM(b, ['headshots']),
+      hsMax: PICKNUM(b, ['longestHeadShot']),
+      sequencia: PICKNUM(b, ['highestKillStreak']),
+      rondas: PICKNUM(b, ['roundsPlayed']),
+      revives: PICKNUM(b, ['revives']),
+      dogtags: PICKNUM(b, ['dogtagsTaken']),
+      segundos: PICKNUM(b, ['secondsPlayed', 'timePlayed']),
     };
   } catch (e) {
     return { ok: false, erro: String(e.message || e) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* Armas do jogador (com imagens da EA) — top por kills */
+async function gtoolsArmasFor(g, handle) {
+  const url = `https://api.gametools.network/${GTOOLS_GAME[g]}/weapons/?name=${encodeURIComponent(handle)}&lang=en-us`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const r = await fetch(url, { signal: controller.signal });
+    if (!r.ok) return [];
+    const d = await r.json();
+    const b = Array.isArray(d) && d.length ? d[0] : d;
+    const lista = b?.weapons || [];
+    return lista
+      .filter((x) => Number(x?.kills) > 0)
+      .sort((a, z) => Number(z.kills) - Number(a.kills))
+      .slice(0, 12)
+      .map((x) => ({
+        nome: x.weaponName || '—',
+        tipo: x.type || '',
+        imagem: x.image || null,
+        kills: Number(x.kills) || 0,
+        kpm: PICKNUM(x, ['killsPerMinute']),
+        headshotKills: PICKNUM(x, ['headshotKills']),
+        segundos: PICKNUM(x, ['secondsEquipped', 'timeEquipped']),
+      }));
+  } catch {
+    return [];
   } finally {
     clearTimeout(timer);
   }
@@ -447,6 +491,8 @@ router.get('/bf-live', async (req, res) => {
     const hit = BF_LIVE_CACHE.get(chave);
     if (hit && Date.now() - hit.t < 5 * 60 * 1000) return res.json(hit.v);
 
+    // armas? (?armas=1) — vêm com imagens e são guardadas junto
+    const comArmas = req.query.armas === '1';
     const jogadores = bfHandles(g).slice(0, 8); // máximo 8 por pedido
     const live = await Promise.all(
       jogadores.map(async (x) => {
@@ -465,11 +511,13 @@ router.get('/bf-live', async (req, res) => {
               losses: o.losses ?? o.matchesLost ?? null,
               score: o.score ?? null, spm: o.scorePerMinute ?? null,
               segundos: o.timePlayed ?? null,
+              armas: comArmas ? [] : undefined,
             };
           } catch {
             return { ok: false, handle, erro: r.erro || 'indisponível' };
           }
         }
+        if (comArmas) r.armas = await gtoolsArmasFor(g, handle);
         return { ...r, fonte: 'gametools' };
       }),
     );

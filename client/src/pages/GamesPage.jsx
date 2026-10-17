@@ -514,7 +514,7 @@ function BattlefieldPage() {
       setErro('')
       setDados(null)
       try {
-        const r = await fetch(`/api/games/bf-live?g=${jogo}`)
+        const r = await fetch(`/api/games/bf-live?g=${jogo}&armas=1`)
         const d = await r.json().catch(() => ({}))
         if (abortou) return
         if (!r.ok || !d.ok) {
@@ -606,36 +606,115 @@ function BattlefieldPage() {
         >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] font-display text-lg font-black text-violet-300">
-                {(p.nome || p.handle || '?').slice(0, 2).toUpperCase()}
-              </div>
+              {p.avatar ? (
+                <img src={p.avatar} alt="" className="h-11 w-11 rounded-xl object-cover" />
+              ) : (
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] font-display text-lg font-black text-violet-300">
+                  {(p.nome || p.handle || '?').slice(0, 2).toUpperCase()}
+                </div>
+              )}
               <div>
                 <p className="font-display text-base font-black text-white">{p.nome || p.handle}</p>
                 <p className="text-[11px] text-gray-500">
                   {p.fonte === 'gametools' ? 'gametools.network · ao vivo' : 'snapshot guardado'}
+                  {p.classeTop ? ` · classe top: ${p.classeTop}` : ''}
                 </p>
               </div>
             </div>
             {p.rank != null && (
-              <span className="rounded-lg bg-white/[0.06] px-3 py-1 text-[12px] font-black text-amber-300">
-                Rank {p.rank}
+              <span className="flex items-center gap-2 rounded-lg bg-white/[0.06] px-3 py-1.5 text-[12px] font-black text-amber-300">
+                {p.rankImg ? <img src={p.rankImg} alt="" className="h-7 w-7 object-contain" /> : null}
+                {p.rankNome ? `Rank ${p.rankNome}` : `Rank ${p.rank}`}
+                {p.skill != null ? ` · ${num(p.skill)} skill` : ''}
               </span>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {/* cartões de carreira (sem horas, como pediste) */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Cartão label="K/D" valor={p.kd != null ? Number(p.kd).toFixed(2) : '—'} Icon={Crosshair} cor="text-violet-300" atraso={0.05} />
-            <Cartão label="Kills" valor={num(p.kills)} Icon={Skull} atraso={0.1} />
-            <Cartão label="Vitórias" valor={num(p.wins)} Icon={Trophy} cor="text-green-400" atraso={0.15} />
-            <Cartão label="Score/min" valor={p.spm != null ? Math.round(p.spm) : '—'} Icon={BarChart3} atraso={0.2} />
+            <Cartão label="Kills" valor={num(p.kills)} Icon={Skull} atraso={0.08} />
+            <Cartão label="Vitórias" valor={num(p.vitorias ?? p.wins)} Icon={Trophy} cor="text-green-400" atraso={0.11} />
             <Cartão
-              label="Horas"
-              valor={p.segundos != null ? num(Math.round(p.segundos / 3600)) : '—'}
-              Icon={Clock}
-              cor="text-sky-300"
-              atraso={0.25}
+              label="Win %"
+              valor={p.winPct != null ? `${Math.round(p.winPct)}%` : '—'}
+              Icon={Info}
+              cor="text-emerald-300"
+              atraso={0.14}
             />
+            <Cartão label="Skill" valor={p.skill != null ? num(p.skill) : '—'} Icon={Star} cor="text-amber-300" atraso={0.17} />
+            <Cartão
+              label="Precisão"
+              valor={p.precisao != null ? `${p.precisao.toFixed(1)}%` : '—'}
+              Icon={Target}
+              cor="text-sky-300"
+              atraso={0.2}
+            />
+            <Cartão label="Rondas" valor={num(p.rondas)} Icon={Swords} atraso={0.23} />
+            <Cartão label="K/min" valor={p.killsMin != null ? Number(p.killsMin).toFixed(2) : '—'} Icon={BarChart3} cor="text-rose-300" atraso={0.26} />
           </div>
+
+          {/* série de extra: sequência máxima, headshot mais rápido, dogtags */}
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div className="rounded-lg bg-white/[0.04] py-2">
+              <p className="font-black text-white">{p.sequencia != null ? num(p.sequencia) : '—'}</p>
+              <p className="uppercase tracking-wider text-gray-500">Sequência máx.</p>
+            </div>
+            <div className="rounded-lg bg-white/[0.04] py-2">
+              <p className="font-black text-white">
+                {p.hsMax != null ? `${p.hsMax} m` : '—'}
+              </p>
+              <p className="uppercase tracking-wider text-gray-500">HS mais distante</p>
+            </div>
+            <div className="rounded-lg bg-white/[0.04] py-2">
+              <p className="font-black text-white">{num(p.dogtags)}</p>
+              <p className="uppercase tracking-wider text-gray-500">Dogtags</p>
+            </div>
+          </div>
+
+          {/* armas (gametools, com imagens da EA) */}
+          {p.armas?.length > 0 && (
+            <div className="mt-5 border-t border-white/10 pt-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-white">
+                  <Crosshair className="h-4 w-4 text-violet-400" /> Armas · top {p.armas.length}
+                </h4>
+                <p className="text-[10px] text-gray-500">por kills · live</p>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {p.armas.map((w, j) => (
+                  <div
+                    key={w.nome}
+                    className="flex items-center gap-3 rounded-xl bg-white/[0.04] p-2.5"
+                  >
+                    {w.imagem ? (
+                      <img
+                        src={w.imagem}
+                        alt=""
+                        loading="lazy"
+                        className="h-9 w-9 shrink-0 object-contain"
+                      />
+                    ) : (
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/10 text-gray-500">
+                        <Crosshair className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-black text-white">{w.nome}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-500">
+                        {w.tipo || 'arma'}
+                        {w.kpm != null ? ` · ${Number(w.kpm).toFixed(2)} k/min` : ''}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-display text-sm font-black text-violet-300">{num(w.kills)}</p>
+                      <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       ))}
     </div>
@@ -1263,7 +1342,7 @@ function Cs2Vivo() {
                 Ao vivo
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-center">
+            <div className="grid grid-cols-3 gap-2 text-center">
               <div>
                 <p className="text-lg font-black text-violet-300">{p.kills ?? '—'}</p>
                 <p className="text-[10px] font-bold uppercase text-gray-500">Kills</p>
@@ -1278,13 +1357,39 @@ function Cs2Vivo() {
               </div>
               <div>
                 <p className="text-lg font-black text-sky-300">
+                  {p.hs != null ? `${p.hs}%` : '—'}
+                </p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">HS %</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-sky-300">
                   {p.precisao != null ? `${p.precisao}%` : '—'}
                 </p>
                 <p className="text-[10px] font-bold uppercase text-gray-500">Precisão</p>
               </div>
-              <div className="col-span-2">
-                <p className="text-sm font-black text-green-400">{p.horas != null ? `${p.horas} h` : '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Horas jogadas</p>
+              <div>
+                <p className="text-lg font-black text-green-400">{p.rondas ?? '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Rondas</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-green-400">{p.vitorias ?? '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Vitórias</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-orange-300">{p.faca ?? '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Kills de faca</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-emerald-300">
+                  {p.planted != null || p.defused != null
+                    ? `${p.planted ?? 0}/${p.defused ?? 0}`
+                    : '—'}
+                </p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Bombas P/D</p>
+              </div>
+              <div className="col-span-3">
+                <p className="text-sm font-black text-white">{p.horas != null ? `${p.horas} h` : '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Horas no CS</p>
               </div>
             </div>
           </motion.div>
