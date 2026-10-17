@@ -377,7 +377,7 @@ const estadoChip = (t = '') => {
   return 'border-violet-500/30 bg-violet-500/10 text-violet-300'
 }
 
-function SkinCard({ it, i }) {
+function SkinCard({ it, i, onZoom }) {
   const rankCor =
     it.rank === 1
       ? 'border-amber-400/50 bg-gradient-to-br from-amber-400/30 to-amber-500/10 text-amber-200'
@@ -391,7 +391,11 @@ function SkinCard({ it, i }) {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(i * 0.03, 0.6), duration: 0.3 }}
-      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4"
+      onClick={() => it.img && onZoom(it)}
+      title={it.img ? 'Clica para ampliar' : ''}
+      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4 ${
+        it.img ? 'cursor-zoom-in transition-colors hover:border-violet-400/50' : ''
+      }`}
     >
       {it.rank != null && (
         <span
@@ -447,6 +451,7 @@ function SkinCard({ it, i }) {
 function SkinsRarosTab({ jogo }) {
   const [d, setD] = useState(null)
   const [seccao, setSeccao] = useState(SKINS_SEC[jogo]?.[0]?.chave)
+  const [zoom, setZoom] = useState(null)
 
   useEffect(() => {
     fetch('/api/games/skins-raros')
@@ -457,7 +462,18 @@ function SkinsRarosTab({ jogo }) {
 
   useEffect(() => {
     setSeccao(SKINS_SEC[jogo]?.[0]?.chave)
+    setZoom(null)
   }, [jogo])
+
+  /* fechar o zoom com ESC */
+  useEffect(() => {
+    if (!zoom) return
+    const fechar = (e) => {
+      if (e.key === 'Escape') setZoom(null)
+    }
+    window.addEventListener('keydown', fechar)
+    return () => window.removeEventListener('keydown', fechar)
+  }, [zoom])
 
   const seccoes = SKINS_SEC[jogo] || []
   const bloco = d ? d[jogo === 'cs2' ? 'cs' : jogo] || {} : {}
@@ -504,7 +520,7 @@ function SkinsRarosTab({ jogo }) {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {lista.map((it, i) => (
-              <SkinCard key={it.nome + i} it={it} i={i} />
+              <SkinCard key={it.nome + i} it={it} i={i} onZoom={setZoom} />
             ))}
           </div>
           {jogo === 'bf' && (
@@ -524,6 +540,53 @@ function SkinsRarosTab({ jogo }) {
           )}
         </>
       )}
+
+      {/* zoom em ecrã inteiro — clica para abrir, ESC / fora / X para fechar */}
+      <AnimatePresence>
+        {zoom && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoom(null)}
+            className="fixed inset-0 z-[80] grid place-items-center bg-black/85 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.85, y: 14, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-3xl rounded-2xl border border-white/10 bg-[#12091f] p-6 text-center"
+            >
+              <button
+                onClick={() => setZoom(null)}
+                aria-label="Fechar"
+                className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-white/5 text-sm font-black text-gray-300 transition-colors hover:bg-white/10"
+              >
+                ✕
+              </button>
+              <div className="grid place-items-center py-2">
+                <img
+                  src={zoom.img}
+                  alt={zoom.nome}
+                  className="mx-auto max-h-[64vh] w-auto object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+                />
+              </div>
+              <p className="mt-3 font-display text-lg font-black text-white">
+                #{zoom.rank} · {zoom.nome}
+              </p>
+              {zoom.estado && (
+                <span className={`mt-2 inline-block rounded-md border px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${estadoChip(zoom.estado)}`}>
+                  {zoom.estado}
+                </span>
+              )}
+              {(zoom.por || zoom.origem) && (
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-gray-300">{zoom.por || zoom.origem}</p>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

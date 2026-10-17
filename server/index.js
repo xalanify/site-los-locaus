@@ -181,6 +181,7 @@ app.use('/uploads/avatars', (req, res) => {
 // pelo próprio Vercel (outputDirectory = client/dist).
 if (!IS_VERCEL) {
   app.use(express.static(path.join(__dirname, '../client/dist')));
+  app.use(express.static(path.join(__dirname, 'public')));
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
