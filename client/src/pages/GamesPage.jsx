@@ -187,14 +187,16 @@ function WinRateBar({ value, delay = 0 }) {
    fica o ícone de sempre (nunca um círculo vazio).
    ============================================================ */
 function LogoJogo({ logo, Icon, cor }) {
-  const [falhou, setFalhou] = useState(false)
-  if (!logo || falhou) return <Icon className={`h-8 w-8 ${cor}`} />
+  const lista = Array.isArray(logo) ? logo : [logo]
+  const [falhou, setFalhou] = useState(0)
+  const src = lista[falhou]
+  if (!src || falhou >= lista.length) return <Icon className={`h-8 w-8 ${cor}`} />
   return (
     <img
-      src={logo}
+      src={src}
       alt=""
       loading="lazy"
-      onError={() => setFalhou(true)}
+      onError={() => setFalhou((f) => f + 1)}
       className="h-full w-full rounded-full object-cover"
     />
   )
@@ -214,17 +216,6 @@ function GameChooser({ onPick }) {
       ring: 'hover:border-violet-500',
       bg: 'bg-violet-500/10',
       desc: 'Partidas do histórico da Steam — Braço Direito, Competitivo, CS:GO e Premier.',
-    },
-    {
-      id: 'eafc',
-      name: 'EA FC 26',
-      icon: Trophy,
-      logo: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/2d96aa1b06e453cd62dae9029d412f19e61932c3/header.jpg?t=1789751159',
-      color: 'text-yellow-400',
-      ring: 'hover:border-yellow-500',
-      bg: 'bg-yellow-500/10',
-      desc: 'Pro Clubs — estatísticas em breve.',
-      emBreve: true,
     },
     {
       id: 'r6',
@@ -251,12 +242,14 @@ function GameChooser({ onPick }) {
       id: 'bf',
       name: 'Battlefield',
       icon: Target,
-      logo: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/library_600x900.jpg',
+      logo: [
+        'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/header.jpg',
+        'https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/library_600x900.jpg',
+      ],
       color: 'text-sky-400',
       ring: 'hover:border-sky-500',
       bg: 'bg-sky-500/10',
-      desc: 'BF1 / BFV / BF6 — estatísticas em desenvolvimento.',
-      emBreve: true,
+      desc: 'BF1 / BF V / BF6 — Top 20 de skins raras e estatísticas do esquadrão.',
     },
   ]
 
@@ -385,6 +378,14 @@ const estadoChip = (t = '') => {
 }
 
 function SkinCard({ it, i }) {
+  const rankCor =
+    it.rank === 1
+      ? 'border-amber-400/50 bg-gradient-to-br from-amber-400/30 to-amber-500/10 text-amber-200'
+      : it.rank === 2
+        ? 'border-gray-300/40 bg-gradient-to-br from-gray-300/25 to-gray-400/10 text-gray-100'
+        : it.rank === 3
+          ? 'border-orange-700/50 bg-gradient-to-br from-orange-700/30 to-orange-900/10 text-orange-300'
+          : 'border-violet-500/25 bg-violet-500/10 text-violet-200'
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -392,6 +393,13 @@ function SkinCard({ it, i }) {
       transition={{ delay: Math.min(i * 0.03, 0.6), duration: 0.3 }}
       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4"
     >
+      {it.rank != null && (
+        <span
+          className={`absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full border text-xs font-black tabular-nums shadow-lg ${rankCor}`}
+        >
+          #{it.rank}
+        </span>
+      )}
       <div className="mb-3 grid h-28 place-items-center">
         {it.img ? (
           <img
@@ -452,7 +460,7 @@ function SkinsRarosTab({ jogo }) {
   }, [jogo])
 
   const seccoes = SKINS_SEC[jogo] || []
-  const bloco = d ? d[jogo] || {} : {}
+  const bloco = d ? d[jogo === 'cs2' ? 'cs' : jogo] || {} : {}
   const lista = Array.isArray(bloco[seccao]) ? bloco[seccao] : []
 
   return (
@@ -462,7 +470,7 @@ function SkinsRarosTab({ jogo }) {
           <Trophy className="h-4 w-4 text-amber-300" />
           {ABA_SKINS_LABEL[jogo]}
         </h3>
-        <p className="text-[11px] text-gray-500">mais raros de cada jogo · curated {">"}20 itens</p>
+        <p className="text-[11px] text-gray-500">Top 20 real — nº1, nº2… · dados oficiais quando existem</p>
       </div>
 
       {seccoes.length > 1 && (
@@ -483,10 +491,14 @@ function SkinsRarosTab({ jogo }) {
         </div>
       )}
 
-      {!d || !lista.length ? (
+      {!d ? (
         <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-400">
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-violet-300" />
           A carregar as listas…
+        </div>
+      ) : !lista.length ? (
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-400">
+          Sem itens nesta lista — tenta outra sub-aba.
         </div>
       ) : (
         <>
@@ -504,9 +516,10 @@ function SkinsRarosTab({ jogo }) {
           )}
           {jogo === 'r6' && (
             <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
-              Rainbow Six: Ubisoft não abre API de cosméticos, por isso os amuletos/skins
-              aparecem com emblema próprio — a lista segue o consenso da comunidade
-              (Glacier, Black Ice, Peacock, Fire, Gold Dust, Pro League Y1, elites de Red Crow…).
+              Rainbow Six: a Ubisoft não abre API de cosméticos — os renders vêm da galeria
+              da comunidade (Fandom, imagens transparentes) e alguns itens sem render ficam
+              com emblema. A ordem segue o consenso (Glacier, Black Ice, Peacock, Fire,
+              Gold Dust, Pro League Y1, elites de Red Crow…).
             </p>
           )}
         </>
@@ -2174,7 +2187,6 @@ export default function GamesPage() {
                 onChange={setTab}
                 items={[
                   { id: 'cs2', label: 'CS2', Icon: Gamepad2 },
-                  { id: 'eafc', label: 'EA FC 26', Icon: Trophy },
                   { id: 'r6', label: 'Rainbow Six', Icon: Crosshair },
                   { id: 'fortnite', label: 'Fortnite', Icon: Flame },
                   { id: 'bf', label: 'Battlefield', Icon: Target },
@@ -2198,9 +2210,7 @@ export default function GamesPage() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.3 }}
               >
-                {tab === 'eafc' ? (
-                  <EafcPage />
-                ) : tab === 'fortnite' ? (
+                {tab === 'fortnite' ? (
                   <FortnitePage />
                 ) : tab === 'bf' ? (
                   <BattlefieldPage />

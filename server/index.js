@@ -25,6 +25,15 @@ const PORT = process.env.PORT || 3001;
 // Na Vercel a app é exportada e não faz listen; localmente escuta na porta.
 const IS_VERCEL = process.env.VERCEL === '1';
 
+/* segurança extra: um erro assíncrono de um pedido (stream de download,
+   socket abusada…) nunca pode derrubar o servidor inteiro */
+process.on('unhandledRejection', (r) => {
+  console.error('[async rejeitado — servidor continua]', r && r.stack ? r.stack : r);
+});
+process.on('uncaughtException', (e) => {
+  console.error('[erro não apanhado — servidor continua]', e && e.stack ? e.stack : e);
+});
+
 // Inicializar base de dados (a ligação também é criada à 1.ª consulta)
 const ready = initDatabase()
   .then(() => {

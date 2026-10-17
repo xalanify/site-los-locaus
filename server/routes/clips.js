@@ -1048,6 +1048,10 @@ router.get('/:id/download-remoto', attachAuth, async (req, res) => {
         res.flushHeaders && res.flushHeaders();
         let contado = false;
         const st = fs.createReadStream(tmp);
+        st.on('error', () => {
+          try { res.end(); } catch {}
+          try { fs.unlinkSync(tmp); } catch {}
+        });
         st.on('open', () => {
           if (!contado) {
             contado = true;

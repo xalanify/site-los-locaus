@@ -2,1033 +2,1193 @@
  "cs": {
   "armas": [
    {
-    "nome": "M4A4 | Howl",
-    "raridade": "Contraband",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6afVSKP-EAm6extF6ueZhW2exwkl2tmTXwt39eCiUPQR2DMN4TOVetUK8xoLgM-K341eM2otDnC6okGoXufBz_TAB",
-    "por": "Contraband — retirada de circulação para sempre. Só sobrou o mito."
-   },
-   {
-    "nome": "AWP | Dragon Lore",
-    "raridade": "Covert",
+    "rank": 1,
+    "nome": "Souvenir AWP | Dragon Lore",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk4veqYaF7IfysCnWRxuF4j-B-Xxa_nBovp3Pdwtj9cC_GaAd0DZdwQu9fuhS4kNy0NePntVTbjYpCyyT_3CgY5i9j_a9cBkcCWUKV",
-    "por": "O rei do CS: souvenir e drop descontinuado."
+    "por": "O troféu máximo do CS — souvenir das Major antigas, com pandinha dourada. Ninguém consegue uma nova."
    },
    {
+    "rank": 2,
+    "nome": "Karambit | Case Hardened",
+    "estado": "Padrão-lenda",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SH1ifyOJztN5lRi67gVNz5DvUmdj4eXuWOFAhAsF4RLFc5BC4xtbuY7yx7wDbgo9CzSj2h3xK8G81tB_XeHWq",
+    "por": "O Blue Gem nº1 do mundo (ponta-esmeralda #661) — só um deles existe."
+   },
+   {
+    "rank": 3,
+    "nome": "M4A4 | Howl",
+    "estado": "Nunca mais obtível",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6afVSKP-EAm6extF6ueZhW2exwkl2tmTXwt39eCiUPQR2DMN4TOVetUK8xoLgM-K341eM2otDnC6okGoXufBz_TAB",
+    "por": "Contraband: a única skin da categoria \"contraband\" — tirada de circulação para sempre."
+   },
+   {
+    "rank": 4,
     "nome": "AWP | Gungnir",
-    "raridade": "Covert",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf-jFk7uW-V6N4LvedB3WvzedxuPUnHnjnzUl0sWrdztitI3rDZgJzAsZ1QOFY4UPqldDgMO_l41HXit9AmTK-0H227dAsvQ",
-    "por": "Coleção Norse descontinuada — quase ninguém viu uma de verdade."
+    "por": "Da coleção Norse descontinuada — quase ninguém viu uma de verdade."
    },
    {
-    "nome": "AWP | Medusa",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk4veqfbdsH_GEHlicyOl-pK85TC23wk12tWSGnNr6JXqRPVUnA5J5RLIKshS-l4HuYbji7lfajdgU02yg2bOcOBD3",
-    "por": "Gods and Monsters — coleção encerrada."
-   },
-   {
+    "rank": 5,
     "nome": "AK-47 | Fire Serpent",
-    "raridade": "Covert",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0PSneqF-JeKDC2mE_u995LZWTTuygxIYvzSCkpu3cnvFPQB2DpUkROFY4Rntw93lP7i241DbiI1BxSuviHlKunk_6-sHU71lpPMTRLyP4Q",
     "por": "Dos primeiros anos do CS:GO — nunca mais solta."
    },
    {
-    "nome": "AK-47 | Wild Lotus",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlV61-LPGdCliWzeFkse1WQyC0nQlpsDuGyt-pdnyRPA4hDcYkR-QPuhi-wdPuYbyx5AaMidkQnC_-2ilIuzErvbi4ijV5Mw",
-    "por": "Coleção antiga descontinuada."
+    "rank": 6,
+    "nome": "AWP | Medusa",
+    "estado": "Nunca mais obtível",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk4veqfbdsH_GEHlicyOl-pK85TC23wk12tWSGnNr6JXqRPVUnA5J5RLIKshS-l4HuYbji7lfajdgU02yg2bOcOBD3",
+    "por": "Gods and Monsters — coleção encerrada."
    },
    {
-    "nome": "AK-47 | Case Hardened",
-    "raridade": "Classified",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiNK0P2nZKFpH_yaCW-Ej7sk5bE8Sn-2lEpz4zndzoyvdHuUPwFzWZYiE7EK4Bi4k9TlY-y24FbAy9USGSiZd5Q",
-    "por": "Blue gem nos padrões certos vira peça de museu."
-   },
-   {
+    "rank": 7,
     "nome": "M4A1-S | Knight",
-    "raridade": "Classified",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_GeMWqV1e96o95lRi67gVNwsWTQzdn4JHyQZ1QhWMZyQe5YsxK-ktPnZOiwtVDcjo9ExS393ytB8G81tGXpYjdX",
     "por": "Coleção descontinuada — pouquíssimas no mundo."
    },
    {
+    "rank": 8,
+    "nome": "AK-47 | Wild Lotus",
+    "estado": "Nunca mais obtível",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlV61-LPGdCliWzeFkse1WQyC0nQlpsDuGyt-pdnyRPA4hDcYkR-QPuhi-wdPuYbyx5AaMidkQnC_-2ilIuzErvbi4ijV5Mw",
+    "por": "Coleção antiga descontinuada."
+   },
+   {
+    "rank": 9,
     "nome": "M4A4 | Poseidon",
-    "raridade": "Classified",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0OKhe6FkJP-dMWuZxuZi_uM9Sn23xkx_sG3VyNyqcnnFZgchDMYjQuMJtRHuw9PvZuPjtlCI3d9bjXKpHL2aoaM",
     "por": "Coleção encerrada; preços nas nuvens."
    },
    {
-    "nome": "Glock-18 | Fade",
-    "raridade": "Restricted",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a7s2oaaBoH_yaCW-Ej-8u5bZvHnq1w0Vz62TUzNj4eCiVblMmXMAkROJeskLpkdXjMrzksVTAy9US8PY25So",
-    "por": "Fade clássico de 2013."
-   },
-   {
-    "nome": "Desert Eagle | Blaze",
-    "raridade": "Restricted",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7vORbqhsLfWAMWuZxuZi_uI_TX6wxxkjsGXXnImsJ37COlUoWcByEOMOtxa5kdXmNu3htVPZjN1bjXKpkHLRfQU",
-    "por": "De 2013 — raramente sai da prateleira de quem a tem."
-   },
-   {
+    "rank": 10,
     "nome": "Desert Eagle | Golden Koi",
-    "raridade": "Covert",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-Re6dsLPWAMWWCwPh5j-1gSCGn20om6jyGw9qgJHmQaAcgC8MmR7IMthm5m4W2M7zj7wOIj4pGn32o23hXrnE8VHBG1O4",
     "por": "Edição chinesa super escassa."
    },
    {
-    "nome": "P2000 | Fire Elemental",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V7Q_cKDDMWGZ0-tJte1sQiy9gRwrjDGMnYftb3-RZldxWJVyF-QLsUG5mofnML_qtg3cjd4TyCr4jXsf63lr4-5TVvA7uvqA-y0nTh8",
-    "por": "Retirada do mercado."
+    "rank": 11,
+    "nome": "Glock-18 | Fade",
+    "estado": "Veterana de 2013",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a7s2oaaBoH_yaCW-Ej-8u5bZvHnq1w0Vz62TUzNj4eCiVblMmXMAkROJeskLpkdXjMrzksVTAy9US8PY25So",
+    "por": "Fade clássico de 2013."
    },
    {
-    "nome": "USP-S | Kill Confirmed",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsG3SA_uV_vO1WTCa9kxQ1vjiBpYPwJiPTcFB2Xpp5TO5cskG9lYCxZu_jsVCL3o4Xnij23ClO5ik9tegFA_It8qHJz1aWe-uc160",
-    "por": "Ícone das highlight nos campeonatos."
+    "rank": 12,
+    "nome": "Desert Eagle | Blaze",
+    "estado": "Veterana de 2013",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7vORbqhsLfWAMWuZxuZi_uI_TX6wxxkjsGXXnImsJ37COlUoWcByEOMOtxa5kdXmNu3htVPZjN1bjXKpkHLRfQU",
+    "por": "De 2013 — raramente sai da prateleira de quem a tem."
    },
    {
-    "nome": "Desert Eagle | Code Red",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk6OGRbKFsJ_yWMWaXxvxzo_JmXRa_nBovp3PRmNj4c3mTb1RxC5cjF-EItRnrlNzkYrnk5gaI3Y0UmyX52H9K7ixs_a9cBsGEcOCn",
-    "por": "Preço sobe a cada mão passada."
-   },
-   {
+    "rank": 13,
     "nome": "Five-SeveN | Monkey Business",
-    "raridade": "Classified",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j-NoQSi9lCIrujqNjsGheXmXPQcoWMFzEO5ZtUOwkILjY7yzsg3ci91DySiohn4buCht4eYET-N7rZVO80Su",
     "por": "Coleção descontinuada."
    },
    {
+    "rank": 14,
     "nome": "Galil AR | Eco",
-    "raridade": "Classified",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0PG7V6NsLPmfMWKTztF6ueZhW2exwExw4WrcyImrcHmTbQAlWcQkQudYt0O5lNfgP-nh5AOL3otAziz7kGoXua-HTb4P",
     "por": "Coleção encerrada."
    },
    {
+    "rank": 15,
     "nome": "SSG-08 | Blood in the Water",
-    "raridade": "Covert",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29YKV_K8-fB2CY1aAmsbFtFnDilkUl5j7UzoqsInmVaFd0XMMlELYDshbuxNPvP-yxtlCMlcsbmlWiixNl",
     "por": "Coleção encerrada."
    },
    {
+    "rank": 16,
     "nome": "Negev | Mjolnir",
-    "raridade": "Classified",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1c_M2gbaNoNs-HBmiC_uJ_t-l9AXDhxRsi62yEmYqrdSmSbQMhWcN3EO8KshHpw4LmP-Oz51bcjNgXn3ngznQe6IKqifc",
     "por": "Norse descontinuada — raridade histórica."
    },
    {
-    "nome": "M4A1-S | Decimator",
-    "raridade": "Classified",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_eAMWrEwL9JtORqRiSygRI1jDGMnYftb3iUb1dxW5ImFLNftxCxktflZLm2tgaP2otGyn_-hytOvy9q5elQV_A7uvqA6CRSoZY",
-    "por": "Sai de poucas coleções e subiu muito."
+    "rank": 17,
+    "nome": "USP-S | Kill Confirmed",
+    "estado": "Clássica de leaderboard",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsG3SA_uV_vO1WTCa9kxQ1vjiBpYPwJiPTcFB2Xpp5TO5cskG9lYCxZu_jsVCL3o4Xnij23ClO5ik9tegFA_It8qHJz1aWe-uc160",
+    "por": "Ícone das highlight de campeonato."
+   },
+   {
+    "rank": 18,
+    "nome": "Desert Eagle | Code Red",
+    "estado": "Clássica de leaderboard",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk6OGRbKFsJ_yWMWaXxvxzo_JmXRa_nBovp3PRmNj4c3mTb1RxC5cjF-EItRnrlNzkYrnk5gaI3Y0UmyX52H9K7ixs_a9cBsGEcOCn",
+    "por": "Preço sobe a cada mão passada."
+   },
+   {
+    "rank": 19,
+    "nome": "P2000 | Fire Elemental",
+    "estado": "Retired do mercado",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V7Q_cKDDMWGZ0-tJte1sQiy9gRwrjDGMnYftb3-RZldxWJVyF-QLsUG5mofnML_qtg3cjd4TyCr4jXsf63lr4-5TVvA7uvqA-y0nTh8",
+    "por": "Retirada do mercado regular."
+   },
+   {
+    "rank": 20,
+    "nome": "AK-47 | Case Hardened",
+    "estado": "Padrão-lenda",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiNK0P2nZKFpH_yaCW-Ej7sk5bE8Sn-2lEpz4zndzoyvdHuUPwFzWZYiE7EK4Bi4k9TlY-y24FbAy9USGSiZd5Q",
+    "por": "Blue gem nos padrões certos vira peça de museu."
    }
   ],
   "facas": [
    {
+    "rank": 1,
     "nome": "Karambit | Case Hardened",
-    "raridade": "Covert",
+    "estado": "Padrão-lenda",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SH1ifyOJztN5lRi67gVNz5DvUmdj4eXuWOFAhAsF4RLFc5BC4xtbuY7yx7wDbgo9CzSj2h3xK8G81tB_XeHWq",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "O padrão mais caçado das facas — o Blue Gem do mundo vale uma fortuna."
    },
    {
+    "rank": 2,
     "nome": "Karambit | Doppler",
-    "raridade": "Covert",
+    "estado": "Pattern lendário",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1iDwP5muOh7Sha-lA8lvziMgIr9HifOOV5kFMRxFuEM5hi_xNXhMbmx5VCMjd9MyCv6jigc6n064ucLAvZ3_6bViV3fcepqpLtspE0",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Sapphire/Ruby puras — lote mínimo."
    },
    {
+    "rank": 3,
     "nome": "Karambit | Gamma Doppler",
-    "raridade": "Covert",
+    "estado": "Pattern lendário",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1iXwON7sd5tQDmjmRg1jC2Nm5z8dRTLN1F4ToxwQLNZ5xa-xNDuNu_ktgCN2YtNn36thypAuidrsb4BUqMj_qPfiwCTL_Rjtpd8Mt3S",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Emerald pura — de colecionador."
    },
    {
+    "rank": 4,
     "nome": "Karambit | Fade",
-    "raridade": "Covert",
+    "estado": "Clássica de prestígio",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SD1iWwOpzj-1gSCGn20tztm_UyIn_JHKUbgYlWMcmQ-ZcskSwldS0MOnntAfd3YlMzH35jntXrnE8SOGRGG8",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "A cara da CS:GO clássica."
    },
    {
-    "nome": "Karambit | Marble Fade",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1idwPx0vORWSSi3kCIrujqNjsGveH2RaVRxX5ohEe4Juhawm4fiM-ji4APf2YMXmSz_hyoduytv4uhWT-N7rfLHGBJ4",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "Karambit | Tiger Tooth",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SAFiEyOlzot5mXSi9khgYvzSCkpu3eC3BbwUmCcMlQbMD4xG_w9zkPu7gsQXe2YJFzHqqjixL5ylr4ukAWb1lpPNV9oeSnQ",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "Karambit | Blue Steel",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SH1iSzftztN5lRi67gVNw4D_WytioJX2WO1AmCpJ5Qu9Z4EK-wYLjMOzm4gKMjt9BnC732i9M8G81tP_ecAuH",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "Karambit | Crimson Web",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-bF1iHxOxlj-1gSCGn20wi4mTcyoyoeS_Dbwd2Cpd0RrMK4RbqxNTvZLyw7lff3Y5GxX6oiiNXrnE86bQY1_c",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "M9 Bayonet | Doppler",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWad_v13oPFhRju2qhAmoT-Jn4bjJC_4Ml93UtZuQrZfuhi5lYC1Pujr7lDd2YNAmy2siHlJ6Htu5r5TUqcm-6De2wiUOap9v8cDcIwcZw",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
+    "rank": 5,
     "nome": "M9 Bayonet | Lore",
-    "raridade": "Covert",
+    "estado": "Nunca mais obtível",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWSF_uMvj-NoVha_mg8ijDGMnYftbyrBOw52D5R0FOYPtkG6ltOxNrjl4FPdiN0WzC723SxP6ypp6u8LVKY7uvqAFpeI3XY",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Coleção descontinuada — dourada e extinta."
    },
    {
-    "nome": "M9 Bayonet | Autotronic",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWCD_uMvj-NoVhaygAkopy-KlIb6HifOOV5kFJRxF-RZtxLqlIXvPr63tA2NithGmHj_iiwc6i5qsOwEA_Jxq_CD2grfcepqx0gUsCA",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "M9 Bayonet | Marble Fade",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWad_uN3ouNlSha1lBkijDGMnYftb3OTbVRyD8Z1RrNctkS6kobkZLzi7gTW2NpFxH33hi9Nuno65uxXAqs7uvqA7lyFHH4",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "M9 Bayonet | Crimson Web",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMW-J_vlzsvJWQyC0nQlp4GrWzYuqeHjDZlN1XJohTecO5xawwdDvNuLm5wPcjY0QzyX83Xsd7zErvbgxKe4lfw",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
+    "rank": 6,
     "nome": "Butterfly Knife | Fade",
-    "raridade": "Covert",
+    "estado": "Clássica de prestígio",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Z-ua6bbZrLOmsD2avx-9ytd5lRi67gVNwsDvSwtqqc3iXZg4kCZYjReYLtRbum9XgYuvm5wbWjtgUzCn3iSsf8G81tFEeH9rw",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "A borboleta mais valorizada."
    },
    {
+    "rank": 7,
     "nome": "Butterfly Knife | Doppler",
-    "raridade": "Covert",
+    "estado": "Pattern lendário",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Z-ua6bbZrLOmsD2qv0u9moOlgXSyMmBw1sTGAk5X8JRTFAVp5Xco0W-ENtRXswYC1Mu_ks1fdjN9EyiqthiMbvHtv5btQBPck-KbT2gnHM-Ajoc5Ufn65u8U",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Sapphire/Ruby — tesouro de porão."
    },
    {
+    "rank": 8,
+    "nome": "M9 Bayonet | Doppler",
+    "estado": "Pattern lendário",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWad_v13oPFhRju2qhAmoT-Jn4bjJC_4Ml93UtZuQrZfuhi5lYC1Pujr7lDd2YNAmy2siHlJ6Htu5r5TUqcm-6De2wiUOap9v8cDcIwcZw",
+    "tipo": "Faca",
+    "por": "Sapphire/Ruby — das mais desejadas do jogo."
+   },
+   {
+    "rank": 9,
+    "nome": "Karambit | Marble Fade",
+    "estado": "Pattern lendário",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1idwPx0vORWSSi3kCIrujqNjsGveH2RaVRxX5ohEe4Juhawm4fiM-ji4APf2YMXmSz_hyoduytv4uhWT-N7rfLHGBJ4",
+    "tipo": "Faca",
+    "por": "Padrões fire-and-ice."
+   },
+   {
+    "rank": 10,
+    "nome": "M9 Bayonet | Marble Fade",
+    "estado": "Pattern lendário",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWad_uN3ouNlSha1lBkijDGMnYftb3OTbVRyD8Z1RrNctkS6kobkZLzi7gTW2NpFxH33hi9Nuno65uxXAqs7uvqA7lyFHH4",
+    "tipo": "Faca",
+    "por": "Idem M9 — padrão valioso."
+   },
+   {
+    "rank": 11,
+    "nome": "Karambit | Tiger Tooth",
+    "estado": "Clássica de prestígio",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SAFiEyOlzot5mXSi9khgYvzSCkpu3eC3BbwUmCcMlQbMD4xG_w9zkPu7gsQXe2YJFzHqqjixL5ylr4ukAWb1lpPNV9oeSnQ",
+    "tipo": "Faca",
+    "por": "Dourada rajada — muito procurada."
+   },
+   {
+    "rank": 12,
     "nome": "Butterfly Knife | Crimson Web",
-    "raridade": "Covert",
+    "estado": "Pattern lendário",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Z-ua6bbZrLOmsBn6v1ut0o95lRi67gVN04WmDzNz_cX_CalAiW8FxR7MI4xKxmtPlYe7ksgzeiN5BziT83y4f8G81tOxPsLb-",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Teia vermelha — padrão minúsculo."
    },
    {
-    "nome": "Butterfly Knife | Blue Steel",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Z-ua6bbZrLOmsD3avw-JjteVWQyC0nQlpsmyBwo2tcS-eaFB2XpUjE7Jeuhi_kdfvYerj4FCMgtgUm3732ipM6jErvbi_vJM0jA",
+    "rank": 13,
+    "nome": "M9 Bayonet | Crimson Web",
+    "estado": "Pattern lendário",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMW-J_vlzsvJWQyC0nQlp4GrWzYuqeHjDZlN1XJohTecO5xawwdDvNuLm5wPcjY0QzyX83Xsd7zErvbgxKe4lfw",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Padrão teia — do raro."
    },
    {
-    "nome": "Bayonet | Lore",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzn4_v8ydP0PG7V6ZsOf-dC3OvzeFktd5lRi67gVMj5GnXzt__JH-SawdyDJF1ROcCu0K5xNOxZeqx5AOI2oNGnnn23ylJ8G81tNZRAs3w",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
-    "nome": "Bayonet | Case Hardened",
-    "raridade": "Covert",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzn4_v8ydP0PO_V6tkLPWXMWuZxuZi_uRrSXDlzUtw4WTRwtj4eX6XPAd0XsEiROcNthm-w4HhP-Pq7waKiItbjXKppDMdu0I",
-    "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
-   },
-   {
+    "rank": 14,
     "nome": "Skeleton Knife | Doppler",
-    "raridade": "Covert",
+    "estado": "Pattern lendário",
     "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1I5PeibbBiLs-SA1iDwP5muOh7Sha-lA8lvziMgIr9HifOOV5kFJN4FOMPtRi9wdK2MuvksVPa34NMyyX62C0a7Ho_5-pWBaQtrqXfjFzfcepq5_yhcsc",
     "tipo": "Faca",
-    "por": "Faca de prestígio — padrões (Sapphire/Ruby/Blue gem) viram tesouros de colecionador."
+    "por": "Doppler no esqueleto — spawn raro."
+   },
+   {
+    "rank": 15,
+    "nome": "Skeleton Knife | Fade",
+    "estado": "Clássica de prestígio",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1I5PeibbBiLs-SD1iWwOpzj-1gSCGn20kjt2-En9mpcCmQag8hXsciQeJYthW9kILkMLji4g3Ygo8Uznj6jX9XrnE8raC5r1M",
+    "tipo": "Faca",
+    "por": "Fade no esqueleto — bem raro."
+   },
+   {
+    "rank": 16,
+    "nome": "Karambit | Blue Steel",
+    "estado": "Veterana do CS:GO",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SH1iSzftztN5lRi67gVNw4D_WytioJX2WO1AmCpJ5Qu9Z4EK-wYLjMOzm4gKMjt9BnC732i9M8G81tP_ecAuH",
+    "tipo": "Faca",
+    "por": "Anos antigos — nenhuma busca fácil hoje."
+   },
+   {
+    "rank": 17,
+    "nome": "Karambit | Crimson Web",
+    "estado": "Pattern lendário",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-bF1iHxOxlj-1gSCGn20wi4mTcyoyoeS_Dbwd2Cpd0RrMK4RbqxNTvZLyw7lff3Y5GxX6oiiNXrnE86bQY1_c",
+    "tipo": "Faca",
+    "por": "Padrão teia na rainha das facas."
+   },
+   {
+    "rank": 18,
+    "nome": "Butterfly Knife | Blue Steel",
+    "estado": "Veterana do CS:GO",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Z-ua6bbZrLOmsD3avw-JjteVWQyC0nQlpsmyBwo2tcS-eaFB2XpUjE7Jeuhi_kdfvYerj4FCMgtgUm3732ipM6jErvbi_vJM0jA",
+    "tipo": "Faca",
+    "por": "Padrão antigo difícil de achar."
+   },
+   {
+    "rank": 19,
+    "nome": "Bayonet | Lore",
+    "estado": "Nunca mais obtível",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzn4_v8ydP0PG7V6ZsOf-dC3OvzeFktd5lRi67gVMj5GnXzt__JH-SawdyDJF1ROcCu0K5xNOxZeqx5AOI2oNGnnn23ylJ8G81tNZRAs3w",
+    "tipo": "Faca",
+    "por": "Lore na lâmina clássica — extinta."
+   },
+   {
+    "rank": 20,
+    "nome": "Skeleton Knife | Crimson Web",
+    "estado": "Pattern lendário",
+    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1I5PeibbBiLs-bF1iHxOxlj-1gSCGn2011t26Bytr_cn-VZwciXJskRLQKuka9k4ezYrnqtQXf2YhGzC6viXxXrnE8k9yhp-k",
+    "tipo": "Faca",
+    "por": "Teia no esqueleto — rara de ver."
    }
   ]
  },
  "r6": {
   "armas": [
    {
-    "nome": "Glacier — armas Y1S1",
-    "origem": "Operation Black Ice (fev–mai 2016), vendida por Créditos durante ~3 meses. Tirada da loja sem aviso e NUNCA mais voltou — nem em Alpha Packs nem no Marketplace (delisted dez/2025).",
+    "rank": 1,
+    "nome": "Glacier — Jäger 416-C",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Operation Black Ice (fev–mai 2016), à venda ~3 meses. Tirada sem aviso e NUNCA mais voltou — nem packs nem Marketplace (delisted dez/2025). A Glacier da arma mais usada = a skin mais valiosa do Siege.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/7/7b/Glacier_Weapon_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20190907025134"
    },
    {
-    "nome": "Glacier 416-C (Jäger)",
-    "origem": "A Glacier da arma mais usada do jogo — a skin mais valiosa de todo o Siege ($150–500 por conta com ela).",
+    "rank": 2,
+    "nome": "Glacier — lote Y1S1 (Thatcher, Ash, Smoke…)",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Siege tinha menos de 10M de jogadores na altura — a frontera de donos é mínima.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/7/7b/Glacier_Weapon_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20190907025134"
    },
    {
-    "nome": "Black Ice 416-C (Jäger)",
-    "origem": "Só por Alpha Packs com drop below 1% — a variante Black Ice mais cobiçada de todas (sondagens + Marketplace $80–200).",
+    "rank": 3,
+    "nome": "Black Ice — variantes <1% por arma",
     "estado": "Quase impossível (<1%)",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Só via Alpha Packs com drop <1% (100 packs para uma chance razoável). A do Jäger 416-C é a rainha ($80–200 no Marketplace); Kali/Twitch/Capitão são as mais difíceis de sortear.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/a/af/Black_Ice_L85A2_Skin.png/revision/latest?cb=20200125054910"
    },
    {
-    "nome": "Black Ice R4-C (Ash)",
-    "origem": "Par black ice da atacante mais Popular; também <1% por pack e preços premium no Marketplace.",
-    "estado": "Quase impossível (<1%)",
-    "img": null,
-    "raridade": "Lendária"
-   },
-   {
-    "nome": "Black Ice CSRX 300 (Kali)",
-    "origem": "Variantes \"por arma\" escondem as mais caras: armas pouco usadas como a Kali são as mais difíceis de sortear.",
-    "estado": "Quase impossível (<1%)",
-    "img": null,
-    "raridade": "Lendária"
-   },
-   {
-    "nome": "Black Ice F2 (Twitch)",
-    "origem": "A F2 é a arma legendária mais ignorada — logo, a Black Ice dela é uma das mais raras.",
-    "estado": "Quase impossível (<1%)",
-    "img": null,
-    "raridade": "Lendária"
-   },
-   {
-    "nome": "Black Ice M249 (Capitão)",
-    "origem": "Mesma lógica das raras \"por arma\": quase ninguém a tem.",
-    "estado": "Quase impossível (<1%)",
-    "img": null,
-    "raridade": "Lendária"
-   },
-   {
-    "nome": "Black Ice coloridas (Pink/Purple/Green/Red)",
-    "origem": "Operation Silent Hunt (Y11S1): 56 variações novas só no passe premium daquela temporada — quem não apanhou, não apanha.",
-    "estado": "Só nessa temporada",
-    "img": null,
-    "raridade": "Lendária"
-   },
-   {
+    "rank": 4,
     "nome": "Peacock",
-    "origem": "Azul-verde-dourada dos eventos dos primeiros anos. Fixada no top-3 das mais raras de sempre: zero rotas para a conseguir desde então.",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Azul-verde-dourada dos eventos dos anos iniciais — zero rotas desde então.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/24/Peacock_L85A2_Skin.png/revision/latest/scale-to-width-down/320?cb=20190826201305"
    },
    {
+    "rank": 5,
     "nome": "Fire",
-    "origem": "Das primeiras skins ANIMADAS do Siege. Jamais esteve em Alpha Packs e nunca foi reeditada.",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Das primeiras skins ANIMADAS do Siege; jamais em Alpha Packs e nunca reeditada.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/6/64/Fire_L85A2_Skin.png/revision/latest/scale-to-width-down/320?cb=20190827073305"
    },
    {
+    "rank": 6,
     "nome": "Gold Dust",
-    "origem": "As últimas saíram na Y1S4 (perdita de ouro e brilho). Marca 2026: unobtainable.",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "As últimas saíram na Y1S4 (topo da lista antiga da comunidade).",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/6/6b/Gold_Dust_F2_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20190907025136"
    },
    {
-    "nome": "Pro League S1 — Grades 1, 2 e 3",
-    "origem": "Y1S1, à venda por dinheiro REAL ( bundles). O formato morreu — nunca voltou.",
+    "rank": 7,
+    "nome": "Pro League S1 — Grades 1/2/3",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Y1S1, à venda por dinheiro REAL; formato morreu e nunca voltou.",
+    "img": null
    },
    {
-    "nome": "Pro League Year One (sets dourados)",
-    "origem": "Skins douradas por temporada de 2016–17; format desativado ao R6 Share arrancar.",
+    "rank": 8,
+    "nome": "Pro League Year One (douradas)",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Sets de 2016–17; formato substituído pelo R6 Share.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/b/b5/Pro_League_S1_Grade_2_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20190907025139"
    },
    {
-    "nome": "Dust Line — sazonais (Y1S2)",
-    "origem": "Mai 2016, na era das \"seasonal skins\". Únicas skins de Y1 que nunca voltaram à loja.",
+    "rank": 9,
+    "nome": "Dust Line (sazonais Y1S2)",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Mai 2016 — as únicas skins de Y1 que nunca voltaram à loja.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/d/da/Dust_Line_L85A2_Skin.png/revision/latest?cb=20200125052922"
    },
    {
+    "rank": 10,
     "nome": "Obsidian",
-    "origem": "Parceria promo (vidro vulcânico). Retired tier \"incomum\" — barato no Marketplace mas raro de ver.",
     "estado": "Retired (incomum)",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Parceria promocional de vidro vulcânico — retirada.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/9/9f/Obsidian_AR33_Skin.png/revision/latest/scale-to-width-down/320?cb=20190827123150"
    },
    {
+    "rank": 11,
     "nome": "VIP Six Invitational",
-    "origem": "Só para presentes nos eventos SI, fisicamente. Bacia minúscula de donos.",
     "estado": "Presencial (SI)",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Só para presentes fisicamente nos SI — bacia minúscula.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/2c/Six_Invitational_2020_L85A2_Skin.png/revision/latest/scale-to-width-down/320?cb=20200213034032"
    },
    {
+    "rank": 12,
     "nome": "Outbreak CBRN",
-    "origem": "Evento Outbreak (Y3S1, mar/2018) — tudo do evento ficou trancado em 2018.",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Evento Y3S1 (mar/2018) — trancado em 2018.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/9/99/Outbreak_Code_Red_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20190826090539"
    },
    {
-    "nome": "Elite Kapkan",
-    "origem": "Uma das elites ORIGINAIS da Operation Red Crow (Y1S4, nov/2016) — primeira leva, menor cópia.",
+    "rank": 13,
+    "nome": "Elite antiga — primeira leva",
     "estado": "Primeira leva de elites",
-    "img": null,
-    "raridade": "Lendária"
+    "origem": "Elites ORIGINAIS (Kapkan, Sledge, Thermite) da Red Crow (Y1S4, nov/2016); bundles retirados nas reworks.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/8/87/Elite_Citizen_Weapon_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20201224122428"
    },
    {
-    "nome": "Elite Sledge",
-    "origem": "Também da primeira leva de elites (Red Crow, 2016); hvilken bundle retirado do store nas rework à оператора.",
-    "estado": "Primeira leva de elites",
-    "img": null,
-    "raridade": "Lendária"
+    "rank": 14,
+    "nome": "Competitor — MVPs de temporada",
+    "estado": "Recompensa competitiva",
+    "origem": "Skins \"Competitor\" ligadas ao topo competitivo de cada temporada.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/5/55/Competitor_Sledge_%2720_L85A2_Skin.png/revision/latest/scale-to-width-down/320?cb=20200116055500"
    },
    {
-    "nome": "Elite Thermite",
-    "origem": "Terceira elite antiga da Red Crow — as três primeiras elites são as mais difíceis de apanhar hoje.",
-    "estado": "Primeira leva de elites",
-    "img": null,
-    "raridade": "Lendária"
+    "rank": 15,
+    "nome": "Six Major EU 2020",
+    "estado": "Janela de torneio",
+    "origem": "Drops skin da janela do major — quem não abriu naquela semana, perdeu.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/8/80/Six_Major_EU_2020_TCSG12_Skin.PNG/revision/latest/scale-to-width-down/320?cb=20200916075621"
+   },
+   {
+    "rank": 16,
+    "nome": "Black Ice coloridas (Pink/Purple/Green/Red)",
+    "estado": "Só nessa temporada",
+    "origem": "Operation Silent Hunt (Y11S1): 56 variações só no passe premium daquela temporada.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/a/af/Black_Ice_L85A2_Skin.png/revision/latest?cb=20200125054910"
+   },
+   {
+    "rank": 17,
+    "nome": "Skull Rain — sazonal Y2S3",
+    "estado": "Janela antiga",
+    "origem": "Pacote sazonal da era das skins limitadas",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/26/Skull_Rain_L85A2_Skin.png/revision/latest?cb=20200125060842"
+   },
+   {
+    "rank": 18,
+    "nome": "Aki No Tsuru / Ryuko — Japan set",
+    "estado": "Janela antiga",
+    "origem": "Sets sazonais antigos de Y1/Y2, janelas curtas de venda",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/9/9a/Aki_No_Tsuru_L85A2_Skin.png/revision/latest/scale-to-width-down/320?cb=20201224113618"
+   },
+   {
+    "rank": 19,
+    "nome": "Amazônia/Azulejos — Brazil set",
+    "estado": "Janela antiga",
+    "origem": "Sets sazonais antigos de Y1/Y2, janelas curtas",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/2f/Amazonia_L85A2_Skin.png/revision/latest?cb=20200125024325"
+   },
+   {
+    "rank": 20,
+    "nome": "Piranha / Fujin Raijin — Y1 sazonais",
+    "estado": "Janela antiga",
+    "origem": "Sets sazonal antigos de Y1 — raramente vistos em jogo",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/f/fd/Piranha_L85A2_Skin.png/revision/latest?cb=20200125060841"
    }
   ],
   "amuletos": [
    {
+    "rank": 1,
     "nome": "Champion",
-    "origem": "Só para o topo da ladder ranked, temporada a temporada; o número impresso mostra o ranking — os mais altos são filhos de lendas.",
     "estado": "Só elite de ranked",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "Só para o topo da ladder ranked, temporada a temporada; o número impresso mostra a posição.",
+    "img": null
    },
    {
-    "nome": "Diamond (temporadas antigas)",
-    "origem": "Recompensa do fim de temporada; as de anos passados nunca mais são emitidas.",
+    "rank": 2,
+    "nome": "Charms ranked — Copper/Majors antigo",
     "estado": "Temporadas fechadas",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "Cada temporada emitia os charms até Diamond; os de temporadas antigas nunca mais são emitidos.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/8/8f/Red_Crow_Ranked_Charm.PNG/revision/latest?cb=20190817081900"
    },
    {
-    "nome": "Gold (temporadas antigas)",
-    "origem": "Idem: cada temporada emite uma; a antiga morre com a temporada.",
+    "rank": 3,
+    "nome": "Diamond — temporadas antigas",
     "estado": "Temporadas fechadas",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "O charme do topo ranked das temporadas originais — nenhumether rota hoje.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/8/8f/Red_Crow_Ranked_Charm.PNG/revision/latest?cb=20190817081900"
    },
    {
-    "nome": "Platinum (temporadas antigas)",
-    "origem": "Recompensa de fim de ranked de seasons atrás.",
-    "estado": "Temporadas fechadas",
-    "img": null,
-    "raridade": "Lendário"
+    "rank": 4,
+    "nome": "S.I. 2020 — bundle de criadores (Macie Jay)",
+    "estado": "Comprável? não — janela SI 2020",
+    "origem": "Charms do S.I. 2020 em honra de criadores — janela de torneio passada.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/6/6b/Macie_Jay_Charm.png/revision/latest?cb=20190821002636"
    },
    {
-    "nome": "Silver (temporadas antigas)",
-    "origem": "Raro porque quase ninguém guarda Silver; por isso é de ver em jogo.",
-    "estado": "Temporadas fechadas",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Bronze (temporadas antigas)",
-    "origem": "Raro porque quase ninguém guarda — completistas pagam bem.",
-    "estado": "Temporadas fechadas",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Copper (temporadas antigas)",
-    "origem": "O raro mais engraçado: \"o raro vergonhoso\" — colecionadores mostram os seus Copper antigos como troféu irónico.",
-    "estado": "Temporadas fechadas",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Six Invitational — presença",
-    "origem": "Dado a presentes no SI, fisicamente. Bacia minúscula de donos.",
-    "estado": "Presencial (SI)",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Drops Twitch dos SI",
-    "origem": "Via janela de watch rewards durante o torneio — quem não viu naquela semana, perdeu.",
-    "estado": "Janela de evento",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Beaulo",
-    "origem": "Charm de cridor com janela curtíssima; um dos mais famosos entre os de criador.",
-    "estado": "Janela curta de drops",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Dev — equipa Ubisoft",
-    "origem": "Charms pessoais da equipa de desenvolvimento. Jamais à venda, só presentes/estado interno.",
-    "estado": "Nunca à venda",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Pro League (jogadores)",
-    "origem": "Charms destinados às jogadores pros ativos do circuito.",
-    "estado": "Profissional",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Outbreak CBRN",
-    "origem": "Charms do evento de 2018 — par das skins, sealed para sempre.",
-    "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Rainbow Is Magic (edições antigas)",
-    "origem": "O evento chibi teve edições com charms próprios; as antigas não regressam.",
-    "estado": "Edições antigas",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Twitch Prime",
-    "origem": "Charms incluídos nos pacotes Twitch Prime esgotados.",
-    "estado": "Pacotes esgotados",
-    "img": null,
-    "raridade": "Lendário"
-   },
-   {
-    "nome": "Equipas de esports (SI)",
-    "origem": "Charms com o escudo das equipas participantes de Six Invitational — por edições.",
+    "rank": 5,
+    "nome": "Six Major 2019 — tier charms (USA/Japan)",
     "estado": "Por edição de torneio",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "Charms tier da janela das majors 2019 — cada país/edição é um不通 item.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/9/95/Six_Major_USA_Diamond_2019_Charm.png/revision/latest?cb=20200714103953"
    },
    {
-    "nome": "Majors (Jönköping e anteriores)",
-    "origem": "Drops limitados durante cada major; termina com o evento.",
+    "rank": 6,
+    "nome": "Pro League Brasil (2019)",
+    "estado": "Por edição de torneio",
+    "origem": "Charms Pro League por país/edição — bundles de janela fechada.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/8/82/Brazil_Pro_League_Diamond_Charm.png/revision/latest?cb=20230816141449"
+   },
+   {
+    "rank": 7,
+    "nome": "Pro League Itália (2019)",
+    "estado": "Por edição de torneio",
+    "origem": "Idem Itália — colecionador completa países.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/2f/Italy_Pro_League_Diamond_%2719_Charm.png/revision/latest?cb=20200714084535"
+   },
+   {
+    "rank": 8,
+    "nome": "Beaulo",
+    "estado": "Janela curta de drops",
+    "origem": "Charm de criador com janela curtíssima — dos mais famosos.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/f/f9/Beaulo_Charm.png/revision/latest?cb=20200528084059"
+   },
+   {
+    "rank": 9,
+    "nome": "Chibi — Rainbow Is Magic",
+    "estado": "Edições antigas",
+    "origem": "O evento chibi teve edições com charms próprios; as antigas não regressam.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/9/9a/Ash_Chibi_Charm.PNG/revision/latest?cb=20190817032948"
+   },
+   {
+    "rank": 10,
+    "nome": "Equipas nacionais — SI 2020",
+    "estado": "Por edição de torneio",
+    "origem": "Charms com escudo das equipas participantes por edição do SI.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/0/04/Team_Australia_2020_Charm.PNG/revision/latest?cb=20200116055015"
+   },
+   {
+    "rank": 11,
+    "nome": "Drops Twitch do S.I. (Group Stage)",
     "estado": "Janela de evento",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "Watch-rewards dentro da janela do torneio — quem não viu, perdeu.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/29/S.I._2020_Group_Stage_Charm.png/revision/latest?cb=20230816133834"
    },
    {
+    "rank": 12,
+    "nome": "Dev — equipa Ubisoft",
+    "estado": "Nunca à venda",
+    "origem": "Charms pessoais dos devs; jamay à venda.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/e/e0/Ducky_Devil_Charm.PNG/revision/latest?cb=20190817053429"
+   },
+   {
+    "rank": 13,
+    "nome": "Pro League (jogadores pros)",
+    "estado": "Profissional",
+    "origem": "Charms destinados a pros do circuito oficial.",
+    "img": null
+   },
+   {
+    "rank": 14,
+    "nome": "Outbreak CBRN",
+    "estado": "Nunca mais obtível",
+    "origem": "Charms do evento de 2018, selados para sempre.",
+    "img": null
+   },
+   {
+    "rank": 15,
+    "nome": "Twitch Prime",
+    "estado": "Pacotes esgotados",
+    "origem": "Charms incluídos nos pacotes Twitch Prime já esgotados.",
+    "img": null
+   },
+   {
+    "rank": 16,
     "nome": "Ubisoft Club — recompensas antigas",
-    "origem": "O Ubisoft Club fechou: tudo o que lá se trocava por points é agora history.",
     "estado": "Serviço encerrado",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "O Ubisoft Club fechou; tudo o lá se trocava é história.",
+    "img": null
    },
    {
+    "rank": 17,
     "nome": "Bundles de lançamento (Y1)",
-    "origem": "Charms das edições Gold/Primeira edição de 2015–16.",
     "estado": "Edições fechadas",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "Charms das edições Gold/Primeira de 2015–16.",
+    "img": null
    },
    {
+    "rank": 18,
     "nome": "Giveaways de criadores",
-    "origem": "Só por sorteio de criadores — pouquíssimas cópias no mundo.",
     "estado": "Sorteio",
-    "img": null,
-    "raridade": "Lendário"
+    "origem": "Só por sorteio — pouquíssimas cópias no mundo.",
+    "img": null
+   },
+   {
+    "rank": 19,
+    "nome": "Charms de janela Y2–Y3",
+    "estado": "Janela de evento",
+    "origem": "De uma temporada apenas; versões antigas sem retorno oficial.",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/24/Velvet_Shell_Ranked_Charm.PNG/revision/latest?cb=20190817081901"
+   },
+   {
+    "rank": 20,
+    "nome": "Chibis (restantes operadores)",
+    "estado": "Edições antigas",
+    "origem": "Mais renders do evento chibi (edições limitadas).",
+    "img": "https://static.wikia.nocookie.net/rainbowsix/images/2/24/Blackbeard_Chibi_Charm.PNG/revision/latest?cb=20190817032949"
    }
   ]
  },
  "fortnite": {
   "skins": [
    {
+    "rank": 1,
     "nome": "Aerial Assault Trooper",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_017_athena_commando_m/smallicon.png",
-    "por": "Do primeiro time de Fortnite (T1) — nunca voltou à loja."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). voltou ao item shop uma única vez, com o evento Fortnite OG (de 2024) — fora isso nunca mais."
    },
    {
+    "rank": 2,
     "nome": "Renegade Raider",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/smallicon.png",
-    "por": "A skin mais rara do jogo — veterana da Temporada 1."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). voltou no Fortnite OG (2024), mas continua A skin mais famosa da era OG."
    },
    {
+    "rank": 3,
     "nome": "Recon Expert",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_022_athena_commando_f/smallicon.png",
-    "por": "Só foi vendida no arranque de 2018 — o OG verdadeiro."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). voltou uma única vez (2022) — para até isso, apenas donos das primeiras semanas a tinham."
    },
    {
-    "nome": "Blue Team Leader",
-    "raridade": "Rare",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_052_athena_commando_f_psblue/smallicon.png",
-    "por": "Exclusiva PlayStation da era inicial — para sempre."
-   },
-   {
+    "rank": 4,
     "nome": "Skull Trooper ",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_030_athena_commando_m_halloween/smallicon.png",
-    "por": "O Halloween original de 2018."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
    },
    {
+    "rank": 5,
     "nome": "Ghoul Trooper",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_029_athena_commando_f_halloween/smallicon.png",
-    "por": "Halloween OG — quem tem, guarda."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). voltou várias vezes ao longo dos anos — continua das mais desejadas."
    },
    {
-    "nome": "Black Knight",
-    "raridade": "Legendary",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_035_athena_commando_m_medieval/smallicon.png",
-    "por": "Lendária da Temporada 1 do passe."
-   },
-   {
-    "nome": "Blue Squire",
-    "raridade": "Rare",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_032_athena_commando_m_medieval/smallicon.png",
-    "por": "Temporada 1."
-   },
-   {
-    "nome": "Royale Knight",
-    "raridade": "Rare",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_033_athena_commando_f_medieval/smallicon.png",
-    "por": "Bruja ar, versão azul de elite da era S1."
-   },
-   {
-    "nome": "Rust Lord",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_082_athena_commando_m_scavenger/smallicon.png",
-    "por": "Temporada 2 do passe — inconfundível."
-   },
-   {
-    "nome": "Sparkle Specialist",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_039_athena_commando_f_disco/smallicon.png",
-    "por": "A discoteca da Temporada 1."
-   },
-   {
+    "rank": 6,
     "nome": "Merry Marauder",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_049_athena_commando_m_holidaygingerbread/smallicon.png",
-    "por": "Natal OG — poucos têm."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
    },
    {
-    "nome": "The Reaper",
-    "raridade": "Legendary",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_084_athena_commando_m_assassin/smallicon.png",
-    "por": "A \"John Wick\" de 2018."
-   },
-   {
-    "nome": "Love Ranger",
-    "raridade": "Legendary",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_070_athena_commando_m_cupid/smallicon.png",
-    "por": "São Valentim OG, sempre lembrada."
-   },
-   {
+    "rank": 7,
     "nome": "Red Knight",
     "raridade": "Legendary",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_034_athena_commando_f_medieval/smallicon.png",
-    "por": "Lendária da T1 — das mais caras de sempre."
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
    },
    {
-    "nome": "Bunny Brawler",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_104_athena_commando_f_bunny/smallicon.png",
-    "por": "Páscoa rara de OG."
+    "rank": 8,
+    "nome": "Nog Ops",
+    "raridade": "Uncommon",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_046_athena_commando_f_holidaysweater/smallicon.png",
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
    },
    {
-    "nome": "P.A.N.D.A Team Leader",
+    "rank": 9,
+    "nome": "Codename E.L.F.",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_051_athena_commando_m_holidayelf/smallicon.png",
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 10,
+    "nome": "Special Forces",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_020_athena_commando_m/smallicon.png",
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 11,
+    "nome": "Munitions Expert",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_023_athena_commando_f/smallicon.png",
+    "estado": "cap.1 T1 · Loja OG",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 12,
+    "nome": "Blue Team Leader",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_052_athena_commando_f_psblue/smallicon.png",
+    "estado": "cap.1 T2 · PS Plus",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). exclusiva para membros PlayStation Plus antigos — nunca nos PC/Xbox vistos."
+   },
+   {
+    "rank": 13,
+    "nome": "Black Knight",
     "raridade": "Legendary",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_187_athena_commando_f_fuzzybearpanda/smallicon.png",
-    "por": "Página secreta rara do passe."
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_035_athena_commando_m_medieval/smallicon.png",
+    "estado": "cap.1 T2 · Passe S2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). voltou no Fortnite OG (2024) — a skin #1 do passe original."
    },
    {
+    "rank": 14,
+    "nome": "Blue Squire",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_032_athena_commando_m_medieval/smallicon.png",
+    "estado": "cap.1 T2 · Passe S2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 15,
+    "nome": "Royale Knight",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_033_athena_commando_f_medieval/smallicon.png",
+    "estado": "cap.1 T2 · Passe S2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 16,
+    "nome": "Sparkle Specialist",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_039_athena_commando_f_disco/smallicon.png",
+    "estado": "cap.1 T2 · Loja OG",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 17,
+    "nome": "Love Ranger",
+    "raridade": "Legendary",
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_070_athena_commando_m_cupid/smallicon.png",
+    "estado": "cap.1 T2 · Loja OG",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). "
+   },
+   {
+    "rank": 18,
     "nome": "Alpine Ace (KOR)",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/cid_060_athena_commando_m_skidude_kor/smallicon.png",
-    "por": "T2 edição Coreia — quase impossível."
+    "estado": "cap.1 T2 · Loja OG",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). "
    },
    {
-    "nome": "Blue Striker",
+    "rank": 19,
+    "nome": "Rust Lord",
     "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_138_athena_commando_m_psburnout/smallicon.png",
-    "por": "Skin discreta veterana."
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_082_athena_commando_m_scavenger/smallicon.png",
+    "estado": "cap.1 T3 · Passe S3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). "
    },
    {
-    "nome": "Dark Voyager",
+    "rank": 20,
+    "nome": "The Reaper",
     "raridade": "Legendary",
-    "img": "https://fortnite-api.com/images/cosmetics/br/cid_088_athena_commando_m_spaceblack/smallicon.png",
-    "por": "O encapuzado espacial de 2018."
+    "img": "https://fortnite-api.com/images/cosmetics/br/cid_084_athena_commando_m_assassin/smallicon.png",
+    "estado": "cap.1 T3 · Passe S3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). "
    }
   ],
   "paraquedas": [
    {
+    "rank": 1,
     "nome": "Aerial Assault One",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_001/smallicon.png",
-    "por": "Par da skin mais rara — OG absoluto."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
-    "nome": "High Octane",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_017_assassin/smallicon.png",
-    "por": "Glíder antigo dos veterans — só nos primórdios."
-   },
-   {
+    "rank": 2,
     "nome": "Cloud Strike",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_010_storm/smallicon.png",
-    "por": "OG estrondoso das primeiras lojas."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
-    "nome": "Get Down!",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_004_disco/smallicon.png",
-    "por": "Par do Love Ranger."
-   },
-   {
-    "nome": "Royale Dragon",
-    "raridade": "Legendary",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_014_dragon/smallicon.png",
-    "por": "Lendário dragão — raridade de T3."
-   },
-   {
-    "nome": "Sir Glider the Brave",
-    "raridade": "Uncommon",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_002_medieval/smallicon.png",
-    "por": "Par do Blue Squire."
-   },
-   {
-    "nome": "Rusty Rider",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_021_scavenger/smallicon.png",
-    "por": "Par do Rust Lord."
-   },
-   {
-    "nome": "Venus Flyer",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_039_venus/smallicon.png",
-    "por": "Rara da era de ouro OG."
-   },
-   {
-    "nome": "Pterodactyl",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_044_pterodactyl/smallicon.png",
-    "por": "Fim da era OG — T4."
-   },
-   {
-    "nome": "Deep Space Lander",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_026_shuttleb/smallicon.png",
-    "por": "Espacial OG."
-   },
-   {
-    "nome": "Orbital Shuttle",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_025_shuttlea/smallicon.png",
-    "por": "Espacial OG."
-   },
-   {
-    "nome": "Slipstream",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_018_twitch/smallicon.png",
-    "por": "OG com vento."
-   },
-   {
-    "nome": "Blue Streak",
-    "raridade": "Rare",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_013_psblue/smallicon.png",
-    "por": "S2 rara — saiu de rotação cedinho."
-   },
-   {
+    "rank": 3,
     "nome": "Zephyr",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_008_graffiti/smallicon.png",
-    "por": "OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 4,
     "nome": "Prismatic",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_prismatic/smallicon.png",
-    "por": "OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 5,
     "nome": "Jolly Roger",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_011_jollyroger/smallicon.png",
-    "por": "Pirata OG."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 6,
     "nome": "Mako",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_warthog/smallicon.png",
-    "por": "O glíder base de quem voou na T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
-    "nome": "Wings of Valor",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_033_valor/smallicon.png",
-    "por": "T4 — fecho da era OG."
-   },
-   {
+    "rank": 7,
     "nome": "Warthog",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_military/smallicon.png",
-    "por": "OG pouco visto."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 8,
+    "nome": "Get Down!",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_004_disco/smallicon.png",
+    "estado": "cap.1 T2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 9,
+    "nome": "Sir Glider the Brave",
+    "raridade": "Uncommon",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_002_medieval/smallicon.png",
+    "estado": "cap.1 T2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 10,
+    "nome": "Blue Streak",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_013_psblue/smallicon.png",
+    "estado": "cap.1 T2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 11,
+    "nome": "High Octane",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_017_assassin/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 12,
+    "nome": "Royale Dragon",
+    "raridade": "Legendary",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_014_dragon/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 13,
+    "nome": "Rusty Rider",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_021_scavenger/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 14,
+    "nome": "Deep Space Lander",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_026_shuttleb/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 15,
+    "nome": "Orbital Shuttle",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_025_shuttlea/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 16,
+    "nome": "Slipstream",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_018_twitch/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 17,
+    "nome": "Venus Flyer",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_039_venus/smallicon.png",
+    "estado": "cap.1 T4",
+    "por": "Lançada na temporada 4 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 18,
+    "nome": "Pterodactyl",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_044_pterodactyl/smallicon.png",
+    "estado": "cap.1 T4",
+    "por": "Lançada na temporada 4 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 19,
+    "nome": "Wings of Valor",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_033_valor/smallicon.png",
+    "estado": "cap.1 T4",
+    "por": "Lançada na temporada 4 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 20,
     "nome": "Hang Time",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_041_basketball/smallicon.png",
-    "por": "T4 Epic — pouca gente a usou."
+    "estado": "cap.1 T4",
+    "por": "Lançada na temporada 4 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    }
   ],
   "picaretas": [
    {
+    "rank": 1,
     "nome": "Reaper",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/halloweenscythe/smallicon.png",
-    "por": "A foice par do The Reaper — OG do HalloweeN 2018."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
-    "nome": "Trusty No. 2",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_029_assassin/smallicon.png",
-    "por": "A mítica \"Trusty\" — levada até à loja pela última vez em 2018."
-   },
-   {
+    "rank": 2,
     "nome": "Candy Axe",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_015_holidaycandycane/smallicon.png",
-    "por": "Do primeiro Natal do Fortnite."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 3,
     "nome": "Raider's Revenge",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_lockjaw/smallicon.png",
-    "por": "Epic OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
-    "nome": "Pick Squeak",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_031_squeak/smallicon.png",
-    "por": "Loja OG, poucos usos desde aí."
-   },
-   {
+    "rank": 4,
     "nome": "Pink Flamingo",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_flamingo/smallicon.png",
-    "por": "Epic OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 5,
     "nome": "Death Valley",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_deathvalley/smallicon.png",
-    "por": "Epic OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 6,
     "nome": "Batsickle",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/sicklebatpickaxe/smallicon.png",
-    "por": "OG de T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 7,
     "nome": "Spiky",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/spikypickaxe/smallicon.png",
-    "por": "OG de T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 8,
     "nome": "Tooth Pick",
     "raridade": "Rare",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_021_megalodon/smallicon.png",
-    "por": "OG de T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 9,
     "nome": "Disco Brawl",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_016_disco/smallicon.png",
-    "por": "Par discotequeiro OG."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 10,
     "nome": "Chomp Jr.",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_017_shark/smallicon.png",
-    "por": "Epic OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 11,
     "nome": "Bottom Feeder",
     "raridade": "Epic",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_018_anchor/smallicon.png",
-    "por": "Epic OG da T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 12,
     "nome": "Lucky",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/happypickaxe/smallicon.png",
-    "por": "OG de T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
+    "rank": 13,
     "nome": "Ice Breaker",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_014_wintercamo/smallicon.png",
-    "por": "OG de T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    },
    {
-    "nome": "AC/DC",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_013_teslacoil/smallicon.png",
-    "por": "Epic da T2 — cabeço? ícone carregado."
-   },
-   {
-    "nome": "Dragon Axe",
-    "raridade": "Rare",
-    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_025_dragon/smallicon.png",
-    "por": "T2."
-   },
-   {
-    "nome": "Rainbow Smash",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_026_brite/smallicon.png",
-    "por": "Epic da T3."
-   },
-   {
-    "nome": "Pot O' Gold",
-    "raridade": "Epic",
-    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_033_potofgold/smallicon.png",
-    "por": "Epic da T3."
-   },
-   {
+    "rank": 14,
     "nome": "You Shouldn't Have!",
     "raridade": "Uncommon",
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_022_holidaygiftwrap/smallicon.png",
-    "por": "O presente OG de T1."
+    "estado": "cap.1 T1",
+    "por": "Lançada na temporada 1 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 15,
+    "nome": "AC/DC",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_013_teslacoil/smallicon.png",
+    "estado": "cap.1 T2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 16,
+    "nome": "Dragon Axe",
+    "raridade": "Rare",
+    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_025_dragon/smallicon.png",
+    "estado": "cap.1 T2",
+    "por": "Lançada na temporada 2 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 17,
+    "nome": "Trusty No. 2",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_029_assassin/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 18,
+    "nome": "Pick Squeak",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_031_squeak/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 19,
+    "nome": "Rainbow Smash",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_026_brite/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
+   },
+   {
+    "rank": 20,
+    "nome": "Pot O' Gold",
+    "raridade": "Epic",
+    "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_033_potofgold/smallicon.png",
+    "estado": "cap.1 T3",
+    "por": "Lançada na temporada 3 do capítulo 1 (dados oficiais do jogo). Estreou nas cações iniciais do jogo — das primeiras a existir."
    }
   ]
  },
  "bf": {
   "bf1": [
    {
+    "rank": 1,
     "nome": "1911 | Doughboy",
-    "origem": "Exclusiva da Collector's Edition de 2016 — considerada a skin mais rara e cara de Battlefield 1.",
     "estado": "Só Collector's Edition",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Exclusiva da Collector's Edition de 2016 — a skin mais rara e cara de BF1.",
+    "img": null
    },
    {
+    "rank": 2,
     "nome": "Lendárias dos Battlepacks",
-    "origem": "As tier Legendary saíam por sorteio nas caixas (Standard/Enhanced/Superior) — chances ínfimas; o sistema acabou e virou raro de coleção.",
     "estado": "Sistema Battlepacks (acabado)",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Só por sorteio nas caixas — chances ínfimas; o sistema acabou.",
+    "img": null
    },
    {
+    "rank": 3,
     "nome": "Distintas dos Battlepacks",
-    "origem": "Tier middle dos Battlepacks — no fim do sistema, completistas caçam fichas.",
     "estado": "Sistema Battlepacks (acabado)",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Tier médio — no fim do sistema, completistas caçam fichas.",
+    "img": null
    },
    {
+    "rank": 4,
     "nome": "Especiais dos Battlepacks",
-    "origem": "Tier de entrada, mas temas limitados de eventos nunca reeditados.",
     "estado": "Eventos limitados",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Temas limitados de eventos nunca reeditados.",
+    "img": null
    },
    {
+    "rank": 5,
     "nome": "Promoções de lançamento",
-    "origem": "Skins ligadas a pré-compras, promoções EA e parcerias de 2016 — janelas fechadas para sempre.",
     "estado": "Promos fechadas",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Pré-compras e promoções EA de 2016 — janelas fechadas.",
+    "img": null
    }
   ],
   "bfv": [
    {
+    "rank": 1,
     "nome": "Capítulo 4 — Tides of War",
-    "origem": "Confirmado pela comunidade: com o fim do Tides of War, os cosméticos do Cap. 4 (Pacific) não voltam.",
     "estado": "Serviço live encerrado",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Confirmado pela comunidade: com o fim do Tides of War, os cosméticos do Cap. 4 (Pacific) não voltam.",
+    "img": null
    },
    {
+    "rank": 2,
     "nome": "Pré-compra (BFV)",
-    "origem": "Bónus de pré-compra — sem rota de compra hoje.",
     "estado": "Nunca mais obtível",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Sem rota de compra hoje.",
+    "img": null
    },
    {
+    "rank": 3,
     "nome": "Edição Deluxe (certas peças)",
-    "origem": "Depende da edição escolhida — algumas peças jamais voltaram à loja.",
     "estado": "Edições fechadas",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Peças que jamais voltaram à loja.",
+    "img": null
    },
    {
+    "rank": 4,
     "nome": "Bundle só-a-dinheiro-real",
-    "origem": "Um bundle histórico era comprável apenas com dinheiro (nunca com CC/BC) — quase esquecido e raro.",
     "estado": "Loja antiga",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Bundle histórico comprável apenas com dinheiro — raro.",
+    "img": null
    },
    {
+    "rank": 5,
     "nome": "Paints dos capítulos 1–3",
-    "origem": "Recompensas semanais dos primeiros capítulos do Tides of War — janela viva só em 2018–19.",
     "estado": "Serviço live encerrado",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Recompensas semanais do início do serviço — janela de 2018–19.",
+    "img": null
    }
   ],
   "bf6": [
    {
-    "nome": "Passe de Batalha — Temporada 1 (out/2025)",
-    "origem": "Skins de armas do tier premium do primeiro passe de BF6 — a janela fechou e não reabre.",
+    "rank": 1,
+    "nome": "Passe de Batalha — T1 (out/2025)",
     "estado": "Só na T1",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Skins de armas do tier premium do primeiro passe — janela fechada.",
+    "img": null
    },
    {
-    "nome": "Passe de Batalha — Temporada 2",
-    "origem": "Guns/skins da T2 (Inferno?) que já não estão alcançáveis depois do terminal de temporada.",
+    "rank": 2,
+    "nome": "Passe de Batalha — T2",
     "estado": "Só na T2",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Skins da T2 já não alcançáveis após a temporada.",
+    "img": null
    },
    {
+    "rank": 3,
     "nome": "Desafios de lançamento",
-    "origem": "Recompensas de desafios do lançamento (out/2025) — \"rare unlocks\" famosos entre colecionadores.",
     "estado": "Desafios de lançamento",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Recompensas de desafios do lançamento (out/2025) — os \"rare unlocks\" famosos.",
+    "img": null
    },
    {
+    "rank": 4,
     "nome": "Edição Pro / Deluxe",
-    "origem": "Peças de edição especial ligadas às pré-compras iniciais.",
     "estado": "Edições fechadas",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Peças de edição especial das pre-order.",
+    "img": null
    },
    {
+    "rank": 5,
     "nome": "Desbloqueios-bónus raros",
-    "origem": "Itens premiados por metas especiais de base/campanha — os \"11 raros\" que os criadores caçam no Twitch.",
     "estado": "Desafios especiais",
-    "img": null,
-    "raridade": "Categoria"
+    "por": "Itens de metas especiais — os mais caçados pelos colecionadores.",
+    "img": null
    }
   ]
  }
