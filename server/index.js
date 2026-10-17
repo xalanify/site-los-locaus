@@ -188,11 +188,12 @@ if (!IS_VERCEL) {
   });
 }
 
-// R6 automático — atualiza o r6.json de 3 em 3 minutos (com TRACKER_API_KEY)
+// R6 — engine Ubisoft (open source SwiftCODA/R6-API): atualiza
+// todos os jogadores de 15 em 15 minutos, sem tracker.gg nem HTML.
 try {
-  require('./r6auto').start();
+  require('./r6ubi').start();
 } catch (e) {
-  console.warn('R6 automático (a ignorar):', e.message);
+  console.warn('R6 Ubisoft (a ignorar):', e.message);
 }
 
 module.exports = app;

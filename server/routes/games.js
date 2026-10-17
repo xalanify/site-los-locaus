@@ -327,21 +327,40 @@ router.get('/news', async (req, res) => {
 });
 
 // ============================================================
-// Rainbow Six Siege — snapshot colhido no tracker.gg
-// (server/data/r6.json)
 // ============================================================
-router.get('/r6', (req, res) => {
+// Rainbow Six Siege — API OFICIAL DA UBISOFT (open source
+// SwiftCODA/R6-API): login Ubisoft → perfis, nível, carreira e
+// rank da temporada. Sem tracker.gg, sem HTML manual.
+// server/data/r6-jogadores.json = ["xalana.", "m4xi01504", ...]
+// ============================================================
+const r6ubi = require('../r6ubi');
+
+router.get('/r6', async (req, res) => {
   try {
+    const ubi = r6ubi.dados();
+    if (ubi?.ok) {
+      return res.json({
+        ...ubi,
+        auto: {
+          fonte: 'ubisoft',
+          ligado: r6ubi.estado.credencial,
+          intervaloMin: r6ubi.estado.intervaloMin,
+          ultimaTentativa: r6ubi.estado.ultimaTentativa,
+          ultimoErro: r6ubi.estado.ultimoErro,
+          credencial: r6ubi.estado.credencial,
+        },
+      });
+    }
+
+    // Recuo (antes de configurares a conta Ubisoft no .env) — serve
+    // o último dado que existir para a página não ficar vazia.
+    const t = r6ubi.status();
     const data = tracker.readJson(tracker.R6_FILE);
     if (!data) return res.json({ configured: false, missing: tracker.missing(tracker.R6_FILE) });
-    // estado da atualização automática (tracker API, a cada X min)
-    let auto = null;
-    try {
-      auto = require('../r6auto').status();
-    } catch {
-      auto = null;
-    }
-    res.json({ ...data, auto });
+    return res.json({
+      ...data,
+      auto: { fonte: 'ubisoft', ligado: false, credencial: t.credencial, motivo: 'sem-credenciais' },
+    });
   } catch (error) {
     console.error('Erro games/r6:', error.message);
     res.status(500).json({ configured: false, error: 'Não foi possível ler os dados do Rainbow Six.' });

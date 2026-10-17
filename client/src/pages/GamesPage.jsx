@@ -2106,7 +2106,7 @@ function R6Page() {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
-        <p className="text-sm text-gray-400">A ler os dados do tracker.gg...</p>
+        <p className="text-sm text-gray-400">A ler os dados do Rainbow Six...</p>
       </div>
     )
   }
@@ -2171,7 +2171,7 @@ function R6Page() {
 
   return (
     <div className="space-y-6">
-      {/* estado da atualização — automático (ligado) ou manual (recuo) */}
+      {/* estado da atualização — engine Ubisoft (open source) */}
       {d.auto?.ligado ? (
         <div className="flex items-center gap-2.5 rounded-xl border border-green-500/25 bg-green-500/5 px-4 py-2.5 text-[13px] text-gray-300">
           <span className="relative inline-flex h-2.5 w-2.5 place-items-center">
@@ -2179,23 +2179,29 @@ function R6Page() {
             <span className="h-2 w-2 rounded-full bg-green-400" />
           </span>
           <span>
-            Estatísticas <span className="font-bold text-green-400">automáticas</span> — o servidor
-            atualiza de {d.auto.intervaloMin} em {d.auto.intervaloMin} min
-            {d.auto.ultimaTentativa
-              ? ` · última tentativa ${new Date(d.auto.ultimaTentativa).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
+            Estatísticas <span className="font-bold text-green-400">automáticas</span> — API da
+            Ubisoft (open source SwiftCODA/R6-API)
+            {d.auto.intervaloMin
+              ? ` · a cada ${d.auto.intervaloMin} min`
               : ''}
+            {d.temporada ? ` · temporada ${d.temporada}` : ''}
             {d.updatedAt
               ? ` · dados ${new Date(d.updatedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
               : ''}
           </span>
         </div>
       ) : (
-        <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] text-gray-400">
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-500" />
-          <span>
-            Estatísticas atualizadas <span className="font-bold text-gray-300">manualmente</span> — o
-            admin carrega o JSON de cada jogador quando há novidades.
-          </span>
+        <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+          <p>
+            <span className="font-bold text-white">R6 automático (API da Ubisoft):</span> falta só a
+            conta — cria uma conta Ubisoft gratuita, coloca{' '}
+            <code className="text-violet-300">UBI_EMAIL=...</code> e{' '}
+            <code className="text-violet-300">UBI_PASSWORD=...</code> no{' '}
+            <code className="text-violet-300">server/.env</code> e reinicia. A partir daí o servidor
+            atualiza o esquadrão sozinho (open source SwiftCODA/R6-API) — sem tracker.gg nem
+            carregamentos manuais.
+          </p>
         </div>
       )}
 
@@ -2203,7 +2209,10 @@ function R6Page() {
 
       <p className="text-center text-xs text-gray-500">
         <Star className="mr-1 inline h-3 w-3 text-violet-400" />
-        Dados lidos no snapshot do tracker.gg guardado no projeto
+        Dados da API oficial da Ubisoft
+        {d.auto?.fonte === 'ubisoft' && d.auto?.credencial
+          ? ' — atualização automática, sem tracker.gg'
+          : ' — lidos localmente enquanto a conta Ubisoft não está no .env'}
         {d.updatedAt
           ? ' · atualizado a ' +
             new Date(d.updatedAt).toLocaleString('pt-PT', {
