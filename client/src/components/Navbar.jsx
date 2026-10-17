@@ -3,6 +3,7 @@ import { Youtube, Clapperboard, History, Home, User } from 'lucide-react'
 import Sino from './Sino'
 import AvatarImg from './AvatarImg'
 import GLBLogo from './GLBLogo'
+import Logo3D from './Logo3D'
 
 /* ============================================================
    Barra de topo (foto que abre o menu lateral + marca) + barra
@@ -70,14 +71,9 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
             />
           </button>
 
-          {/* Marca */}
-          <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-violet-600 to-violet-300 shadow-[0_0_20px_rgba(139,92,246,0.35)] ring-1 ring-white/20 sm:h-9 sm:w-9">
-              <img src="/2.glb" alt="Logo 3D" className="h-6 w-6 rounded-md object-cover" />
-            </span>
-            <span className="truncate font-display text-base font-black uppercase tracking-wide text-white sm:text-lg xl:text-xl">
-              Ashow e Jazer
-            </span>
+          {/* Marca — logo 3D real (Three.js), sem quadrado */}
+          <Link to="/" className="flex shrink-0 items-center gap-1">
+            <Logo3D largura={56} altura={56} />
           </Link>
 
           {/* Notificações (sino) — só para contas com sessão */}

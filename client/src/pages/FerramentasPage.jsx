@@ -216,25 +216,6 @@ export default function FerramentasPage() {
     }
   }
 
-  /* desinstala os selecionados (só faz sentido para programas instalados) */
-  const desinstalarSelecionados = async () => {
-    const ids = Array.from(selecionados).filter((id) => instalados.has(id))
-    if (!ids.length || aCorrer) return
-    setAviso(null)
-    try {
-      const r = await fetch('/api/ferramentas/desinstalar', {
-        method: 'POST',
-        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids }),
-      })
-      const d = await r.json().catch(() => ({}))
-      if (!r.ok) setAviso(d.erro || 'Não deu para desinstalar.')
-      setSelecionados(new Set())
-    } catch {
-      setAviso('Não deu para falar com o servidor.')
-    }
-  }
-
   const carregar = () => {
     fetch('/api/ferramentas', { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : null))

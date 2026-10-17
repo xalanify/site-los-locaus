@@ -12,6 +12,7 @@ import {
   Wrench,
   Sparkles,
 } from 'lucide-react'
+import Logo3D from './Logo3D'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -57,13 +58,8 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 bg-black px-3 py-5 lg:flex xl:w-[280px]">
       {/* Marca */}
       <div>
-        <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">
-          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-violet-600 to-violet-300 shadow-[0_0_20px_rgba(139,92,246,0.35)] ring-1 ring-white/20">
-            <img src="/2.glb" alt="Logo 3D" className="h-6 w-6 rounded-md object-cover" />
-          </span>
-          <span className="font-display text-lg font-black uppercase tracking-wide text-white">
-            Ashow e Jazer
-          </span>
+        <Link to="/" className="mb-4 flex justify-center px-3 pt-1">
+          <Logo3D largura={104} altura={104} />
         </Link>
 
         {/* Navegação */}
@@ -102,7 +98,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
             ) : (
-              <User className="h-4 w-4 text-gray-400" />
+              <User className="h-5 w-5 text-gray-400" />
             )}
           </span>
           <span className="min-w-0 flex-1">
