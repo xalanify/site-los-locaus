@@ -59,7 +59,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       {/* Marca */}
       <div>
         <Link to="/" className="mb-4 flex justify-center px-3 pt-1">
-          <Logo3D largura={104} altura={104} />
+          <Logo3D largura={150} altura={150} />
         </Link>
 
         {/* Navegação */}

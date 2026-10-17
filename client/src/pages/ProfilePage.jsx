@@ -14,6 +14,7 @@ import {
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import { searchMice } from '../data/mice'
+import RatoWebHid from '../components/RatoWebHid'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -49,6 +50,7 @@ export default function ProfilePage({
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
   const [mouseSug, setMouseSug] = useState([])
+  const [salvoRato, setSalvoRato] = useState('')
   const [myClips, setMyClips] = useState([]) // publicações desta conta
   const [err, setErr] = useState('')
   const fileRef = useRef(null)
@@ -393,6 +395,12 @@ export default function ProfilePage({
               {/* Rato + DPI */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-gray-400">O teu rato (mouse)</label>
+                <RatoWebHid
+                  onEscolher={(nome) => {
+                    setForm((f) => ({ ...f, mouse: nome }))
+                    setSalvoRato(nome)
+                  }}
+                />
                 <div className="relative">
                   <input
                     value={form.mouse}
@@ -443,6 +451,11 @@ export default function ProfilePage({
                 </div>
               </div>
 
+              {salvoRato && (
+                <p className="rounded-lg bg-emerald-500/15 px-3 py-2 text-sm font-bold text-emerald-300">
+                  ✔ Rato escolhido: {salvoRato} (clique em Guardar para confirmar)
+                </p>
+              )}
               {err && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
                   {err}

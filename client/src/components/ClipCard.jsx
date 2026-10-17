@@ -18,6 +18,7 @@ import {
   VolumeX,
   Maximize,
   Minimize,
+  Settings,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import Estado from './Estado'
@@ -90,6 +91,11 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
   const [tempo, setTempo] = useState(0)
   const [dur, setDur] = useState(0)
   const [cheio, setCheio] = useState(false)
+  /* qualidade manual do vídeo */
+  const [menuQual, setMenuQual] = useState(false)
+  const [niveisQual, setNiveisQual] = useState([]) // chaves YT disponíveis
+  const qualEsc = useRef('auto')
+  const [qualAtual, setQualAtual] = useState('auto')
   /* estado do processamento: null = a perguntar, true = pronto,
      false = ainda a processar (mostra o aviso nosso) */
   const [processando, setProcessando] = useState(null)
@@ -211,6 +217,15 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
           const d = p.getDuration && p.getDuration()
           if (d) setDur(d)
         }
+        /* níveis de qualidade disponíveis + atual do leitor */
+        if (p && typeof p.getAvailableQualityLevels === 'function') {
+          const nv = p.getAvailableQualityLevels()
+          if (Array.isArray(nv) && nv.length) setNiveisQual(nv)
+          if (qualEsc.current === 'auto') {
+            const q = typeof p.getPlaybackQuality === 'function' ? p.getPlaybackQuality() : ''
+            if (q) setQualAtual(q)
+          }
+        }
       } catch {}
     }, 400)
 
@@ -236,6 +251,45 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
         alvo.setPlaybackQualityRange('hd1080', 'highres')
       }
       if (typeof alvo.setPlaybackQuality === 'function') alvo.setPlaybackQuality('highres')
+    } catch {}
+  }
+
+  /* --------- QUALIDADE MANUAL (botão da engrenagem) ---------
+     Chaves do leitor YouTube → etiquetas:
+     highres/hd2160 → 2160p; hd1440 → 1440p; hd1080 → 1080p;
+     hd720 → 720p; large → 480p; medium → 480p... etc.
+  */
+  const ETIQUETA_QUAL = {
+    auto: 'Auto',
+    highres: '2160p+',
+    hd2160: '2160p',
+    hd1440: '1440p',
+    hd1080: '1080p',
+    hd720: '720p',
+    large: '480p',
+    medium: '480p',
+    small: '360p',
+    tiny: '240p',
+  }
+
+  const definirQualidade = (q) => {
+    qualEsc.current = q
+    setQualAtual(q)
+    setMenuQual(false)
+    const p = api.current
+    if (!p) return
+    try {
+      if (q === 'auto') {
+        // volta ao máximo automático
+        forcerQualidade(p)
+        qualidadeFeita.current = false
+        forcerQualidade(p)
+        return
+      }
+      if (typeof p.setPlaybackQualityRange === 'function') {
+        p.setPlaybackQualityRange(q, q)
+      }
+      if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality(q)
     } catch {}
   }
 
@@ -492,6 +546,41 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
                 aria-label="Volume"
                 className="relative h-1 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-violet-200"
               />
+            </div>
+
+            {/* qualidade manual */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setMenuQual((v) => !v)}
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+                aria-label="Qualidade do vídeo"
+                title={`Qualidade: ${ETIQUETA_QUAL[qualAtual] || qualAtual}`}
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+              {menuQual && (
+                <div className="absolute bottom-11 right-0 z-30 w-28 overflow-hidden rounded-xl border border-white/10 bg-[#16121f] py-1 shadow-xl">
+                  {['auto', ...(niveisQual.filter((n) => n !== 'auto'))].map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => definirQualidade(q)}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-[12px] font-bold transition-colors ${
+                        qualAtual === q
+                          ? 'bg-violet-500/25 text-violet-200'
+                          : 'text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      {ETIQUETA_QUAL[q] || q}
+                      {qualAtual === q && <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />}
+                    </button>
+                  ))}
+                  {!niveisQual.length && (
+                    <p className="px-3 py-1.5 text-[10px] text-gray-500">A carregar níveis…</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <button

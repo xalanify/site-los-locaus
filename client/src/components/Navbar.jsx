@@ -73,7 +73,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
 
           {/* Marca — logo 3D real (Three.js), sem quadrado */}
           <Link to="/" className="flex shrink-0 items-center gap-1">
-            <Logo3D largura={56} altura={56} />
+            <Logo3D largura={84} altura={84} />
           </Link>
 
           {/* Notificações (sino) — só para contas com sessão */}

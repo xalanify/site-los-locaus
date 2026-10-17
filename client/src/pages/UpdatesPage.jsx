@@ -75,13 +75,6 @@ export default function UpdatesPage() {
                 {b.desc && (
                   <p className="mt-0.5 text-xs leading-relaxed text-gray-400">{b.desc}</p>
                 )}
-                <p className="mt-1.5 text-[11px] text-gray-500">
-                  {hs.length === 0
-                    ? 'Ainda ninguém a tem.'
-                    : hs.length === 1
-                    ? `${hs[0]}`
-                    : `${hs.length} contas: ${hs.join(', ')}`}
-                </p>
               </div>
             </div>
           )
