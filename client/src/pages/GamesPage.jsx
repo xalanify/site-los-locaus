@@ -2171,14 +2171,33 @@ function R6Page() {
 
   return (
     <div className="space-y-6">
-      {/* estado da atualização (manual) */}
-      <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] text-gray-400">
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-500" />
-        <span>
-          Estatísticas atualizadas <span className="font-bold text-gray-300">manualmente</span> — o
-          admin carrega o JSON de cada jogador quando há novidades.
-        </span>
-      </div>
+      {/* estado da atualização — automático (ligado) ou manual (recuo) */}
+      {d.auto?.ligado ? (
+        <div className="flex items-center gap-2.5 rounded-xl border border-green-500/25 bg-green-500/5 px-4 py-2.5 text-[13px] text-gray-300">
+          <span className="relative inline-flex h-2.5 w-2.5 place-items-center">
+            <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-green-400 opacity-60" />
+            <span className="h-2 w-2 rounded-full bg-green-400" />
+          </span>
+          <span>
+            Estatísticas <span className="font-bold text-green-400">automáticas</span> — o servidor
+            atualiza de {d.auto.intervaloMin} em {d.auto.intervaloMin} min
+            {d.auto.ultimaTentativa
+              ? ` · última tentativa ${new Date(d.auto.ultimaTentativa).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
+              : ''}
+            {d.updatedAt
+              ? ` · dados ${new Date(d.updatedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
+              : ''}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] text-gray-400">
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-500" />
+          <span>
+            Estatísticas atualizadas <span className="font-bold text-gray-300">manualmente</span> — o
+            admin carrega o JSON de cada jogador quando há novidades.
+          </span>
+        </div>
+      )}
 
       <R6Squad players={d.players || []} maxRp={maxRp} />
 

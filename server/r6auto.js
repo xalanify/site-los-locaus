@@ -393,19 +393,19 @@ function start() {
 
   const chave = process.env.TRACKER_API_KEY;
   estado.chave = Boolean(chave);
-  if (!chave) {
-    console.log(
-      `R6 automático: desligado (falta TRACKER_API_KEY em server/.env) — snapshot manual mantido.`,
-    );
-    return false;
-  }
+  // Automático LIGA sempre: com chave usa a API oficial; sem chave
+  // usa o fallback do browser Edge (CDP) para ler a mesma API.
   estado.ligado = true;
   const ciclo = () => {
     refreshNow().catch((e) => console.warn('R6 auto:', e.message));
   };
   setInterval(ciclo, MIN * 60 * 1000).unref();
   setTimeout(ciclo, 20 * 1000).unref(); // primeira passada pouco depois de arrancar
-  console.log(`R6 automático: a cada ${MIN} min (tracker.gg).`);
+  console.log(
+    chave
+      ? `R6 automático: a cada ${MIN} min (tracker.gg, com chave).`
+      : `R6 automático: a cada ${MIN} min (tracker.gg via browser Edge — sem chave).`,
+  );
   return true;
 }
 
