@@ -76,6 +76,30 @@ export const MICE = [
   M('ASUS', 'ROG Harpe Ace Aim Lab'), M('ASUS', 'ROG Gladius III'),
   // MSI
   M('MSI', 'Clutch GM51'), M('MSI', 'Clutch GM41'),
+  // Extras
+  M('Razer', 'Pro Click'), M('Razer', 'Pro Click Mini'), M('Razer', 'Viper V3 Pro'),
+  M('Logitech', 'G Pro X Superlight'), M('Logitech', 'G502 X Plus'), M('Logitech', 'G Pro Wireless'),
+  M('SteelSeries', 'Aerox 3 Wireless'), M('SteelSeries', 'Prime Wireless'), M('SteelSeries', 'Rival 3'),
+  M('Zowie', 'EC2-C'), M('Zowie', 'FK2-B'),
+  M('HyperX', 'Pulsefire Haste 2'), M('HyperX', 'Pulsefire Haste'),
+  M('Glorious', 'Model O 2'), M('Glorious', 'Model O'),
+  M('Pulsar', 'X2V2'), M('Pulsar', 'Xlite V2'),
+  M('Vaxee', 'NP-01S'), M('Vaxee', 'NP-01'),
+  M('Lamzu', 'Atlantis Pro'), M('Lamzu', 'Thorn'),
+  M('ATK', 'F1 Extreme'), M('ATK', 'F1 Gaming'),
+  M('Mchose', 'L7 Pro'), M('Mchose', 'L7'),
+  M('Endgame', 'XM2w'), M('Endgame', 'XM1r'),
+  M('Ninjutso', 'Sora V2'), M('Ninjutso', 'Origin One'),
+  M('WLMOUSE', 'WM-01 Pro'), M('WLMOUSE', 'WM-02 Wireless'), M('WLMOUSE', 'WM-03 Gaming'), M('WLMOUSE', 'WM-04 RGB'),
+  M('Finalmouse', 'Starlight-12'), M('Finalmouse', 'Air58'), M('Finalmouse', 'Starlight-12 Sleek'), M('Finalmouse', 'Air58 Ninja'),
+  M('CoolerMaster', 'MM712'), M('CoolerMaster', 'MM720'),
+  M('ASUS', 'ROG Harpe Ace Aim Lab'), M('ASUS', 'ROG Gladius III'),
+  M('MSI', 'Clutch GM51'), M('MSI', 'Clutch GM41'), M('MSI', 'GM41'),
+  M('Razer', 'DeathAdder Essential'), M('Razer', 'Basilisk V3'),
+  M('Corsair', 'M75 Air'), M('Corsair', 'Sabre RGB Pro'),
+  M('Logitech', 'MX Master 3S'), M('Logitech', 'G703'), M('Logitech', 'G903'),
+  M('SteelSeries', 'Sensei Ten'), M('SteelSeries', 'Aerox 5 Wireless'),
+  M('Zowie', 'EC1-C'), M('Zowie', 'FK1-B'), M('Zowie', 'S2-C'), M('Zowie', 'ZA13-C'),
 ]
 
 export function searchMice(query) {

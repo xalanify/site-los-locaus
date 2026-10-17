@@ -166,6 +166,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                     ) : null
                   })()}
                   <span className="font-bold text-gray-200">{p.mouse}</span>
+                  <span className="text-[10px] text-violet-300 font-black tracking-wide">Mouse</span>
                   {p.dpi ? <span>· {p.dpi} DPI</span> : null}
                 </span>
               )}

@@ -58,10 +58,10 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       {/* Marca */}
       <div>
         <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/30">
-            <Youtube className="h-5 w-5 text-violet-400" />
+          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-violet-600 to-violet-300 shadow-[0_0_20px_rgba(139,92,246,0.35)] ring-1 ring-white/20">
+            <img src="/2.glb" alt="Logo 3D" className="h-6 w-6 rounded-md object-cover" />
           </span>
-          <span className="gradient-text font-display text-lg font-black uppercase tracking-wide">
+          <span className="font-display text-lg font-black uppercase tracking-wide text-white">
             Ashow e Jazer
           </span>
         </Link>

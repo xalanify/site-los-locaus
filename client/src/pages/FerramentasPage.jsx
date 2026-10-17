@@ -755,7 +755,7 @@ export default function FerramentasPage() {
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {todasAcoesNivel.map((aid) => {
-                        const acao = xalanaAcoes[aid]
+                        const acao = XALANA_ACOES[aid]
                         if (!acao) return null
                         const marcada = acoes.includes(aid)
                         return (

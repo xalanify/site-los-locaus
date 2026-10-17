@@ -79,7 +79,7 @@ export default function UpdatesPage() {
                   {hs.length === 0
                     ? 'Ainda ninguém a tem.'
                     : hs.length === 1
-                    ? `Tem-na: ${hs[0]}`
+                    ? `${hs[0]}`
                     : `${hs.length} contas: ${hs.join(', ')}`}
                 </p>
               </div>

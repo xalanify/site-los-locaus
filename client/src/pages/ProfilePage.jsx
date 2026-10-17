@@ -292,6 +292,7 @@ export default function ProfilePage({
                     ) : null
                   })()}
                   <span className="font-bold">{me.mouse}</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
                   {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
                 </p>
               )}
