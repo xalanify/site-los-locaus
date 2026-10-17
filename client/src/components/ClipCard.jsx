@@ -304,7 +304,13 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
       const p = api.current
       const alvo = qualAlvoRef.current
       if (!p || alvo === 'auto') return limpaWatchdog()
-      if (qualidadeAgora() === alvo) {
+      const q = qualidadeAgora()
+      /* 'highres' e 'hd2160' são a MESMA coisa (4K) para o leitor */
+      const chegou =
+        (q && q === alvo) ||
+        (q === 'highres' && alvo === 'hd2160') ||
+        (q === 'hd2160' && alvo === 'highres')
+      if (chegou) {
         // chegou à qualidade pedida: solta o vídeo
         limpaWatchdog()
         tentativasQual.current = 0
@@ -323,6 +329,16 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
       if (tentativasQual.current === 8) {
         setTentouRecarregar((x) => x + 1)
       }
+      // DEUS NOS ACUDA: 12 s e nada — solta SEMPRE, jamais prende o vídeo
+      if (tentativasQual.current >= 24) {
+        limpaWatchdog()
+        tentativasQual.current = 0
+        setVeuQual(null)
+        setQualAtual(q || alvo)
+        try {
+          typeof p.playVideo === 'function' && p.playVideo()
+        } catch {}
+      }
     }, 500)
   }
 
@@ -338,22 +354,23 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
       const t = typeof p.getCurrentTime === 'function' ? p.getCurrentTime() || 0 : 0
       p.loadVideoById({ videoId: id, startSeconds: Math.max(0, t), suggestedQuality: alvo })
     } catch {}
-    // se após o recarrego ainda não chega em ~6 s, assume que o vídeo
-    // NÃO tem aquela qualidade:parte sem a qualidade e liga o vídeo
+    // após 6 s do recarrego: o que vier é o que o vídeo tem —
+    // solta SEMPRE (nunca deixa o véu preso)
     const desiste = setTimeout(() => {
+      limpaWatchdog()
       const q = qualidadeAgora()
+      setVeuQual(null)
+      setQualAtual(q || alvo)
       if (q && q !== alvo) {
-        limpaWatchdog()
-        setVeuQual(null)
+        // o vídeo não tem o alvo: volta ao modo auto e segue
         setQualAlvo('auto')
         qualAlvoRef.current = 'auto'
         qualEsc.current = 'auto'
-        setQualAtual(q || 'auto')
-        try {
-          const pp = api.current
-          typeof pp.playVideo === 'function' && pp.playVideo()
-        } catch {}
       }
+      try {
+        const pp = api.current
+        typeof pp.playVideo === 'function' && pp.playVideo()
+      } catch {}
     }, 6000)
     return () => clearTimeout(desiste)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -379,9 +396,6 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
 
   const definirQualidade = (q) => {
     qualEsc.current = q
-    qualAlvoRef.current = q
-    setQualAtual(q)
-    setQualAlvo(q)
     setMenuQual(false)
     const p = api.current
     if (!p) return
@@ -389,11 +403,30 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
       limpaWatchdog()
       tentativasQual.current = 0
       setVeuQual(null)
+      setQualAlvo('auto')
+      qualAlvoRef.current = 'auto'
+      qualEsc.current = 'auto'
       forcerQualidade(p)
       qualidadeFeita.current = false
       forcerQualidade(p)
       return
     }
+    /* se já sabemos os níveis do vídeo e o escolhido não existe,
+       avisa logo — nada de véu preso */
+    const itens = niveisQual.filter((n) => n !== 'auto')
+    if (itens.length && !itens.includes(q)) {
+      setQualAlvo('auto')
+      qualAlvoRef.current = 'auto'
+      qualEsc.current = 'auto'
+      setVeuQual(`Este vídeo não tem ${ETIQUETA_QUAL[q] || q} — fica no melhor (auto).`)
+      setTimeout(() => setVeuQual((v) => (v && v.startsWith('Este') ? null : v)), 3000)
+      try {
+        typeof p.playVideo === 'function' && p.playVideo()
+      } catch {}
+      return
+    }
+    qualAlvoRef.current = q
+    setQualAlvo(q)
     try {
       if (typeof p.setPlaybackQualityRange === 'function') p.setPlaybackQualityRange(q, q)
       if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality(q)
@@ -527,16 +560,18 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
 
         {/* qualidade FORÇADA: enquanto o leitor não reportar a
             qualidade escolhida, o vídeo fica tapado (não toca) */}
-        {qualAlvo !== 'auto' && veuQual && (
+        {veuQual && (
           <div className="absolute inset-0 z-[7] grid place-items-center bg-black/85 px-6 text-center">
             <div>
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-violet-400" />
               <p className="mt-3 text-sm font-black text-white">
-                A forçar {ETIQUETA_QUAL[qualAlvo] || qualAlvo}…
+                {veuQual.startsWith('Este') ? veuQual : `A forçar ${veuQual}…`}
               </p>
-              <p className="mt-1 text-[11px] text-gray-400">
-                O vídeo só segue quando a qualidade chegar à que escolheste.
-              </p>
+              {!veuQual.startsWith('Este') && (
+                <p className="mt-1 text-[11px] text-gray-400">
+                  O vídeo só segue quando a qualidade chegar à que escolheste.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -910,8 +945,10 @@ export default function ClipCard({
       const fin = c.remoto ? `/api/clips/${c.id}/download-remoto` : `/api/clips/${c.id}/download`
       const res = await fetch(fin, { headers: authHeaders() })
       if (!res.ok) {
-        if (res.status === 401) onRequestAuth && onRequestAuth()
         setBaixando(false)
+        const d = await res.json().catch(() => null)
+        if (res.status === 401) return onRequestAuth && onRequestAuth()
+        window.alert((d && d.error) || `Não deu para transferir (HTTP ${res.status}).`)
         return
       }
       const blob = await res.blob()

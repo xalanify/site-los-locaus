@@ -635,4 +635,16 @@ router.get('/bf', (req, res) => {
   }
 });
 
+// ============================================================
+// Skins/amuletos mais raros (aba de cada página de jogo)
+// ============================================================
+let SKINS_RAROS = null;
+try {
+  SKINS_RAROS = require('../data/skins-raros.json');
+} catch {}
+
+router.get('/skins-raros', (req, res) => {
+  res.json(SKINS_RAROS || {});
+});
+
 module.exports = { gamesRouter: router };

@@ -962,8 +962,20 @@ router.delete('/:id/comments/:commentId', attachAuth, async (req, res) => {
   }
 });
 
-// Transferir vídeo REMOTO (YouTube) na máxima qualidade — via cobalt
-// (open source). Gere o stream e manda ao browser como ficheiro.
+// Transferir vídeo REMOTO (YouTube) na máxima qualidade (até 4K).
+// O yt-dlp (já instalado neste PC) despede o stream direto do YouTube
+// já mesclado video+audio via ffmpeg e enche o nosso response.
+function acharYtDlp() {
+  try {
+    const { execFileSync } = require('child_process');
+    const saida = execFileSync('where.exe', ['yt-dlp'], { encoding: 'utf8' });
+    const linha = String(saida || '').split(/\r?\n/).find((x) => x.trim());
+    return linha ? linha.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 router.get('/:id/download-remoto', attachAuth, async (req, res) => {
   try {
     const db = getDb();
@@ -975,40 +987,98 @@ router.get('/:id/download-remoto', attachAuth, async (req, res) => {
       return res.status(400).json({ error: 'Este clip já tem ficheiro próprio (usa Transferir normal).' });
     }
 
-    const base = (process.env.COBALT_API_URL || 'https://api.cobalt.tools').replace(/\/+$/, '');
-    const cab = { Accept: 'application/json', 'Content-Type': 'application/json' };
-    if (process.env.COBALT_API_KEY) cab.Authorization = 'Api-Key ' + process.env.COBALT_API_KEY;
-
-    const r = await fetch(base + '/', {
-      method: 'POST',
-      headers: cab,
-      body: JSON.stringify({
-        url: 'https://www.youtube.com/watch?v=' + clip.youtube_id,
-        videoQuality: '2160',
-        downloadMode: 'auto',
-        filenameStyle: 'pretty',
-      }),
-    });
-    const j = await r.json().catch(() => null);
-    if (!r.ok || !j || !j.url) {
-      const cod = j && (j.error && j.error.code) ? j.error.code : 'HTTP ' + r.status;
-      return res.status(502).json({ error: 'Serviço de transferência indisponível (' + cod + ').' });
+    const yt = acharYtDlp();
+    if (!yt) {
+      return res.status(502).json({
+        error: 'yt-dlp não está instalado neste PC — corre: winget install --id yt-dlp.yt-dlp',
+      });
     }
 
-    // negocia o stream e manda ao browser já com nome de ficheiro
-    const rr = await fetch(j.url, { redirect: 'follow' });
-    if (!rr.ok || !rr.body) return res.status(502).json({ error: 'Não consegui buscar o vídeo ao túnel.' });
-    await db.prepare('UPDATE clips SET downloads = downloads + 1 WHERE id = ?').run(id);
     const safe = String(clip.title || 'clip').replace(/[^\p{L}\p{N} _-]/gu, '_').slice(0, 60) || 'clip';
-    res.setHeader('Content-Type', rr.headers.get('content-type') || 'video/mp4');
-    const len = rr.headers.get('content-length');
-    if (len) res.setHeader('Content-Length', len);
     res.setHeader('Content-Disposition', 'attachment; filename="' + safe + '.mp4"');
-    const { Readable } = require('stream');
-    Readable.fromWeb(rr.body).pipe(res);
+
+    const path = require('path');
+    let tmp = path.join(
+      require('os').tmpdir(),
+      'll-clip-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.mp4',
+    );
+
+    // yt-dlp funde video+audio com ffmpeg no ficheiro temporário;
+    // depois mandamos em stream como MP4 autêntico (não TS disfarçado)
+    const { spawn } = require('child_process');
+    const filho = spawn(
+      yt,
+      [
+        '-f', 'bestvideo[height<=2160][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/best',
+        '--merge-output-format', 'mp4',
+        '--no-part', '--no-playlist', '--no-warnings', '--quiet',
+        '--concurrent-fragments', '4',
+        '-o', tmp,
+        'https://www.youtube.com/watch?v=' + clip.youtube_id,
+      ],
+      { stdio: ['ignore', 'ignore', 'pipe'] },
+    );
+
+    let msgErr = '';
+    filho.stderr.on('data', (d) => {
+      msgErr += String(d);
+      if (msgErr.length > 4000) msgErr = msgErr.slice(-4000);
+    });
+    filho.on('close', (code) => {
+      if (code !== 0) {
+        console.error('[download-remoto] yt-dlp saiu com', code, msgErr.slice(-800));
+        try {
+          require('fs').unlinkSync(tmp);
+        } catch {}
+        if (!res.headersSent) {
+          res.status(502).json({
+            error: 'Não deu para baixar este vídeo agora (o YouTube pode tê-lo privado ou bloqueado).',
+          });
+        } else {
+          try { res.end(); } catch {}
+        }
+        return;
+      }
+      // MP4 pronto: stream para o cliente
+      try {
+        const fs = require('fs');
+        const tamanho = fs.statSync(tmp).size;
+        res.setHeader('Content-Length', tamanho);
+        res.setHeader('Content-Type', 'video/mp4');
+        res.flushHeaders && res.flushHeaders();
+        let contado = false;
+        const st = fs.createReadStream(tmp);
+        st.on('open', () => {
+          if (!contado) {
+            contado = true;
+            (async () => {
+              try {
+                await db.prepare('UPDATE clips SET downloads = downloads + 1 WHERE id = ?').run(id);
+              } catch {}
+            })();
+          }
+        });
+        st.pipe(res);
+        st.on('close', () => {
+          try { fs.unlinkSync(tmp); } catch {}
+        });
+      } catch {
+        try { res.end(); } catch {}
+        try { require('fs').unlinkSync(tmp); } catch {}
+      }
+    });
+
+    // cliente cancelou -> mata o download e limpa
+    req.on('close', () => {
+      try { filho.kill(); } catch {}
+      setTimeout(() => {
+        try { require('fs').unlinkSync(tmp); } catch {}
+      }, 1500);
+    });
   } catch (error) {
     console.error('Erro clip download-remoto:', error.message);
-    res.status(500).json({ error: 'Erro interno' });
+    if (!res.headersSent) res.status(500).json({ error: 'Erro interno' });
+    else { try { res.end(); } catch {} }
   }
 });
 

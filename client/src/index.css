@@ -590,7 +590,15 @@ button[class~='bg-violet-500']:active {
    sidebar da esquerda e da coluna da direita, que ficam
    translúcidas para a foto se ver nos cantos.
    ============================================================ */
+/* Painéis fixos (sidebar + coluna direita): degradé violeta-escuro
+   para continuarem o roxo do centro em vez de barras pretas.*/
+.painel-fixo {
+  background: linear-gradient(180deg, #150f26 0%, #100b1d 55%, #0b0715 100%);
+}
+
+/* nos jogos: translúcidos para a foto do ecrã inteiro passar nos
+   cantos (a imagem fica FIXA atrás de tudo) */
 body.in-jogo .painel-fixo {
-  background-color: rgba(8, 5, 16, 0.6) !important;
+  background: rgba(8, 5, 16, 0.6) !important;
   backdrop-filter: blur(2px);
 }

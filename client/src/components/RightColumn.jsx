@@ -75,13 +75,7 @@ export default function RightColumn() {
   }, [])
 
   return (
-    <aside
-      className="painel-fixo fixed inset-y-0 right-0 z-30 hidden w-[320px] overflow-y-auto border-l border-white/10 px-4 pb-5 pt-14 xl:block"
-      style={{
-        background:
-          'linear-gradient(180deg, #150f26 0%, #100b1d 55%, #0b0715 100%)',
-      }}
-    >
+    <aside className="painel-fixo fixed inset-y-0 right-0 z-30 hidden w-[320px] overflow-y-auto border-l border-white/10 px-4 pb-5 pt-14 xl:block">
       <div className="space-y-4">
         {/* Anúncios — clips publicados aparecem aqui sozinhos */}
         <Cartao titulo="Anúncios" icone={Megaphone} link="/distincoes" linkTexto="Ver tudo">

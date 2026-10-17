@@ -339,7 +339,211 @@ function EafcPage() {
   )
 }
 
-function FortnitePage() {
+/* ============================================================
+   Aba "Skins / Amuletos raros" — listas curadas por jogo,
+   servidas pelo servidor (server/data/skins-raros.json).
+   Imagens oficiais para CS (ByMykel) e Fortnite (fortnite-api);
+   R6/BF ficam com emblema próprio enquanto não existir API
+   pública de cosméticos da Ubisoft/EA.
+   ============================================================ */
+const ABA_SKINS_LABEL = {
+  cs2: 'Skins e Facas raras',
+  r6: 'Skins e Amuletos raros',
+  fortnite: 'Skins · Paraquedas · Picaretas',
+  bf: 'Skins de armas',
+}
+
+const SKINS_SEC = {
+  cs2: [
+    { chave: 'armas', titulo: 'Skins de armas' },
+    { chave: 'facas', titulo: 'Facas' },
+  ],
+  r6: [
+    { chave: 'armas', titulo: 'Skins de armas' },
+    { chave: 'amuletos', titulo: 'Amuletos' },
+  ],
+  fortnite: [
+    { chave: 'skins', titulo: 'Skins' },
+    { chave: 'paraquedas', titulo: 'Paraquedas' },
+    { chave: 'picaretas', titulo: 'Picaretas' },
+  ],
+  bf: [
+    { chave: 'bf1', titulo: 'BF1' },
+    { chave: 'bfv', titulo: 'BF V' },
+    { chave: 'bf6', titulo: 'BF6' },
+  ],
+}
+
+/* cor do chip por "estado" (nunca mais obtível fica em vermelho) */
+const estadoChip = (t = '') => {
+  const s = String(t)
+  if (/nunca/i.test(s)) return 'border-red-500/30 bg-red-500/10 text-red-300'
+  if (/quase imposs|<[0-9]/i.test(s)) return 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300'
+  if (/temporada|janela|edi[cç]|s&#243; na T|sorteio|presencial| profissional/i.test(s))
+    return 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+  return 'border-violet-500/30 bg-violet-500/10 text-violet-300'
+}
+
+function SkinCard({ it, i }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(i * 0.03, 0.6), duration: 0.3 }}
+      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4"
+    >
+      <div className="mb-3 grid h-28 place-items-center">
+        {it.img ? (
+          <img
+            src={it.img}
+            alt={it.nome}
+            loading="lazy"
+            className="max-h-28 object-contain drop-shadow-[0_0_18px_rgba(139,92,246,0.35)] transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          /* item sem imagem oficial: emblema elegante em vez de ficha vazia */
+          <div className="grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-violet-500/30 via-fuchsia-500/20 to-transparent ring-1 ring-white/15">
+            <span className="font-display text-2xl font-black text-white/80">
+              {it.nome.slice(0, 2).toUpperCase()}
+            </span>
+          </div>
+        )}
+      </div>
+      <p className="font-display text-sm font-black leading-snug text-white">{it.nome}</p>
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        {it.raridade && (
+          <span className="rounded-md bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-300">
+            {it.raridade}
+          </span>
+        )}
+        {it.estado && (
+          <span
+            className={`rounded-md border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${estadoChip(it.estado)}`}
+          >
+            {it.estado}
+          </span>
+        )}
+        {it.tipo && (
+          <span className="rounded-md bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-500">
+            {it.tipo}
+          </span>
+        )}
+      </div>
+      {(it.por || it.origem) && (
+        <p className="mt-2 text-[11.5px] leading-snug text-gray-400">{it.por || it.origem}</p>
+      )}
+    </motion.div>
+  )
+}
+
+function SkinsRarosTab({ jogo }) {
+  const [d, setD] = useState(null)
+  const [seccao, setSeccao] = useState(SKINS_SEC[jogo]?.[0]?.chave)
+
+  useEffect(() => {
+    fetch('/api/games/skins-raros')
+      .then((r) => r.json())
+      .then(setD)
+      .catch(() => setD({}))
+  }, [])
+
+  useEffect(() => {
+    setSeccao(SKINS_SEC[jogo]?.[0]?.chave)
+  }, [jogo])
+
+  const seccoes = SKINS_SEC[jogo] || []
+  const bloco = d ? d[jogo] || {} : {}
+  const lista = Array.isArray(bloco[seccao]) ? bloco[seccao] : []
+
+  return (
+    <div className="glass rounded-2xl p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="flex items-center gap-2 font-display text-base font-black text-white">
+          <Trophy className="h-4 w-4 text-amber-300" />
+          {ABA_SKINS_LABEL[jogo]}
+        </h3>
+        <p className="text-[11px] text-gray-500">mais raros de cada jogo · curated {">"}20 itens</p>
+      </div>
+
+      {seccoes.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {seccoes.map((s) => (
+            <button
+              key={s.chave}
+              onClick={() => setSeccao(s.chave)}
+              className={
+                seccao === s.chave
+                  ? 'rounded-xl bg-violet-500 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-violet-500/20'
+                  : 'rounded-xl border border-white/10 bg-white/5 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10'
+              }
+            >
+              {s.titulo}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!d || !lista.length ? (
+        <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-400">
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-violet-300" />
+          A carregar as listas…
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {lista.map((it, i) => (
+              <SkinCard key={it.nome + i} it={it} i={i} />
+            ))}
+          </div>
+          {jogo === 'bf' && (
+            <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
+              Battlefield: as imagens oficiais de skins de armas do BF1/BFV/BF6 não têm API
+              pública — os cartões seguem os casos DOCUMENTADOS de raridade
+              (Collector&apos;s Edition, Battlepacks, Tides of War, passes de temporada).
+            </p>
+          )}
+          {jogo === 'r6' && (
+            <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
+              Rainbow Six: Ubisoft não abre API de cosméticos, por isso os amuletos/skins
+              aparecem com emblema próprio — a lista segue o consenso da comunidade
+              (Glacier, Black Ice, Peacock, Fire, Gold Dust, Pro League Y1, elites de Red Crow…).
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+/* alternador Estatísticas ↔ Skins que fica no topo de cada jogo */
+function SubAbaJogo({ jogo, aba, setAba }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-center justify-center gap-2">
+      <button
+        onClick={() => setAba('stats')}
+        className={
+          aba === 'stats'
+            ? 'rounded-xl bg-violet-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-violet-500/20'
+            : 'rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10'
+        }
+      >
+        Estatísticas
+      </button>
+      <button
+        onClick={() => setAba('skins')}
+        className={
+          aba === 'skins'
+            ? 'rounded-xl bg-violet-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-violet-500/20'
+            : 'rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10'
+        }
+      >
+        {ABA_SKINS_LABEL[jogo]}
+      </button>
+    </div>
+  )
+}
+
+function FortniteStats() {
   const [nome, setNome] = useState('')
   const [procurando, setProcurando] = useState(false)
   const [erro, setErro] = useState('')
@@ -489,6 +693,16 @@ function FortnitePage() {
   )
 }
 
+function FortnitePage() {
+  const [aba, setAba] = useState('stats')
+  return (
+    <div className="space-y-5">
+      <SubAbaJogo jogo="fortnite" aba={aba} setAba={setAba} />
+      {aba === 'stats' ? <FortniteStats /> : <SkinsRarosTab jogo="fortnite" />}
+    </div>
+  )
+}
+
 /* ============================================================
    Battlefield — BF1 / BFV / BF6 via gametools.network
    (API comunitária aberta). Mostra apenas o que acompanhamos;
@@ -500,7 +714,7 @@ const BF_JOGOS = [
   { id: 'bf6', nome: 'Battlefield 6', cor: 'text-sky-300', fundo: 'bg-sky-500/15' },
 ]
 
-function BattlefieldPage() {
+function BattlefieldStats() {
   const [jogo, setJogo] = useState('bf1')
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
@@ -1241,6 +1455,16 @@ function FormLigar({ nick, setNick, onLigar, aLigar, msg }) {
 /* ============================================================
    CS2 — painel AO VIVO via Steam Web API (servidor busca sozinho)
    ============================================================ */
+function BattlefieldPage() {
+  const [aba, setAba] = useState('stats')
+  return (
+    <div className="space-y-5">
+      <SubAbaJogo jogo="bf" aba={aba} setAba={setAba} />
+      {aba === 'stats' ? <BattlefieldStats /> : <SkinsRarosTab jogo="bf" />}
+    </div>
+  )
+}
+
 function Cs2Vivo() {
   const [vivo, setVivo] = useState(null)
   const [cs2Nick, setCs2Nick] = useState('')
@@ -1426,6 +1650,60 @@ function Cs2Vivo() {
           </div>
         ))}
       </div>
+
+      {/* Rankings ao vivo — comparar os jogadores ligados (nada de ficheiros) */}
+      {jog.length > 1 && (
+        <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+          <h4 className="mb-3 flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-gray-300">
+            <Trophy className="h-4 w-4 text-amber-300" />
+            Rankings do esquadrão — ao vivo
+          </h4>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { label: 'Top kills', campo: 'kills', cor: 'text-violet-300' },
+              { label: 'Melhor K/D', campo: 'kd', cor: 'text-white' },
+              { label: 'MVPs', campo: 'mvps', cor: 'text-amber-300' },
+              { label: 'HS %', campo: 'hs', sufixo: '%', cor: 'text-sky-300' },
+              { label: 'Precisão', campo: 'precisao', sufixo: '%', cor: 'text-sky-300' },
+              { label: 'Vitórias', campo: 'vitorias', cor: 'text-green-400' },
+            ].map((r) => {
+              const ordem = [...jog].sort(
+                (a, b) => (Number(b?.[r.campo]) || -1) - (Number(a?.[r.campo]) || -1),
+              )
+              const val = (x) =>
+                x?.[r.campo] != null && x?.[r.campo] !== '' ? `${x[r.campo]}${r.sufixo || ''}` : '—'
+              return (
+                <div key={r.campo} className="rounded-lg bg-white/[0.05] p-3">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-gray-500">
+                    {r.label}
+                  </p>
+                  {ordem.slice(0, 3).map((x, xi) => (
+                    <p
+                      key={x.steam}
+                      className="mt-1 flex items-center justify-between gap-2 text-[13px]"
+                    >
+                      <span className="min-w-0 truncate font-bold text-gray-200">
+                        {['🥇', '🥈', '🥉'][xi]} {x.nick || x.nome}
+                      </span>
+                      <span
+                        className={`shrink-0 font-black ${xi === 0 ? r.cor : 'text-gray-400'}`}
+                      >
+                        {val(x)}
+                      </span>
+                    </p>
+                  ))}
+                </div>
+              )
+            })}
+          </div>
+          <p className="mt-3 text-[11px] leading-snug text-gray-500">
+            Calculado de imediato com o que a Steam mostra ao vivo de cada jogador. A Steam
+            não publica as partidas uma a uma (nem as 10 melhores nem as 10 últimas de cada
+            conta) — isso só seria possível se os jogadores ligassem as contas ao FACEIT.
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 border-t border-white/10 pt-4">
         <p className="mb-2 text-[12px] text-gray-500">
           Queres acrescentar mais alguém ao vivo? Escreve só o nome da Steam:
@@ -1443,8 +1721,13 @@ function Cs2Vivo() {
 }
 
 function Cs2Page() {
-  /* 100% ao vivo via Steam — nada de ficheiros manuais */
-  return <Cs2Vivo />
+  const [aba, setAba] = useState('stats')
+  return (
+    <div className="space-y-5">
+      <SubAbaJogo jogo="cs2" aba={aba} setAba={setAba} />
+      {aba === 'stats' ? <Cs2Vivo /> : <SkinsRarosTab jogo="cs2" />}
+    </div>
+  )
 }
 
 const fmtSecs = (sec) => {
@@ -1640,7 +1923,7 @@ function R6Squad({ players, maxRp = {} }) {
    Rainbow Six — só o esquadrão
    (sem secções, modos, partidas nem filtros)
    ============================================================ */
-function R6Page() {
+function R6Stats() {
   const [state, setState] = useState({ loading: true, data: null, error: '' })
 
   const load = () => {
@@ -1816,6 +2099,16 @@ function R6Page() {
   )
 }
 
+function R6StatsPage() {
+  const [aba, setAba] = useState('stats')
+  return (
+    <div className="space-y-5">
+      <SubAbaJogo jogo="r6" aba={aba} setAba={setAba} />
+      {aba === 'stats' ? <R6Stats /> : <SkinsRarosTab jogo="r6" />}
+    </div>
+  )
+}
+
 export default function GamesPage() {
   const [tab, setTab] = useState(null)
 
@@ -1912,7 +2205,7 @@ export default function GamesPage() {
                 ) : tab === 'bf' ? (
                   <BattlefieldPage />
                 ) : tab === 'r6' ? (
-                  <R6Page />
+                  <R6StatsPage />
                 ) : (
                   <Cs2Page />
                 )}

@@ -202,11 +202,20 @@ $out = [ordered]@{}
 Passo 'Sistema (Windows, maquina e RAM total)...'
 $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
 $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
+# versão completa: edição EXATA (ex.: "Windows 10 IoT Enterprise LTSC") + display version + build
+$soFull = $null
+if ($os.Caption) {
+  $soBase = $os.Caption -replace '^Microsoft\s+', ''
+  try {
+    $cv = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop
+    $soFull = "$soBase $($cv.DisplayVersion) (build $($cv.CurrentBuild))"
+  } catch { $soFull = $soBase }
+}
 $out.sistema = [ordered]@{
   nome         = $cs.Name
   fabricante   = $cs.Manufacturer
   modelo       = $cs.Model
-  so           = $os.Caption
+  so           = $soFull
   arranque     = if ($os.LastBootUpTime) { $os.LastBootUpTime.ToString('yyyy-MM-dd HH:mm') } else { $null }
   ram_total_gb = if ($cs.TotalPhysicalMemory) { [math]::Round($cs.TotalPhysicalMemory / 1GB, 1) } else { $null }
 }
