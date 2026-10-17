@@ -311,7 +311,169 @@ router.get('/r6', (req, res) => {
 });
 
 // ============================================================
-// Battlefield — BF1 / BFV / BF6 (server/data/bf*.json)
+// Battlefield LIVE — via gametools.network (API comunitária
+// gratuita: github.com/community-network). Devolve as stats
+// dos NOSSOS jogadores apenas. Se a API vender-se, usa o
+// snapshot tracker.gg guardado em server/data/bf*.json.
+// ============================================================
+const BF_LIVE_CACHE = new Map();
+
+// handles que acompanhamos por jogo (bf1/bfv/bf6)
+function bfHandles(g) {
+  let jog = [];
+  try {
+    jog = require(`../data/bf-jogadores.json`);
+    if (Array.isArray(jog[g])) jog = jog[g];
+    else if (!Array.isArray(jog)) jog = [];
+  } catch {
+    jog = [];
+  }
+  if (!jog.length) {
+    try {
+      const snap = tracker.readJson(tracker.BF_FILES[g]);
+      if (snap && snap.handle) jog = [{ handle: snap.handle }];
+    } catch {}
+  }
+  return jog.filter((x) => (x.handle || x.name || '').trim());
+}
+
+const PICKNUM = (obj, keys) => {
+  for (const k of keys) {
+    const v = obj?.[k];
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+};
+
+const GTOOLS_GAME = { bf1: 'bf1', bfv: 'bfv', bf4: 'bf4', bf2042: 'bf2042', bf6: 'bf6' };
+
+async function gtoolsStatsFor(g, handle) {
+  const url = `https://api.gametools.network/${GTOOLS_GAME[g]}/stats/?name=${encodeURIComponent(handle)}&lang=en-us`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const r = await fetch(url, { signal: controller.signal });
+    if (!r.ok) throw new Error(`gametools ${r.status}`);
+    const d = await r.json();
+    // a API devolve um array por plataformas; usa o primeiro bloco útil
+    const bloco = Array.isArray(d) && d.length ? d[0] : d;
+    const rankObj = bloco?.rank || {};
+    return {
+      ok: true,
+      handle: bloco?.userName || handle,
+      nome: bloco?.userName || handle,
+      rank: PICKNUM(rankObj, ['rank', 'level']) ?? PICKNUM(bloco, ['rank', 'rankNumber']),
+      kd: PICKNUM(bloco, ['kdRatio', 'kd', 'killDeathRatio']),
+      kills: PICKNUM(bloco, ['kills', 'killCount']),
+      deaths: PICKNUM(bloco, ['deaths', 'deathCount']),
+      wins: PICKNUM(bloco, ['wins', 'winCount', 'matchesWon']),
+      losses: PICKNUM(bloco, ['losses', 'lossCount', 'matchesLost']),
+      score: PICKNUM(bloco, ['score', 'scoreValue']),
+      spm: PICKNUM(bloco, ['scorePerMinute', 'spd']),
+      segundos: PICKNUM(bloco, ['secondsPlayed', 'timePlayed']),
+    };
+  } catch (e) {
+    return { ok: false, erro: String(e.message || e) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+router.get('/bf-live', async (req, res) => {
+  try {
+    const g = String(req.query.g || '').trim().toLowerCase();
+    if (!tracker.BF_FILES[g]) return res.status(400).json({ error: 'Jogo inválido.' });
+    if (!GTOOLS_GAME[g]) return res.json({ ok: false, error: 'Jogo sem suporte na API.' });
+
+    const chave = `bf-live:${g}`;
+    const hit = BF_LIVE_CACHE.get(chave);
+    if (hit && Date.now() - hit.t < 5 * 60 * 1000) return res.json(hit.v);
+
+    const jogadores = bfHandles(g).slice(0, 8); // máximo 8 por pedido
+    const live = await Promise.all(
+      jogadores.map(async (x) => {
+        const handle = x.handle || x.name;
+        const r = await gtoolsStatsFor(g, handle);
+        if (!r.ok) {
+          // fallback: snapshot tracker.gg de uma só pessoa
+          try {
+            const snap = tracker.readJson(tracker.BF_FILES[g]);
+            const o = snap?.overview || {};
+            return {
+              ok: true, fonte: 'snapshot', handle, nome: x.nome || handle,
+              rank: o.rank ?? o.careerPlayerRank ?? null,
+              kd: o.kdRatio ?? null, kills: o.kills ?? null, deaths: o.deaths ?? null,
+              wins: o.wins ?? o.matchesWon ?? null,
+              losses: o.losses ?? o.matchesLost ?? null,
+              score: o.score ?? null, spm: o.scorePerMinute ?? null,
+              segundos: o.timePlayed ?? null,
+            };
+          } catch {
+            return { ok: false, handle, erro: r.erro || 'indisponível' };
+          }
+        }
+        return { ...r, fonte: 'gametools' };
+      }),
+    );
+    const payload = { ok: true, jogo: g, aoVivo: live.some((p) => p.fonte === 'gametools'), jogadores: live };
+    BF_LIVE_CACHE.set(chave, { t: Date.now(), v: payload });
+    res.json(payload);
+  } catch (error) {
+    console.error('Erro games/bf-live:', error.message);
+    res.status(502).json({ ok: false, error: 'Sem ligação ao gametools.network.' });
+  }
+});
+
+// ============================================================
+// Fortnite — pesquisa por nome via fortnite-api.com (grátis)
+// Ainda não temos jogadores fixos: aqui quem pesquisa é o user.
+// ============================================================
+router.get('/fortnite-player', async (req, res) => {
+  const nome = String(req.query.name || '').trim();
+  if (!nome) return res.status(400).json({ error: 'Escreve o nome do jogador.' });
+  const chave = `fn:${nome.toLowerCase()}`;
+  const hit = BF_LIVE_CACHE.get(chave);
+  if (hit && Date.now() - hit.t < 3 * 60 * 1000) return res.json(hit.v);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const r = await fetch(
+      `https://fortnite-api.com/v2/stats?name=${encodeURIComponent(nome)}`,
+      { signal: controller.signal },
+    );
+    if (r.status === 404) return res.status(404).json({ error: `Não encontramos "${nome}".` });
+    if (!r.ok) throw new Error(`fortnite-api ${r.status}`);
+    const j = await r.json();
+    const d = j?.data || {};
+    const gl = d.stats?.all || {};
+    const payload = {
+      ok: true,
+      nome: d.account?.name || nome,
+      nivelPasse: d.battlePass?.level ?? null,
+      geral: {
+        vitórias: gl.overall?.wins ?? gl.solos?.wins ?? null,
+        kills: gl.overall?.kills ?? gl.solos?.kills ?? null,
+        kd: gl.overall?.kd ?? gl.solos?.kd ?? null,
+        partidas: gl.overall?.matches ?? gl.solos?.matches ?? null,
+        maxKillsNum: gl.overall?.top1 ?? gl.solos?.top1 ?? null,
+      },
+      modos: {
+        solos: gl.solos || null,
+        duplas: gl.duos || null,
+        esquadrões: gl.squads || null,
+      },
+    };
+    BF_LIVE_CACHE.set(chave, { t: Date.now(), v: payload });
+    res.json(payload);
+  } catch (e) {
+    res.status(502).json({ error: 'Sem ligação à Fortnite API. Tenta daqui a pouco.' });
+  } finally {
+    clearTimeout(timer);
+  }
+});
+// ============================================================
+// Battlefield — BF1 / BFV / BF6 (snapshot tracker.gg)
 // ============================================================
 router.get('/bf', (req, res) => {
   try {

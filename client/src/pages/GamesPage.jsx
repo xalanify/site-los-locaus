@@ -21,6 +21,8 @@ import {
   RotateCcw,
   Info,
   AlertCircle,
+  Search,
+  Loader2,
 } from 'lucide-react'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
@@ -338,28 +340,305 @@ function EafcPage() {
 }
 
 function FortnitePage() {
+  const [nome, setNome] = useState('')
+  const [procurando, setProcurando] = useState(false)
+  const [erro, setErro] = useState('')
+  const [res, setRes] = useState(null)
+
+  const procurar = async (alvo) => {
+    const q = String(alvo ?? nome).trim()
+    if (!q || procurando) return
+    setProcurando(true)
+    setErro('')
+    setRes(null)
+    try {
+      const r = await fetch(`/api/games/fortnite-player?name=${encodeURIComponent(q)}`)
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) {
+        setErro(d.error || d.erro || 'Não foi possível consultar agora.')
+        return
+      }
+      setRes(d)
+    } catch {
+      setErro('Sem resposta do servidor. Tenta de novo.')
+    } finally {
+      setProcurando(false)
+    }
+  }
+
+  const Cartão = ({ label, valor, Icon: Ic, atraso = 0 }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: atraso, duration: 0.35 }}
+      className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center"
+    >
+      {Ic && <Ic className="mx-auto mb-1.5 h-5 w-5 text-violet-300" />}
+      <p className="font-display text-2xl font-black text-white">{valor}</p>
+      <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+    </motion.div>
+  )
+
   return (
-    <EmBreve
-      nome="Fortnite"
-      sub="As estatísticas do Fortnite ainda não estão implementadas."
-      Icon={Flame}
-      cor="text-purple-400"
-      bg="bg-purple-500/10"
-      logo="https://cdn2.unrealengine.com/en-fn-og-42-10-c1sx-egs-launcher-blade-1200x1600-1200x1600-6e74a083a5cd.jpg"
-    />
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass rounded-2xl p-5 text-center"
+      >
+        <h2 className="gradient-text font-display text-xl font-black sm:text-2xl">Fortnite</h2>
+        <p className="mx-auto mt-1 max-w-md text-[13px] text-gray-400">
+          Ainda não temos jogadores fixos no Fortnite — pesquisa o nome de qualquer jogador.
+          Vitórias, K/D e partidas por modo (solos, duplas, esquadrões).
+        </p>
+
+        <div className="mx-auto mt-4 flex max-w-lg items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && procurar()}
+              placeholder="Nome Epic do jogador (ex.: Ninja)"
+              className="w-full rounded-xl border border-white/15 bg-black/40 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 focus:border-violet-500/60 focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={() => procurar()}
+            disabled={procurando || !nome.trim()}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+          >
+            {procurando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            Procurar
+          </button>
+        </div>
+
+        {erro && (
+          <p className="mx-auto mt-3 inline-flex items-center gap-2 rounded-lg bg-red-500/15 px-3 py-2 text-[13px] font-bold text-red-400">
+            <AlertCircle className="h-4 w-4" /> {erro}
+          </p>
+        )}
+      </motion.div>
+
+      {res && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="glass mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-violet-500/20 text-2xl">
+                🔥
+              </div>
+              <div>
+                <p className="font-display text-lg font-black text-white">{res.nome}</p>
+                {res.nivelPasse != null && (
+                  <p className="text-[12px] text-gray-400">
+                    Nível do passe: <span className="font-bold text-violet-300">{res.nivelPasse}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-500">via fortnite-api.com · em tempo real</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Cartão label="Vitórias" valor={fmt(res.geral.vitórias)} Icon={Trophy} atraso={0.05} />
+            <Cartão label="Kills" valor={fmt(res.geral.kills)} Icon={Skull} atraso={0.1} />
+            <Cartão label="K/D" valor={res.geral.kd != null ? Number(res.geral.kd).toFixed(2) : '—'} Icon={Crosshair} atraso={0.15} />
+            <Cartão label="Partidas" valor={fmt(res.geral.partidas)} Icon={Gamepad2} atraso={0.2} />
+            <Cartão label="Nº 1" valor={fmt(res.geral.maxKillsNum)} Icon={Star} atraso={0.25} />
+          </div>
+
+          {res.modos && (
+            <div className="mt-5 space-y-3">
+              {[['Solos', res.modos.solos], ['Duplas', res.modos.duplas], ['Esquadrões', res.modos.esquadrões]]
+                .filter(([, m]) => m)
+                .map(([label, m]) => (
+                  <div key={label} className="glass rounded-2xl p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="font-display text-sm font-black uppercase tracking-wider text-white">
+                        {label}
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        {fmt(m.matches)} partidas
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+                      <div>
+                        <p className="text-lg font-black text-green-400">{fmt(m.wins)}</p>
+                        <p className="text-[10px] font-bold uppercase text-gray-500">Vitórias</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-black text-white">{fmt(m.kills)}</p>
+                        <p className="text-[10px] font-bold uppercase text-gray-500">Kills</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-black text-violet-300">{Number(m.kd || 0).toFixed(2)}</p>
+                        <p className="text-[10px] font-bold uppercase text-gray-500">K/D</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-black text-yellow-400">{fmt(m.top1)}</p>
+                        <p className="text-[10px] font-bold uppercase text-gray-500">Nº 1</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </motion.div>
+      )}
+    </div>
   )
 }
 
+/* ============================================================
+   Battlefield — BF1 / BFV / BF6 via gametools.network
+   (API comunitária aberta). Mostra apenas o que acompanhamos;
+   se a API estiver fora, cai no snapshot tracker.gg guardado.
+   ============================================================ */
+const BF_JOGOS = [
+  { id: 'bf1', nome: 'Battlefield 1', cor: 'text-amber-300', fundo: 'bg-amber-500/15' },
+  { id: 'bfv', nome: 'Battlefield V', cor: 'text-emerald-300', fundo: 'bg-emerald-500/15' },
+  { id: 'bf6', nome: 'Battlefield 6', cor: 'text-sky-300', fundo: 'bg-sky-500/15' },
+]
+
 function BattlefieldPage() {
+  const [jogo, setJogo] = useState('bf1')
+  const [dados, setDados] = useState(null)
+  const [erro, setErro] = useState('')
+  const [aCarregar, setACarregar] = useState(true)
+  const [aVivo, setAVivo] = useState(false)
+
+  useEffect(() => {
+    let abortou = false
+    const correr = async () => {
+      setACarregar(true)
+      setErro('')
+      setDados(null)
+      try {
+        const r = await fetch(`/api/games/bf-live?g=${jogo}`)
+        const d = await r.json().catch(() => ({}))
+        if (abortou) return
+        if (!r.ok || !d.ok) {
+          setErro(d.error || 'Não foi possível consultar o Battlefield agora.')
+          return
+        }
+        setDados(d)
+        setAVivo(!!d.aoVivo)
+      } catch {
+        if (!abortou) setErro('Sem resposta do servidor.')
+      } finally {
+        if (!abortou) setACarregar(false)
+      }
+    }
+    correr()
+    return () => {
+      abortou = true
+    }
+  }, [jogo])
+
+  const num = (v, dec = 0) =>
+    v == null ? '—' : Number(v).toLocaleString('pt-PT', { maximumFractionDigits: dec, minimumFractionDigits: dec })
+
+  const Cartão = ({ label, valor, Icon: Ic, cor = 'text-white', atraso = 0 }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: atraso, duration: 0.35 }}
+      className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center"
+    >
+      {Ic && <Ic className="mx-auto mb-1.5 h-5 w-5 opacity-80" />}
+      <p className={`font-display text-2xl font-black ${cor}`}>{valor}</p>
+      <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+    </motion.div>
+  )
+
   return (
-    <EmBreve
-      nome="Battlefield"
-      sub="As estatísticas do Battlefield (BF1, BFV e BF6) ainda não estão implementadas."
-      Icon={Target}
-      cor="text-sky-400"
-      bg="bg-sky-500/10"
-      logo="https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/library_600x900.jpg"
-    />
+    <div className="space-y-6">
+      {/* seletor de jogo BF */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-wrap items-center justify-center gap-2"
+      >
+        {BF_JOGOS.map((j) => (
+          <button
+            key={j.id}
+            onClick={() => setJogo(j.id)}
+            className={`rounded-full border px-5 py-2 text-[13px] font-black transition-all ${
+              jogo === j.id
+                ? `${j.fundo} border-white/25 ${j.cor} scale-105`
+                : 'border-white/10 bg-white/[0.03] text-gray-400 hover:text-white'
+            }`}
+          >
+            {j.nome}
+          </button>
+        ))}
+      </motion.div>
+
+      {aCarregar && (
+        <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
+          <Loader2 className="h-5 w-5 animate-spin text-violet-400" /> A consultar os números…
+        </div>
+      )}
+
+      {!aCarregar && erro && (
+        <div className="glass rounded-2xl p-6 text-center">
+          <Target className="mx-auto mb-2 h-7 w-7 text-amber-400" />
+          <p className="text-sm font-bold text-red-400">{erro}</p>
+          <p className="mt-1 text-[12px] text-gray-500">
+            Os snapshots guardados continuam disponíveis — tenta de novo em instantes.
+          </p>
+        </div>
+      )}
+
+      {!aCarregar && !erro && dados?.jogadores?.length === 0 && (
+        <div className="glass rounded-2xl p-6 text-center text-sm text-gray-400">
+          Ainda não há jogadores acompanhados neste jogo.
+        </div>
+      )}
+
+      {!aCarregar && !erro && dados?.jogadores?.map((p, i) => (
+        <motion.div
+          key={`${p.handle}-${i}`}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 * i }}
+          className="glass rounded-2xl p-5"
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] font-display text-lg font-black text-violet-300">
+                {(p.nome || p.handle || '?').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <p className="font-display text-base font-black text-white">{p.nome || p.handle}</p>
+                <p className="text-[11px] text-gray-500">
+                  {p.fonte === 'gametools' ? 'gametools.network · ao vivo' : 'snapshot guardado'}
+                </p>
+              </div>
+            </div>
+            {p.rank != null && (
+              <span className="rounded-lg bg-white/[0.06] px-3 py-1 text-[12px] font-black text-amber-300">
+                Rank {p.rank}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Cartão label="K/D" valor={p.kd != null ? Number(p.kd).toFixed(2) : '—'} Icon={Crosshair} cor="text-violet-300" atraso={0.05} />
+            <Cartão label="Kills" valor={num(p.kills)} Icon={Skull} atraso={0.1} />
+            <Cartão label="Vitórias" valor={num(p.wins)} Icon={Trophy} cor="text-green-400" atraso={0.15} />
+            <Cartão label="Score/min" valor={p.spm != null ? Math.round(p.spm) : '—'} Icon={BarChart3} atraso={0.2} />
+            <Cartão
+              label="Horas"
+              valor={p.segundos != null ? num(Math.round(p.segundos / 3600)) : '—'}
+              Icon={Clock}
+              cor="text-sky-300"
+              atraso={0.25}
+            />
+          </div>
+        </motion.div>
+      ))}
+    </div>
   )
 }
 
