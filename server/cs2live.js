@@ -18,8 +18,12 @@ const FILES = path.join(__dirname, 'data', 'cs2-steam.json');
 
 function env() {
   try {
-    const txt = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
-    const m = txt.match(/STEAM_API_KEY\s*=\s*(\S+)/);
+    const linhas = fs
+      .readFileSync(path.join(__dirname, '.env'), 'utf8')
+      .split(/\r?\n/)
+      .filter((l) => !/^\s*#/.test(l)) // ignora comentários
+      .join('\n');
+    const m = linhas.match(/STEAM_API_KEY\s*=\s*(\S+)/);
     return m ? m[1].trim() : null;
   } catch {
     return null;

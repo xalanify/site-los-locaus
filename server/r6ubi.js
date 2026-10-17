@@ -97,9 +97,13 @@ function credenciais() {
   const senha = process.env.UBI_PASSWORD || '';
   if (email && senha) return { email, senha };
   try {
-    const txt = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
-    const e = (txt.match(/UBI_EMAIL\s*=\s*(\S+)/) || [])[1];
-    const p = (txt.match(/UBI_PASSWORD\s*=\s*(\S+)/) || [])[1];
+    const linhas = fs
+      .readFileSync(path.join(__dirname, '.env'), 'utf8')
+      .split(/\r?\n/)
+      .filter((l) => !/^\s*#/.test(l)) // ignora comentários
+      .join('\n');
+    const e = (linhas.match(/UBI_EMAIL\s*=\s*(\S+)/) || [])[1];
+    const p = (linhas.match(/UBI_PASSWORD\s*=\s*(\S+)/) || [])[1];
     if (e && p) return { email: e, senha: p };
   } catch {}
   return null;
