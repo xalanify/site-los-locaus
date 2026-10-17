@@ -270,6 +270,14 @@ router.get('/cs2', (req, res) => {
 // uma vez em steamcommunity.com/dev/apikey) e dos membros em
 // server/data/cs2-steam.json → [{ nick, steam: "7656119..." }]
 // ============================================================
+// ============================================================
+// CS2 AO VIVO — Steam Web API oficial (ISteamUserStats).
+// Nada manual: a Steam mantém os números frescos; os amigos
+// precisam apenas de "Detalhes do jogo" público no perfil.
+// Precisa de STEAM_API_KEY no server/.env (key gratuita) e dos
+// membros em server/data/cs2-steam.json → [{ nick, steam }] ou
+// só ["nome-da-steam"] (servidor resolve os IDs sozinho).
+// ============================================================
 router.get('/cs2-live', async (req, res) => {
   try {
     res.json(await cs2live.aoVivo());

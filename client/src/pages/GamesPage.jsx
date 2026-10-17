@@ -1321,6 +1321,13 @@ function Cs2Vivo() {
   const priv = tudo.filter((p) => !p.ok)
   if (!tudo.length) return null
 
+  const Célula = ({ label, valor, cor = 'text-white' }) => (
+    <div className="rounded-lg bg-white/[0.04] py-2 text-center">
+      <p className={`font-display text-base font-black ${cor}`}>{valor}</p>
+      <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+    </div>
+  )
+
   return (
     <div className="glass rounded-2xl p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -1344,61 +1351,58 @@ function Cs2Vivo() {
             transition={{ delay: 0.05 * i }}
             className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
           >
-            <div className="mb-3 flex items-center justify-between">
-              <p className="font-display text-sm font-black text-white">{p.nick || p.nome}</p>
-              <span className="rounded-md bg-green-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-green-400">
-                Ao vivo
-              </span>
+            <div className="mb-3 flex items-center gap-3">
+              {p.avatar ? (
+                <img src={p.avatar} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
+              ) : (
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-violet-300">
+                  {(p.nick || p.nome || '?').slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-sm font-black text-white">{p.nick || p.nome}</p>
+                <span className="rounded-md bg-green-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-green-400">
+                  Ao vivo
+                </span>
+              </div>
             </div>
+
+            {/* heróis */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <p className="text-lg font-black text-violet-300">{p.kills ?? '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Kills</p>
+                <p className="font-display text-xl font-black text-violet-300">{p.kills ?? '—'}</p>
+                <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
               </div>
               <div>
-                <p className="text-lg font-black text-white">{p.kd ?? '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">K/D</p>
+                <p className="font-display text-xl font-black text-white">{p.kd ?? '—'}</p>
+                <p className="text-[9px] font-bold uppercase text-gray-500">K/D</p>
               </div>
               <div>
-                <p className="text-lg font-black text-white">{p.mvps ?? '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">MVPs</p>
-              </div>
-              <div>
-                <p className="text-lg font-black text-sky-300">
+                <p className="font-display text-xl font-black text-sky-300">
                   {p.hs != null ? `${p.hs}%` : '—'}
                 </p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">HS %</p>
+                <p className="text-[9px] font-bold uppercase text-gray-500">HS %</p>
               </div>
-              <div>
-                <p className="text-lg font-black text-sky-300">
-                  {p.precisao != null ? `${p.precisao}%` : '—'}
-                </p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Precisão</p>
-              </div>
-              <div>
-                <p className="text-lg font-black text-green-400">{p.rondas ?? '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Rondas</p>
-              </div>
-              <div>
-                <p className="text-lg font-black text-green-400">{p.vitorias ?? '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Vitórias</p>
-              </div>
-              <div>
-                <p className="text-lg font-black text-orange-300">{p.faca ?? '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Kills de faca</p>
-              </div>
-              <div>
-                <p className="text-lg font-black text-emerald-300">
-                  {p.planted != null || p.defused != null
-                    ? `${p.planted ?? 0}/${p.defused ?? 0}`
-                    : '—'}
-                </p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Bombas P/D</p>
-              </div>
-              <div className="col-span-3">
-                <p className="text-sm font-black text-white">{p.horas != null ? `${p.horas} h` : '—'}</p>
-                <p className="text-[10px] font-bold uppercase text-gray-500">Horas no CS</p>
-              </div>
+            </div>
+
+            {/* detalhe completo */}
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              <Célula label="MVPs" valor={p.mvps ?? '—'} cor="text-amber-300" />
+              <Célula label="Precisão" valor={p.precisao != null ? `${p.precisao}%` : '—'} cor="text-sky-300" />
+              <Célula label="Vitórias" valor={p.vitorias ?? '—'} cor="text-green-400" />
+              <Célula label="Partidas" valor={p.partidas ?? '—'} />
+              <Célula label="Rondas" valor={p.rondas ?? '—'} />
+              <Célula label="Faca" valor={p.faca ?? '—'} cor="text-orange-300" />
+              <Célula label="Granadas" valor={p.he ?? '—'} cor="text-orange-300" />
+              <Célula
+                label="Bombas P/D"
+                valor={p.planted != null || p.defused != null ? `${p.planted ?? 0}/${p.defused ?? 0}` : '—'}
+                cor="text-emerald-300"
+              />
+              <Célula label="Danos" valor={p.dano != null ? fmt(p.dano) : '—'} />
+              <Célula label="Pistola" valor={p.pistola ?? '—'} />
+              <Célula label="Mortes" valor={p.deaths ?? '—'} cor="text-gray-300" />
+              <Célula label="Horas" valor={p.horas != null ? `${p.horas} h` : '—'} cor="text-green-400" />
             </div>
           </motion.div>
         ))}
@@ -1433,210 +1437,6 @@ function Cs2Vivo() {
           aLigar={aLigar}
           msg={msgLigar}
         />
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   CS2 — HISTÓRICO ARQUIVADO (partidas registadas manualmente
-   na era dos HTML): fica POR BAIXO do painel ao vivo, bem
-   identificado. Top 1 Kill, resumo e tabela dos jogadores.
-   ============================================================ */
-function Cs2Historico() {
-  const [d, setD] = useState(null)
-  const [erro, setErro] = useState('')
-  const [todas, setTodas] = useState(false)
-
-  useEffect(() => {
-    let cancel = false
-    fetch('/api/games/cs2')
-      .then((r) => r.json())
-      .then((dd) => {
-        if (cancel) return
-        if (dd?.error) setErro(dd.error)
-        else if (dd?.configured === false) setErro('Os HTML do histórico já não estão no projeto.')
-        else setD(dd)
-      })
-      .catch(() => {
-        if (!cancel) setErro('Erro ao carregar o histórico guardado.')
-      })
-    return () => {
-      cancel = true
-    }
-  }, [])
-
-  const partidas = d?.matches || []
-  const stats = d?.global || aggregate(partidas)
-
-  /* melhor partida de cada acompanhado — o TOP 1 KILL de todos */
-  const topKills = useMemo(() => {
-    if (!partidas.length) return []
-    const best = new Map()
-    for (const m of partidas) {
-      const modeLabel = d?.modes?.find((x) => x.id === m.mode)?.label || m.label || m.mode
-      for (const team of [m.teamA || [], m.teamB || []]) {
-        for (const p of team) {
-          if (!p.tracked) continue
-          const k = Number(p.k) || 0
-          const prev = best.get(p.tracked)
-          if (!prev || k > prev.kills || (k === prev.kills && (m.date || '') > prev.date)) {
-            best.set(p.tracked, {
-              key: p.tracked,
-              name: p.name || p.tracked,
-              kills: k,
-              deaths: Number(p.d) || 0,
-              assists: Number(p.a) || 0,
-              map: m.map,
-              modeLabel,
-              date: m.date || '',
-              result: m.result || 'draw',
-              score:
-                m.ourTeam !== null && m.ourTeam !== undefined
-                  ? `${m.ourScore} - ${m.oppScore}`
-                  : `${m.scoreA} - ${m.scoreB}`,
-            })
-          }
-        }
-      }
-    }
-    return [...best.values()].sort((a, b) => b.kills - a.kills)
-  }, [d, partidas])
-
-  const data = (x) =>
-    x
-      ? new Date(x).toLocaleString('pt-PT', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '—'
-
-  if (erro) return null
-  if (!d || !partidas.length) return null
-
-  const visiveis = todas ? partidas : partidas.slice(0, 8)
-
-  return (
-    <div className="space-y-5">
-      <div className="glass rounded-2xl p-5 sm:p-6">
-        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-lg font-black text-white">
-            Histórico das partidas <span className="text-gray-500">— arquivo</span>
-          </h3>
-          <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
-            registado manualmente
-          </span>
-        </div>
-        <p className="text-[12px] text-gray-500">
-          Estas partidas eram registadas à mão (não se atualizam sozinhas). O painel de cima — ao
-          vivo via Steam — é que fica sempre a correr. Aqui é o legado: quem fez a melhor partida de
-          sempre, e as últimas que estão guardadas.
-        </p>
-      </div>
-
-      <SummaryCards s={stats} />
-
-      {/* TOP 1 KILL */}
-      <div className="glass rounded-2xl p-5 sm:p-6">
-        <div className="mb-4 flex items-center gap-3">
-          <Trophy className="h-5 w-5 text-yellow-400" />
-          <h4 className="text-lg font-bold text-white sm:text-xl">
-            Top 1 Kill <span className="text-sm font-normal text-gray-400">— melhor partida de cada jogador</span>
-          </h4>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {topKills.map((t, i) => {
-            const color = PLAYER_COLORS[t.key] || '#f97316'
-            return (
-              <motion.div
-                key={t.key}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.04 * i }}
-                className="rounded-xl bg-white/5 p-4"
-              >
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="truncate font-bold" style={{ color }}>
-                    {t.name}
-                  </span>
-                  {i === 0 && (
-                    <span className="rounded-md bg-yellow-400/15 px-2 py-0.5 text-[10px] font-black uppercase text-yellow-400">
-                      Recorde
-                    </span>
-                  )}
-                </div>
-                <p className="font-display text-3xl font-black text-white">
-                  {t.kills}
-                  <span className="ml-1 text-sm font-bold text-gray-500">kills</span>
-                </p>
-                <p className="mt-1 text-[12px] text-gray-400">
-                  {t.kills} / {t.deaths} / {t.assists}
-                  <span className="text-gray-600"> · </span>
-                  <span className="font-bold" style={{ color }}>
-                    {t.kills && t.deaths ? (t.kills / t.deaths).toFixed(2) : '—'} K/D
-                  </span>
-                </p>
-                <p className="mt-2 text-[11px] text-gray-500">
-                  {t.map || 'mapa?'} · {t.modeLabel}
-                </p>
-                <div className="mt-2 flex items-center justify-between text-[11px]">
-                  <span className="text-gray-500">{data(t.date)}</span>
-                  <span className={`font-black ${resultColor[t.result] || ''}`}>{t.score}</span>
-                </div>
-              </motion.div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* TABELA DOS JOGADORES */}
-      <PlayersTable players={d.players || []} stats={stats.players || {}} subtitle="— global" />
-
-      {/* ÚLTIMAS PARTIDAS */}
-      <div className="glass rounded-2xl p-5 sm:p-6">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-violet-400" />
-            <h4 className="text-lg font-bold text-white sm:text-xl">
-              Partidas <span className="text-sm font-normal text-gray-400">— arquivo</span>
-            </h4>
-          </div>
-          <button
-            onClick={() => setTodas((v) => !v)}
-            className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold text-gray-300 transition-colors hover:border-white/30 hover:text-white"
-          >
-            {todas ? 'Mostrar menos' : `Mostrar todas (${partidas.length})`}
-          </button>
-        </div>
-        <div className="space-y-2">
-          {visiveis.map((m, i) => {
-            const modeLabel = d?.modes?.find((x) => x.id === m.mode)?.label || m.label || m.mode
-            const key = `${m.date}-${m.map}-${i}`
-            return (
-              <div
-                key={key}
-                className="flex flex-wrap items-center gap-2 rounded-xl bg-white/[0.04] px-3 py-2.5 text-[13px]"
-              >
-                <span className="text-gray-500">{data(m.date)}</span>
-                <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-gray-300">
-                  {modeLabel}
-                </span>
-                <span className="flex-1 truncate text-gray-300">{m.map || 'mapa?'}</span>
-                <span className={`rounded-md px-2 py-0.5 text-[10px] font-black uppercase ${resultBadge[m.result] || 'bg-gray-500/20 text-gray-400'}`}>
-                  {resultLabel[m.result] || m.result}
-                </span>
-                <span className="min-w-[64px] text-right font-black text-white">
-                  {m.ourTeam !== null && m.ourTeam !== undefined
-                    ? `${m.ourScore} - ${m.oppScore}`
-                    : `${m.scoreA} - ${m.scoreB}`}
-                </span>
-              </div>
-            )
-          })}
-        </div>
       </div>
     </div>
   )

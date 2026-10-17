@@ -110,6 +110,10 @@ async function statsSteam(steamid, key) {
       vitorias: n('total_wins'),
       rondas: n('total_rounds_played'),
       faca: n('total_kills_knife'),
+      he: n('total_kills_hegrenade'),
+      dano: n('total_damage'),
+      partidas: n('total_matches_played'),
+      vencidas: n('total_matches_won'),
       pistola: n('total_kills_deagle') != null ? n('total_kills_deagle') : n('total_kills_pistol'),
       planted: n('total_planted_bombs'),
       defused: n('total_defused_bombs'),
@@ -139,17 +143,35 @@ async function aoVivo() {
   }
 
   const agora = Date.now();
+  // avatars + nomes públicos de perfil (1 pedido por todos, barato)
+  let avatares = {};
+  try {
+    const ids = lista.map((m) => m.steam).join(',');
+    const r = await fetch(
+      `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${key}&steamids=${ids}`,
+    );
+    const pj = await r.json();
+    for (const pr of pj?.response?.players || []) {
+      avatares[pr.steamid] = { avatar: pr.avatarfull, nome: pr.personaname };
+    }
+  } catch {}
+
   const res = await Promise.all(
     lista.map(async (m) => {
       const hit = cache.get(m.steam);
       // só cacheia SUCESSO: quem estiver privado volta a tentar
       // no pedido seguinte, logo que os amigos tornem público
       if (hit && hit.v.ok && agora - hit.t < 3 * 60 * 1000)
-        return { ...hit.v, nick: m.nick };
+        return { ...hit.v, nick: m.nick, avatar: avatares[m.steam]?.avatar || hit.v.avatar };
       const v = await statsSteam(m.steam, key);
       if (v.ok) cache.set(m.steam, { t: agora, v });
       else cache.delete(m.steam);
-      return { ...v, nick: m.nick };
+      return {
+        ...v,
+        nick: m.nick,
+        avatar: avatares[m.steam]?.avatar || null,
+        nome: avatares[m.steam]?.nome || m.nick,
+      };
     }),
   );
   return { ok: true, jogadores: res };
