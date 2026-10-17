@@ -279,6 +279,27 @@ router.get('/cs2-live', async (req, res) => {
   }
 });
 
+// Ligar jogador CS2 só pelo NOME público da Steam (sem IDs à mão):
+// o servidor resolve o nickname → SteamID64 num perfil público e
+// grava em server/data/cs2-steam.json sozinho.
+router.post('/cs2-ligar', async (req, res) => {
+  const nick = String(req.body?.nick || req.query.nick || '').trim();
+  if (!nick) return res.status(400).json({ error: 'Escreve o nome da Steam.' });
+  try {
+    const id = await cs2live.resolveNick(nick);
+    if (!id) {
+      return res.status(404).json({
+        error: `Perfil público "steamcommunity.com/id/${nick}" não existe ou o perfil é privado. Usa o nome personalizado do URL da Steam.`,
+      });
+    }
+    const r = cs2live.ligar(nick, id);
+    res.json({ ok: true, nick, steam: id, ...r });
+  } catch (error) {
+    console.error('Erro cs2-ligar:', error.message);
+    res.status(502).json({ error: 'Sem ligação à Steam. Tenta de novo.' });
+  }
+});
+
 // ============================================================
 // Atualizações > Jogos — números reais de jogadores
 // (Steam API + Steam Charts) por jogo

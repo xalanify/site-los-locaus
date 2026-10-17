@@ -1116,47 +1116,114 @@ function MatchRow({ m, open, onToggle }) {
 /* ============================================================
    CS2 — página principal
    ============================================================ */
+/* Mini-formulário: liga um jogador CS2 só pelo NOME público da
+   Steam — o servidor resolve o SteamID sozinho e grava. */
+function FormLigar({ nick, setNick, onLigar, aLigar, msg }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <input
+          value={nick}
+          onChange={(e) => setNick(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onLigar()}
+          placeholder="Nome na Steam (igual ao URL: steamcommunity.com/id/NOME)"
+          className="w-full max-w-sm rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-[13px] text-white placeholder:text-gray-600 focus:border-green-500/60 focus:outline-none"
+        />
+        <button
+          onClick={onLigar}
+          disabled={aLigar || !nick.trim()}
+          className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-[13px] font-black text-white transition-colors hover:bg-green-500 disabled:opacity-50"
+        >
+          {aLigar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
+          Ligar jogador
+        </button>
+      </div>
+      {msg && (
+        <p
+          className={`text-[12px] font-bold ${
+            msg.tipo === 'ok' ? 'text-green-400' : 'text-red-400'
+          }`}
+        >
+          {msg.texto}
+        </p>
+      )}
+    </div>
+  )
+}
+
 /* ============================================================
    CS2 — painel AO VIVO via Steam Web API (servidor busca sozinho)
    ============================================================ */
 function Cs2Vivo() {
   const [vivo, setVivo] = useState(null)
+  const [cs2Nick, setCs2Nick] = useState('')
+  const [aLigar, setALigar] = useState(false)
+  const [msgLigar, setMsgLigar] = useState(null)
 
-  useEffect(() => {
-    let cancel = false
+  const load = () => {
     fetch('/api/games/cs2-live')
       .then((r) => r.json())
-      .then((dd) => {
-        if (!cancel) setVivo(dd)
-      })
-      .catch(() => {
-        if (!cancel) setVivo({ ok: false, motivo: 'erro' })
-      })
-    return () => {
-      cancel = true
-    }
+      .then((dd) => setVivo(dd))
+      .catch(() => setVivo({ ok: false, motivo: 'erro' }))
+  }
+
+  useEffect(() => {
+    load()
   }, [])
+
+  const ligar = async () => {
+    const nick = cs2Nick.trim()
+    if (!nick || aLigar) return
+    setALigar(true)
+    setMsgLigar(null)
+    try {
+      const r = await fetch('/api/games/cs2-ligar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nick }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) setMsgLigar({ tipo: 'erro', texto: d.error || 'Não deu para ligar agora.' })
+      else {
+        setMsgLigar({ tipo: 'ok', texto: `"${nick}" ligado à Steam — as estatísticas dele já aparecem ao vivo.` })
+        setCs2Nick('')
+        load()
+      }
+    } catch {
+      setMsgLigar({ tipo: 'erro', texto: 'Sem resposta do servidor.' })
+    } finally {
+      setALigar(false)
+    }
+  }
 
   const setupMsg = {
     'sem-key':
       'Falta só a key gratuita da Steam: cria em steamcommunity.com/dev/apikey e coloca STEAM_API_KEY no server/.env. Depois disto as estatísticas de CS2 mostradas aqui ficam ao vivo sempre, sem exportar nada.',
-    'sem-membros':
-      'Para ligar as contas Steam dos nossos jogadores, adiciona em server/data/cs2-steam.json: [{ "nick": "xalanix", "steam": "7656119…" }]. Uma única vez — depois é tudo automático.',
+    'sem-membros': null,
     'ids-invalidos':
-      'server/data/cs2-steam.json só aceita SteamID64 (17 números a começar por 7656). Dica: steamid.io mostra o ID de qualquer perfil.',
+      'server/data/cs2-steam.json só aceita SteamID64 (17 números a começar por 7656). Tipa o nome abaixo e o servidor resolve sozinho.',
   }
 
   if (vivo === null) return null
 
   if (!vivo.ok) {
     return (
-      <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-        <p>
-          <span className="font-bold text-white">CS2 ao vivo (Steam):</span>{' '}
-          {setupMsg[vivo.motivo] ||
-            'Sem ligação à Steam Web API agora — as estatísticas de baixo continuam disponíveis.'}
-        </p>
+      <div className="space-y-3 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
+        <div className="flex items-start gap-2.5">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+          <p>
+            <span className="font-bold text-white">CS2 ao vivo (Steam):</span>{' '}
+            {setupMsg[vivo.motivo] ||
+              'Sem ligação à Steam Web API agora — as estatísticas de baixo continuam disponíveis.'}
+          </p>
+        </div>
+        <FormLigar
+          nick={cs2Nick}
+          setNick={setCs2Nick}
+          onLigar={ligar}
+          aLigar={aLigar}
+          msg={msgLigar}
+        />
       </div>
     )
   }
@@ -1219,6 +1286,18 @@ function Cs2Vivo() {
             </div>
           </motion.div>
         ))}
+      </div>
+      <div className="mt-4 border-t border-white/10 pt-4">
+        <p className="mb-2 text-[12px] text-gray-500">
+          Queres acrescentar mais alguém ao vivo? Escreve só o nome da Steam:
+        </p>
+        <FormLigar
+          nick={cs2Nick}
+          setNick={setCs2Nick}
+          onLigar={ligar}
+          aLigar={aLigar}
+          msg={msgLigar}
+        />
       </div>
     </div>
   )

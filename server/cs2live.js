@@ -93,4 +93,35 @@ async function aoVivo() {
   return { ok: true, jogadores: res };
 }
 
-module.exports = { aoVivo, membros };
+/* ---------- Ligação de jogadores por NOME (sem à mão de IDs) ----------
+   steamcommunity.com é público: resolve o nickname → SteamID64 sem
+   key nenhuma. O admin só escreve o NOME no site, nunca IDs.
+------------------------------------------------------------------------ */
+async function resolveNick(nick) {
+  try {
+    // se já é steamid64, devolve logo
+    if (/^7656\d{13}$/.test(nick)) return nick;
+    const r = await fetch(
+      `https://steamcommunity.com/id/${encodeURIComponent(nick)}/?xml=1`,
+      { headers: { 'user-agent': 'Mozilla/5.0' } },
+    );
+    if (!r.ok) return null;
+    const t = await r.text();
+    const m = t.match(/<steamID64>(\d{17})<\/steamID64>/);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+function ligar(nick, steamid) {
+  const lista = membros();
+  if (lista.some((x) => String(x.steam) === steamid)) {
+    return { ok: true, jaEstava: true };
+  }
+  lista.push({ nick, steam: steamid });
+  fs.writeFileSync(FILES, JSON.stringify(lista, null, 2));
+  return { ok: true, adicionado: true };
+}
+
+module.exports = { aoVivo, membros, resolveNick, ligar };
