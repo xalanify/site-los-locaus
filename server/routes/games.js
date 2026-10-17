@@ -403,6 +403,20 @@ const PICKNUM = (obj, keys) => {
   return null;
 };
 
+/* campos que vêm em texto "46.2%" (BF6 usa % em string) */
+const PICKPCT = (obj, keys) => {
+  for (const k of keys) {
+    const v = obj?.[k];
+    if (v == null) continue;
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    if (typeof v === 'string' && v.trim()) {
+      const n = Number(v.replace('%', '').trim());
+      if (Number.isFinite(n)) return n;
+    }
+  }
+  return null;
+};
+
 const GTOOLS_GAME = { bf1: 'bf1', bfv: 'bfv', bf4: 'bf4', bf2042: 'bf2042', bf6: 'bf6' };
 
 async function gtoolsStatsFor(g, handle) {
@@ -431,11 +445,15 @@ async function gtoolsStatsFor(g, handle) {
       killsMin: PICKNUM(b, ['killsPerMinute']),
       vitorias: PICKNUM(b, ['wins']),
       derrotas: PICKNUM(b, ['loses', 'losses']),
-      winPct: PICKNUM(b, ['winPercent']),
+      winPct: PICKPCT(b, ['winPercent']),
+      partidas: PICKNUM(b, ['matchesPlayed']),
       spm: PICKNUM(b, ['scorePerMinute']),
+      dano: PICKNUM(b, ['damage']),
+      danosMin: PICKNUM(b, ['damagePerMinute']),
       classeTop: b?.bestClass || null,
-      precisao: PICKNUM(b, ['accuracy']),
-      headshots: PICKNUM(b, ['headshots']),
+      precisao: PICKPCT(b, ['accuracy']),
+      headshots: PICKNUM(b, ['headShots', 'headshots']),
+      hsPct: PICKPCT(b, ['headshots']),
       hsMax: PICKNUM(b, ['longestHeadShot']),
       sequencia: PICKNUM(b, ['highestKillStreak']),
       rondas: PICKNUM(b, ['roundsPlayed']),
