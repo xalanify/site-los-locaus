@@ -12,7 +12,6 @@ import {
   Wrench,
   Sparkles,
 } from 'lucide-react'
-import Logo3D from './Logo3D'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -58,8 +57,13 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 bg-black px-3 py-5 lg:flex xl:w-[280px]">
       {/* Marca */}
       <div>
-        <Link to="/" className="mb-4 flex justify-center px-3 pt-1">
-          <Logo3D largura={150} altura={150} />
+        <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/30">
+            <Youtube className="h-5 w-5 text-violet-400" />
+          </span>
+          <span className="gradient-text font-display text-lg font-black uppercase tracking-wide">
+            Ashow e Jazer
+          </span>
         </Link>
 
         {/* Navegação */}

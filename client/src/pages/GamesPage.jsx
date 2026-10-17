@@ -1734,8 +1734,24 @@ export default function GamesPage() {
   const [tab, setTab] = useState(null)
 
   return (
-    <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
-      <div className="mx-auto max-w-6xl">
+    <section className="relative min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
+      {/* fundo com imagem do jogo (só CS2 e R6), escurecido para as estatísticas ficarem bem visíveis */}
+      {(tab === 'cs2' || tab === 'r6') && (
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: tab === 'cs2' ? 'url(/nukecs2.png)' : 'url(/coastliner6.jpg)',
+            }}
+          />
+          {/* véu escuro por cima da foto */}
+          <div className="absolute inset-0 bg-black/65" />
+          {/* gradiente para fundir com o resto da página */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612]/80 via-[#0a0612]/50 to-[#0a0612]/90" />
+        </div>
+      )}
+
+      <div className="relative z-10 mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

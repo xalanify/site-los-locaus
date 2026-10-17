@@ -2,8 +2,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Youtube, Clapperboard, History, Home, User } from 'lucide-react'
 import Sino from './Sino'
 import AvatarImg from './AvatarImg'
-import GLBLogo from './GLBLogo'
-import Logo3D from './Logo3D'
 
 /* ============================================================
    Barra de topo (foto que abre o menu lateral + marca) + barra
@@ -71,9 +69,14 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
             />
           </button>
 
-          {/* Marca — logo 3D real (Three.js), sem quadrado */}
-          <Link to="/" className="flex shrink-0 items-center gap-1">
-            <Logo3D largura={84} altura={84} />
+          {/* Marca */}
+          <Link to="/" className="flex min-w-0 items-center gap-2.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/30 sm:h-9 sm:w-9">
+              <Youtube className="h-4 w-4 text-violet-400 sm:h-5 sm:w-5" />
+            </span>
+            <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
+              Ashow e Jazer Site
+            </span>
           </Link>
 
           {/* Notificações (sino) — só para contas com sessão */}

@@ -425,7 +425,6 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
             direito), sem tapar o vídeo. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-20 bg-gradient-to-b from-black/95 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-16 bg-gradient-to-t from-black/90 to-transparent" />
-            remoto mostra no arranque e substitui o ecrã de fim deles */}
         {veu !== 'nada' && (
           <button
             type="button"

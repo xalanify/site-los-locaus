@@ -788,6 +788,7 @@ export const MICE = [
 
 export function searchMice(query) {
   const q = String(query || '').trim().toLowerCase();
-  if (!q) return MICE.slice(0, 20);
-  return MICE.filter(m => (m.brand + ' ' + m.model).toLowerCase().includes(q)).slice(0, 20);
+  if (!q) return MICE.slice(0, 40);
+  const res = MICE.filter(m => (m.brand + ' ' + m.model).toLowerCase().includes(q));
+  return res.length > 60 ? res.slice(0, 60) : res;
 }
