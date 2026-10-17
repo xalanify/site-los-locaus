@@ -525,17 +525,16 @@ function SkinsRarosTab({ jogo }) {
           </div>
           {jogo === 'bf' && (
             <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
-              Battlefield: as imagens oficiais de skins de armas do BF1/BFV/BF6 não têm API
-              pública — os cartões seguem os casos DOCUMENTADOS de raridade
-              (Collector&apos;s Edition, Battlepacks, Tides of War, passes de temporada).
+              Battlefield: nenhuma imagem das skins (BF1/BFV/BF6) existe publicamente —
+              aqui ficam os TOP 10 por jogo com a história de cada caso (edições de
+              colecionador, Battlepacks, Tides of War, beta, passes de temporada).
             </p>
           )}
           {jogo === 'r6' && (
             <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
-              Rainbow Six: a Ubisoft não abre API de cosméticos — os renders vêm da galeria
-              da comunidade (Fandom, imagens transparentes) e alguns itens sem render ficam
-              com emblema. A ordem segue o consenso (Glacier, Black Ice, Peacock, Fire,
-              Gold Dust, Pro League Y1, elites de Red Crow…).
+              Rainbow Six: renders da comunidade (Fandom) com o FUNDO REMOVIDO e servidos
+              pelo próprio site — clica numa carta para ampliar. Itens sem render público
+              (dev-only, Kickstarter, eventos únicos…) ficam com emblema.
             </p>
           )}
         </>
