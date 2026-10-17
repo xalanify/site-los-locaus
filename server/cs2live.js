@@ -2,10 +2,14 @@
 // CS2 AO VIVO — via Steam Web API oficial (ISteamUserStats)
 // Autorizacao: key gratuita criada uma vez em
 // https://steamcommunity.com/dev/apikey → STEAM_API_KEY no
-// server/.env. Depois desta configuracao NUNCA MAIS HAVERRA
-// exports manuais: a Steam mantem os numeros atualizados.
+// server/.env. Depois desta configuração NUNCA MAIS HÁ exports
+// manuais: a Steam mantem os numeros atualizados.
 // Lista de membros: server/data/cs2-steam.json
-//   [ { nick: "xalanix", steam: "7656119..." } ]
+//   ACEITA SÓ NOMES, tipo o R6:
+//     ["xalanix", "sonojo", ...]
+//   (ou objetos { nick, steam: "7656119..." } se preferires)
+//   O servidor resolve cada nome → SteamID64 sozinho (perfil
+//   publico da Steam) e grava o ID no proprio ficheiro.
 // ============================================================
 const fs = require('fs');
 const path = require('path');
@@ -22,13 +26,52 @@ function env() {
   }
 }
 
+function escrever(l) {
+  fs.writeFileSync(FILES, JSON.stringify(l, null, 2));
+}
+
+// aceita strings simples ["nome"] OU objetos {nick, steam}
 function membros() {
   try {
     const l = JSON.parse(fs.readFileSync(FILES, 'utf8'));
-    return Array.isArray(l) ? l.filter((x) => x && x.steam) : [];
+    return Array.isArray(l)
+      ? l.filter((x) => x && (typeof x === 'string' ? x.trim() : x.steam))
+      : [];
   } catch {
     return [];
   }
+}
+
+/* Converte nomes em SteamID64 (uma vez por nome): para cada
+   entrada que ainda é string/busca o ID no perfil público
+   steamcommunity.com/id/NOME?xml=1 e grava no próprio ficheiro. */
+const EM_CURSO = new Set();
+
+async function normalizar() {
+  const l = membros();
+  let mudou = false;
+  for (let i = 0; i < l.length; i++) {
+    const x = l[i];
+    if (typeof x !== 'string') continue;
+    const nick = x.trim();
+    if (EM_CURSO.has(nick)) continue; // já estamos a resolver este
+    EM_CURSO.add(nick);
+    try {
+      const id = await resolveNick(nick);
+      if (id) {
+        l[i] = { nick, steam: id };
+        mudou = true;
+      }
+    } finally {
+      EM_CURSO.delete(nick);
+    }
+  }
+  if (mudou) {
+    try {
+      escrever(l);
+    } catch {}
+  }
+  return l;
 }
 
 async function statsSteam(steamid, key) {
@@ -74,11 +117,15 @@ const cache = new Map();
 async function aoVivo() {
   const key = env();
   if (!key) return { ok: false, motivo: 'sem-key' };
-  const lista = membros();
-  if (!lista.length) return { ok: false, motivo: 'sem-membros' };
-  // steamid64 = 17 dígitos a começar por 7656
-  const mortos = lista.filter((x) => !/^7656\d{13}$/.test(String(x.steam)));
-  if (mortos.length) return { ok: false, motivo: 'ids-invalidos' };
+  // nomes simples vêm de cs2-steam.json → resolve-os para IDs sozinho
+  const lista = (await normalizar())
+    .map((m) => (typeof m === 'object' ? m : { nick: m, steam: m }))
+    .filter((m) => /^7656\d{13}$/.test(String(m.steam)));
+  if (!lista.length) {
+    return membros().length
+      ? { ok: false, motivo: 'ids-invalidos' }
+      : { ok: false, motivo: 'sem-membros' };
+  }
 
   const agora = Date.now();
   const res = await Promise.all(
@@ -116,11 +163,14 @@ async function resolveNick(nick) {
 
 function ligar(nick, steamid) {
   const lista = membros();
-  if (lista.some((x) => String(x.steam) === steamid)) {
-    return { ok: true, jaEstava: true };
-  }
+  const jáExiste = lista.some((x) =>
+    typeof x === 'string'
+      ? x.trim().toLowerCase() === String(nick).toLowerCase()
+      : String(x.steam) === steamid || String(x.nick).toLowerCase() === String(nick).toLowerCase(),
+  );
+  if (jáExiste) return { ok: true, jaEstava: true };
   lista.push({ nick, steam: steamid });
-  fs.writeFileSync(FILES, JSON.stringify(lista, null, 2));
+  escrever(lista);
   return { ok: true, adicionado: true };
 }
 

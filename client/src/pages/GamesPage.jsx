@@ -1199,9 +1199,10 @@ function Cs2Vivo() {
   const setupMsg = {
     'sem-key':
       'Falta só a key gratuita da Steam: cria em steamcommunity.com/dev/apikey e coloca STEAM_API_KEY no server/.env. Depois disto as estatísticas de CS2 mostradas aqui ficam ao vivo sempre, sem exportar nada.',
-    'sem-membros': null,
+    'sem-membros':
+      'Basta escrever os nomes da Steam dos nossos jogadores em server/data/cs2-steam.json — tipo ["xalanix", "sonojo"] — e o servidor descobre os IDs sozinho. Ou usa o campo abaixo.',
     'ids-invalidos':
-      'server/data/cs2-steam.json só aceita SteamID64 (17 números a começar por 7656). Tipa o nome abaixo e o servidor resolve sozinho.',
+      'Há nomes nesta lista que não correspondem a nenhum perfil público da Steam (steamcommunity.com/id/NOME). Confirma o nome no URL do perfil deles ou os IDs tem de ser SteamID64 (17 números, 7656…).',
   }
 
   if (vivo === null) return null
