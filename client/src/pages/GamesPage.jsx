@@ -1733,15 +1733,32 @@ function R6Page() {
 export default function GamesPage() {
   const [tab, setTab] = useState(null)
 
+  /* marca o body quando um jogo com fundo está ativo
+     (as colunas fixas ganham translucidez via CSS .painel-fixo) */
+  useEffect(() => {
+    const jogosComFundo = ['cs2', 'r6', 'fortnite', 'bf']
+    document.body.classList.toggle('in-jogo', jogosComFundo.includes(tab))
+    return () => document.body.classList.remove('in-jogo')
+  }, [tab])
+
   return (
     <section className="relative min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
-      {/* fundo com imagem do jogo (só CS2 e R6), escurecido para as estatísticas ficarem bem visíveis */}
-      {(tab === 'cs2' || tab === 'r6') && (
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      {/* fundo com a imagem do jogo: FIXA no ecrã inteiro (passa por
+          baixo da sidebar e da coluna direita, translúcidas), escurecido
+          para as estatísticas ficarem bem visíveis */}
+      {['cs2', 'r6', 'fortnite', 'bf'].includes(tab) && (
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
             style={{
-              backgroundImage: tab === 'cs2' ? 'url(/nukecs2.png)' : 'url(/coastliner6.jpg)',
+              backgroundImage:
+                tab === 'cs2'
+                  ? 'url(/nukecs2.png)'
+                  : tab === 'r6'
+                  ? 'url(/coastliner6.jpg)'
+                  : tab === 'fortnite'
+                  ? 'url(/fortnite.jpg)'
+                  : 'url(/bf1.jpg)',
             }}
           />
           {/* véu escuro por cima da foto */}

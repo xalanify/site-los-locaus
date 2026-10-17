@@ -582,3 +582,15 @@ button[class~='bg-violet-500']:active {
 .player-ecra:-webkit-full-screen .player-controlos span {
   font-size: 13px;
 }
+
+
+/* ============================================================
+   Fundos das páginas de jogos (CS2 / R6 / Fortnite / Battlefield)
+   A imagem fica fixa no ecrã INTEIRO — passa por baixo da
+   sidebar da esquerda e da coluna da direita, que ficam
+   translúcidas para a foto se ver nos cantos.
+   ============================================================ */
+body.in-jogo .painel-fixo {
+  background-color: rgba(8, 5, 16, 0.6) !important;
+  backdrop-filter: blur(2px);
+}
