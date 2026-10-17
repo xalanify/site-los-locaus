@@ -54,7 +54,12 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   ]
 
   return (
-    <aside className="painel-fixo fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 bg-black px-3 py-5 lg:flex xl:w-[280px]">
+    <aside className="painel-fixo fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 px-3 py-5 lg:flex xl:w-[280px]"
+      style={{
+        background:
+          'linear-gradient(180deg, #150f26 0%, #100b1d 55%, #0b0715 100%)',
+      }}
+    >
       {/* Marca */}
       <div>
         <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">

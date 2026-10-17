@@ -283,17 +283,19 @@ export default function ProfilePage({
               </p>
               {me.mouse && (
                 <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <span className="font-bold">{me.mouse}</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
+                    {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
+                  </span>
                   {(() => {
                     const m = (searchMice(me.mouse) || []).find(
                       (x) => `${x.brand} ${x.model}` === me.mouse,
                     )
                     return m && m.logo ? (
-                      <img src={m.logo} alt="" className="h-5 w-5 rounded-sm object-contain" />
+                      <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
                     ) : null
                   })()}
-                  <span className="font-bold">{me.mouse}</span>
-                  <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
-                  {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
                 </p>
               )}
             </div>

@@ -610,15 +610,6 @@ export default function PcsPage() {
                 As máquinas do grupo com valores lidos no Windows. Clique numa linha para ver tudo.
               </p>
             </div>
-            {podeLocal && !lendo && (
-              <button
-                onClick={() => setPortao(true)}
-                className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2.5 text-sm font-black text-black transition-colors hover:bg-violet-400"
-              >
-                <RefreshCcw className="h-4 w-4" />
-                Ler o meu PC
-              </button>
-            )}
             {podeLocal === false && (
               <button
                 onClick={() => setPortao(true)}

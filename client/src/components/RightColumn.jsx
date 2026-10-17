@@ -13,7 +13,7 @@ import { BADGES, BadgeGem, distincoesOverclock } from './BadgeGem'
    ============================================================ */
 function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoTexto, acoes }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#141020]">
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#171129]">
       <header className="flex items-center justify-between px-4 pb-1 pt-3.5">
         <h2 className="inline-flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-gray-300">
           <Icon className="h-4 w-4 text-violet-400" />
@@ -75,7 +75,13 @@ export default function RightColumn() {
   }, [])
 
   return (
-    <aside className="painel-fixo fixed inset-y-0 right-0 z-30 hidden w-[320px] overflow-y-auto border-l border-white/10 bg-black px-4 pb-5 pt-14 xl:block">
+    <aside
+      className="painel-fixo fixed inset-y-0 right-0 z-30 hidden w-[320px] overflow-y-auto border-l border-white/10 px-4 pb-5 pt-14 xl:block"
+      style={{
+        background:
+          'linear-gradient(180deg, #150f26 0%, #100b1d 55%, #0b0715 100%)',
+      }}
+    >
       <div className="space-y-4">
         {/* Anúncios — clips publicados aparecem aqui sozinhos */}
         <Cartao titulo="Anúncios" icone={Megaphone} link="/distincoes" linkTexto="Ver tudo">

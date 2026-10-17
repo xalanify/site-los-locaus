@@ -179,12 +179,23 @@ export default function FerramentasPage() {
   const [parando, setParando] = useState(false)
   const aCorrerRef = useRef(null)
 
-  /* ações selecionadas de cada nível do Otimizador by Xalana */
-  const [xalanaSel, setXalanaSel] = useState({
-    minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4'],
-    normal: ['xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
-    extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15'],
-  })
+  /* Ações selecionadas por nível do Otimizador by Xalana.
+     Cada nível PARTE do anterior: normal = mínimo + extras,
+     extremo = tudo. O que se corrige depois é só exceção. */
+  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4']
+  const PRESET_XALANA = {
+    minima: XALANA_MINIMA,
+    normal: [...XALANA_MINIMA, 'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
+    extremo: [
+      ...XALANA_MINIMA,
+      'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10',
+      'xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15',
+    ],
+  }
+  const [xalanaSel, setXalanaSel] = useState(PRESET_XALANA)
+  /* painel "o que vai fazer" — fechado por defeito
+     (ninguém quer 15 checkboxes à cara logo) */
+  const [xalanaAberto, setXalanaAberto] = useState(null)
 
   const toggleXalanaAcao = (nivel, id) => {
     setXalanaSel((p) => {
@@ -302,7 +313,7 @@ export default function FerramentasPage() {
     setSubCat('Todas')
   }, [cat])
 
-  const executar = async (id, argOverride) => {
+  const executar = async (id, argOverride, acoes) => {
     if (aCorrer) return
     setAviso(null)
     const alvo = ferramentas.find((f) => f.id === id)
@@ -311,7 +322,7 @@ export default function FerramentasPage() {
       const r = await fetch('/api/ferramentas/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ id, arg }),
+        body: JSON.stringify({ id, arg, acoes }),
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok) {
@@ -423,12 +434,6 @@ export default function FerramentasPage() {
           <p className="mt-2 max-w-2xl text-sm text-gray-400">
             Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/15 px-3 py-1 text-[12px] font-bold tracking-wide text-yellow-300 ring-1 ring-yellow-400/30">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
-              Ferramentas Windows em desenvolvimento ainda. Otimizações e opções ainda serão melhoradas e adicionadas.
-            </span>
-          </div>
         </motion.div>
 
         {podeLocal === false && (
@@ -701,12 +706,11 @@ export default function FerramentasPage() {
                 normal: 'Tudo do mínimo + telemetria parada, apps de fundo, Game Bar, sugestões e tarefas de diagnóstico. O equilíbrio para jogar e trabalhar.',
                 extremo: 'Tudo do mínimo e normal + debloat de apps pré-instaladas, serviços pesados desligados e perfil de jogo sem limitações. Máxima fluidez (reinicia o PC no fim).',
               }[nivel]
-              const acoes = (xalanaSel[nivel] || []).sort()
-              const todasAcoesNivel = {
-                minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4'],
-                normal: ['xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
-                extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15'],
-              }[nivel]
+              const abertoPainel = xalanaAberto === nivel
+              const marcadas = xalanaSel[nivel] || []
+              /* todas as ações QUE O NÍVEL TOCA: mínimo entra no normal,
+                 mínimo+normal entram no extremo — como se montava à mão */
+              const todasAcoesNivel = PRESET_XALANA[nivel]
               return (
                 <motion.div
                   key={nivel}
@@ -722,65 +726,103 @@ export default function FerramentasPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-display text-[17px] font-black text-white">{nivelLabel}</span>
                         <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-400">
-                          Nível {nivelLabel}
+                          {todasAcoesNivel.length} ações · nível {nivelLabel}
                         </span>
                       </div>
                       <p className="text-[12.5px] leading-relaxed text-gray-400">{nivelDesc}</p>
                     </div>
                   </div>
 
-                  {/* ações selecionáveis deste nível */}
-                  <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <p className="mb-2 text-[10px] font-black uppercase tracking-wide text-gray-500">
-                      Escolhe as ações a executar (desmarca o que não queres)
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {todasAcoesNivel.map((aid) => {
-                        const acao = XALANA_ACOES[aid]
-                        if (!acao) return null
-                        const marcada = acoes.includes(aid)
-                        return (
-                          <label
-                            key={aid}
-                            className="flex items-start gap-2 rounded-lg border p-2.5 cursor-pointer transition-colors hover:bg-white/5"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleXalanaAcao(nivel, aid)
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={marcada}
-                              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border border-white/10 text-violet-500"
-                              onChange={(e) => {
-                                e.stopPropagation()
-                                toggleXalanaAcao(nivel, aid)
-                              }}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <span className="text-xs font-bold text-white leading-tight">{acao.nome}</span>
-                              <p className="text-[10.5px] text-gray-500 leading-relaxed">{acao.desc}</p>
-                            </div>
-                          </label>
-                        )
-                      })}
-                    </div>
-                  </div>
-
+                  {/* correr o nível completo (preset) */}
                   <button
                     onClick={() => {
-                      const ids = xalanaSel[nivel] || []
-                      if (ids.length === 0 || aCorrer) return
-                      setSelecionados(new Set([`xalana-${nivel}`]))
-                      programarFila([])
-                      executar(`xalana-${nivel}`, null, null, true, ids)
+                      const ids = PRESET_XALANA[nivel]
+                      if (!ids.length || aCorrer) return
+                      executar(`xalana-${nivel}`, null, ids)
                     }}
-                    disabled={aCorrer || acoes.length === 0}
+                    disabled={aCorrer}
                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
                   >
                     <Play className="h-4 w-4" fill="currentColor" />
-                    {aCorrer ? 'A correr…' : `Executar nível ${nivelLabel} (${acoes.length} ação${acoes.length !== 1 ? 's' : ''})`}
+                    {aCorrer ? 'A correr…' : `Executar nível ${nivelLabel}`}
                   </button>
+
+                  {/* execução personalizada — fechada logo, abre a pedidos */}
+                  <p className="mt-2 text-center text-[11.5px] text-gray-500">
+                    <button
+                      onClick={() => setXalanaAberto(abertoPainel ? null : nivel)}
+                      disabled={aCorrer}
+                      className="inline-flex items-center gap-1 font-bold text-violet-400 transition-colors hover:text-violet-300 disabled:opacity-50"
+                    >
+                      <SlidersHorizontal className="h-3 w-3" />
+                      Remover alguma opção ou fazer execução personalizada
+                      <span className="text-gray-600">{abertoPainel ? ' ▴' : ' ▾'}</span>
+                    </button>
+                  </p>
+
+                  {/* painel de confirmação: o que vai fazer + checkboxes */}
+                  <AnimatePresence>
+                    {abertoPainel && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-3">
+                          <p className="mb-2 text-[10px] font-black uppercase tracking-wide text-gray-500">
+                            O que vai fazer — corrige o traço do que não queres
+                          </p>
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {todasAcoesNivel.map((aid) => {
+                              const acao = XALANA_ACOES[aid]
+                              if (!acao) return null
+                              const marcada = marcadas.includes(aid)
+                              return (
+                                <label
+                                  key={aid}
+                                  className="flex items-start gap-2 rounded-lg border border-white/10 p-2.5 cursor-pointer transition-colors hover:bg-white/5"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={marcada}
+                                    onChange={() => toggleXalanaAcao(nivel, aid)}
+                                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border border-white/10"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <span className="text-xs font-bold text-white leading-tight">{acao.nome}</span>
+                                    <p className="text-[10.5px] text-gray-500 leading-relaxed">{acao.desc}</p>
+                                  </div>
+                                </label>
+                              )
+                            })}
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (!marcadas.length || aCorrer) return
+                              executar(`xalana-${nivel}`, null, marcadas)
+                            }}
+                            disabled={aCorrer || marcadas.length === 0}
+                            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-40"
+                          >
+                            <Check className="h-4 w-4" />
+                            Confirmar e executar ({marcadas.length} ação{marcadas.length !== 1 ? 'ões' : ''})
+                          </button>
+                          {marcadas.length !== todasAcoesNivel.length && (
+                            <button
+                              onClick={() =>
+                                setXalanaSel((p) => ({ ...p, [nivel]: [...PRESET_XALANA[nivel]] }))
+                              }
+                              className="mt-2 w-full text-center text-[11px] font-bold text-gray-500 transition-colors hover:text-gray-300"
+                            >
+                              Voltar ao preset do nível ({todasAcoesNivel.length})
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               )
             })}
@@ -933,22 +975,28 @@ export default function FerramentasPage() {
                     </button>
                   )}
 
-                  {f.comando ? (
-                    <p className="mt-2 truncate font-mono text-[10.5px] text-gray-600" title={f.comando}>
-                      {f.comando}
-                    </p>
-                  ) : null}
                 </motion.div>
               )
             })}
           </div>
         )}
 
-        {/* ---------------- Nota ---------------- */}
-        <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] leading-relaxed text-gray-400">
-          <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
-          <p>Scripts puros — vê o que cada um faz no fim do cartão.</p>
-        </div>
+        {/* ---------------- Aviso único com animação ---------------- */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: [0.85, 1, 0.85], y: 0 }}
+          transition={{
+            opacity: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
+          }}
+          className="glass mb-6 flex items-center gap-3 rounded-2xl border border-violet-500/25 px-4 py-3"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-violet-500/15 ring-1 ring-violet-500/30">
+            <Sparkles className="h-4 w-4 animate-pulse text-violet-400" />
+          </span>
+          <p className="text-[13px] font-bold text-gray-300">
+            Otimizações e opções ainda serão melhoradas e adicionadas.
+          </p>
+        </motion.div>
 
         <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-gray-600">
           <Terminal className="h-3 w-3" />

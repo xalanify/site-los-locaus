@@ -1421,6 +1421,80 @@ FERRAMENTAS.push({
 } catch { Write-Output ("Erro: " + $_.Exception.Message) }`,
 });
 
+FERRAMENTAS.push({
+  id: 'limpeza-navegadores',
+  cat: 'Limpeza',
+  nome: 'Limpar cache dos navegadores',
+  desc: 'Cache do Chrome, Edge e Firefox (fica só a de que os inícios de sessão não toca).',
+  perigo: 'baixo',
+  tempo: 300000,
+  cmd: `$ErrorActionPreference='Continue'
+Write-Output 'A limpar cache de navegadores...'
+$pastas = @(
+  "$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\Cache",
+  "$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\Code Cache",
+  "$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\\Cache",
+  "$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\\Code Cache",
+  "$env:LOCALAPPDATA\\Mozilla\\Firefox\\Profiles"
+)
+foreach ($p in $pastas) {
+  if (Test-Path $p) {
+    try { Get-ChildItem $p -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue; Write-Output ("Limpo: " + $p) } catch { Write-Output ("Falha: " + $p) }
+  }
+}
+Write-Output 'Cache dos navegadores limpa.'`,
+});
+
+FERRAMENTAS.push({
+  id: 'limpeza-reciclagem',
+  cat: 'Limpeza',
+  nome: 'Esvaziar a reciclagem',
+  desc: 'Apaga de vez tudo o que está na reciclagem (todos os discos).',
+  perigo: 'baixo',
+  tempo: 120000,
+  cmd: `try {
+  Clear-RecycleBin -DriveLetter C -Force -ErrorAction SilentlyContinue
+  Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+  Write-Output 'Reciclagem vazia.'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }`,
+});
+
+FERRAMENTAS.push({
+  id: 'limpeza-dns',
+  cat: 'Limpeza',
+  nome: 'Limpar a cache de DNS',
+  desc: 'IpcOnfig /flushdns — resolve sites que "não abrem" ou abrem a versão antiga.',
+  perigo: 'baixo',
+  tempo: 60000,
+  cmd: `try {
+  ipconfig /flushdns | Out-Null
+  Write-Output 'Cache de DNS limpa (flushdns).'
+} catch { Write-Output ("Erro: " + $_.Exception.Message) }`,
+});
+
+FERRAMENTAS.push({
+  id: 'limpeza-wer',
+  cat: 'Limpeza',
+  nome: 'Limpar relatórios de erro e dumps',
+  desc: 'Relatórios WER e minidumps de segfault — podem ocupar muitos MB sem valor.',
+  perigo: 'baixo',
+  tempo: 120000,
+  cmd: `$ErrorActionPreference='Continue'
+Write-Output 'A limpar relatorios de erro (WER) e dumps...'
+$pastas = @(
+  "$env:LOCALAPPDATA\\Microsoft\\Windows\\WER\\ReportArchive",
+  "$env:LOCALAPPDATA\\Microsoft\\Windows\\WER\\ReportQueue",
+  "$env:SystemRoot\\Minidump",
+  "$env:LOCALAPPDATA\\CrashDumps"
+)
+foreach ($p in $pastas) {
+  if (Test-Path $p) {
+    try { Get-ChildItem $p -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue; Write-Output ("Limpo: " + $p) } catch { Write-Output ("Falha: " + $p) }
+  }
+}
+Write-Output 'Relatorios limpados.'`,
+});
+
 /* ---------------------------------------------------------------
    Estado (o site faz polling disto)
    --------------------------------------------------------------- */
@@ -1678,41 +1752,31 @@ function executar(id, arg, quem, soAdmin, acoes) {
   let cmd = f.cmd;
 
   /* Otimizador by Xalana: monta o script só com as ações selecionadas.
-     `acoes` é um array de IDs (ex.: ['xalana-a1','xalana-a3']). Se não vier,
-     corre o nível completo (compatível com o comportamento anterior). */
+     `acoes` é um array de IDs (ex.: ['xalana-a1','xalana-a3']) — pode
+     misturar níveis (o Extremo toca no mínimo e normal também). Se não
+     vier, corre o nível completo (compatível com o anterior). */
   if (id.startsWith('xalana-') && Array.isArray(acoes) && acoes.length > 0) {
-    const nivel = id.replace('xalana-', '');
-    const validos = acoes.filter((a) => XALANA_ACOES[a] && XALANA_ACOES[a].nivel === nivel);
+    const ordemNivel = { minima: 0, normal: 1, extremo: 2 };
+    const validos = acoes.filter((a) => XALANA_ACOES[a]);
     if (validos.length === 0) {
       return { ok: false, erro: 'Nenhuma ação válida selecionada.' };
     }
+    // corre sempre do mais leve para o mais forte
+    validos.sort((x, y) => ordemNivel[XALANA_ACOES[x].nivel] - ordemNivel[XALANA_ACOES[y].nivel]);
     const partes = [XALANA_HEADER];
-    // nível 1 (sempre base) + nível 2 se o nível for normal/extremo + nível 3 se extremo
-    if (nivel === 'minima') {
-      partes.push(...validos.map((a) => XALANA_ACOES[a].script));
-    } else if (nivel === 'normal') {
-      // só ações do nível 1 que foram selecionadas + nível 2 selecionadas
-      const a1 = validos.filter((a) => XALANA_ACOES[a].nivel === 'minima');
-      const a2 = validos.filter((a) => XALANA_ACOES[a].nivel === 'normal');
-      if (a1.length > 0) partes.push(...a1.map((a) => XALANA_ACOES[a].script));
-      partes.push(`Write-Output ''
-Write-Output '--- NIVEL 2: extras de telemetria e jogos ---'`);
-      if (a2.length > 0) partes.push(...a2.map((a) => XALANA_ACOES[a].script));
-    } else if (nivel === 'extremo') {
-      const a1 = validos.filter((a) => XALANA_ACOES[a].nivel === 'minima');
-      const a2 = validos.filter((a) => XALANA_ACOES[a].nivel === 'normal');
-      const a3 = validos.filter((a) => XALANA_ACOES[a].nivel === 'extremo');
-      if (a1.length > 0) partes.push(...a1.map((a) => XALANA_ACOES[a].script));
-      if (a2.length > 0) {
+    let nivelAnt = null;
+    for (const a of validos) {
+      const nv = XALANA_ACOES[a].nivel;
+      if (nv === 'normal' && nivelAnt === 'minima') {
         partes.push(`Write-Output ''
 Write-Output '--- NIVEL 2: extras de telemetria e jogos ---'`);
-        partes.push(...a2.map((a) => XALANA_ACOES[a].script));
       }
-      if (a3.length > 0) {
+      if (nv === 'extremo' && nivelAnt !== 'extremo') {
         partes.push(`Write-Output ''
 Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
-        partes.push(...a3.map((a) => XALANA_ACOES[a].script));
       }
+      partes.push(XALANA_ACOES[a].script);
+      nivelAnt = nv;
     }
     partes.push(XALANA_FOOTER);
     cmd = partes.join('\n');

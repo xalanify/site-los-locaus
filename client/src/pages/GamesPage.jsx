@@ -287,7 +287,7 @@ function GameChooser({ onPick }) {
               <p className="text-sm leading-relaxed text-gray-400">{g.desc}</p>
               {g.emBreve && (
                 <div className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide ${g.color}`}>
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock className="h-3.5 w-3.5 animate-spin [animation-duration:3s]" />
                   Em desenvolvimento
                 </div>
               )}
@@ -319,7 +319,7 @@ function EmBreve({ nome, sub, Icon, cor, bg, logo }) {
         Em breve fica disponível!
       </p>
       <div className={`mt-6 flex items-center justify-center gap-2 text-xs ${cor}`}>
-        <Clock className="h-4 w-4" />
+        <Clock className="h-4 w-4 animate-spin [animation-duration:3s]" />
         Em desenvolvimento
       </div>
     </motion.div>
@@ -1139,7 +1139,7 @@ function MatchRow({ m, open, onToggle }) {
               )}
               {m.duration && (
                 <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                  <Clock className="h-3 w-3 animate-spin [animation-duration:3s]" />
                   {m.duration}
                 </span>
               )}
@@ -1443,12 +1443,8 @@ function Cs2Vivo() {
 }
 
 function Cs2Page() {
-  return (
-    <div className="space-y-6">
-      <Cs2Vivo />
-      <Cs2Historico />
-    </div>
-  )
+  /* 100% ao vivo via Steam — nada de ficheiros manuais */
+  return <Cs2Vivo />
 }
 
 const fmtSecs = (sec) => {

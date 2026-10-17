@@ -157,17 +157,19 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               </span>
               {p.mouse && (
                 <span className="inline-flex items-center gap-1.5">
+                  <span className="flex items-baseline gap-1.5">
+                    <span className="font-bold text-gray-200">{p.mouse}</span>
+                    <span className="text-[10px] text-violet-300 font-black tracking-wide">Mouse</span>
+                    {p.dpi ? <span>· {p.dpi} DPI</span> : null}
+                  </span>
                   {(() => {
                     const m = (searchMice(p.mouse) || []).find(
                       (x) => `${x.brand} ${x.model}` === p.mouse,
                     )
                     return m && m.logo ? (
-                      <img src={m.logo} alt="" className="h-4 w-4 rounded-sm object-contain" />
+                      <img src={m.logo} alt="" className="h-4 w-4 shrink-0 rounded-sm object-contain" />
                     ) : null
                   })()}
-                  <span className="font-bold text-gray-200">{p.mouse}</span>
-                  <span className="text-[10px] text-violet-300 font-black tracking-wide">Mouse</span>
-                  {p.dpi ? <span>· {p.dpi} DPI</span> : null}
                 </span>
               )}
             </div>

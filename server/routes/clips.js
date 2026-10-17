@@ -962,6 +962,56 @@ router.delete('/:id/comments/:commentId', attachAuth, async (req, res) => {
   }
 });
 
+// Transferir vídeo REMOTO (YouTube) na máxima qualidade — via cobalt
+// (open source). Gere o stream e manda ao browser como ficheiro.
+router.get('/:id/download-remoto', attachAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    const id = Number(req.params.id);
+    const clip = await db.prepare('SELECT * FROM clips WHERE id = ?').get(id);
+    if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
+    if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
+    if (!clip.youtube_id) {
+      return res.status(400).json({ error: 'Este clip já tem ficheiro próprio (usa Transferir normal).' });
+    }
+
+    const base = (process.env.COBALT_API_URL || 'https://api.cobalt.tools').replace(/\/+$/, '');
+    const cab = { Accept: 'application/json', 'Content-Type': 'application/json' };
+    if (process.env.COBALT_API_KEY) cab.Authorization = 'Api-Key ' + process.env.COBALT_API_KEY;
+
+    const r = await fetch(base + '/', {
+      method: 'POST',
+      headers: cab,
+      body: JSON.stringify({
+        url: 'https://www.youtube.com/watch?v=' + clip.youtube_id,
+        videoQuality: '2160',
+        downloadMode: 'auto',
+        filenameStyle: 'pretty',
+      }),
+    });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !j.url) {
+      const cod = j && (j.error && j.error.code) ? j.error.code : 'HTTP ' + r.status;
+      return res.status(502).json({ error: 'Serviço de transferência indisponível (' + cod + ').' });
+    }
+
+    // negocia o stream e manda ao browser já com nome de ficheiro
+    const rr = await fetch(j.url, { redirect: 'follow' });
+    if (!rr.ok || !rr.body) return res.status(502).json({ error: 'Não consegui buscar o vídeo ao túnel.' });
+    await db.prepare('UPDATE clips SET downloads = downloads + 1 WHERE id = ?').run(id);
+    const safe = String(clip.title || 'clip').replace(/[^\p{L}\p{N} _-]/gu, '_').slice(0, 60) || 'clip';
+    res.setHeader('Content-Type', rr.headers.get('content-type') || 'video/mp4');
+    const len = rr.headers.get('content-length');
+    if (len) res.setHeader('Content-Length', len);
+    res.setHeader('Content-Disposition', 'attachment; filename="' + safe + '.mp4"');
+    const { Readable } = require('stream');
+    Readable.fromWeb(rr.body).pipe(res);
+  } catch (error) {
+    console.error('Erro clip download-remoto:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 // Transferir o vídeo original (conta para downloads)
 router.get('/:id/download', attachAuth, async (req, res) => {
   try {

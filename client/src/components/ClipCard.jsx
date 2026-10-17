@@ -56,7 +56,7 @@ const PAGE_COMENT = 12
      barra, tempo, VOLUME, som e ecrã inteiro) e a qualidade fica
      forçada ao máximo (1080p60 quando o vídeo tem).
    --------------------------------------------------------------- */
-let apiPronta = null
+  let apiPronta = null
 function carregarApi() {
   if (window.YT && window.YT.Player) return Promise.resolve(window.YT)
   if (apiPronta) return apiPronta
@@ -96,6 +96,12 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
   const [niveisQual, setNiveisQual] = useState([]) // chaves YT disponíveis
   const qualEsc = useRef('auto')
   const [qualAtual, setQualAtual] = useState('auto')
+  /* qualidade FORÇADA: enquanto o leitor não reportar a qualidade
+     escolhida, o vídeo fica tapado com o aviso nosso */
+  const [qualAlvo, setQualAlvo] = useState('auto')
+  const qualAlvoRef = useRef('auto')
+  const watchdogQual = useRef(null)
+  const tentativasQual = useRef(0)
   /* estado do processamento: null = a perguntar, true = pronto,
      false = ainda a processar (mostra o aviso nosso) */
   const [processando, setProcessando] = useState(null)
@@ -199,6 +205,17 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
                   setVeu('fim')
                 }
               },
+              onPlaybackQualityChange: (e) => {
+                if (!vivo) return
+                const q = e.data
+                if (q && q !== 'unknown') setQualAtual(q)
+                // chegou à qualidade FORÇADA: solta o véu e toca
+                if (q && qualAlvoRef.current !== 'auto' && q === qualAlvoRef.current) {
+                  limpaWatchdog()
+                  tentativasQual.current = 0
+                  setVeuQual(null)
+                }
+              },
             },
           })
         } catch {
@@ -221,10 +238,8 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
         if (p && typeof p.getAvailableQualityLevels === 'function') {
           const nv = p.getAvailableQualityLevels()
           if (Array.isArray(nv) && nv.length) setNiveisQual(nv)
-          if (qualEsc.current === 'auto') {
-            const q = typeof p.getPlaybackQuality === 'function' ? p.getPlaybackQuality() : ''
-            if (q) setQualAtual(q)
-          }
+          const q = typeof p.getPlaybackQuality === 'function' ? p.getPlaybackQuality() : ''
+          if (q && q !== 'unknown') setQualAtual(q)
         }
       } catch {}
     }, 400)
@@ -232,6 +247,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
     return () => {
       vivo = false
       clearInterval(t)
+      limpaWatchdog()
       clearTimeout(veuTempo.current[0])
       try {
         api.current && typeof api.current.destroy === 'function' && api.current.destroy()
@@ -254,6 +270,95 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
     } catch {}
   }
 
+  /* ===== QUALIDADE FORÇADA =====
+     O setPlaybackQuality do YouTube hoje em dia é ignorado: pedimos,
+     o leitor acena "sim" e continua em 360p. Aqui fixamos a qualidade
+     alvo, PAUSAMOS o vídeo e repetimos o pedido a cada 500 ms; se o
+     leitor continuar a ignorar, RECARREGA com loadVideoById já na
+     qualidade pedida (suggestedQuality). O véu só sai quando
+     getPlaybackQuality() reportar a qualidade escolhida. */
+  const [veuQual, setVeuQual] = useState(null) // etiqueta p.ex '1440p'
+  const [tentouRecarregar, setTentouRecarregar] = useState(0)
+
+  const limpaWatchdog = () => {
+    if (watchdogQual.current) {
+      clearInterval(watchdogQual.current)
+      watchdogQual.current = null
+    }
+  }
+
+  const qualidadeAgora = () => {
+    const p = api.current
+    try {
+      if (!p || typeof p.getPlaybackQuality !== 'function') return ''
+      return p.getPlaybackQuality() || ''
+    } catch {
+      return ''
+    }
+  }
+
+  const arrancaWatchdog = () => {
+    limpaWatchdog()
+    tentativasQual.current = 0
+    watchdogQual.current = setInterval(() => {
+      const p = api.current
+      const alvo = qualAlvoRef.current
+      if (!p || alvo === 'auto') return limpaWatchdog()
+      if (qualidadeAgora() === alvo) {
+        // chegou à qualidade pedida: solta o vídeo
+        limpaWatchdog()
+        tentativasQual.current = 0
+        setVeuQual(null)
+        try {
+          typeof p.playVideo === 'function' && p.playVideo()
+        } catch {}
+        return
+      }
+      tentativasQual.current += 1
+      try {
+        if (typeof p.setPlaybackQualityRange === 'function') p.setPlaybackQualityRange(alvo, alvo)
+        if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality(alvo)
+      } catch {}
+      // sem resposta após ~4 s: recarrega com a qualidade embutida
+      if (tentativasQual.current === 8) {
+        setTentouRecarregar((x) => x + 1)
+      }
+    }, 500)
+  }
+
+  /* recarregar o vídeo já na qualidade pedida (suggestedQuality é o
+     argumento que o leitor ainda respeita ao carregar) */
+  useEffect(() => {
+    if (!tentouRecarregar) return
+    const p = api.current
+    const alvo = qualAlvoRef.current
+    if (!p || alvo === 'auto') return
+    tentativasQual.current = 0
+    try {
+      const t = typeof p.getCurrentTime === 'function' ? p.getCurrentTime() || 0 : 0
+      p.loadVideoById({ videoId: id, startSeconds: Math.max(0, t), suggestedQuality: alvo })
+    } catch {}
+    // se após o recarrego ainda não chega em ~6 s, assume que o vídeo
+    // NÃO tem aquela qualidade:parte sem a qualidade e liga o vídeo
+    const desiste = setTimeout(() => {
+      const q = qualidadeAgora()
+      if (q && q !== alvo) {
+        limpaWatchdog()
+        setVeuQual(null)
+        setQualAlvo('auto')
+        qualAlvoRef.current = 'auto'
+        qualEsc.current = 'auto'
+        setQualAtual(q || 'auto')
+        try {
+          const pp = api.current
+          typeof pp.playVideo === 'function' && pp.playVideo()
+        } catch {}
+      }
+    }, 6000)
+    return () => clearTimeout(desiste)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tentouRecarregar, id])
+
   /* --------- QUALIDADE MANUAL (botão da engrenagem) ---------
      Chaves do leitor YouTube → etiquetas:
      highres/hd2160 → 2160p; hd1440 → 1440p; hd1080 → 1080p;
@@ -274,23 +379,31 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
 
   const definirQualidade = (q) => {
     qualEsc.current = q
+    qualAlvoRef.current = q
     setQualAtual(q)
+    setQualAlvo(q)
     setMenuQual(false)
     const p = api.current
     if (!p) return
+    if (q === 'auto') {
+      limpaWatchdog()
+      tentativasQual.current = 0
+      setVeuQual(null)
+      forcerQualidade(p)
+      qualidadeFeita.current = false
+      forcerQualidade(p)
+      return
+    }
     try {
-      if (q === 'auto') {
-        // volta ao máximo automático
-        forcerQualidade(p)
-        qualidadeFeita.current = false
-        forcerQualidade(p)
-        return
-      }
-      if (typeof p.setPlaybackQualityRange === 'function') {
-        p.setPlaybackQualityRange(q, q)
-      }
+      if (typeof p.setPlaybackQualityRange === 'function') p.setPlaybackQualityRange(q, q)
       if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality(q)
     } catch {}
+    // pausa e tapa até o leitor reportar a qualidade pedida
+    try {
+      typeof p.pauseVideo === 'function' && p.pauseVideo()
+    } catch {}
+    setVeuQual(ETIQUETA_QUAL[q] || q)
+    arrancaWatchdog()
   }
 
   /* ecrã inteiro (nosso botão, não o deles) */
@@ -410,6 +523,22 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {
           <span className="pointer-events-none absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-gray-300">
             <VolumeX className="h-4 w-4" />
           </span>
+        )}
+
+        {/* qualidade FORÇADA: enquanto o leitor não reportar a
+            qualidade escolhida, o vídeo fica tapado (não toca) */}
+        {qualAlvo !== 'auto' && veuQual && (
+          <div className="absolute inset-0 z-[7] grid place-items-center bg-black/85 px-6 text-center">
+            <div>
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-violet-400" />
+              <p className="mt-3 text-sm font-black text-white">
+                A forçar {ETIQUETA_QUAL[qualAlvo] || qualAlvo}…
+              </p>
+              <p className="mt-1 text-[11px] text-gray-400">
+                O vídeo só segue quando a qualidade chegar à que escolheste.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* clica no vídeo -> pausa / continua (ou repete, no fim) */}
@@ -769,21 +898,27 @@ export default function ClipCard({
     }
   }
 
-  /* ---- transferir ---- */
+  /* ---- transferir (o teu ficheiro, ou o remoto via cobalt) ---- */
+  const [baixando, setBaixando] = useState(false)
   const download = async () => {
-    // Sem ficheiro nosso (vídeo remoto): não há nada para transferir.
-    if (c.remoto || !c.url) return
+    if (!user) return onRequestAuth && onRequestAuth()
+    if (busy || baixando) return
+    setBusy(true)
+    setBaixando(true)
     try {
-      const res = await fetch(`/api/clips/${c.id}/download`, { headers: authHeaders() })
+      // remoto: o servidor fala com o cobalt e manda o vídeo à máxima
+      const fin = c.remoto ? `/api/clips/${c.id}/download-remoto` : `/api/clips/${c.id}/download`
+      const res = await fetch(fin, { headers: authHeaders() })
       if (!res.ok) {
         if (res.status === 401) onRequestAuth && onRequestAuth()
+        setBaixando(false)
         return
       }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${c.title || 'clip'}${c.url.slice(c.url.lastIndexOf('.'))}`
+      a.download = `${c.title || 'clip'}${c.remoto ? '.mp4' : c.url ? c.url.slice(c.url.lastIndexOf('.')) : '.mp4'}`
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -791,6 +926,9 @@ export default function ClipCard({
       update({ ...c, downloads: (c.downloads || 0) + 1 })
     } catch {
       /* sem rede */
+    } finally {
+      setBusy(false)
+      setBaixando(false)
     }
   }
 
@@ -1195,16 +1333,20 @@ export default function ClipCard({
           <MessageCircle className="h-4 w-4" />
           {c.comments_count || 0}
         </button>
-        <button onClick={save} className={actionCls(c.saved)} title="Guardar">
-          <Bookmark className={`h-4 w-4 ${c.saved ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-          {c.saves || 0}
-        </button>
-        {!c.remoto && (
-          <button onClick={download} className={actionCls(false)} title="Transferir">
+        {/* transferir — serve o ficheiro nosso OU o remoto (à máxima) */}
+        <button
+          onClick={download}
+          className={actionCls(false)}
+          title={baixando ? 'A transferir…' : 'Transferir o vídeo (máxima qualidade)'}
+          disabled={baixando || busy}
+        >
+          {baixando ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
             <Download className="h-4 w-4" />
-            {c.downloads || 0}
-          </button>
-        )}
+          )}
+          {baixando ? 'A transferir…' : c.downloads || 0}
+        </button>
       </div>
 
       {/* Comentários */}
