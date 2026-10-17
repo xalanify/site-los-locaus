@@ -1116,6 +1116,114 @@ function MatchRow({ m, open, onToggle }) {
 /* ============================================================
    CS2 — página principal
    ============================================================ */
+/* ============================================================
+   CS2 — painel AO VIVO via Steam Web API (servidor busca sozinho)
+   ============================================================ */
+function Cs2Vivo() {
+  const [vivo, setVivo] = useState(null)
+
+  useEffect(() => {
+    let cancel = false
+    fetch('/api/games/cs2-live')
+      .then((r) => r.json())
+      .then((dd) => {
+        if (!cancel) setVivo(dd)
+      })
+      .catch(() => {
+        if (!cancel) setVivo({ ok: false, motivo: 'erro' })
+      })
+    return () => {
+      cancel = true
+    }
+  }, [])
+
+  const setupMsg = {
+    'sem-key':
+      'Falta só a key gratuita da Steam: cria em steamcommunity.com/dev/apikey e coloca STEAM_API_KEY no server/.env. Depois disto as estatísticas de CS2 mostradas aqui ficam ao vivo sempre, sem exportar nada.',
+    'sem-membros':
+      'Para ligar as contas Steam dos nossos jogadores, adiciona em server/data/cs2-steam.json: [{ "nick": "xalanix", "steam": "7656119…" }]. Uma única vez — depois é tudo automático.',
+    'ids-invalidos':
+      'server/data/cs2-steam.json só aceita SteamID64 (17 números a começar por 7656). Dica: steamid.io mostra o ID de qualquer perfil.',
+  }
+
+  if (vivo === null) return null
+
+  if (!vivo.ok) {
+    return (
+      <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+        <p>
+          <span className="font-bold text-white">CS2 ao vivo (Steam):</span>{' '}
+          {setupMsg[vivo.motivo] ||
+            'Sem ligação à Steam Web API agora — as estatísticas de baixo continuam disponíveis.'}
+        </p>
+      </div>
+    )
+  }
+
+  const jog = (vivo.jogadores || []).filter((p) => p.ok)
+  if (!jog.length) return null
+
+  return (
+    <div className="glass rounded-2xl p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="relative grid h-2.5 w-2.5 place-items-center">
+            <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-green-400 opacity-60" />
+            <span className="h-2 w-2 rounded-full bg-green-400" />
+          </span>
+          <h3 className="font-display text-base font-black text-white">
+            CS2 ao vivo <span className="text-gray-500">— via Steam</span>
+          </h3>
+        </div>
+        <p className="text-[11px] text-gray-500">atualiza sozinho · Steam Web API</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {jog.map((p, i) => (
+          <motion.div
+            key={p.steam}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 * i }}
+            className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-display text-sm font-black text-white">{p.nick || p.nome}</p>
+              <span className="rounded-md bg-green-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-green-400">
+                Ao vivo
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-center">
+              <div>
+                <p className="text-lg font-black text-violet-300">{p.kills ?? '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Kills</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-white">{p.kd ?? '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">K/D</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-white">{p.mvps ?? '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">MVPs</p>
+              </div>
+              <div>
+                <p className="text-lg font-black text-sky-300">
+                  {p.precisao != null ? `${p.precisao}%` : '—'}
+                </p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Precisão</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm font-black text-green-400">{p.horas != null ? `${p.horas} h` : '—'}</p>
+                <p className="text-[10px] font-bold uppercase text-gray-500">Horas jogadas</p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function Cs2Page() {
   const [state, setState] = useState({ loading: true, data: null, error: '' })
   const [view, setView] = useState('global')
@@ -1311,6 +1419,9 @@ function Cs2Page() {
           registos do grupo — só mudam quando há dados novos.
         </p>
       </div>
+
+      {/* ---------- AO VIVO (Steam Web API, automático) ---------- */}
+      <Cs2Vivo />
 
       {/* Aviso: estatísticas ao vivo da FACEIT a caminho */}
       <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">

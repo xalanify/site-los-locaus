@@ -1,6 +1,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const cs2 = require('../cs2data');
+const cs2live = require('../cs2live');
 const { syncTop1Badge } = require('../top1');
 const stats = require('../gamestats');
 const tracker = require('../trackerdata');
@@ -263,6 +264,22 @@ router.get('/cs2', (req, res) => {
 });
 
 // ============================================================
+// CS2 AO VIVO — Steam Web API oficial (ISteamUserStats).
+// Automático para sempre: a Steam mantém os números frescos.
+// Precisa de STEAM_API_KEY no server/.env (key gratuita, criada
+// uma vez em steamcommunity.com/dev/apikey) e dos membros em
+// server/data/cs2-steam.json → [{ nick, steam: "7656119..." }]
+// ============================================================
+router.get('/cs2-live', async (req, res) => {
+  try {
+    res.json(await cs2live.aoVivo());
+  } catch (error) {
+    console.error('Erro cs2-live:', error.message);
+    res.status(502).json({ ok: false, motivo: 'erro' });
+  }
+});
+
+// ============================================================
 // Atualizações > Jogos — números reais de jogadores
 // (Steam API + Steam Charts) por jogo
 // ============================================================
@@ -437,11 +454,26 @@ router.get('/fortnite-player', async (req, res) => {
   if (hit && Date.now() - hit.t < 3 * 60 * 1000) return res.json(hit.v);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000);
+  // fortnite-api.com mantém as stats abertas mas pede um token
+  // de acesso GRATUITO (pede-se no Discord deles, fica guardado
+  // no server/.env como FORTNITE_API_TOKEN). Sem token mostra
+  // mensagem clara; com token tudo é automático para sempre.
+  const token = (process.env.FORTNITE_API_TOKEN || '').trim();
   try {
     const r = await fetch(
       `https://fortnite-api.com/v2/stats?name=${encodeURIComponent(nome)}`,
-      { signal: controller.signal },
+      {
+        signal: controller.signal,
+        headers: token ? { Authorization: token } : {},
+      },
     );
+    if (r.status === 401 || r.status === 403) {
+      return res.status(503).json({
+        error: token
+          ? 'O token da Fortnite API não é válido. Confirma o FORTNITE_API_TOKEN no server/.env.'
+          : 'A Fortnite API agora pede um token de acesso gratuito. Configura FORTNITE_API_TOKEN no server/.env (pede-se no Discord da fortnite-api.com).',
+      });
+    }
     if (r.status === 404) return res.status(404).json({ error: `Não encontramos "${nome}".` });
     if (!r.ok) throw new Error(`fortnite-api ${r.status}`);
     const j = await r.json();
