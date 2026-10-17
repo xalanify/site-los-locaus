@@ -1229,8 +1229,10 @@ function Cs2Vivo() {
     )
   }
 
-  const jog = (vivo.jogadores || []).filter((p) => p.ok)
-  if (!jog.length) return null
+  const tudo = vivo.jogadores || []
+  const jog = tudo.filter((p) => p.ok)
+  const priv = tudo.filter((p) => !p.ok)
+  if (!tudo.length) return null
 
   return (
     <div className="glass rounded-2xl p-5">
@@ -1286,6 +1288,25 @@ function Cs2Vivo() {
               </div>
             </div>
           </motion.div>
+        ))}
+        {priv.map((p) => (
+          <div
+            key={p.steam}
+            className="rounded-xl border border-yellow-500/25 bg-yellow-500/5 p-4"
+            title={p.erro || ''}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <p className="font-display text-sm font-black text-gray-300">{p.nick || p.steam}</p>
+              <span className="rounded-md bg-yellow-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-yellow-400">
+                Privado
+              </span>
+            </div>
+            <p className="text-[12px] leading-snug text-gray-500">
+              Estatísticas escondidas pela Steam — o perfil destas contas
+              precisa de <span className="font-bold text-yellow-400">Editar perfil → Privacidade → Detalhes do jogo: Público</span>.
+              Depois cuida-se sozinho, sem mais nada.
+            </p>
+          </div>
         ))}
       </div>
       <div className="mt-4 border-t border-white/10 pt-4">
