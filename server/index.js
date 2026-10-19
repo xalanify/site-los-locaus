@@ -107,10 +107,27 @@ app.use((req, res, next) => {
   express.json({ limit: '32kb' })(req, res, next);
 });
 
+const ORIGENS_PERMITIDAS = new Set(
+  [process.env.SITE_URL, 'https://locaus.vercel.app']
+    .filter(Boolean)
+    .map((o) => String(o).replace(/\/+$/, ''))
+);
+
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      if (!origin) return cb(null, true);
+      const limpo = origin.replace(/\/+$/, '');
+      if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(limpo)) {
+        return cb(null, true);
+      }
+      if (ORIGENS_PERMITIDAS.has(limpo)) return cb(null, true);
+      // Previews da Vercel deste projeto (locaus-*.vercel.app)
+      if (
+        /^https:\/\/locaus(?:-[a-z0-9]+)*(?:-alexandregumes2017-1990s-projects)?\.vercel\.app$/.test(
+          limpo
+        )
+      ) {
         return cb(null, true);
       }
       cb(new Error('Origem não permitida'));
