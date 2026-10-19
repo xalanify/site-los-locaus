@@ -623,7 +623,7 @@ export default function PcsPage() {
 
         {/* ---------------- Tabela ---------------- */}
         <div className="glass mb-6 overflow-hidden rounded-2xl">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <div className="flex flex-col items-start gap-1 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
               Máquinas do grupo
             </h2>
@@ -631,6 +631,9 @@ export default function PcsPage() {
               {lista.length} registos · clique numa linha
             </span>
           </div>
+          <p className="px-4 pt-2 text-[10px] text-gray-500 sm:hidden">
+            Desliza a tabela para o lado para ver RAM e placa gráfica →
+          </p>
 
           {!carregado ? (
             <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
@@ -642,7 +645,7 @@ export default function PcsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
+              <table className="w-full min-w-[640px] text-left text-sm sm:min-w-[720px]">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-gray-400">
                     <th className="px-4 py-2.5 font-bold">#</th>

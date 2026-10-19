@@ -60,8 +60,8 @@ export default function Hero() {
             />
             <div className="min-w-0">
               <h1
-                className="truncate font-display font-black uppercase leading-none text-white"
-                style={{ fontSize: 'clamp(1.5rem, 6.5vw, 2.1rem)' }}
+                className="font-display font-black uppercase leading-tight text-white"
+                style={{ fontSize: 'clamp(1.2rem, 5.6vw, 2.1rem)' }}
               >
                 {channel?.snippet?.title || 'Ashow e Jazer'}
               </h1>

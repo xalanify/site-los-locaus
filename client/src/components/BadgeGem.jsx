@@ -31,15 +31,6 @@ export const BADGES = [
     dark: '#7A2A08',
     anim: 'shine',
   },
-  {
-    id: 'jogador',
-    label: 'JOGADOR DO CANAL',
-    desc: '',
-    color: '#8B5CF6',
-    light: '#CBB7FF',
-    dark: '#3B1480',
-    anim: 'float',
-  },
 ]
 
 /* Legenda DEV: branco → vermelho com brilho */

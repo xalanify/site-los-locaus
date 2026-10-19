@@ -44,17 +44,17 @@ if (-not $elevado) { Write-Output 'Aviso: sem privilegios de administrador - ope
 /* ---- bloco 1: sempre igual (o nível 1) ---- */
 const XALANA_BASE = `
 Write-Output '=== OTIMIZACAO XALANA - NIVEL 1: MINIMA ==='
-Write-Output 'So o essencial: nada de servicos nem tarefas, so ajustes de desempenho.'
+Write-Output 'So o essencial: nada de servicos nem tarefas, so ajustes de desempenho e resposta.'
 Write-Output ''
 
-Write-Output '[1/4] Plano de energia: alto desempenho'
+Write-Output '[1/6] Plano de energia: alto desempenho'
 try {
   powercfg /setactive SCHEME_MIN
   if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] CPU deixa de dormir - resposta mais rapida ao toque.' }
   else { Write-Output ('  [!] powercfg devolveu ' + $LASTEXITCODE + ' (precisa de administrador).') }
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[2/4] Efeitos visuais: melhor desempenho'
+Write-Output '[2/6] Efeitos visuais: melhor desempenho'
 try {
   $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects'
   New-Item -Path $p -Force | Out-Null
@@ -62,7 +62,7 @@ try {
   Write-Output '  [ok] Animacoes pesadas desligadas (menus e janelas mais leves).'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[3/4] Rato sem aceleração (1:1)'
+Write-Output '[3/6] Rato sem aceleração (1:1)'
 try {
   $m = 'HKCU:\\Control Panel\\Mouse'
   Set-ItemProperty -Path $m -Name MouseSpeed -Value '0'
@@ -71,7 +71,23 @@ try {
   Write-Output '  [ok] O rato anda exatamente a distancia que o moves.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[4/4] Temporários do utilizador limpos'
+Write-Output '[4/6] Animações de janelas: desligadas (input lag menor)'
+try {
+  Set-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop\\WindowMetrics' -Name MinAnimate -Value '0' -ErrorAction SilentlyContinue
+  Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\DWM' -Name TaskbarAnimations -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced' -Name ListviewAlphaSelect -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  Write-Output '  [ok] Sem animacoes de minimizar/maximizar; janelas reagem mais rapido.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[5/6] USB e dispositivos: nunca dormem (menos delay de input)'
+try {
+  powercfg /SETACVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a547-ab13af45c4df 0 | Out-Null
+  powercfg /SETACVALUEINDEX SCHEME_CURRENT 0012ee47-9041-4b5d-9b77-535fba8b1442 d6d4248e-b4bb-4667-b6d0-f0e0ddb4b1f4 0 | Out-Null
+  powercfg /SETACTIVE SCHEME_CURRENT | Out-Null
+  Write-Output '  [ok] Sem suspensao seletiva de USB; rato/teclado respondem sempre. '
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[6/6] Temporários do utilizador limpos'
 try {
   Get-ChildItem -Path $env:TEMP -Force -ErrorAction SilentlyContinue |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
@@ -82,16 +98,16 @@ try {
 /* ---- bloco 2: extras do nível 2 ---- */
 const XALANA_NORMAL = `
 Write-Output ''
-Write-Output '--- NIVEL 2: extras de telemetria e jogos ---'
+Write-Output '--- NIVEL 2: telemetria, jogos e latência ---'
 
-Write-Output '[5/10] Telemetria: DiagTrack parado'
+Write-Output '[7/15] Telemetria: DiagTrack parado'
 try {
   Stop-Service -Name DiagTrack -Force -ErrorAction SilentlyContinue
   Set-Service -Name DiagTrack -StartupType Disabled -ErrorAction SilentlyContinue
   Write-Output '  [ok] DiagTrack parado e desligado no arranque (menos disco e CPU em fundo).'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[6/10] Aplicações em segundo plano: suspensas'
+Write-Output '[8/15] Aplicações em segundo plano: suspensas'
 try {
   $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications'
   New-Item -Path $p -Force | Out-Null
@@ -99,18 +115,9 @@ try {
   Write-Output '  [ok] Apps deixam de correr as costas.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[7/10] Xbox Game Bar e gravação (GameDVR): desligados'
-try {
-  $a = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR'
-  New-Item -Path $a -Force | Out-Null
-  Set-ItemProperty -Path $a -Name AppCaptureEnabled -Value 0 -Type DWord
-  $b = 'HKCU:\\System\\GameConfigStore'
-  New-Item -Path $b -Force | Out-Null
-  Set-ItemProperty -Path $b -Name GameDVR_Enabled -Value 0 -Type DWord
-  Write-Output '  [ok] Sem overlay nem gravacao de fundo a roubar recursos.'
-} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+Write-Output '[9/15] (jogo Xbox Game Bar fica intacto — não mexemos em nada da Xbox/Microsoft)'
 
-Write-Output '[8/10] Sugestões e apps recomendadas: desligadas'
+Write-Output '[10/15] Sugestões e apps recomendadas: desligadas'
 try {
   $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager'
   if (Test-Path $p) {
@@ -121,7 +128,7 @@ try {
   Write-Output '  [ok] Menu Inicio sem apps a serem promovidas.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[9/10] Transparência e demoras de menu: desligadas'
+Write-Output '[11/15] Transparência e demoras de menu: desligadas'
 try {
   $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
   New-Item -Path $p -Force | Out-Null
@@ -130,7 +137,31 @@ try {
   Write-Output '  [ok] Sem transparencia; menus abrem de estalar.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[10/10] Tarefas de diagnóstico/telemetria: desativadas'
+Write-Output '[12/15] Latência de rede: Nagle desligado (atraso de pacotes menos)'
+try {
+  $raiz = 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'
+  $n = 0
+  Get-ChildItem $raiz -ErrorAction SilentlyContinue | ForEach-Object {
+    Set-ItemProperty -Path $_.PSPath -Name TcpAckFrequency -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $_.PSPath -Name TCPNoDelay -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $_.PSPath -Name TcpDelAckTicks -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  }
+  $n = (Get-ChildItem $raiz -ErrorAction SilentlyContinue).Count
+  Write-Output ('  [ok] Nagle/algoritmo de atraso desligado em ' + $n + ' interfaces (menos input lag online).')
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[13/15] DNS rápido: Cloudflare + Google e cache limpa'
+try {
+  $iface = (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' } | Select-Object -First 1).InterfaceAlias
+  if ($iface) {
+    Set-DnsClientServerAddress -InterfaceAlias $iface -ServerAddresses '1.1.1.1','8.8.8.8' -ErrorAction Stop
+    Write-Output ('  [ok] DNS da interface ' + $iface + ' => 1.1.1.1 / 8.8.8.8 (resposta mais rapida).')
+  } else { Write-Output '  [!] Sem interface de Internet detetada; DNS nao mexido.' }
+  ipconfig /flushdns | Out-Null
+  Clear-DnsClientCache -ErrorAction SilentlyContinue
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[14/15] Tarefas de diagnóstico/telemetria: desativadas'
 try {
   $tarefas = @(
     @('\\Microsoft\\Windows\\Application Experience\\', 'Microsoft Compatibility Appraiser'),
@@ -144,42 +175,44 @@ try {
   }
   Write-Output '  [ok] 5 tarefas de telemetria paradas.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[15/15] Painéis de feedback e relatórios: desligados'
+try {
+  $mais = @(
+    @('\\Microsoft\\Windows\\Feedback\\Siuf\\', 'DmClient'),
+    @('\\Microsoft\\Windows\\Windows Error Reporting\\', 'QueueReporting'),
+    @('\\Microsoft\\Windows\\Maps\\', 'MapsToastTask'),
+    @('\\Microsoft\\Windows\\Maps\\', 'MapsUpdateTask')
+  )
+  foreach ($t in $mais) {
+    Disable-ScheduledTask -TaskPath $t[0] -TaskName $t[1] -ErrorAction SilentlyContinue | Out-Null
+  }
+  Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Siuf\\Rules' -Name NumberOfSIUFInPeriod -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  Write-Output '  [ok] Feedback, relatorios de erro e avisos dos Mapas parados.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 `;
 
 /* ---- bloco 3: extras pesados do nível 3 ---- */
 const XALANA_EXTREMO = `
 Write-Output ''
-Write-Output '--- NIVEL 3: debloat e servicos pesados ---'
+Write-Output '--- NIVEL 3: debloat, servicos inuteis e rede a maximo ---'
 
-Write-Output '[11/15] Debloat: apps pré-instaladas removidas'
-try {
-  $alvos = @(
-    'Microsoft.XboxApp', 'Microsoft.XboxGameOverlay', 'Microsoft.XboxGamingOverlay',
-    'Microsoft.XboxSpeechToTextOverlay', 'Microsoft.GamingApp', 'Microsoft.WindowsWidgets',
-    'Microsoft.GetHelp', 'Microsoft.Getstarted', 'Microsoft.MicrosoftSolitaireCollection',
-    'Microsoft.People', 'Microsoft.WindowsMaps', 'Microsoft.Clipchamp', 'Microsoft.549981C3F5F10'
-  )
-  $n = 0
-  foreach ($a in $alvos) {
-    $pkg = Get-AppxPackage -Name $a -ErrorAction SilentlyContinue
-    if ($pkg) { Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction SilentlyContinue; $n++ }
-  }
-  Write-Output ('  [ok] ' + $n + ' pacote(s) removidos (só o que existia neste PC).')
-} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+Write-Output '[16/22] Debloat: NADA removido — os apps da Xbox/Microsoft ficam intactos'
 
-Write-Output '[12/15] Serviços pesados: parados e desligados'
+Write-Output '[17/22] Serviços pesados e inúteis: parados e desligados (Xbox intocável)'
 try {
   $svcs = @('SysMain', 'WSearch', 'Fax', 'RetailDemo', 'MapsBroker', 'lfsvc',
-            'XblAuthManager', 'XblGameSave', 'XboxGipSvc', 'XboxNetApiSvc',
-            'wisvc', 'dmwappushservice')
+            'wisvc', 'dmwappushservice', 'DiagTrack',
+            'TrkWks', 'PhoneSvc', 'SmsRouter', 'PcaSvc', 'DoSvc', 'WmpNetworkSvc',
+            'RemoteRegistry', 'WerSvc', 'Netlogon', 'RemoteAccess')
   foreach ($s in $svcs) {
     Stop-Service -Name $s -Force -ErrorAction SilentlyContinue
     Set-Service -Name $s -StartupType Disabled -ErrorAction SilentlyContinue
   }
-  Write-Output '  [ok] SysMain, Pesquisa indexada, Xbox, Fax, Mapas... desligados.'
+  Write-Output '  [ok] SysMain, Pesquisa, DoSvc (deliveries), Fax, Mapas, Partilha... desligados. Xbox/Microsoft ficam como estão.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[13/15] Perfil de multimedia/jogo: sem limitações'
+Write-Output '[18/22] Perfil de multimedia/jogo: sem limitações'
 try {
   $p = 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile'
   New-Item -Path $p -Force | Out-Null
@@ -194,16 +227,36 @@ try {
   Write-Output '  [ok] Windows deixa de engonhar a rede e poe os jogos em prioridade alta.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[14/15] Prioridade de processos: desempenho'
+Write-Output '[19/22] Prioridade de processos: desempenho'
 try {
   Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl' -Name PrioritySeparation -Value 38 -Type DWord
   Write-Output '  [ok] CPU da prioridade a correr programas (38 = modo desempenho).'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 
-Write-Output '[15/15] Hibernação e arranque rápido: desligados'
+Write-Output '[20/22] Hibernação e arranque rápido: desligados'
 try {
   powercfg /h off
   Write-Output '  [ok] hiberfil.sys libertado; o PC desliga mesmo.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[21/22] Rede: tuning TCP no maximo (latencia online o mais baixa)'
+try {
+  netsh int tcp set global autotuninglevel=normal | Out-Null
+  netsh int tcp set global rss=enabled | Out-Null
+  netsh int tcp set global ecncapability=enabled | Out-Null
+  netsh int tcp set global timestamps=disabled | Out-Null
+  netsh int tcp set global initialRto=2000 | Out-Null
+  netsh int tcp set global rsc=disabled | Out-Null
+  Get-NetAdapterRss -ErrorAction SilentlyContinue | ForEach-Object { Enable-NetAdapterRss -Name $_.Name -ErrorAction SilentlyContinue | Out-Null }
+  Write-Output '  [ok] TCP afinado: RSS ligado, timestamps/RSC fora, ACKs rapidos.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output '[22/22] GPU: jogos sempre com prioridade grafica'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\DirectX\\UserGpuPreferences'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name DirectXGlobal -Value 'GpuPreference=2;' -Type String
+  Write-Output '  [ok] Windows da o-to-to com a GPU dedicada aos jogos.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 `;
 
@@ -959,14 +1012,16 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     id: 'xalana-minima',
     cat: 'Otimizador by Xalana',
     nome: 'Otimização mínima',
-    desc: 'Nível 1 — o básico bem feito. Só ajustes de desempenho seguros, sem mexer em serviços nem em tarefas.',
+    desc: 'Nível 1 — o básico bem feito + resposta: animações fora e dispositivos sem suspensão. Nada de serviços nem tarefas.',
     perigo: 'baixo',
-    tempo: 150000,
+    tempo: 180000,
     icone: 'Gauge',
     passos: [
       'Plano de energia em alto desempenho (a CPU não dorme)',
       'Efeitos visuais em modo leve (menus e janelas mais rápidos)',
       'Rato 1:1 — sem aceleração, resposta exata',
+      'Animações de janelas desligadas (menos delay a abrir/fechar)',
+      'USB e dispositivos de input nunca dormem (fim do delay de input)',
       'Temporários do utilizador limpos',
     ],
     cmd: XALANA_BASE + XALANA_FIM,
@@ -976,18 +1031,21 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     id: 'xalana-normal',
     cat: 'Otimizador by Xalana',
     nome: 'Otimização normal',
-    desc: 'Nível 2 — tudo do nível 1 + telemetria parada, apps de fundo, Game Bar, sugestões e tarefas de diagnóstico. O equilíbrio para jogar e trabalhar.',
+    desc: 'Nível 2 — tudo do nível 1 + telemetria parada, apps de fundo, latência de rede (Nagle fora), DNS rápido e mais tarefas paradas. Não mexe em nada da Xbox/Microsoft. O equilíbrio para jogar e trabalhar.',
     perigo: 'medio',
-    tempo: 300000,
+    tempo: 360000,
     icone: 'Rocket',
     passos: [
-      'Tudo do nível 1 (energia, visuais, rato, temporários)',
+      'Tudo do nível 1 (energia, visuais, rato, animações, USB, temporários)',
       'Telemetria DiagTrack parada',
       'Aplicações em segundo plano suspensas',
-      'Xbox Game Bar e gravação (GameDVR) desligados',
+      'Nota: nada da Xbox/Microsoft é removido ou desligado',
       'Sugestões/apps recomendadas do Início desligadas',
       'Transparência e demoras de menu desligadas',
+      'Nagle desligado em todas as interfaces (menos atraso de pacotes)',
+      'DNS rápido: 1.1.1.1 + 8.8.8.8 com cache limpa',
       '5 tarefas de diagnóstico da Windows desativadas',
+      'Feedback, relatórios de erro e avisos dos Mapas desligados',
     ],
     cmd: XALANA_BASE + XALANA_NORMAL + XALANA_FIM,
   },
@@ -996,15 +1054,17 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     id: 'xalana-extremo',
     cat: 'Otimizador by Xalana',
     nome: 'Otimização extremo',
-    desc: 'Nível 3 — tudo dos níveis 1 e 2 + debloat de apps pré-instaladas, serviços pesados desligados e perfil de jogo sem limitações. Máxima fluidez (mexes em serviços: reinicia o PC no fim).',
+    desc: 'Nível 3 — tudo dos níveis 1 e 2 + serviços inúteis desligados (Delivery Optimization, TrkWks, compartilha de media...), tuning TCP a fundo e GPU nos jogos. Xbox/Microsoft ficam intactos. Máxima fluidez.',
     perigo: 'alto',
     tempo: 600000,
     icone: 'Swords',
     passos: [
-      'Tudo do nível 1 e do nível 2 (10 ações)',
-      'Debloat: apps do Xbox, Widgets, Cortana, Solitaire, Maps... removidas',
-      'Serviços pesados parados (SysMain, Pesquisa, Xbox, Fax, Mapas...)',
+      'Tudo do nível 1 e do nível 2',
+      'Nota: nada da Xbox/Microsoft é removido ou desligado',
+      'Serviços pesados e inúteis parados (SysMain, Pesquisa, DoSvc, TrkWks, Fax, Mapas...)',
       'Rede sem limitação de multimedia + jogos em prioridade alta',
+      'Tuning TCP: RSS ligado, timestamps e RSC fora, ACKs rápidos',
+      'GPU com prioridade global a favor dos jogos',
       'Prioridade de processos em modo desempenho',
       'Hibernação e arranque rápido desligados (liberta hiberfil.sys)',
     ],
@@ -1056,11 +1116,35 @@ try {
   Write-Output '  [ok] O rato anda exatamente a distancia que o moves.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
+  'xalana-a16': {
+    nome: 'Animações de janelas desligadas',
+    desc: 'Fim das animações de minimizar/maximizar — menos delay.',
+    nivel: 'minima',
+    script: `Write-Output 'Animações de janelas: desligadas (input lag menor)'
+try {
+  Set-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop\\WindowMetrics' -Name MinAnimate -Value '0' -ErrorAction SilentlyContinue
+  Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\DWM' -Name TaskbarAnimations -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced' -Name ListviewAlphaSelect -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  Write-Output '  [ok] Sem animacoes de minimizar/maximizar; janelas reagem mais rapido.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a17': {
+    nome: 'USB e input nunca dormem',
+    desc: 'Rato/teclado respondem sempre; sem suspensão seletiva.',
+    nivel: 'minima',
+    script: `Write-Output 'USB e dispositivos: nunca dormem (menos delay de input)'
+try {
+  powercfg /SETACVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a547-ab13af45c4df 0 | Out-Null
+  powercfg /SETACVALUEINDEX SCHEME_CURRENT 0012ee47-9041-4b5d-9b77-535fba8b1442 d6d4248e-b4bb-4667-b6d0-f0e0ddb4b1f4 0 | Out-Null
+  powercfg /SETACTIVE SCHEME_CURRENT | Out-Null
+  Write-Output '  [ok] Sem suspensao seletiva de USB; rato/teclado respondem sempre.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
   'xalana-a4': {
     nome: 'Temporários do utilizador limpos',
     desc: 'Limpa %TEMP% (fica só o que está em uso).',
     nivel: 'minima',
-    script: `Write-Output '[4/4] Temporários do utilizador limpos'
+    script: `Write-Output '[6/6] Temporários do utilizador limpos'
 try {
   Get-ChildItem -Path $env:TEMP -Force -ErrorAction SilentlyContinue |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
@@ -1135,11 +1219,42 @@ try {
   Write-Output '  [ok] Sem transparencia; menus abrem de estalar.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
+  'xalana-a18': {
+    nome: 'Latência: Nagle desligado',
+    desc: 'Menos atraso de pacotes em todas as interfaces.',
+    nivel: 'normal',
+    script: `Write-Output 'Latência de rede: Nagle desligado'
+try {
+  $raiz = 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'
+  Get-ChildItem $raiz -ErrorAction SilentlyContinue | ForEach-Object {
+    Set-ItemProperty -Path $_.PSPath -Name TcpAckFrequency -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $_.PSPath -Name TCPNoDelay -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $_.PSPath -Name TcpDelAckTicks -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  }
+  $n = (Get-ChildItem $raiz -ErrorAction SilentlyContinue).Count
+  Write-Output ('  [ok] Nagle/algoritmo de atraso desligado em ' + $n + ' interfaces (menos input lag online).')
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a19': {
+    nome: 'DNS rápido (1.1.1.1 + 8.8.8.8)',
+    desc: 'Resolução de sites mais rápida, cache limpa.',
+    nivel: 'normal',
+    script: `Write-Output 'DNS rápido: Cloudflare + Google e cache limpa'
+try {
+  $iface = (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' } | Select-Object -First 1).InterfaceAlias
+  if ($iface) {
+    Set-DnsClientServerAddress -InterfaceAlias $iface -ServerAddresses '1.1.1.1','8.8.8.8' -ErrorAction Stop
+    Write-Output ('  [ok] DNS da interface ' + $iface + ' => 1.1.1.1 / 8.8.8.8.')
+  } else { Write-Output '  [!] Sem interface de Internet detetada; DNS nao mexido.' }
+  ipconfig /flushdns | Out-Null
+  Clear-DnsClientCache -ErrorAction SilentlyContinue
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
   'xalana-a10': {
     nome: 'Tarefas de diagnóstico desativadas',
     desc: '5 tarefas de telemetria paradas.',
     nivel: 'normal',
-    script: `Write-Output '[10/10] Tarefas de diagnóstico/telemetria: desativadas'
+    script: `Write-Output 'Tarefas de diagnóstico/telemetria: desativadas'
 try {
   $tarefas = @(
     @('\\Microsoft\\Windows\\Application Experience\\', 'Microsoft Compatibility Appraiser'),
@@ -1152,6 +1267,25 @@ try {
     Disable-ScheduledTask -TaskPath $t[0] -TaskName $t[1] -ErrorAction SilentlyContinue | Out-Null
   }
   Write-Output '  [ok] 5 tarefas de telemetria paradas.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a15': {
+    nome: 'Feedback e relatórios desligados',
+    desc: 'Painéis do Feedback, WER e avisos dos Mapas fora.',
+    nivel: 'normal',
+    script: `Write-Output 'Painéis de feedback e relatórios: desligados'
+try {
+  $mais = @(
+    @('\\Microsoft\\Windows\\Feedback\\Siuf\\', 'DmClient'),
+    @('\\Microsoft\\Windows\\Windows Error Reporting\\', 'QueueReporting'),
+    @('\\Microsoft\\Windows\\Maps\\', 'MapsToastTask'),
+    @('\\Microsoft\\Windows\\Maps\\', 'MapsUpdateTask')
+  )
+  foreach ($t in $mais) {
+    Disable-ScheduledTask -TaskPath $t[0] -TaskName $t[1] -ErrorAction SilentlyContinue | Out-Null
+  }
+  Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Siuf\\Rules' -Name NumberOfSIUFInPeriod -Value 0 -Type DWord -ErrorAction SilentlyContinue
+  Write-Output '  [ok] Feedback, relatorios de erro e avisos dos Mapas parados.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
 
@@ -1178,18 +1312,20 @@ try {
   },
   'xalana-a12': {
     nome: 'Serviços pesados parados e desligados',
-    desc: 'SysMain, Pesquisa indexada, Xbox, Fax, Mapas...',
+    desc: 'SysMain, Pesquisa, Xbox, DoSvc, TrkWks, Fax, Mapas...',
     nivel: 'extremo',
-    script: `Write-Output '[12/15] Serviços pesados: parados e desligados'
+    script: `Write-Output 'Serviços pesados e inúteis: parados e desligados'
 try {
   $svcs = @('SysMain', 'WSearch', 'Fax', 'RetailDemo', 'MapsBroker', 'lfsvc',
             'XblAuthManager', 'XblGameSave', 'XboxGipSvc', 'XboxNetApiSvc',
-            'wisvc', 'dmwappushservice')
+            'wisvc', 'dmwappushservice', 'DiagTrack',
+            'TrkWks', 'PhoneSvc', 'SmsRouter', 'PcaSvc', 'DoSvc', 'WmpNetworkSvc',
+            'RemoteRegistry', 'WerSvc', 'Netlogon', 'RemoteAccess')
   foreach ($s in $svcs) {
     Stop-Service -Name $s -Force -ErrorAction SilentlyContinue
     Set-Service -Name $s -StartupType Disabled -ErrorAction SilentlyContinue
   }
-  Write-Output '  [ok] SysMain, Pesquisa indexada, Xbox, Fax, Mapas... desligados.'
+  Write-Output '  [ok] SysMain, Pesquisa, Xbox, DoSvc (deliveries), Fax, Mapas, Partilha... desligados.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
   'xalana-a13': {
@@ -1221,11 +1357,39 @@ try {
   Write-Output '  [ok] CPU da prioridade a correr programas (38 = modo desempenho).'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
-  'xalana-a15': {
+  'xalana-a20': {
+    nome: 'Tuning TCP no máximo',
+    desc: 'RSS ligado, timestamps e RSC fora, ACKs rápidos.',
+    nivel: 'extremo',
+    script: `Write-Output 'Rede: tuning TCP no maximo (latencia online o mais baixa)'
+try {
+  netsh int tcp set global autotuninglevel=normal | Out-Null
+  netsh int tcp set global rss=enabled | Out-Null
+  netsh int tcp set global ecncapability=enabled | Out-Null
+  netsh int tcp set global timestamps=disabled | Out-Null
+  netsh int tcp set global initialRto=2000 | Out-Null
+  netsh int tcp set global rsc=disabled | Out-Null
+  Get-NetAdapterRss -ErrorAction SilentlyContinue | ForEach-Object { Enable-NetAdapterRss -Name $_.Name -ErrorAction SilentlyContinue | Out-Null }
+  Write-Output '  [ok] TCP afinado: RSS ligado, timestamps/RSC fora, ACKs rapidos.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a21': {
+    nome: 'GPU prioritária nos jogos',
+    desc: 'Windows dá a GPU dedicada sempre aos jogos.',
+    nivel: 'extremo',
+    script: `Write-Output 'GPU: jogos sempre com prioridade grafica'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\DirectX\\UserGpuPreferences'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name DirectXGlobal -Value 'GpuPreference=2;' -Type String
+  Write-Output '  [ok] Windows da a GPU dedicada sempre aos jogos.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a22': {
     nome: 'Hibernação e arranque rápido desligados',
     desc: 'Liberta hiberfil.sys; o PC desliga mesmo.',
     nivel: 'extremo',
-    script: `Write-Output '[15/15] Hibernação e arranque rápido: desligados'
+    script: `Write-Output 'Hibernação e arranque rápido: desligados'
 try {
   powercfg /h off
   Write-Output '  [ok] hiberfil.sys libertado; o PC desliga mesmo.'
@@ -1235,9 +1399,12 @@ try {
 
 /* Ordem das ações por nível (para mostrar no frontend). */
 const XALANA_NIVEIS = {
-  minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4'],
-  normal: ['xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
-  extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15'],
+  minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4'],
+  normal: [
+    'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9',
+    'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15',
+  ],
+  extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a20', 'xalana-a21', 'xalana-a14', 'xalana-a22'],
 };
 
 const XALANA_HEADER = `Write-Output '=== OTIMIZADOR BY XALANA ==='
@@ -1824,44 +1991,109 @@ function desinstalar(ids, quem) {
 
   const blocos = validos.map((f) => {
     const nb = f.wingetId.split('.').pop();
+    const cnome = f.wingetId.split('.')[0];
     const nomeEsc = String(f.nome).replace(/'/g, "''");
     return `
 Write-Output "=== A desinstalar ${f.nome} ==="
-# 1) tenta winget
-$r = winget uninstall --id "${f.wingetId}" -e --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
-if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] desinstalado pelo winget' } else {
-  Write-Output "  winget nao encontrou o programa, a procurar desinstalador no registo do Windows..."
-  $nome = '${nomeEsc}'
-  $chaves = @(
-    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
-    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*",
-    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
-  )
-  $encontrado = $false
-  foreach ($chave in $chaves) {
-    Get-ItemProperty $chave -ErrorAction SilentlyContinue |
-      Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" } |
-      ForEach-Object {
-        $encontrado = $true
-        $str = $_.UninstallString
-        if ($str) {
-          Write-Output "  a executar desinstalador: $str"
-          Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "$str" -Wait -NoNewWindow
-        }
-      }
+$nome = '${nomeEsc}'
+$nb = '${nb}'
+$cnome = '${cnome}'
+$removido = $false
+
+# 1) winget direto (não abre janelas: silencioso, força e purga)
+try {
+  $r = winget uninstall --id "${f.wingetId}" -e --silent --force --purge --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
+  if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] desinstalado pelo winget'; $removido = $true }
+  else { Write-Output ("  winget nao saqueou (" + $LASTEXITCODE + ") - a limpar direto, estilo Revo.") }
+} catch { Write-Output ("  winget falhou: " + $_.Exception.Message) }
+
+# 2) registo: apanha as entradas de desinstalação, mata processos
+#    do programa, corre o MSI silencioso (sem janelas) e apaga a chave
+$chaves = @(
+  "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*",
+  "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*",
+  "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*"
+)
+$lugar = $null
+foreach ($chave in $chaves) {
+  $alvos = @(Get-ItemProperty $chave -ErrorAction SilentlyContinue |
+    Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" })
+  foreach ($al in $alvos) {
+    $removido = $true
+    $inst = $al.InstallLocation
+    if (-not $inst) { $inst = $al.SourceDir }
+    if ($inst) {
+      $lugar = $inst
+      try {
+        Get-Process -ErrorAction SilentlyContinue |
+          Where-Object { $_.Path -and $_.Path.StartsWith($inst.TrimEnd('\\'), [System.StringComparison]::OrdinalIgnoreCase) } |
+          Stop-Process -Force -ErrorAction SilentlyContinue
+      } catch {}
+    }
+    $str = $al.UninstallString
+    $qstr = $al.QuietUninstallString
+    if ($qstr) {
+      Write-Output "  a correr o desinstalador silencioso oficial..."
+      try { Start-Process cmd.exe -ArgumentList '/c', $qstr -Wait -NoNewWindow -ErrorAction Stop } catch {}
+    } elseif ($str -and $str -match 'msiexec' -and $str -match '[{][0-9A-Fa-f-]+[}]') {
+      $guid = ($str | Select-String -Pattern '[{][0-9A-Fa-f-]+[}]').Matches[0].Value
+      Write-Output "  a desinstalar MSI ($guid) sem janelas..."
+      try { Start-Process msiexec.exe -ArgumentList '/x', $guid, '/qn', '/norestart' -Wait -ErrorAction Stop } catch {}
+    } else {
+      Write-Output "  sem desinstalador silencioso - limpeza direta das pastas e do registo."
+    }
+    # a própria chave de desinstalação sai também
+    try { Remove-Item -Path $al.PSPath -Recurse -Force -ErrorAction Stop; Write-Output '  chave de desinstalação removida' } catch {}
   }
-  if (-not $encontrado) { Write-Output "  [!] nao encontrou desinstalador no registo - desinstala manualmente nas Definicoes do Windows." }
 }
-$nb = "${nb}"
-foreach ($pasta in @((Join-Path $env:ProgramFiles $nb), (Join-Path ($env:ProgramFiles + '(x86)') $nb), (Join-Path $env:LOCALAPPDATA $nb), (Join-Path $env:APPDATA $nb))) {
-  if ($pasta -and (Test-Path $pasta)) { try { Remove-Item $pasta -Recurse -Force -ErrorAction Stop; Write-Output ("  pasta removida: " + $pasta) } catch {} }
+
+# 3) pastas do programa (o sitio real do registo + palpites seguros)
+$pastas = @()
+if ($lugar) { $pastas += $lugar }
+foreach ($n in @($nb, $cnome)) {
+  if ($n) {
+    $pastas += (Join-Path $env:ProgramFiles $n)
+    $pastas += (Join-Path ($env:ProgramFiles + ' (x86)') $n)
+    $pastas += (Join-Path $env:LOCALAPPDATA $n)
+    $pastas += (Join-Path $env:APPDATA $n)
+  }
 }
-foreach ($rg in @("HKLM:\\SOFTWARE\\$nb", "HKLM:\\SOFTWARE\\WOW6432Node\\$nb", "HKCU:\\Software\\$nb")) {
+foreach ($pasta in ($pastas | Select-Object -Unique)) {
+  if ($pasta -and (Test-Path $pasta)) {
+    try {
+      Remove-Item $pasta -Recurse -Force -ErrorAction Stop
+      Write-Output ("  pasta removida: " + $pasta)
+    } catch { Write-Output ("  [!] pasta não saiu (a uso): " + $pasta) }
+  }
+}
+
+# 4) restos no registo (chaves do fabricante/programa)
+foreach ($rg in @("HKLM:\\SOFTWARE\\$nb", "HKLM:\\SOFTWARE\\WOW6432Node\\$nb", "HKCU:\\Software\\$nb", "HKLM:\\SOFTWARE\\$cnome", "HKCU:\\Software\\$cnome")) {
   if (Test-Path $rg) { try { Remove-Item $rg -Recurse -Force -ErrorAction Stop; Write-Output ("  registo removido: " + $rg) } catch {} }
 }
-Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -like "*$nb*" } | ForEach-Object { try { Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false -ErrorAction SilentlyContinue } catch {} }
+
+# 5) atalhos do menu inicial e do ambiente de trabalho
+foreach ($sitio in @($env:APPDATA + '\\Microsoft\\Windows\\Start Menu', $env:ProgramData + '\\Microsoft\\Windows\\Start Menu', [Environment]::GetFolderPath('Desktop'))) {
+  if ($sitio -and (Test-Path $sitio)) {
+    Get-ChildItem -Path $sitio -Recurse -Filter '*.lnk' -ErrorAction SilentlyContinue |
+      Where-Object { $_.BaseName -like "*$nome*" -or $_.BaseName -like "*$nb*" } |
+      ForEach-Object { try { Remove-Item $_.FullName -Force -ErrorAction Stop; Write-Output ("  atalho removido: " + $_.BaseName) } catch {} }
+  }
+}
+
+# 6) tarefas agendadas e serviços deste programa
+Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -like "*$nb*" -or $_.TaskName -like "*$nome*" } | ForEach-Object { try { Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false -ErrorAction SilentlyContinue } catch {} }
 Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$nb*" } | ForEach-Object { try { Stop-Service -Name $_.Name -Force -ErrorAction SilentlyContinue; Set-Service -Name $_.Name -StartupType Disabled -ErrorAction SilentlyContinue } catch {} }
-Write-Output "=== ${f.nome}: concluido ==="
+
+# 7) VERDADE final: continua ele no PC?
+$continua = $false
+foreach ($chave in $chaves) {
+  if (Get-ItemProperty $chave -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" }) { $continua = $true }
+}
+if ($lugar -and (Test-Path $lugar)) { $continua = $true }
+if ($removido -and -not $continua) { Write-Output "=== ${f.nome}: [ok] saiu do PC ===" }
+elseif ($removido) { Write-Output "=== ${f.nome}: [!] quase - rebuçados alguns (reinicia e vê ou desinstala nas Definições) ===" }
+else { Write-Output "=== ${f.nome}: [!] nao o encontrei no registo - verifica o nome nas Definições ===" }
 `;
   });
 

@@ -1,44 +1,64 @@
 /* ============================================================
    TOP 1 KILL (CS2) — automático
 
-   O jogador que lidera o ranking "Top 1 Kill" (melhor partida
-   de cada um — igual ao site) recebe a distinção `top1` na sua
-   conta. A ligação CS2 -> conta faz-se pelo "nick no CS2"
-   guardado no perfil (ou pelo username, caso coincida).
+   O jogador que lidera o ranking "Top kills" (total de kills
+   acumulados, como aparece no painel ao vivo da Steam) recebe a
+   distinção `top1` na sua conta. A ligação CS2 -> conta faz-se
+   pelo "nick no CS2" guardado no perfil (ou pelo username, caso
+   coincida).
 
    - Corre no arranque do servidor (index.js).
    - Repete sempre que os ficheiros do histórico mudam
-     (chamado em GET /api/games/cs2).
+     (chamado em GET /api/games/cs2) e no painel ao vivo.
    - Se o líder não tiver conta, não mexe nas atribuições
      (deixa as manuais do admin intactas).
    ============================================================ */
 const cs2 = require('./cs2data');
+const cs2live = require('./cs2live');
 const store = require('./usersStore');
 const { getDb } = require('./database');
 
-/* Mesmo cálculo do ranking "Top 1 Kill" do cliente:
-   máximo de kills numa única partida, por jogador. */
-function computeLeader() {
+/* Líder do ranking "Top kills" (total acumulado).
+
+   Preferência: painel ao vivo da Steam (total_kills de cada conta
+   ligada). Se não houver dados ao vivo (sem key, tudo privado),
+   cai para o histórico guardado (soma de kills de todas as partidas). */
+async function computeLeader() {
+  // 1) ao vivo (Steam) — é o que o painel mostra
+  try {
+    const r = await cs2live.aoVivo();
+    if (r && r.ok && Array.isArray(r.jogadores) && r.jogadores.length) {
+      const publicos = r.jogadores.filter((j) => j && j.ok && Number.isFinite(j.kills));
+      if (publicos.length) {
+        const top = publicos.reduce((a, b) => (b.kills > a.kills ? b : a));
+        return { key: top.nick, kills: top.kills, name: top.nome || top.nick };
+      }
+    }
+  } catch (e) {
+    console.error('Top1 ao vivo falhou:', e && e.message);
+  }
+
+  // 2) fallback: histórico guardado (soma de kills por jogador)
   const data = cs2.getData();
-  const best = new Map();
+  const totals = new Map();
+  const lastDate = new Map();
   for (const m of data.matches || []) {
     for (const team of [m.teamA || [], m.teamB || []]) {
       for (const p of team) {
         if (!p.tracked) continue;
         const k = Number(p.k) || 0;
-        const prev = best.get(p.tracked);
-        const date = String(m.date || '');
-        if (!prev || k > prev.kills || (k === prev.kills && date > prev.date)) {
-          best.set(p.tracked, { kills: k, name: p.name || p.tracked, date });
-        }
+        totals.set(p.tracked, (totals.get(p.tracked) || 0) + k);
+        const d = String(m.date || '');
+        if (!lastDate.has(p.tracked) || d > lastDate.get(p.tracked)) lastDate.set(p.tracked, d);
       }
     }
   }
-  const ranked = [...best.entries()].sort(
-    (a, b) => b[1].kills - a[1].kills || (b[1].date > a[1].date ? -1 : 1),
-  );
+  const ranked = [...totals.entries()]
+    .map(([key, kills]) => ({ key, kills, date: lastDate.get(key) || '' }))
+    .sort((a, b) => b.kills - a.kills || (b.date > a.date ? -1 : 1));
   if (!ranked[0]) return null;
-  return { key: ranked[0][0], kills: ranked[0][1].kills, name: ranked[0][1].name };
+  const t = (cs2.TRACKED || []).find((x) => String(x.key).toLowerCase() === String(ranked[0].key).toLowerCase());
+  return { key: ranked[0].key, kills: ranked[0].kills, name: (t && t.name) || ranked[0].key };
 }
 
 /* Lider -> conta (ligação oficial do admin primeiro, depois
@@ -48,11 +68,29 @@ function computeLeader() {
 async function matchAccount(key) {
   const k = String(key || '').toLowerCase().trim();
   const formas = new Set([k]);
-  const t = (cs2.TRACKED || []).find((x) => String(x.key).toLowerCase() === k);
-  if (t) {
-    formas.add(String(t.name || '').toLowerCase().trim());
-    for (const n of t.names || []) formas.add(String(n).toLowerCase().trim());
-  }
+
+  // tracked (histórico) — nomes alternativos
+  try {
+    const t = (cs2.TRACKED || []).find((x) => String(x.key).toLowerCase() === k);
+    if (t) {
+      formas.add(String(t.name || '').toLowerCase().trim());
+      for (const n of t.names || []) formas.add(String(n).toLowerCase().trim());
+    }
+  } catch {}
+
+  // membros ao vivo (cs2-steam.json) — o nick é a chave do líder ao vivo
+  try {
+    const membros = cs2live.membros();
+    for (const m of membros) {
+      const nick = typeof m === 'string' ? m : m.nick;
+      const steam = typeof m === 'string' ? null : m.steam;
+      if (String(nick || '').toLowerCase().trim() === k) {
+        formas.add(String(nick).toLowerCase().trim());
+        if (steam) formas.add(String(steam).toLowerCase().trim());
+      }
+    }
+  } catch {}
+
   for (const f of [...formas]) if (!f) formas.delete(f);
 
   const db = getDb();
@@ -85,13 +123,13 @@ async function matchAccount(key) {
     /* tabela ainda não existe */
   }
   const accounts = await store.listAll();
-  return accounts.find((a) => String(a.username).toLowerCase() === k) || null;
+  return accounts.find((a) => formas.has(String(a.username).toLowerCase().trim())) || null;
 }
 
 /* Garante que só o líder tem a distinção top1 */
 async function syncTop1Badge() {
   try {
-    const leader = computeLeader();
+    const leader = await computeLeader();
     if (!leader) return null;
 
     const account = await matchAccount(leader.key);

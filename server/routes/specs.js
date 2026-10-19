@@ -85,8 +85,29 @@ router.post(
       return res.status(400).json({ error: 'Sem specs para guardar.' });
     }
 
+    /* O Windows conhecido ao completo ("Windows 10 IoT Enterprise
+       LTSC", da leitura PowerShell) nunca cai para a versão genérica
+       do browser ("Windows 10/11"/"Windows 10") — fica sempre a
+       descrição mais específica. */
+    const pontuaSO = (v) => {
+      if (!v) return -1;
+      const s = String(v).toLowerCase();
+      let n = Math.min(s.length, 60);
+      if (/enterprise|professional|\bpro\b|education|ultimate|embedded/.test(s)) n += 40;
+      if (/\bltsc\b/.test(s)) n += 25;
+      if (/\biot\b/.test(s)) n += 15;
+      if (/\b(server|home)\b/.test(s)) n += 20;
+      if (/10\/11/.test(s)) n -= 45;           // "Windows 10/11" = nada decidido
+      if (/^windows (10|11|nt [\d.]+)$/.test(s)) n -= 45; // genérico também
+      return n;
+    };
+
     const db = getDb();
     const cur = await db.prepare('SELECT * FROM user_specs WHERE user_id = ?').get(uid);
+
+    if (cur && 'os' in spec) {
+      spec.os = pontuaSO(spec.os) > pontuaSO(cur.os) ? spec.os : cur.os;
+    }
 
     if (!cur) {
       // primeira leitura -> baseline é ela própria

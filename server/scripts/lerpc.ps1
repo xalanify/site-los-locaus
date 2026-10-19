@@ -202,14 +202,10 @@ $out = [ordered]@{}
 Passo 'Sistema (Windows, maquina e RAM total)...'
 $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
 $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
-# versão completa: edição EXATA (ex.: "Windows 10 IoT Enterprise LTSC") + display version + build
+# só a edição EXATA (ex.: "Windows 10 IoT Enterprise LTSC") — sem build nem versão
 $soFull = $null
 if ($os.Caption) {
-  $soBase = $os.Caption -replace '^Microsoft\s+', ''
-  try {
-    $cv = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop
-    $soFull = "$soBase $($cv.DisplayVersion) (build $($cv.CurrentBuild))"
-  } catch { $soFull = $soBase }
+  $soFull = $os.Caption -replace '^Microsoft\s+', ''
 }
 $out.sistema = [ordered]@{
   nome         = $cs.Name

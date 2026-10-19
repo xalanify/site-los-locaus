@@ -147,7 +147,7 @@
     "rank": 1,
     "nome": "Karambit | Case Hardened",
     "estado": "Pattern 387 · Blue Gem NF",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SH1ifyOJztN5lRi67gVNz5DvUmdj4eXuWOFAhAsF4RLFc5BC4xtbuY7yx7wDbgo9CzSj2h3xK8G81tB_XeHWq",
+    "img": "/img-skins/csf-01.png",
     "tipo": "Faca",
     "por": "A faca mais rara e valiosa da história do CS. O padrão 387 deixa a lâmina completamente azul pura de um lado. Existe apenas UMA unidade conhecida em Nova de Fábrica — o dono já recusou 1,5 milhões de dólares."
    },
@@ -155,7 +155,7 @@
     "rank": 2,
     "nome": "M9 Bayonet | Case Hardened",
     "estado": "Pattern 601 · Blue Gem NF",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWaB_uF_vORtcCW6khUz_WvXnNqteHKQZlV0CpolFLZZthDpxIKyNLmx4ADYiNpHmXqvjSJA5iZ1o7FVI83_8yo",
+    "img": "/img-skins/csf-02.png",
     "tipo": "Faca",
     "por": "A Blue Gem definitiva para o M9 Bayonet: o azul cobre toda a extensão da lâmina."
    },
@@ -187,7 +187,7 @@
     "rank": 6,
     "nome": "Talon Knife | Case Hardened",
     "estado": "Pattern 555 · Blue Gem NF",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1M5vahf6lsK_WBMWaB_uF_vORtcCW6khUz_WqBzd39Ii_CaVApAsYlEeUO4xXslNexY7nl5ALWjI0WmSqq3XlN5yx1o7FV8eN3eSM",
+    "img": "/img-skins/csf-06.png",
     "tipo": "Faca",
     "por": "A resposta da Talon à raridade da Karambit: lâmina azulada impecável."
    },
@@ -203,7 +203,7 @@
     "rank": 8,
     "nome": "Nomad Knife | Case Hardened",
     "estado": "Pattern 555 · Blue Gem NF",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1U-uaqZ6t_H_GCMWiZzetyj-1gSCGn2xhz5GyHwtr_dS7EOlR1DZtyEe8MsBO-xNKyNbnq7w3b2d8WzC7-jSNXrnE8rdGSE7w",
+    "img": "/img-skins/csf-08.png",
     "tipo": "Faca",
     "por": "Ficou famosa por ser o modelo de escolha de s1mple, o melhor jogador do mundo."
    },
@@ -259,7 +259,7 @@
     "rank": 15,
     "nome": "Flip Knife | Case Hardened",
     "estado": "Pattern 670 · Blue Gem NF",
-    "img": "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d4_u-V6V8H_-aAmKU_uJ_t-l9ASu2l0Qj4m7cnNf6JSqSZgAhA5NzFOALsBbrkILuPu625AXcjdpGz33gznQe1ZCqub0",
+    "img": "/img-skins/csf-15.png",
     "tipo": "Faca",
     "por": "A Blue Gem perfeita para a clássica faca canivete."
    },
@@ -311,140 +311,91 @@
     "rank": 1,
     "nome": "Frontlines",
     "estado": "Só devs Ubisoft",
-    "img": null,
-    "por": "Skin exclusiva e restrita aos desenvolvedores ativos da Ubisoft Montreal que trabalham no Siege. Sai da equipa = perde o acesso. Sem imagem pública existir, fica com emblema."
+    "img": "/img-skins/r6a-01.png",
+    "por": "Skin exclusiva e restrita aos desenvolvedores ativos da Ubisoft Montreal que trabalham no Siege. Sai da equipa = perde o acesso."
    },
    {
     "rank": 2,
     "nome": "Glacier (Y1S1 — Black Ice original)",
     "estado": "Lançamento Y1S1",
-    "img": "/img-skins/a02.png",
+    "img": "/img-skins/r6a-02.png",
     "por": "Disponibilizada por pouquíssimo tempo na loja no lançamento do Ano 1 Temporada 1 e removida sem aviso. A skin mais procurada e cara do jogo."
    },
    {
     "rank": 3,
     "nome": "Peacock (Pavão)",
     "estado": "Fase Alpha (2015)",
-    "img": "/img-skins/a03.png",
+    "img": "/img-skins/r6a-03.png",
     "por": "Skin universal dada exclusivamente a quem participou na fase de Alpha do jogo."
    },
    {
     "rank": 4,
     "nome": "Fire (Fogo)",
     "estado": "Fase Beta (2015)",
-    "img": "/img-skins/a04.png",
+    "img": "/img-skins/r6a-04.png",
     "por": "Skin universal concedida apenas a quem jogou a fase de Beta do Rainbow Six Siege."
    },
    {
     "rank": 5,
     "nome": "Gold Dust (Pro League — Y1S1)",
-    "estado": "Pro League Y1S1 ·dinheiro real",
-    "img": "/img-skins/a05.png",
+    "estado": "Pro League Y1S1 · dinheiro real",
+    "img": "/img-skins/r6a-05.png",
     "por": "Dos pacotes originais de Pro League da 1.ª temporada (como na R4-C). Poucos compraram na altura porque custava dinheiro real num jogo novo — extremamente rara."
    },
    {
     "rank": 6,
     "nome": "Dust Line (Y1S2)",
-    "estado": "Y1S2 ·temporada estreia",
+    "estado": "Y1S2 · temporada estreia",
     "img": "/img-skins/a06.png",
     "por": "Skin sazonal lançada na temporada de estreia de Valkyrie e Blackbeard, com circulação baixíssima."
    },
    {
     "rank": 7,
-    "nome": "Onami",
-    "estado": "Sazonal colecionável",
-    "img": "/img-skins/a07.png",
-    "por": "Skin sazonal altamente colecionável e uma das mais valiosas do mercado de trocas."
-   },
-   {
-    "rank": 8,
     "nome": "Chupinazo (2017)",
     "estado": "Sazonal 2017",
-    "img": "/img-skins/a08.png",
+    "img": "/img-skins/r6a-07.png",
     "por": "Skin sazonal de vermelho vibrante com detalhes estilizados, muito cultuada pelos veteranos (Velvet Shell / Blood Orchid)."
    },
    {
-    "rank": 9,
+    "rank": 8,
     "nome": "Obsidian",
-    "estado": "Ano 2 ·tempo limitado",
-    "img": "/img-skins/a09.png",
+    "estado": "Ano 2 · tempo limitado",
+    "img": "/img-skins/r6a-08.png",
     "por": "Skin universal preta texturizada em obsidiana, lançada por tempo limitado no segundo ano."
    },
    {
-    "rank": 10,
-    "nome": "Blue Nebula",
-    "estado": "Passe antigo",
-    "img": "/img-skins/a10.png",
-    "por": "Skin universal dada aos que compraram o passe ou jogaram períodos específicos iniciais do jogo."
-   },
-   {
-    "rank": 11,
-    "nome": "Racer Skins (Y1S2)",
-    "estado": "Loja Y1 ·flash de venda",
-    "img": null,
-    "por": "Pacotes visuais com temática de corrida, disponíveis por brevíssimo tempo na Loja do Ano 1."
-   },
-   {
-    "rank": 12,
+    "rank": 9,
     "nome": "Diamond (Diamante)",
     "estado": "100.000 Renown",
-    "img": "/img-skins/a12.png",
+    "img": "/img-skins/r6a-09.png",
     "por": "Skin universal comprada diretamente na loja pelo altíssimo valor de 100.000 de Renown — um grind gigante na época."
    },
    {
-    "rank": 13,
+    "rank": 10,
     "nome": "Team Empire (removida)",
     "estado": "Removida (geopolítica)",
-    "img": "/img-skins/a13.png",
+    "img": "/img-skins/r6a-10.png",
     "por": "Skins de equipa do Programa Piloto retiradas da loja devido ao conflito geopolítico Rússia–Ucrânia."
    },
    {
-    "rank": 14,
-    "nome": "SK Gaming / Immortals / Mousesports",
-    "estado": "Pilot Program antigo",
-    "img": "/img-skins/a14.png",
-    "por": "Skins de organizações que saíram do cenário ou mudaram de programa; os itens originais de loja foram descontinuados."
-   },
-   {
-    "rank": 15,
-    "nome": "Skins do Kickstarter do board game",
-    "estado": "Kickstarter $250–500",
-    "img": null,
-    "por": "Recompensas físicas e digitais (pacotes Legion/Warding ou Frost/Ace) enviadas apenas a apoiantes de níveis caros ($250–$500) do financiamento coletivo do jogo de tabuleiro."
-   },
-   {
-    "rank": 16,
+    "rank": 11,
     "nome": "SI 2020 Sledge (L85A2 — Twitch Drop)",
     "estado": "Sorteio SI 2020",
-    "img": "/img-skins/a16.png",
+    "img": "/img-skins/r6a-11.png",
     "por": "Skin do Six Invitational 2020 obtida por sorteio nos Drops da Twitch durante as finais."
    },
    {
-    "rank": 17,
-    "nome": "Dead Baron (Halloween original)",
-    "estado": "Halloween 1.º evento",
-    "img": null,
-    "por": "Skin de arma temática do primeiríssimo evento de Halloween do Siege."
-   },
-   {
-    "rank": 18,
-    "nome": "Ethereal Flux (Zofia — Outbreak)",
-    "estado": "Outbreak ·animada",
-    "img": null,
-    "por": "Uma das primeiras skins ANIMADAS do jogo, oriunda do famoso evento cooperativo Outbreak."
-   },
-   {
-    "rank": 19,
+    "rank": 12,
     "nome": "Leon Furioso",
-    "estado": "Sazonal ·alta cotação",
-    "img": "/img-skins/a19.png",
+    "estado": "Sazonal · alta cotação",
+    "img": "/img-skins/r6a-12.png",
     "por": "Skin sazonal com forte apelo visual e alta cotação de créditos no Marketplace."
    },
    {
-    "rank": 20,
+    "rank": 13,
     "nome": "Pina Colada (Ash R4-C)",
     "estado": "Alpha Packs antigos",
-    "img": null,
+    "img": "/img-skins/r6a-13.png",
     "por": "Skin icónica e clássica de espólio inicial dos Alpha Packs, escassa pela diluição de itens ao longo dos anos."
    }
   ],
@@ -454,139 +405,118 @@
     "nome": "Golden Clover (Trevo de Ouro)",
     "estado": "9–10 no mundo",
     "img": "/img-skins/c01.png",
-    "por": "O amuleto mais raro de todo o jogo — apenas ~9 a 10 unidades no mundo. Dado pela Ubisoft aos primeiros jogadores que decifraram um Easter Egg brutalmente difícil no mapa Emerald Plains."
+    "por": "O mais raro do jogo. Apenas 9 a 10 unidades no mundo, dadas aos primeiros que decifraram o Easter Egg de Emerald Plains."
    },
    {
     "rank": 2,
     "nome": "Frost Raptor",
     "estado": "Bug bounty do TS",
     "img": null,
-    "por": "Amuleto de dinossauro exclusivo para quem encontrou e reportou com sucesso 3 bugs críticos no Servidor de Testes (TS), corrigidos pela Ubisoft."
+    "por": "Exclusivo para quem reportou com sucesso 3 bugs críticos corrigidos no Servidor de Testes (TS)."
    },
    {
     "rank": 3,
     "nome": "R6 DEV (Desenvolvedor)",
-    "estado": "Só devs Ubisoft",
+    "estado": "Só devs Ubisoft Montreal",
     "img": "/img-skins/c03.png",
-    "por": "Amuleto com o logo da Ubisoft, de uso exclusivo dos devs ativos do Siege. Sai da empresa = o amuleto some da conta."
+    "por": "De uso exclusivo dos desenvolvedores ativos da Ubisoft Montreal."
    },
    {
     "rank": 4,
     "nome": "Jäger Black Ice Chibi",
-    "estado": "<200 no mundo",
+    "estado": "<200 no mundo · físico+digital",
     "img": "/img-skins/c04.png",
-    "por": "Enviado como estátua física com código digital só para criadores de conteúdo do programa de campeões europeus da Ubisoft — menos de 200 no mundo."
+    "por": "Menos de 200 no mundo. Código digital enviado apenas com a estátua física para criadores selecionados da Europa."
    },
    {
     "rank": 5,
     "nome": "Y1S1 Black Ice Diamond",
-    "estado": "<30 contas com ele",
-    "img": "/img-skins/c05.png",
-    "por": "O amuleto de rank mais raro do jogo: na Y1S1 a base de jogadores era minúscula e chegar a Diamante era quase impossível pelo sistema de pontos da época. Estima-se que existam menos de 30 contas ativas com ele."
+    "estado": "<30 contas ativas",
+    "img": "/img-skins/r6c-05.png",
+    "por": "O amuleto de rank mais raro do jogo. Menos de 30 contas ativas no mundo devido à extrema dificuldade de subir de elo no lançamento."
    },
    {
     "rank": 6,
-    "nome": "Y1S1 Black Ice Champion / Ember",
-    "estado": "Variações Alfa",
-    "img": null,
-    "por": "Amuleto dado aos primeiríssimos jogadores do topo da tabela competitiva na primeira temporada real."
+    "nome": "2017 Pro Player Charm (SI 2017)",
+    "estado": "Só pros · SI 2017",
+    "img": "/img-skins/r6c-06.png",
+    "por": "Dado estritamente aos jogadores profissionais que competiram no primeiro Six Invitational em 2017."
    },
    {
     "rank": 7,
-    "nome": "2017 Pro Player Charm (SI 2017)",
-    "estado": "Só pros ·SI 2017",
-    "img": null,
-    "por": "Dado estritamente aos profissionais que competiram no primeiro Six Invitational (2017). No Marketplace atinge tetos astronômicos de centenas de milhares de créditos."
+    "nome": "2017 SI Attendee",
+    "estado": "Código físico · SI 2017",
+    "img": "/img-skins/r6c-07.png",
+    "por": "Distribuído via código físico apenas para quem foi assistir presencialmente ao primeiro Invitational em Montreal."
    },
    {
     "rank": 8,
-    "nome": "2017 SI Attendee",
-    "estado": "Código físico ·SI 2017",
+    "nome": "ESL Charm (1 hora de loja)",
+    "estado": "Erro de listagem · 1 hora",
     "img": null,
-    "por": "Distribuído por código físico apenas a quem assistiu presencialmente ao primeiro Invitational em Montreal."
+    "por": "Ficou disponível por apenas uma hora na loja digital por um erro de listagem antes de ser removido para sempre."
    },
    {
     "rank": 9,
-    "nome": "ESL Charm (1 hora na loja)",
-    "estado": "Erro de listagem",
-    "img": null,
-    "por": "Amuleto com o logo da ESL disponível por APENAS UMA HORA na loja, devido a um erro de listagem, antes de removido para sempre."
-   },
-   {
-    "rank": 10,
     "nome": "BRK E-Sports / Estrela de Ouro",
     "estado": "Pilot Program antigo",
     "img": null,
-    "por": "Amuleto de equipas clássicas que já não existem, como a lendária BRK da época do jogador Zigueira."
+    "por": "Da lendária equipe brasileira da época do jogador Zigueira. Organização não existe mais no Siege."
+   },
+   {
+    "rank": 10,
+    "nome": "R6 Caduceus (Operation Health 2017)",
+    "estado": "Diploma de sobrevivência",
+    "img": null,
+    "por": "Distribuído gratuitamente só a quem jogou durante a Operation Health (mai–ago 2017). A temporada cancelou conteúdos para corrigir bugs; muitos abandonaram o Siege na época — um \"diploma\" de sobrevivência, inobtível hoje."
    },
    {
     "rank": 11,
     "nome": "Outbreak Creator Charm",
     "estado": "400 unidades",
     "img": null,
-    "por": "Apenas 400 unidades: dados pela Ubisoft a criadores de conteúdo selecionados para sorteios durante o evento Outbreak de 2018."
+    "por": "Apenas 400 unidades. Dados para criadores de conteúdo sortearem durante o evento cooperativo Outbreak de 2018."
    },
    {
     "rank": 12,
-    "nome": "Lenovo Premium",
-    "estado": "30 apoiantes de artes",
-    "img": null,
-    "por": "Entregue apenas às primeiras 30 pessoas de uma antiga promoção com a Lenovo de envio de artes conceituais."
+    "nome": "MacieJay / Shroud / Pengu (Anos 2/3)",
+    "estado": "Parcerias expiradas",
+    "img": "/img-skins/c14.png",
+    "por": "As versões originais antigas de canais que mudaram de foco ou cujas parcerias expiraram e não voltam mais via sub da Twitch."
    },
    {
     "rank": 13,
-    "nome": "Six Invitational VIP 2018",
-    "estado": "Ingresso VIP",
-    "img": null,
-    "por": "Exclusivo para quem comprou o ingresso mais caro (VIP) do mundial de 2018."
+    "nome": "Kixstar Tribute Charm",
+    "estado": "Homenagem eterna",
+    "img": "/img-skins/r6c-13.png",
+    "por": "Amuleto eterno em homenagem ao lendário narrador Michael \"KiXSTAr\" Stockley, lançado de forma restrita e de valor histórico imenso."
    },
    {
     "rank": 14,
-    "nome": "MacieJay / Shroud / Pengu (1.ªs ondas)",
-    "estado": "Parcerias expiradas",
-    "img": "/img-skins/c14.png",
-    "por": "As versões dos Anos 2 e 3 de canais que mudaram de foco ou cujas parcerias originais expiraram tornaram-se extremamente raras de ver em jogo hoje."
-   },
-   {
-    "rank": 15,
-    "nome": "Kixstar Tribute",
-    "estado": "Homenagem eterna",
-    "img": null,
-    "por": "Amuleto criado em homenagem ao lendário narrador Michael \"KiXSTAr\" Stockley. Disponibilizado de forma muito restrita e com valor histórico imenso para a comunidade."
-   },
-   {
-    "rank": 16,
-    "nome": "Medalhas de Aniversário de Operadores",
-    "estado": "Desafios 2016/17",
-    "img": "/img-skins/c16.png",
-    "por": "Os desafios semanais antigos exigiam vencer 20–30 rodadas com um operador específico (Twitch, Jäger…) para ganhar o medalhão dele — serviços extintos do Ubisoft Club."
-   },
-   {
-    "rank": 17,
     "nome": "Alpha / Beta Tester Stars",
     "estado": "Pré-lançamento 2015",
     "img": null,
-    "por": "Pequenos amuletos de medalha para quem registrou atividade contínua nos servidores antes do lançamento oficial (dez/2015)."
+    "por": "Medalhas dadas para quem registrou atividade nos servidores antes do lançamento oficial de dezembro de 2015."
    },
    {
-    "rank": 18,
+    "rank": 15,
     "nome": "Bandeiras de Países Originais (2016)",
     "estado": "Ubisoft Club extinto",
     "img": "/img-skins/c18.png",
-    "por": "Desafios antigos do Ubisoft Club que davam amuletos com as bandeiras dos países dos operadores em feriados nacionais — descontinuados há anos."
+    "por": "Desafios antigos do Ubisoft Club em feriados nacionais para ganhar a bandeira dos operadores base. Descontinuados há quase uma década."
    },
    {
-    "rank": 19,
+    "rank": 16,
     "nome": "Chibi de Ouro (primeiras edições)",
-    "estado": "Loja Y1/Y2",
-    "img": "/img-skins/c19.png",
-    "por": "Os primeiros bonequinhos Chibi de ouro, vendidos na loja por R6 Credits no Ano 1 e Ano 2."
+    "estado": "Loja Y1 · R6 Credits",
+    "img": "/img-skins/r6c-16.png",
+    "por": "Os primeiros bonequinhos Chibi de ouro vendidos diretamente por R6 Credits na loja durante o Ano 1."
    },
    {
-    "rank": 20,
-    "nome": "Dust Line Copper / Bronze Charm",
+    "rank": 17,
+    "nome": "Dust Line Charm (Cobre/Bronze)",
     "estado": "Patentes baixas Y1",
-    "img": "/img-skins/c20.png",
+    "img": "/img-skins/r6c-17.png",
     "por": "Curiosamente raríssimo: quase ninguém guardava (nem terminava de propósito) nos ranks baixos nas primeiras temporadas — quem jogava queria subir de elo."
    }
   ]
@@ -901,7 +831,7 @@
    },
    {
     "rank": 19,
-    "nome": "Astro Cyclone",
+    "nome": "Astroworld Cyclone",
     "raridade": "Icon Series",
     "img": "https://fortnite-api.com/images/cosmetics/br/glider_id_196_cyclonemale/icon.png",
     "estado": null,
@@ -921,7 +851,7 @@
     "rank": 1,
     "nome": "Axe of Champions",
     "raridade": null,
-    "img": null,
+    "img": "/img-skins/fn-p-01.png",
     "estado": null,
     "por": "A picareta \"física\" mais rara: pertence aos CAMPEÕES atuais da FNCS. Quando um trio novo vence, sai da conta do campeão antigo e vai para o novo."
    },
@@ -951,9 +881,9 @@
    },
    {
     "rank": 5,
-    "nome": "Standard Pickaxe",
-    "raridade": null,
-    "img": null,
+    "nome": "Pickaxe Padrao",
+    "raridade": "Common",
+    "img": "https://fortnite-api.com/images/cosmetics/br/defaultpickaxe/icon.png",
     "estado": null,
     "por": "O modelo padrão original do Capítulo 1, substituído — hoje é um item de legado."
    },
@@ -975,7 +905,7 @@
    },
    {
     "rank": 8,
-    "nome": "Spoiler",
+    "nome": "Pointy Tucker",
     "raridade": null,
     "img": null,
     "estado": null,
@@ -1076,224 +1006,6 @@
     "img": "https://fortnite-api.com/images/cosmetics/br/pickaxe_id_140_streetgoth/icon.png",
     "estado": null,
     "por": "Muito usada por tryhards — a original de lançamento acumulou grande estatuto de antiguidade."
-   }
-  ]
- },
- "bf": {
-  "bf1": [
-   {
-    "rank": 1,
-    "nome": "Doughboy (M1911)",
-    "estado": "Only Collector's Edition",
-    "por": "Exclusiva para quem comprou a Edição de Colecionador FÍSICA de 2016 — o código vinha num tubo de pombo-correio militar.",
-    "img": null
-   },
-   {
-    "rank": 2,
-    "nome": "Fedorov Avtomat (pré-venda BFV)",
-    "estado": "Pré-venda BFV (2018)",
-    "por": "Concedida apenas a quem fez a pré-venda do Battlefield V em 2018 pelo menu do BF1.",
-    "img": null
-   },
-   {
-    "rank": 3,
-    "nome": "The Care Package (M1911)",
-    "estado": "Drop Battlepacks ínfimo",
-    "por": "Skin universal de ouro com uma taxa de drop absurdamente baixa nas primeiras revisões de Battlepacks lendários.",
-    "img": null
-   },
-   {
-    "rank": 4,
-    "nome": "The Duke of Aosta (Cei-Rigotti)",
-    "estado": "Revisão 1 dos Battlepacks",
-    "por": "Disponível apenas na Revisão 1 de Battlepacks no lançamento (out/2016) — quase ninguém tinha moedas para abrir caixas.",
-    "img": null
-   },
-   {
-    "rank": 5,
-    "nome": "The Archduke (Hellriegel 1915)",
-    "estado": "Drop raro ·arma popular",
-    "por": "Uma das primeiras skins lendárias para a arma mais popular do jogo, muito difícil de dropar nos primeiros meses.",
-    "img": null
-   },
-   {
-    "rank": 6,
-    "nome": "The Kaiser (Gewehr 98)",
-    "estado": "Rotação rápida",
-    "por": "Skin com ornamentos imperiais dourados e madeira escura que sumiu rápido das rotações principais.",
-    "img": null
-   },
-   {
-    "rank": 7,
-    "nome": "The Desert Fox (A7V)",
-    "estado": "Drop. superior escasso",
-    "por": "Skin de veículo (conta como armamento de suporte) com drop incivelmente escasso nas caixas de nível superior.",
-    "img": null
-   },
-   {
-    "rank": 8,
-    "nome": "The Bloodhound (P08 Pistol)",
-    "estado": "Revisões semanais raras",
-    "por": "Skin com cabo de marfim e gravações escuras que raramente aparecia nas revisões semanais de caixas.",
-    "img": null
-   },
-   {
-    "rank": 9,
-    "nome": "The Red Baron (P08 Pistol)",
-    "estado": "Deluxe descontinuado",
-    "por": "Vinha exclusivamente no pacote digital Deluxe Red Baron Pack, descontinuado das lojas digitais.",
-    "img": null
-   },
-   {
-    "rank": 10,
-    "nome": "Lawrence of Arabia (SMLE)",
-    "estado": "Pré-venda Deluxe",
-    "por": "Variante com skin única atrelada à edição deluxe de pré-venda do jogo.",
-    "img": null
-   }
-  ],
-  "bfv": [
-   {
-    "rank": 1,
-    "nome": "Silver-Plated (M1911)",
-    "estado": "Login único ·Natal 2018",
-    "por": "Presente de login único na semana de Natal de 2018 — a base de jogadores estava baixa e poucos resgataram.",
-    "img": null
-   },
-   {
-    "rank": 2,
-    "nome": "Arras Set (Selbstlader/MP28/Lewis/M95)",
-    "estado": "Desafios fim de vida",
-    "por": "Visual de metal desgastado obtido via desafios complexos no fim da vida útil do BF1 em 2018.",
-    "img": null
-   },
-   {
-    "rank": 3,
-    "nome": "Gold Plated (Maestria legítima)",
-    "estado": "Desafios puniativos 2018",
-    "por": "Exigia os infames desafios originais de 2018 (ex.: 20 headshots em objetivos numa partida só). Conjunto ouro completo e legítimo é raríssimo.",
-    "img": null
-   },
-   {
-    "rank": 4,
-    "nome": "Epitaph (Gewehr 43)",
-    "estado": "Tides of War (não voltou)",
-    "por": "Recompensa de nível alto de um dos primeiros capítulos do Tides of War, que nunca mais voltou à loja.",
-    "img": null
-   },
-   {
-    "rank": 5,
-    "nome": "Damascus (várias armas)",
-    "estado": "Companhia ·pouco tempo",
-    "por": "Skin premium de aço damasco disponível por pouquíssimo tempo na rotação de moedas da Companhia.",
-    "img": null
-   },
-   {
-    "rank": 6,
-    "nome": "Night Owl (camuflagem escura)",
-    "estado": "Missões do 1.º ano",
-    "por": "Exigia missões diárias e semanais CONSECUTIVAS no primeiro ano do jogo.",
-    "img": null
-   },
-   {
-    "rank": 7,
-    "nome": "Ivory (cabo de marfim ·pistolas)",
-    "estado": "Dinheiro real (2019)",
-    "por": "Muito poucas secundárias receberam skins no BFV; o conjunto Ivory só foi vendido com pacotes de dinheiro real específicos.",
-    "img": null
-   },
-   {
-    "rank": 8,
-    "nome": "Pacific Palm (M1 Garand / Type 100)",
-    "estado": "1.ª semana do Pacific",
-    "por": "Skin com folhagens tropicais dada apenas na primeira semana do lançamento da expansão Pacific.",
-    "img": null
-   },
-   {
-    "rank": 9,
-    "nome": "Firestorm Ranger (M1911)",
-    "estado": "Bónus pré-venda FIRESTORM",
-    "por": "Skin atrelada ao modo Battle Royale do jogo, dada apenas como bónus de pré-venda.",
-    "img": null
-   },
-   {
-    "rank": 10,
-    "nome": "Collector's Edition Chromed",
-    "estado": "Deluxe de lançamento",
-    "por": "Acabamento cromado exclusivo para quem fez upgrade para a edição Deluxe logo no lançamento.",
-    "img": null
-   }
-  ],
-  "bf6": [
-   {
-    "rank": 1,
-    "nome": "Dominion (Beta — 1.º fim de semana)",
-    "estado": "Beta ago/2025",
-    "por": "O item cosmético mais restrito do jogo: só para quem jogou ativamente o 1.º fim de semana do Beta Aberto (ago/2025). Fora da janela, nunca mais.",
-    "img": null
-   },
-   {
-    "rank": 2,
-    "nome": "Sovereign Soldier (conjunto)",
-    "estado": "Veterano do 2042",
-    "por": "Recompensa de veterano só para quem completou TODO o passe gratuito do 2042 antes do lançamento do 6 — retenção baixa = pouquíssimos donos.",
-    "img": null
-   },
-   {
-    "rank": 3,
-    "nome": "Royal Navy (faca de mergulho)",
-    "estado": "Evento Enterro Naval",
-    "por": "Recompensa final do evento por tempo limitado \"Enterro Naval\": coletar um volume massivo de dados no multiplayer e no BR REDSEC.",
-    "img": null
-   },
-   {
-    "rank": 4,
-    "nome": "Phantom Vanguard (M16A4)",
-    "estado": "Edição Phantom",
-    "por": "Skin exclusiva com detalhes metálicos escuros e dourados foscos, integrada apenas na edição Phantom (a versão mais cara de pré-venda).",
-    "img": null
-   },
-   {
-    "rank": 5,
-    "nome": "RedSec Genesis (KTS1 / Corde)",
-    "estado": "Topo do REDSEC T1",
-    "por": "Skin com traçados digitais vermelhos brilhantes para quem alcançou o topo do modo REDSEC na Temporada 1, no lançamento (out/2025).",
-    "img": null
-   },
-   {
-    "rank": 6,
-    "nome": "Isaac's Rig (Dead Space — T5)",
-    "estado": "Crossover Dead Space",
-    "por": "Skin de arma com texturas industriais enferrujadas e luzes neon, do evento temático de Halloween da Temporada 5 em colaboração com Dead Space.",
-    "img": null
-   },
-   {
-    "rank": 7,
-    "nome": "Coyote First Wave (M4A1)",
-    "estado": "Passe T1 (topo)",
-    "por": "Camuflagem militar realista da facção Coyote Squad, apenas nos níveis mais altos do Passe de Batalha da Temporada 1.",
-    "img": null
-   },
-   {
-    "rank": 8,
-    "nome": "United Albion Standard (L15 Sniper)",
-    "estado": "Desafios T2 consecutivos",
-    "por": "Camuflagem britânica tática (DPM) que exigia desafios semanais CONSECUTIVOS de tiro de longa distância na Temporada 2.",
-    "img": null
-   },
-   {
-    "rank": 9,
-    "nome": "Vedmak Splinter (CZ 3 A1)",
-    "estado": "Lobbies Personalizados 2026",
-    "por": "Camuflagem geométrica cinza/azul da facção Pax Armata, só via pacote de desafios de Lobbies Personalizados no início de 2026.",
-    "img": null
-   },
-   {
-    "rank": 10,
-    "nome": "Cairo Bazaar Rust (SMG SGX)",
-    "estado": "Maestria secreta do mapa",
-    "por": "Recompensa secreta de Maestria do mapa Cairo Bazaar (T3): quantidade massiva de eliminações à queima-roupa dentro do mapa.",
-    "img": null
    }
   ]
  }

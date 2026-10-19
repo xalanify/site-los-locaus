@@ -1,44 +1,30 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import {
-  ArrowLeft,
   Calendar,
-  Download,
-  Eye,
-  Film,
-  Heart,
+  Clapperboard,
+  Camera,
   Loader2,
-  Save,
   UserRoundX,
 } from 'lucide-react'
-import AvatarImg from '../components/AvatarImg'
 import ClipCard from '../components/ClipCard'
 import Estado from '../components/Estado'
-import { BadgeGem, BADGES, distincoesOverclock } from '../components/BadgeGem'
+import { BadgeGem, BADGES, devLabelClass, distincoesOverclock } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
-
-/* Contador de uma estatística (rótulo em baixo, número em cima) */
-function Stat({ valor, rotulo, Icon }) {
-  return (
-    <div className="glass flex flex-col items-center gap-1 rounded-2xl px-3 py-3">
-      <Icon className="h-4 w-4 text-violet-300" />
-      <span className="font-display text-xl font-black leading-none text-white">
-        {Number(valor) || 0}
-      </span>
-      <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
-        {rotulo}
-      </span>
-    </div>
-  )
-}
+import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
    Perfil público com página própria — /perfil/:username
 
-   Mostra quem é o membro (foto, distinções, conta em jogo),
-   as contagens e os clips públicos dele. Chega por um clique
-   no nome de qualquer autor de clip.
+   O design e a ordem são EXATAMENTE os do perfil normal da
+   sidebar (ProfilePage): saudação grande, cartão da conta com
+   letra fantasma e anel violeta, distintivo DEV ao lado do
+   nome, membro desde, rato/DPI, distinções e por fim os clips.
+   Nenhum azulejo de contagens — nada de cartão de visitas.
+   Só muda: é a página de OUTRO membro (ou fallback se o nome
+   da rota não bater com o utilizador ligado).
    ============================================================ */
 export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const { username } = useParams()
@@ -82,7 +68,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           onClick={() => navigate(-1)}
           className="btn-glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-gray-300"
         >
-          <ArrowLeft className="h-4 w-4" /> Voltar
+          <UserRoundX className="h-4 w-4" /> Voltar
         </button>
         <Estado
           tipo="erro"
@@ -96,182 +82,213 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   }
 
   const p = data.profile || {}
-  const s = data.stats || {}
   const clips = data.clips || []
-  const souEu = p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
-  const desde = p.created_at
-    ? new Date(p.created_at).toLocaleDateString('pt-PT', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
-    : '—'
+  const souEu =
+    p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
+
+  /* ---- mesma construção de distinções do perfil normal ---- */
+  const d = new Date(p.created_at)
+  const criado = Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+
+  const badges = Array.isArray(p.badges) ? p.badges : []
+  const distOc = distincoesOverclock(p.distincoes)
+  const minhas = [
+    ...BADGES.filter((b) => badges.includes(b.id) && b.id !== 'dev'),
+    ...distOc,
+  ]
+  const temDev = badges.includes('dev')
+  const devBadge = BADGES.find((b) => b.id === 'dev')
+
+  const avatarSrc = p.avatar_url || svgAvatar(p.username, '#8B5CF6')
+  /* margem de casal: 0/1 clip público da até aparecer cheio */
 
   return (
-    <section className="mx-auto max-w-4xl px-4 pb-24 pt-20 sm:px-6 sm:pt-24">
-      <button
-        onClick={() => navigate(-1)}
-        className="btn-glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-gray-300"
-      >
-        <ArrowLeft className="h-4 w-4" /> Voltar
-      </button>
+    <section className="min-h-screen px-4 pb-24 pt-24 sm:pt-28 sm:px-6">
+      <div className="mx-auto max-w-3xl">
+        {/* ---------------- Saudação (igual ao perfil normal) ---------------- */}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 font-display font-black"
+          style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
+        >
+          {souEu ? (
+            <>
+              Bem-vindo, <span className="text-violet-400">{p.username}</span>
+            </>
+          ) : (
+            <>
+              Perfil de <span className="text-violet-400">{p.username}</span>
+            </>
+          )}
+        </motion.h1>
 
-      {/* Cabeçalho do perfil */}
-      <div className="glass overflow-hidden rounded-3xl">
-        <div className="p-5 sm:p-7">
-        <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-          <div className="relative">
-            <AvatarImg
-              src={p.avatar_url}
-              name={p.username}
-              className="h-20 w-20 text-2xl sm:h-24 sm:w-24"
-            />
-            {p.online && (
-              <span
-                title="Online agora"
-                className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-400 ring-4 ring-[#0B0B12]"
+        {/* ---------------- Cartão da conta (igual ao perfil normal) ---------------- */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="glass relative mb-8 overflow-hidden rounded-3xl border border-violet-500/40 p-5 sm:p-6"
+          style={{ boxShadow: '0 0 40px rgba(139,92,246,.15)' }}
+        >
+          {/* letra fantasma ao fundo */}
+          <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
+            {p.username}
+          </span>
+
+          <div className="relative flex items-center gap-4">
+            <div className="relative shrink-0">
+              <img
+                src={avatarSrc}
+                alt={p.username}
+                className="h-16 w-16 rounded-full object-cover ring-2 ring-violet-500/60"
+                style={{ boxShadow: '0 0 26px rgba(139,92,246,.45)' }}
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fb) return
+                  e.currentTarget.dataset.fb = '1'
+                  e.currentTarget.src = svgAvatar(p.username, '#8B5CF6')
+                }}
               />
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate font-display text-2xl font-black uppercase tracking-wide text-white sm:text-3xl">
-                {p.username}
-              </h1>
               {souEu && (
-                <span className="rounded-full bg-violet-500/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-200 ring-1 ring-violet-400/30">
-                  és tu
-                </span>
-              )}
-              {p.online && (
-                <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30">
-                  online
-                </span>
+                <Link
+                  to="/perfil"
+                  title="Editar foto e perfil"
+                  className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
+                >
+                  <Camera className="h-3 w-3" />
+                </Link>
               )}
             </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-400">
-              <span className="inline-flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5" /> desde {desde}
-              </span>
-              {p.mouse && (
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="flex items-baseline gap-1.5">
-                    <span className="font-bold text-gray-200">{p.mouse}</span>
-                    <span className="text-[10px] text-violet-300 font-black tracking-wide">Mouse</span>
-                    {p.dpi ? <span>· {p.dpi} DPI</span> : null}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="truncate font-display text-xl font-black uppercase text-white">
+                  {p.username}
+                </span>
+                {temDev && (
+                  <span
+                    className="flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5"
+                    style={{ boxShadow: '0 0 14px rgba(255,31,61,.35)' }}
+                  >
+                    <BadgeGem badge={devBadge} size={16} />
+                    <span className={`font-display text-[10px] font-black uppercase tracking-wider ${devLabelClass}`}>
+                      Dev
+                    </span>
                   </span>
+                )}
+              </div>
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
+                  Membro desde {criado}
+                </span>
+                <span
+                  className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
+                  title="ID da conta"
+                >
+                  ID {p.id}
+                </span>
+              </p>
+              {p.mouse && (
+                <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
                   {(() => {
                     const m = (searchMice(p.mouse) || []).find(
                       (x) => `${x.brand} ${x.model}` === p.mouse,
                     )
                     return m && m.logo ? (
-                      <img src={m.logo} alt="" className="h-4 w-4 shrink-0 rounded-sm object-contain" />
+                      <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
                     ) : null
                   })()}
-                </span>
+                  <span className="font-bold">{p.mouse}</span>
+                  {p.dpi ? <span className="text-gray-500">· {p.dpi} DPI</span> : null}
+                </p>
               )}
             </div>
-
-            {(() => {
-              const estaticos = (p.badges || [])
-                .map((id) => BADGES.find((b) => b.id === id))
-                .filter(Boolean)
-              const dist = distincoesOverclock(p.distincoes)
-              const todos = [...estaticos, ...dist]
-              if (!todos.length) return null
-              return (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {todos.map((b) => (
-                    <span
-                      key={b.id}
-                      title={b.desc}
-                      className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 ring-1"
-                      style={{
-                        background: `${b.color}18`,
-                        boxShadow: `0 0 14px ${b.color}40`,
-                        ringColor: `${b.color}66`,
-                      }}
-                    >
-                      <BadgeGem badge={b} size={18} />
-                      <span
-                        className="font-display text-[10px] font-black uppercase tracking-wider"
-                        style={{ color: b.color }}
-                      >
-                        {b.label}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              )
-            })()}
           </div>
 
-          {souEu && (
-            <Link
-              to="/perfil"
-              className="btn-glass rounded-full px-4 py-2 text-sm font-bold text-white"
-            >
-              Gerir conta
-            </Link>
+          {/* distinções obtidas (DEV fica só ao lado do nome), igual ao perfil normal */}
+          {minhas.length > 0 && (
+            <div className="relative mt-4 flex flex-wrap items-center gap-2.5">
+              {minhas.map((b) => (
+                <span
+                  key={b.id}
+                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 ring-1"
+                  style={{
+                    background: `${b.color}18`,
+                    boxShadow: `0 0 14px ${b.color}40`,
+                    ringColor: `${b.color}66`,
+                  }}
+                >
+                  <BadgeGem badge={b} size={22} />
+                  <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
+                    {b.label}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {/* ---------------- Clips do membro (mesma ordem/estilo) ---------------- */}
+        <div className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-2xl font-black uppercase sm:text-3xl">
+              {souEu ? 'Os meus clips' : `Clips de ${p.username}`}
+            </h2>
+            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
+              {clips.length}
+            </span>
+          </div>
+
+          {clips.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
+              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-violet-400" />
+              <p className="font-bold text-white">Ainda sem clips</p>
+              <p className="mx-auto max-w-md text-sm text-gray-400">
+                {souEu
+                  ? 'Publica o teu primeiro clip e ele aparece aqui, no teu perfil, com gostos e comentários.'
+                  : `${p.username} ainda não publicou nenhum clip no site.`}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {clips.map((c) => (
+                <ClipCard
+                  key={c.id}
+                  clip={c}
+                  user={user}
+                  onRequestAuth={onRequestAuth}
+                  onProfile={onProfile}
+                  onUpdate={(next) =>
+                    setData((prev) => ({
+                      ...prev,
+                      clips: prev.clips.map((x) => (x.id === next.id ? next : x)),
+                    }))
+                  }
+                  onDelete={(id) =>
+                    setData((prev) => ({ ...prev, clips: prev.clips.filter((x) => x.id !== id) }))
+                  }
+                />
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Contagens */}
-        <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-5 sm:gap-3">
-          <Stat valor={s.clips} rotulo="clips" Icon={Film} />
-          <Stat valor={s.views} rotulo="vistos" Icon={Eye} />
-          <Stat valor={s.likes} rotulo="gostos" Icon={Heart} />
-          <Stat valor={s.downloads} rotulo="transferidos" Icon={Download} />
-          <Stat valor={s.saved} rotulo="guardados" Icon={Save} />
-        </div>
-
-        {/* As contas de jogo ficam no backend — não aparecem aqui */}
-        </div>
+        {/* ---------------- Ação (só se a página for tua) ---------------- */}
+        {souEu && (
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/perfil"
+              className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Camera className="h-4 w-4" />
+              Editar perfil
+            </Link>
+          </div>
+        )}
       </div>
-
-      {/* Clips do perfil */}
-      <div className="mb-4 mt-8 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase tracking-wide text-white sm:text-xl">
-          Clips de <span>{p.username}</span>
-        </h2>
-        <span className="text-sm text-gray-500">{clips.length}</span>
-      </div>
-
-      {clips.length === 0 ? (
-        <Estado
-          icon={Film}
-          titulo="Ainda não há clips"
-          texto={
-            souEu
-              ? 'Publica o teu primeiro clip e aparece aqui na tua página.'
-              : `${p.username} ainda não publicou nenhum clip.`
-          }
-          acao={souEu ? { label: 'Publicar clip', onClick: () => navigate('/clips') } : null}
-        />
-      ) : (
-        <div className="space-y-6">
-          {clips.map((c) => (
-            <ClipCard
-              key={c.id}
-              clip={c}
-              user={user}
-              onRequestAuth={onRequestAuth}
-              onProfile={onProfile}
-              onUpdate={(next) =>
-                setData((prev) => ({
-                  ...prev,
-                  clips: prev.clips.map((x) => (x.id === next.id ? next : x)),
-                }))
-              }
-              onDelete={(id) =>
-                setData((prev) => ({ ...prev, clips: prev.clips.filter((x) => x.id !== id) }))
-              }
-            />
-          ))}
-        </div>
-      )}
     </section>
   )
 }

@@ -283,11 +283,7 @@ export default function ProfilePage({
               </p>
               {me.mouse && (
                 <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
-                  <span className="flex min-w-0 items-baseline gap-1.5">
-                    <span className="font-bold">{me.mouse}</span>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
-                    {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
-                  </span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
                   {(() => {
                     const m = (searchMice(me.mouse) || []).find(
                       (x) => `${x.brand} ${x.model}` === me.mouse,
@@ -296,6 +292,8 @@ export default function ProfilePage({
                       <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
                     ) : null
                   })()}
+                  <span className="font-bold">{me.mouse}</span>
+                  {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
                 </p>
               )}
             </div>
@@ -303,19 +301,19 @@ export default function ProfilePage({
 
           {/* distinções obtidas (DEV fica só ao lado do nome) */}
           {minhas.length > 0 && (
-            <div className="relative mt-4 flex flex-wrap items-center gap-2">
+            <div className="relative mt-4 flex flex-wrap items-center gap-2.5">
               {minhas.map((b) => (
                 <span
                   key={b.id}
-                  className="flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 ring-1"
+                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 ring-1"
                   style={{
                     background: `${b.color}18`,
                     boxShadow: `0 0 14px ${b.color}40`,
                     ringColor: `${b.color}66`,
                   }}
                 >
-                  <BadgeGem badge={b} size={18} />
-                  <span className="font-display text-[10px] font-black uppercase tracking-wider" style={{ color: b.color }}>
+                  <BadgeGem badge={b} size={22} />
+                  <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
                     {b.label}
                   </span>
                 </span>

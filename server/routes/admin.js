@@ -7,14 +7,14 @@ const { validateEmail } = require('../emailValidate');
 const router = express.Router();
 
 /* Distinções possíveis (tem de coincidir com o cliente) */
-const VALID_BADGES = ['dev', 'top1', 'jogador'];
+const VALID_BADGES = ['dev', 'top1'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');
 const { notify } = require('../notify');
 
 /* Rótulos das distinções para as notificações */
-const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS', jogador: 'Jogador do canal' };
+const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)' };
 
 const count = async (db, sql) => {
   try {
@@ -73,7 +73,44 @@ router.get('/users', requireAdmin, async (req, res) => {
     } catch {
       /* tabela ainda não existe */
     }
-    const byUser = {};
+    // CS2: sincroniza o nick com o nome atual da Steam (via Steam ID).
+  try {
+    const cs2live = require('../cs2live');
+    const membros = cs2live.membros() || [];
+    const mapaSteam = new Map();
+    for (const m of membros) {
+      const nick = typeof m === 'string' ? m.trim() : (m && m.nick ? String(m.nick).trim() : '');
+      const steam = typeof m === 'string' ? null : (m && m.steam ? String(m.steam) : null);
+      if (nick && steam) mapaSteam.set(nick.toLowerCase(), steam);
+      if (steam) mapaSteam.set(String(steam).toLowerCase(), steam);
+    }
+    const key = process.env.STEAM_API_KEY;
+    for (const a of gameAccounts) {
+      if (String(a.game).toLowerCase() !== 'cs2') continue;
+      const steamId =
+        mapaSteam.get(String(a.nick || '').trim().toLowerCase()) ||
+        (/^7656\d{13}$/.test(String(a.nick || '').trim()) ? String(a.nick).trim() : null);
+      if (!steamId || !key) continue;
+      try {
+        const r = await fetch(
+          `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${key}&steamids=${steamId}`,
+        );
+        const j = await r.json();
+        const p = (j && j.response && j.response.players && j.response.players[0]) || null;
+        const nomeAtual = p && p.personaname ? String(p.personaname).trim() : null;
+        if (nomeAtual && nomeAtual !== a.nick) {
+          await db.prepare('UPDATE user_game_accounts SET nick = ? WHERE id = ?').run(nomeAtual, a.id);
+          a.nick = nomeAtual;
+        }
+      } catch {
+        /* ignora falhas de rede */
+      }
+    }
+  } catch {
+    /* cs2live indisponível */
+  }
+
+  const byUser = {};
     for (const g of grants) {
       if (!byUser[g.user_id]) byUser[g.user_id] = [];
       byUser[g.user_id].push(g.badge);
@@ -85,6 +122,14 @@ router.get('/users', requireAdmin, async (req, res) => {
     }
     const profByUser = {};
     for (const p of profiles) profByUser[p.user_id] = p;
+    /* quem já tem leitura do PC guardada — para o botão "Limpar specs" */
+    let specsUsers = new Set();
+    try {
+      const spr = await db.prepare('SELECT user_id FROM user_specs').all();
+      for (const s of spr) specsUsers.add(Number(s.user_id));
+    } catch {
+      /* tabela ainda não existe */
+    }
     const users = (await store.listAll())
       .map((u) => ({
         id: u.id,
@@ -97,6 +142,7 @@ router.get('/users', requireAdmin, async (req, res) => {
         game_accounts: accByUser[u.id] || [],
         avatar_url: (profByUser[u.id] && profByUser[u.id].avatar_url) || null,
         game_nick: (profByUser[u.id] && profByUser[u.id].game_nick) || null,
+        tem_specs: specsUsers.has(Number(u.id)),
       }))
       .sort((a, b) => Number(a.id) - Number(b.id));
     res.json({ users });
@@ -269,6 +315,13 @@ router.post('/users/:id/game-accounts', requireAdmin, async (req, res) => {
       .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
       .all(id);
     res.json({ ok: true, accounts: rows });
+    // a distinção Top 1 Kill de CS reavalia logo — se a nova ligação
+    // for a do líder, recebe a badge sem esperar pelo próximo ciclo
+    if (game === 'cs2' || game === 'csgo') {
+      require('../top1')
+        .syncTop1Badge()
+        .catch(() => {});
+    }
   } catch (error) {
     console.error('Erro game-accounts:', error.message);
     res.status(500).json({ error: 'Erro ao ligar a conta de jogo.' });
@@ -297,6 +350,22 @@ router.delete('/users/:id/game-accounts/:accId', requireAdmin, async (req, res) 
   }
 });
 
+/* ---------- Limpar as specs/PCs de um membro (botão do painel) ----------
+   Apaga a linha em user_specs desse membro — PCs, leitura detalhada,
+   sinais vitais e avaliação. A próxima leitura recomeça do zero. */
+router.post('/users/:id/limpar-specs', requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Pedido inválido.' });
+    const db = getDb();
+    await db.prepare('DELETE FROM user_specs WHERE user_id = ?').run(id);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro limpar-specs:', error.message);
+    res.status(500).json({ error: 'Erro ao limpar as specs.' });
+  }
+});
+
 /* ---------- Nomes que já aparecem nas estatísticas de cada jogo ----------
    O painel liga um membro a um nome real das estatísticas: o CS2 tem
    os nomes do CS2, o Rainbow os do Rainbow, etc. Cada membro pode ter
@@ -321,6 +390,16 @@ const uniq = (list) => {
 
 async function namesForGame(game) {
   if (game === 'cs2' || game === 'csgo') {
+    // AO VIVO: cs2-steam.json segue os nomes reais da Steam (segue os
+    // renames automaticamente), em vez da lista fixa antiga
+    try {
+      const live = require('../cs2live');
+      const m = (live.membros() || [])
+        .filter((x) => typeof x === 'object' && x)
+        .map((x) => String(x.nick || '').trim())
+        .filter(Boolean);
+      if (m.length) return uniq(m);
+    } catch {}
     return uniq((cs2.TRACKED || []).map((t) => t.name));
   }
   if (game === 'r6') {

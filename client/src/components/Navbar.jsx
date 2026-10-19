@@ -75,7 +75,10 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
               <Youtube className="h-4 w-4 text-violet-400 sm:h-5 sm:w-5" />
             </span>
             <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
-              Ashow e Jazer Site
+              Ashow e Jazer<span className="hidden sm:inline"> Site</span>
+            </span>
+            <span className="shrink-0 rounded border border-violet-400/40 bg-violet-500/15 px-1 py-0.5 font-display text-[8px] font-black uppercase tracking-wider text-violet-300">
+              Beta
             </span>
           </Link>
 

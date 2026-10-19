@@ -362,13 +362,18 @@ router.get('/r6', async (req, res) => {
 
     // Recuo (antes de configurares a conta Ubisoft no .env) — serve
     // o último dado que existir para a página não ficar vazia.
-    const t = r6ubi.status();
+    const t = await r6ubi.status();
     const data = tracker.readJson(tracker.R6_FILE);
+    const auto = {
+      fonte: 'ubisoft',
+      ligado: !!t.credencial,
+      credencial: !!t.credencial,
+      motivo: t.credencial ? (t.ultimoErro || 'a-sincronizar') : 'sem-credenciais',
+      ultimoErro: t.ultimoErro || null,
+      ultimaTentativa: t.ultimaTentativa || null,
+    };
     if (!data) return res.json({ configured: false, missing: tracker.missing(tracker.R6_FILE) });
-    return res.json({
-      ...data,
-      auto: { fonte: 'ubisoft', ligado: false, credencial: t.credencial, motivo: 'sem-credenciais' },
-    });
+    return res.json({ ...data, auto });
   } catch (error) {
     console.error('Erro games/r6:', error.message);
     res.status(500).json({ configured: false, error: 'Não foi possível ler os dados do Rainbow Six.' });

@@ -157,6 +157,9 @@ app.use('/api/posts', postsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/games', gamesRouter);
 app.use('/api/ferramentas', ferramentasRouter);
+// InfoAoVivo (beta): app nativo de overlays do PC
+const infoaovivoRouter = require('./routes/infoaovivo');
+app.use('/api/infoaovivo', infoaovivoRouter);
 // /api/users/specs tem de vir ANTES de /api/users — senão "specs"
 // seria interpretado como um :username.
 app.use('/api/users/specs', specsRouter);
@@ -200,10 +203,14 @@ if (!IS_VERCEL) {
 
 // R6 — engine Ubisoft (open source SwiftCODA/R6-API): atualiza
 // todos os jogadores de 15 em 15 minutos, sem tracker.gg nem HTML.
-try {
-  require('./r6ubi').start();
-} catch (e) {
-  console.warn('R6 Ubisoft (a ignorar):', e.message);
+// Na Vercel não corre: as funções são efémeras e os dados já vêm
+// da base de dados (o sync é feito pelo servidor local).
+if (!IS_VERCEL) {
+  try {
+    require('./r6ubi').start();
+  } catch (e) {
+    console.warn('R6 Ubisoft (a ignorar):', e.message);
+  }
 }
 
 module.exports = app;

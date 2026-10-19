@@ -1,129 +1,174 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { svgAvatar } from '../lib/avatar'
-
-const LOAD_TIME = 2500 // ms
+import { useEffect, useRef, useState } from 'react'
 
 /* ============================================================
-   Ecrã de entrada — minimalista, escuro e clean, com o brilho
-   violeta da identidade do site.
+   LOADING ESTILO CMD
+   ------------------------------------------------------------
+   Um terminal que "liga o servidor" e entra no site: as linhas
+   vão aparecendo, o cursor pisca e a barra de estado enche.
+
+   Regras:
+   · dura ~3,2 s e entra sozinho;
+   · um clique/toque depois de 0,8 s entra já (quem tem pressa);
+   · tudo com limpeza de timers — sem intervalos a fugir.
    ============================================================ */
+
+const DURACAO = 3200
+
+const LINHAS = [
+  { t: 0, tipo: 'dim', texto: 'Microsoft Windows [Versão 10.0.19045.3803]' },
+  { t: 140, tipo: 'dim', texto: '(c) Ashow e Jazer. Todos os direitos reservados.' },
+  { t: 300, tipo: 'dim', texto: '' },
+  { t: 520, tipo: 'cmd', texto: 'C:\\Users\\visitante> cd C:\\LosLocaus' },
+  { t: 800, tipo: 'cmd', texto: 'C:\\LosLocaus> iniciar servidor --site' },
+  { t: 1150, tipo: 'ok', texto: '[ ok ] rede ligada' },
+  { t: 1420, tipo: 'ok', texto: '[ ok ] sessão verificada' },
+  { t: 1680, tipo: 'ok', texto: '[ ok ] base de dados ligada' },
+  { t: 1940, tipo: 'ok', texto: '[ ok ] módulos carregados' },
+  { t: 2230, tipo: 'cmd', texto: 'C:\\LosLocaus> entrar' },
+  { t: 2520, tipo: 'accent', texto: 'A entrar no site...' },
+  { t: 2930, tipo: 'ok', texto: '[ ok ] bem-vindo.' },
+]
+
+const CORES = {
+  dim: 'text-gray-500',
+  cmd: 'text-gray-200',
+  ok: 'text-gray-400',
+  accent: 'text-violet-300',
+}
+
 export default function BootScreen({ visible, onEnter }) {
-  const [progress, setProgress] = useState(0)
-  const [photo, setPhoto] = useState(null)
+  const [agora, setAgora] = useState(0)
+  const entrou = useRef(false)
   const timers = useRef([])
+  const inicioRef = useRef(0)
 
-  // Foto do canal (com fallback garantido)
   useEffect(() => {
-    if (!visible || photo) return
-    fetch('/api/youtube/channel')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        const url = data?.snippet?.thumbnails?.medium?.url || null
-        if (url) setPhoto(url)
-      })
-      .catch(() => {})
-  }, [visible, photo])
+    if (!visible) return undefined
+    entrou.current = false
+    inicioRef.current = Date.now()
+    setAgora(0)
 
-  // Progresso + entrada automática
-  useEffect(() => {
-    if (!visible) return
-    setProgress(0)
-    const started = Date.now()
-
-    const interval = setInterval(() => {
-      const pct = Math.min(((Date.now() - started) / LOAD_TIME) * 100, 100)
-      setProgress(pct)
+    const iv = setInterval(() => {
+      setAgora(Date.now() - inicioRef.current)
     }, 50)
+    timers.current.push(iv)
 
-    timers.current.push(
-      interval,
-      setTimeout(() => {
-        setProgress(100)
-        onEnter()
-      }, LOAD_TIME),
-    )
+    const fim = setTimeout(() => {
+      if (entrou.current) return
+      entrou.current = true
+      setAgora(DURACAO)
+      onEnter && onEnter()
+    }, DURACAO)
+    timers.current.push(fim)
 
-    return () => timers.current.forEach((t) => {
-      clearInterval(t)
-      clearTimeout(t)
-    })
+    return () => {
+      timers.current.forEach((t) => {
+        clearInterval(t)
+        clearTimeout(t)
+      })
+      timers.current = []
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible])
 
   if (!visible) return null
 
-  return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6"
-      style={{ background: 'radial-gradient(70rem 40rem at 50% 20%, #17102a 0%, #0a0813 70%)' }}
-    >
-      {/* Brilhos violeta que respiram no fundo */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute left-[18%] top-[22%] h-72 w-72 rounded-full bg-violet-600/20 blur-[120px]"
-          animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0.9, 0.5] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-[18%] right-[15%] h-80 w-80 rounded-full bg-fuchsia-600/10 blur-[130px]"
-          animate={{ scale: [1.15, 1, 1.15], opacity: [0.7, 0.4, 0.7] }}
-          transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
-      </div>
+  const progresso = Math.min(100, (agora / DURACAO) * 100)
 
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative flex w-full max-w-xs flex-col items-center text-center"
-      >
-        {/* Marca */}
-        <div className="relative mb-8">
-          <motion.div
-            className="absolute -inset-4 rounded-full border border-violet-500/30"
-            animate={{ scale: [1, 1.14, 1], opacity: [0.7, 0.25, 0.7] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <div className="h-24 w-24 overflow-hidden rounded-full ring-2 ring-violet-500/60 shadow-[0_0_60px_rgba(139,92,246,0.35)] sm:h-28 sm:w-28">
-            <img
-              src={photo || svgAvatar('AJ')}
-              alt="Ashow e Jazer"
-              onError={(e) => {
-                e.currentTarget.onerror = null
-                e.currentTarget.src = svgAvatar('AJ')
-              }}
-              className="h-full w-full object-cover"
-            />
+  const saltar = () => {
+    // deixa passar o primeiro instante para não entrar sem se ver nada
+    if (agora < 800 || entrou.current) return
+    entrou.current = true
+    setAgora(DURACAO)
+    onEnter && onEnter()
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050308] px-3 py-6 sm:px-6"
+      onClick={saltar}
+      role="presentation"
+    >
+      {/* brilho violeta muito discreto ao fundo */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(60rem 32rem at 50% 42%, rgba(139,92,246,.13) 0%, rgba(5,3,8,0) 70%)',
+        }}
+      />
+
+      <div className="relative w-full max-w-[38rem]">
+        {/* janela do terminal */}
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0a0810] shadow-[0_30px_90px_rgba(0,0,0,.75)]">
+          {/* barra de título */}
+          <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.04] px-3 py-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+            <span className="ml-2 truncate font-mono text-[10px] text-gray-500 sm:text-[11px]">
+              cmd.exe — Ashow e Jazer
+            </span>
+          </div>
+
+          {/* corpo */}
+          <div className="min-h-[15rem] px-3 py-3 font-mono text-[10px] leading-relaxed sm:min-h-[17rem] sm:px-4 sm:py-4 sm:text-[12px]">
+            {LINHAS.map((linha, i) => {
+              if (agora < linha.t) return null
+              if (!linha.texto) return <div key={i} className="h-2" />
+              return (
+                <div key={i} className={`whitespace-pre-wrap break-words ${CORES[linha.tipo]}`}>
+                  {linha.tipo === 'ok' ? (
+                    <>
+                      <span className="text-emerald-400">[ ok ]</span>
+                      {linha.texto.replace('[ ok ]', '')}
+                    </>
+                  ) : linha.tipo === 'cmd' ? (
+                    <>
+                      <span className="text-violet-400">
+                        {linha.texto.slice(0, linha.texto.indexOf('>') + 1)}
+                      </span>
+                      {linha.texto.slice(linha.texto.indexOf('>') + 1)}
+                    </>
+                  ) : (
+                    linha.texto
+                  )}
+                </div>
+              )
+            })}
+
+            {/* cursor */}
+            <div className="mt-0.5 flex items-center text-gray-300">
+              <span className="text-violet-400">C:\LosLocaus&gt;</span>
+              <span className="ml-1 inline-block h-3 w-[7px] animate-pulse bg-violet-300/90 sm:h-3.5" />
+            </div>
+          </div>
+
+          {/* barra de estado */}
+          <div className="border-t border-white/10 bg-black/30 px-3 py-2 sm:px-4">
+            <div className="flex items-center gap-3">
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 transition-[width] duration-100"
+                  style={{ width: `${progresso}%` }}
+                />
+              </div>
+              <span className="w-9 text-right font-mono text-[10px] tabular-nums text-gray-500">
+                {Math.round(progresso)}%
+              </span>
+            </div>
+            <div className="mt-1.5 flex items-center justify-between font-mono text-[9px] text-gray-600 sm:text-[10px]">
+              <span>{agora < DURACAO ? 'ligado :: a entrar' : 'pronto'}</span>
+              <span>127.0.0.1:3001</span>
+            </div>
           </div>
         </div>
 
-        <h1
-          className="gradient-text font-black"
-          style={{ fontSize: 'clamp(1.7rem, 6vw, 2.4rem)', letterSpacing: '0.02em' }}
-        >
-          Ashow e Jazer
-        </h1>
-
-        <p className="mt-3 text-[11px] uppercase tracking-[0.4em] text-gray-500">
-          A carregar o site...
+        <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-gray-700 sm:text-[10px]">
+          clica para entrar já
         </p>
-
-        {/* Barra de progresso fina */}
-        <div className="mt-9 h-[3px] w-60 overflow-hidden rounded-full bg-white/10 sm:w-72">
-          <motion.div
-            className="relative h-full rounded-full bg-gradient-to-r from-violet-400 via-violet-500 to-violet-600 shadow-[0_0_12px_rgba(139,92,246,0.8)]"
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.15, ease: 'linear' }}
-          >
-            <span className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
-          </motion.div>
-        </div>
-
-        <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.3em] tabular-nums text-violet-300/80">
-          {Math.round(progress)}%
-        </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

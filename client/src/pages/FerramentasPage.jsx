@@ -119,17 +119,24 @@ const XALANA_ACOES = {
   'xalana-a2': { nome: 'Efeitos visuais: modo leve', desc: 'Menus e janelas mais rápidos.', nivel: 'minima' },
   'xalana-a3': { nome: 'Rato 1:1 — sem aceleração', desc: 'O rato anda exatamente a distância que move.', nivel: 'minima' },
   'xalana-a4': { nome: 'Temporários do utilizador limpos', desc: 'Limpa %TEMP% (fica só o que está em uso).', nivel: 'minima' },
+  'xalana-a16': { nome: 'Animações de janelas desligadas', desc: 'Fim das animações de minimizar/maximizar — menos delay.', nivel: 'minima' },
+  'xalana-a17': { nome: 'USB e input nunca dormem', desc: 'Rato/teclado respondem sempre; sem suspensão seletiva.', nivel: 'minima' },
   'xalana-a5': { nome: 'Telemetria DiagTrack parada', desc: 'Menos disco e CPU em fundo.', nivel: 'normal' },
   'xalana-a6': { nome: 'Aplicações em segundo plano suspensas', desc: 'Apps deixam de correr às costas.', nivel: 'normal' },
   'xalana-a7': { nome: 'Xbox Game Bar e GameDVR desligados', desc: 'Sem overlay nem gravação de fundo.', nivel: 'normal' },
   'xalana-a8': { nome: 'Sugestões do Início desligadas', desc: 'Menu Início sem apps promovidas.', nivel: 'normal' },
   'xalana-a9': { nome: 'Transparência e demoras de menu desligadas', desc: 'Sem transparência; menus abrem de estalar.', nivel: 'normal' },
   'xalana-a10': { nome: 'Tarefas de diagnóstico desativadas', desc: '5 tarefas de telemetria paradas.', nivel: 'normal' },
+  'xalana-a18': { nome: 'Latência: Nagle desligado', desc: 'Menos atraso de pacotes em todas as interfaces de rede.', nivel: 'normal' },
+  'xalana-a19': { nome: 'DNS rápido (1.1.1.1 + 8.8.8.8)', desc: 'Resolução de sites mais rápida, cache limpa.', nivel: 'normal' },
+  'xalana-a15': { nome: 'Feedback e relatórios desligados', desc: 'Painéis do Feedback, WER e avisos dos Mapas fora.', nivel: 'normal' },
   'xalana-a11': { nome: 'Debloat: apps pré-instaladas removidas', desc: 'Xbox, Widgets, Cortana, Solitaire, Maps, etc.', nivel: 'extremo' },
-  'xalana-a12': { nome: 'Serviços pesados parados e desligados', desc: 'SysMain, Pesquisa indexada, Xbox, Fax, Mapas...', nivel: 'extremo' },
+  'xalana-a12': { nome: 'Serviços pesados parados e desligados', desc: 'SysMain, Pesquisa, Xbox, DoSvc, TrkWks, Fax, Mapas...', nivel: 'extremo' },
   'xalana-a13': { nome: 'Perfil multimédia/jogo sem limitações', desc: 'Rede sem limitação; jogos em prioridade alta.', nivel: 'extremo' },
+  'xalana-a20': { nome: 'Tuning TCP no máximo', desc: 'RSS ligado, timestamps e RSC fora, ACKs rápidos.', nivel: 'extremo' },
+  'xalana-a21': { nome: 'GPU prioritária nos jogos', desc: 'Windows dá a GPU dedicada sempre aos jogos.', nivel: 'extremo' },
   'xalana-a14': { nome: 'Prioridade de processos: desempenho', desc: 'CPU dá prioridade a correr programas.', nivel: 'extremo' },
-  'xalana-a15': { nome: 'Hibernação e arranque rápido desligados', desc: 'Liberta hiberfil.sys; o PC desliga mesmo.', nivel: 'extremo' },
+  'xalana-a22': { nome: 'Hibernação e arranque rápido desligados', desc: 'Liberta hiberfil.sys; o PC desliga mesmo.', nivel: 'extremo' },
 }
 
 const PERIGO = {
@@ -182,14 +189,19 @@ export default function FerramentasPage() {
   /* Ações selecionadas por nível do Otimizador by Xalana.
      Cada nível PARTE do anterior: normal = mínimo + extras,
      extremo = tudo. O que se corrige depois é só exceção. */
-  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a4']
+  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4']
   const PRESET_XALANA = {
     minima: XALANA_MINIMA,
-    normal: [...XALANA_MINIMA, 'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10'],
+    normal: [
+      ...XALANA_MINIMA,
+      'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9',
+      'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15',
+    ],
     extremo: [
       ...XALANA_MINIMA,
-      'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9', 'xalana-a10',
-      'xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a14', 'xalana-a15',
+      'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9',
+      'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15',
+      'xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a20', 'xalana-a21', 'xalana-a14', 'xalana-a22',
     ],
   }
   const [xalanaSel, setXalanaSel] = useState(PRESET_XALANA)
@@ -224,6 +236,31 @@ export default function FerramentasPage() {
       setAviso('Não deu para falar com o servidor.')
     } finally {
       setADetectar(false)
+    }
+  }
+
+  /* desinstala por completo os programas instalados que estão
+     selecionados (winget + limpeza estilo Revo, no servidor) */
+  const desinstalarSelecionados = async () => {
+    if (aCorrer) return
+    const ids = Array.from(selecionados).filter((id) => instalados.has(id))
+    if (!ids.length) return
+    setAviso(null)
+    try {
+      const r = await fetch('/api/ferramentas/desinstalar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ ids }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) {
+        setAviso(d.erro || d.error || 'Não deu para desinstalar.')
+        return
+      }
+      setNomeCorrer('Desinstalação de programas')
+      setEstado((prev) => ({ ...(prev || {}), aCorrer: 'desinstalar', logs: [], fim: null, erro: null }))
+    } catch {
+      setAviso('Não deu para falar com o servidor.')
     }
   }
 
@@ -453,7 +490,7 @@ export default function FerramentasPage() {
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              placeholder="Procurar ferramenta (ex.: dns, onedrive, limpar…)"
+              placeholder="Procurar ferramenta…"
               className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-9 text-[13px] text-white placeholder:text-gray-400 focus:border-violet-500/50 focus:bg-white/10 focus:outline-none"
             />
             {busca && (
@@ -723,10 +760,10 @@ export default function FerramentasPage() {
                       {nivel === 'minima' ? <Gauge className="h-5 w-5" /> : nivel === 'normal' ? <Rocket className="h-5 w-5" /> : <Swords className="h-5 w-5" />}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className="font-display text-[17px] font-black text-white">{nivelLabel}</span>
                         <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-400">
-                          {todasAcoesNivel.length} ações · nível {nivelLabel}
+                          {todasAcoesNivel.length} ações
                         </span>
                       </div>
                       <p className="text-[12.5px] leading-relaxed text-gray-400">{nivelDesc}</p>
@@ -837,12 +874,12 @@ export default function FerramentasPage() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                  className="glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/5 p-4 transition-colors hover:border-violet-500/25"
+                  className="glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/5 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/10"
                 >
                   <div className="mb-3 flex items-start gap-3">
                     <label className="flex min-w-0 flex-1 cursor-pointer select-none items-start gap-3">
                       {/* ícone no círculo — mesma linguagem visual do site */}
-                      <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/25">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-violet-500/25 to-fuchsia-500/10 text-violet-300 ring-1 ring-violet-500/25">
                         {f.logo && !logosFalha.has(f.id) ? (
                           <img
                             src={f.logo}
@@ -881,12 +918,24 @@ export default function FerramentasPage() {
                   {(instalados.has(f.id) || mostrarCat || f.desenvolvimento || (f.perigo && f.perigo !== 'baixo')) && (
                     <div className="mb-2 flex flex-wrap items-center gap-1.5">
                       {instalados.has(f.id) && (
-                        <span
-                          title="Já está instalado neste PC"
-                          className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30"
-                        >
-                          instalado
-                        </span>
+                        <>
+                          <span
+                            title="Já está instalado neste PC"
+                            className="inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30"
+                          >
+                            instalado
+                          </span>
+                          {!f.perigo && (
+                            <button
+                              onClick={desinstalarSelecionados}
+                              disabled={aCorrer || !selecionados.has(f.id)}
+                              title="Seleciona este cartão e clica para desinstalar por completo (winget + limpeza estilo Revo)"
+                              className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-red-300 ring-1 ring-red-400/30 transition-colors hover:bg-red-500/25 disabled:opacity-50"
+                            >
+                              <Trash2 className="h-2.5 w-2.5" /> desinstalar
+                            </button>
+                          )}
+                        </>
                       )}
                       {mostrarCat && (
                         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-400">

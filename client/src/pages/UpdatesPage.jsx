@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, Users, Loader2 } from 'lucide-react'
-import { BADGES, BadgeTile, OVERCLOCK_BADGES } from '../components/BadgeGem'
+import { BADGES, BadgeGem, OVERCLOCK_BADGES } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 
 /* ============================================================
@@ -67,7 +67,9 @@ export default function UpdatesPage() {
               key={b.id}
               className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
             >
-              <BadgeTile badge={b} size={44} />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center">
+                <BadgeGem badge={b} size={44} />
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="font-display text-sm font-black uppercase tracking-wide text-white">
                   {b.label}

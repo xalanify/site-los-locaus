@@ -94,7 +94,7 @@ async function statsSteam(steamid, key) {
     const deaths = n('total_deaths');
     const tiros = n('total_shots_fired');
     const certos = n('total_shots_hit');
-    const tempoMinutos = n('total_time_played');
+    const tempoSegundos = n('total_time_played');
     const hs = n('total_kills_headshot');
     return {
       ok: true,
@@ -117,10 +117,26 @@ async function statsSteam(steamid, key) {
       pistola: n('total_kills_deagle') != null ? n('total_kills_deagle') : n('total_kills_pistol'),
       planted: n('total_planted_bombs'),
       defused: n('total_defused_bombs'),
-      horas: tempoMinutos != null ? Number((tempoMinutos / 60).toFixed(0)) : null,
+      horas: tempoSegundos != null ? Number((tempoSegundos / 3600).toFixed(0)) : null,
     };
   } catch (e) {
-    return { ok: false, steam: steamid, erro: String((e && e.message) || e) };
+    const msg = String((e && e.message) || e);
+    let motivo = 'outro';
+    const m = /Steam (\d+)/.exec(msg);
+    const cod = m ? Number(m[1]) : 0;
+    if (cod === 403) motivo = 'nao-publico';
+    // a Steam os stats de CS2 vêm como 400 vazios; as CONQUISTAS dizem
+    // a verdade por extenso ("Profile is not public") — pergunta-lhe
+    if (cod === 400 || cod === 500) {
+      try {
+        const r2 = await fetch(
+          `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?appid=730&steamid=${steamid}&key=${key}`,
+        );
+        if (r2.status === 403) motivo = 'nao-publico';
+        else if (r2.ok) motivo = 'sem-stats';
+      } catch {}
+    }
+    return { ok: false, steam: steamid, erro: msg, motivo };
   } finally {
     clearTimeout(timer);
   }
@@ -153,6 +169,23 @@ async function aoVivo() {
     const pj = await r.json();
     for (const pr of pj?.response?.players || []) {
       avatares[pr.steamid] = { avatar: pr.avatarfull, nome: pr.personaname };
+    }
+    // renames da Steam: se a pessoa mudou o nome público, grava já no
+    // ficheiro — assim o site (e o admin) seguem sempre o nome atual
+    let mudou = false;
+    for (let i = 0; i < lista.length; i++) {
+      const m = lista[i];
+      if (!m || !m.steam) continue;
+      const nome = avatares[m.steam]?.nome;
+      if (nome && m.nick && nome !== m.nick) {
+        lista[i] = { ...m, nick: nome };
+        mudou = true;
+      }
+    }
+    if (mudou) {
+      try {
+        escrever(lista);
+      } catch {}
     }
   } catch {}
 

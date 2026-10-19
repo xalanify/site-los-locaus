@@ -11,6 +11,7 @@ import {
   Plus,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
+import { confirmar, toast } from './Feedback'
 
 const fmtDate = (iso) => {
   if (!iso) return ''
@@ -113,15 +114,21 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
   }
 
   const handleDelete = async (postId) => {
-    if (!window.confirm('Eliminar esta publicação?')) return
+    const ok = await confirmar('Eliminar esta publicação?', { titulo: 'Eliminar publicação', okTexto: 'Eliminar' })
+    if (!ok) return
     try {
       const res = await fetch(`/api/posts/${postId}`, {
         method: 'DELETE',
         headers: authHeaders(),
       })
-      if (res.ok) setPosts((prev) => prev.filter((p) => p.id !== postId))
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId))
+        toast.ok('Publicação eliminada.')
+      } else {
+        toast.erro('Não deu para eliminar a publicação.')
+      }
     } catch {
-      /* ignora */
+      toast.erro('Sem ligação ao servidor.')
     }
   }
 

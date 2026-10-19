@@ -34,11 +34,39 @@ body {
   background-color: var(--aj-bg);
   /* brilho ambiente violeta muito discreto no topo — dá profundidade
      ao preto puro sem virar banner */
-  background-image: radial-gradient(
-    64rem 30rem at 50% -7rem,
-    rgb(var(--aj-600) / 0.2),
-    transparent 70%
-  );
+  background-image:
+    radial-gradient(
+      64rem 30rem at 50% -7rem,
+      rgb(var(--aj-600) / 0.2),
+      transparent 70%
+    ),
+    radial-gradient(
+      circle at 12% 18%,
+      rgb(255 255 255 / 0.06),
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 78% 28%,
+      rgb(255 255 255 / 0.05),
+      transparent 1.2px
+    ),
+    radial-gradient(
+      circle at 35% 72%,
+      rgb(255 255 255 / 0.04),
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 88% 84%,
+      rgb(255 255 255 / 0.04),
+      transparent 1.3px
+    );
+  background-size:
+    100% 100%,
+    280px 280px,
+    240px 240px,
+    320px 320px,
+    260px 260px;
+  background-repeat: repeat;
   background-attachment: fixed;
   color: white;
   overflow-x: hidden;
@@ -593,7 +621,9 @@ button[class~='bg-violet-500']:active {
 /* Painéis fixos (sidebar + coluna direita): degradé violeta-escuro
    para continuarem o roxo do centro em vez de barras pretas.*/
 .painel-fixo {
-  background: linear-gradient(180deg, #150f26 0%, #100b1d 55%, #0b0715 100%);
+  background: rgba(8, 5, 16, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* nos jogos: translúcidos para a foto do ecrã inteiro passar nos
@@ -602,3 +632,23 @@ body.in-jogo .painel-fixo {
   background: rgba(8, 5, 16, 0.6) !important;
   backdrop-filter: blur(2px);
 }
+
+/* ---------- Temática de cores por jogo (GamesPage) ---------- */
+body[data-theme="cs2"] { --aj-300: 253 186 116; --aj-400: 251 146 60; --aj-500: 249 115 22; --aj-600: 234 88 12; --aj-700: 194 65 12; }
+body[data-theme="r6"] { --aj-300: 252 165 165; --aj-400: 248 113 113; --aj-500: 239 68 68; --aj-600: 220 38 38; --aj-700: 185 28 28; }
+body[data-theme="bf1"] { --aj-300: 134 239 172; --aj-400: 74 222 128; --aj-500: 34 197 94; --aj-600: 22 163 74; --aj-700: 21 128 61; }
+body[data-theme="bfv"] { --aj-300: 253 224 71; --aj-400: 250 204 21; --aj-500: 202 138 4; --aj-600: 161 98 7; --aj-700: 133 77 14; }
+body[data-theme="bf6"] { --aj-300: 209 213 219; --aj-400: 156 163 175; --aj-500: 107 114 128; --aj-600: 75 85 99; --aj-700: 55 65 81; }
+
+/* fundo geral do app: gif gta5 (subtil) — escondido nas páginas de jogos */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url('/gta5.gif') center / cover no-repeat fixed;
+  opacity: 0.14;
+  filter: saturate(0.85) brightness(0.7);
+  pointer-events: none;
+}
+body.in-jogo::before { display: none; }

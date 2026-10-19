@@ -27,8 +27,8 @@ const APPID_V2 = '3587dcbb-7f81-457c-9781-0e3f29f6f56a';
 const APPID_V3 = 'e3d5ea9e-50bd-43b7-88bf-39794f4e3d40';
 const SPACE_R6 = '0d2ae42d-4c27-4cb7-af6c-2099062302bb'; // skill / nível
 const SPACE_DATA = '05bfb3f7-6c21-4c42-be1f-97a33fb5cf66'; // datadev stats
-const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+const UA = 'uPlay PC/127.0.0'; /* UA do cliente uPlay: a Ubisoft NÃO
+   entra em captcha (DataDome) com este — UA de navegador dá 403 */
 const MIN = Math.max(5, Number(process.env.R6_UBI_MIN) || 15);
 
 /* ---------- status (mostrado na página) ---------- */
@@ -40,7 +40,22 @@ const estado = {
   ultimoErro: null,
   ciclos: 0,
   jogadoresOk: 0,
+  falhasSeguidas: 0,
+  proximaTentativa: null,
 };
+
+/* Quando a Ubisoft/DataDome recusa (403, 429, captcha), insistir de
+   15 em 15 minutos só afunda mais o IP. Cada falha seguida dobra a
+   espera: 15 → 30 → 60 → 120 min (teto). Um ciclo bom volta ao normal. */
+const MAX_MIN = Math.max(MIN, Number(process.env.R6_UBI_MAX_MIN) || 120);
+
+function esperaAgora() {
+  const falhas = Math.max(0, Number(estado.falhasSeguidas) || 0);
+  const min = Math.min(MAX_MIN, MIN * Math.pow(2, Math.min(falhas, 4)));
+  // pequeno ruído (±10%) para não bater sempre no mesmo segundo
+  const comRuido = min * (0.9 + Math.random() * 0.2);
+  return Math.max(60 * 1000, Math.round(comRuido * 60 * 1000));
+}
 
 /* ---------- temporada atual (YxSy) ----------
    Âncora calibrada: out/2026 → Y11S3 (temporadas de ~3 meses).
@@ -140,9 +155,10 @@ async function token(versao) {
     return g;
   }
 
-  // SwiftCODA: evitar >3 logins/hora — guard de 60s entre tentativas
+  // SwiftCODA: evitar logins em sequência — guard de 10 min entre
+  // tentativas (DataDome da Ubisoft marca IPs que tentam seguido)
   const pausa = Date.now() - ultimoLogin;
-  if (pausa < 60 * 1000) throw new Error('login-recuar');
+  if (pausa < 10 * 60 * 1000) throw new Error('login-recuar');
 
   ultimoLogin = Date.now();
   const r = await fetch('https://public-ubiservices.ubi.com/v3/profiles/sessions', {
@@ -159,7 +175,7 @@ async function token(versao) {
   });
   if (r.status === 401) throw new Error('Conta Ubisoft não existe ou a senha está errada (401).');
   if (r.status === 409) throw new Error('A Ubisoft pediu captcha — espera uns minutos e repete (409).');
-  if (r.status === 429) throw new Error('Demasiados logins à Ubisoft — combinado com o número de tentativas (429).');
+  if (r.status === 429) throw new Error('limite de pedidos do IP à Ubisoft (429) — temporário, a próxima tentativa é automática em 15 min');
   if (!r.ok) throw new Error(`login Ubisoft devolveu ${r.status}`);
   const d = await r.json();
   const tok = { ticket: d.ticket, sessionId: d.sessionId, expira: d.expiration, userId: d.userId };
@@ -476,10 +492,26 @@ function start() {
     );
     return false;
   }
-  const ciclo = () => atualizar().catch((e) => console.warn('R6 Ubisoft:', e.message));
-  setInterval(ciclo, MIN * 60 * 1000).unref();
+  const ciclo = async () => {
+    try {
+      const r = await atualizar();
+      // ciclo bom = pelo menos um jogador lido
+      estado.falhasSeguidas = r && r.ok ? 0 : (estado.falhasSeguidas || 0) + 1;
+    } catch (e) {
+      estado.falhasSeguidas = (estado.falhasSeguidas || 0) + 1;
+      console.warn('R6 Ubisoft:', e.message);
+    }
+    const espera = esperaAgora();
+    estado.intervaloMin = Math.round(espera / 60000);
+    estado.proximaTentativa = new Date(Date.now() + espera).toISOString();
+    setTimeout(ciclo, espera).unref();
+  };
+  estado.credencial = true; // conta ligada — a página pode mostrar estado "a sincronizar" já antes da primeira passada
+  estado.falhasSeguidas = 0;
   setTimeout(ciclo, 30 * 1000).unref(); // primeira passada já depois de arrancar
-  console.log(`R6 Ubisoft: automático a cada ${MIN} min (SwiftCODA/R6-API → Ubisoft).`);
+  console.log(
+    `R6 Ubisoft: automático (base ${MIN} min; recuo até ${MAX_MIN} min se a Ubisoft recusar).`,
+  );
   return true;
 }
 

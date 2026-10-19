@@ -242,10 +242,7 @@ function GameChooser({ onPick }) {
       id: 'bf',
       name: 'Battlefield',
       icon: Target,
-      logo: [
-        'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/header.jpg',
-        'https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/library_600x900.jpg',
-      ],
+      logo: ['/bf1.jpg'],
       color: 'text-sky-400',
       ring: 'hover:border-sky-500',
       bg: 'bg-sky-500/10',
@@ -259,7 +256,7 @@ function GameChooser({ onPick }) {
       animate={{ opacity: 1, y: 0 }}
       className="mx-auto max-w-3xl text-center"
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6">
         {games.map((g, i) => {
           const Icon = g.icon
           return (
@@ -269,15 +266,16 @@ function GameChooser({ onPick }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * i }}
               onClick={() => onPick(g.id)}
-              className={`glass group rounded-2xl border-2 border-transparent p-6 transition-all duration-300 hover:scale-[1.03] ${g.ring}`}
+              className={`glass group rounded-2xl border-2 border-transparent p-3.5 transition-all duration-300 hover:scale-[1.03] sm:p-6 ${g.ring}`}
             >
               <div
-                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full ${g.bg}`}
+                className={`mx-auto mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full sm:mb-4 sm:h-16 sm:w-16 ${g.bg}`}
               >
                 <LogoJogo logo={g.logo} Icon={Icon} cor={g.color} />
               </div>
-              <div className="mb-1 text-xl font-black text-white sm:text-2xl">{g.name}</div>
-              <p className="text-sm leading-relaxed text-gray-400">{g.desc}</p>
+              <div className="mb-1 text-base font-black leading-tight text-white sm:text-2xl">
+                {g.name}
+              </div>
               {g.emBreve && (
                 <div className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide ${g.color}`}>
                   <Clock className="h-3.5 w-3.5 animate-spin [animation-duration:3s]" />
@@ -343,7 +341,6 @@ const ABA_SKINS_LABEL = {
   cs2: 'Skins e Facas raras',
   r6: 'Skins e Amuletos raros',
   fortnite: 'Skins · Paraquedas · Picaretas',
-  bf: 'Skins de armas',
 }
 
 const SKINS_SEC = {
@@ -359,11 +356,6 @@ const SKINS_SEC = {
     { chave: 'skins', titulo: 'Skins' },
     { chave: 'paraquedas', titulo: 'Paraquedas' },
     { chave: 'picaretas', titulo: 'Picaretas' },
-  ],
-  bf: [
-    { chave: 'bf1', titulo: 'BF1' },
-    { chave: 'bfv', titulo: 'BF V' },
-    { chave: 'bf6', titulo: 'BF6' },
   ],
 }
 
@@ -523,13 +515,6 @@ function SkinsRarosTab({ jogo }) {
               <SkinCard key={it.nome + i} it={it} i={i} onZoom={setZoom} />
             ))}
           </div>
-          {jogo === 'bf' && (
-            <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
-              Battlefield: nenhuma imagem das skins (BF1/BFV/BF6) existe publicamente —
-              aqui ficam os TOP 10 por jogo com a história de cada caso (edições de
-              colecionador, Battlepacks, Tides of War, beta, passes de temporada).
-            </p>
-          )}
           {jogo === 'r6' && (
             <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[11.5px] leading-snug text-gray-500">
               Rainbow Six: renders da comunidade (Fandom) com o FUNDO REMOVIDO e servidos
@@ -619,155 +604,21 @@ function SubAbaJogo({ jogo, aba, setAba }) {
 }
 
 function FortniteStats() {
-  const [nome, setNome] = useState('')
-  const [procurando, setProcurando] = useState(false)
-  const [erro, setErro] = useState('')
-  const [res, setRes] = useState(null)
-
-  const procurar = async (alvo) => {
-    const q = String(alvo ?? nome).trim()
-    if (!q || procurando) return
-    setProcurando(true)
-    setErro('')
-    setRes(null)
-    try {
-      const r = await fetch(`/api/games/fortnite-player?name=${encodeURIComponent(q)}`)
-      const d = await r.json().catch(() => ({}))
-      if (!r.ok) {
-        setErro(d.error || d.erro || 'Não foi possível consultar agora.')
-        return
-      }
-      setRes(d)
-    } catch {
-      setErro('Sem resposta do servidor. Tenta de novo.')
-    } finally {
-      setProcurando(false)
-    }
-  }
-
-  const Cartão = ({ label, valor, Icon: Ic, atraso = 0 }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: atraso, duration: 0.35 }}
-      className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center"
-    >
-      {Ic && <Ic className="mx-auto mb-1.5 h-5 w-5 text-violet-300" />}
-      <p className="font-display text-2xl font-black text-white">{valor}</p>
-      <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
-    </motion.div>
-  )
-
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass rounded-2xl p-5 text-center"
-      >
-        <h2 className="gradient-text font-display text-xl font-black sm:text-2xl">Fortnite</h2>
-        <p className="mx-auto mt-1 max-w-md text-[13px] text-gray-400">
-          Ainda não temos jogadores fixos no Fortnite — pesquisa o nome de qualquer jogador.
-          Vitórias, K/D e partidas por modo (solos, duplas, esquadrões).
-        </p>
-
-        <div className="mx-auto mt-4 flex max-w-lg items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && procurar()}
-              placeholder="Nome Epic do jogador (ex.: Ninja)"
-              className="w-full rounded-xl border border-white/15 bg-black/40 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-600 focus:border-violet-500/60 focus:outline-none"
-            />
-          </div>
-          <button
-            onClick={() => procurar()}
-            disabled={procurando || !nome.trim()}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
-          >
-            {procurando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            Procurar
-          </button>
-        </div>
-
-        {erro && (
-          <p className="mx-auto mt-3 inline-flex items-center gap-2 rounded-lg bg-red-500/15 px-3 py-2 text-[13px] font-bold text-red-400">
-            <AlertCircle className="h-4 w-4" /> {erro}
-          </p>
-        )}
-      </motion.div>
-
-      {res && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="glass mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-5">
-            <div className="flex items-center gap-3">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-violet-500/20 text-2xl">
-                🔥
-              </div>
-              <div>
-                <p className="font-display text-lg font-black text-white">{res.nome}</p>
-                {res.nivelPasse != null && (
-                  <p className="text-[12px] text-gray-400">
-                    Nível do passe: <span className="font-bold text-violet-300">{res.nivelPasse}</span>
-                  </p>
-                )}
-              </div>
-            </div>
-            <p className="text-[11px] text-gray-500">via fortnite-api.com · em tempo real</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Cartão label="Vitórias" valor={fmt(res.geral.vitórias)} Icon={Trophy} atraso={0.05} />
-            <Cartão label="Kills" valor={fmt(res.geral.kills)} Icon={Skull} atraso={0.1} />
-            <Cartão label="K/D" valor={res.geral.kd != null ? Number(res.geral.kd).toFixed(2) : '—'} Icon={Crosshair} atraso={0.15} />
-            <Cartão label="Partidas" valor={fmt(res.geral.partidas)} Icon={Gamepad2} atraso={0.2} />
-            <Cartão label="Nº 1" valor={fmt(res.geral.maxKillsNum)} Icon={Star} atraso={0.25} />
-          </div>
-
-          {res.modos && (
-            <div className="mt-5 space-y-3">
-              {[['Solos', res.modos.solos], ['Duplas', res.modos.duplas], ['Esquadrões', res.modos.esquadrões]]
-                .filter(([, m]) => m)
-                .map(([label, m]) => (
-                  <div key={label} className="glass rounded-2xl p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="font-display text-sm font-black uppercase tracking-wider text-white">
-                        {label}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {fmt(m.matches)} partidas
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-                      <div>
-                        <p className="text-lg font-black text-green-400">{fmt(m.wins)}</p>
-                        <p className="text-[10px] font-bold uppercase text-gray-500">Vitórias</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-black text-white">{fmt(m.kills)}</p>
-                        <p className="text-[10px] font-bold uppercase text-gray-500">Kills</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-black text-violet-300">{Number(m.kd || 0).toFixed(2)}</p>
-                        <p className="text-[10px] font-bold uppercase text-gray-500">K/D</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-black text-yellow-400">{fmt(m.top1)}</p>
-                        <p className="text-[10px] font-bold uppercase text-gray-500">Nº 1</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </motion.div>
-      )}
+    <div className="glass mx-auto max-w-xl rounded-2xl p-8 text-center">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-purple-500/15">
+        <Flame className="h-8 w-8 text-purple-400" />
+      </div>
+      <h2 className="gradient-text font-display text-xl font-black sm:text-2xl">Fortnite</h2>
+      <p className="mt-3 text-[13px] font-bold text-gray-400">
+        As estatísticas do Fortnite estão em desenvolvimento.
+      </p>
+      <p className="mt-1 text-[11px] text-gray-500">
+        Em breve: pesquisa por nome, vitórias, K/D, partidas por modo.
+      </p>
     </div>
   )
 }
-
 function FortnitePage() {
   const [aba, setAba] = useState('stats')
   return (
@@ -789,15 +640,22 @@ const BF_JOGOS = [
   { id: 'bf6', nome: 'Battlefield 6', cor: 'text-sky-300', fundo: 'bg-sky-500/15' },
 ]
 
-function BattlefieldStats() {
+function BattlefieldStats({ aoMudarJogo }) {
   const [jogo, setJogo] = useState('bf1')
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
   const [aCarregar, setACarregar] = useState(true)
   const [aVivo, setAVivo] = useState(false)
 
+  /* o fundo da página Juros segue o jogo BF escolhido */
+  useEffect(() => {
+    if (aoMudarJogo) aoMudarJogo(jogo)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jogo])
+
   useEffect(() => {
     let abortou = false
+    document.body.dataset.theme = jogo
     const correr = async () => {
       setACarregar(true)
       setErro('')
@@ -1530,12 +1388,10 @@ function FormLigar({ nick, setNick, onLigar, aLigar, msg }) {
 /* ============================================================
    CS2 — painel AO VIVO via Steam Web API (servidor busca sozinho)
    ============================================================ */
-function BattlefieldPage() {
-  const [aba, setAba] = useState('stats')
+function BattlefieldPage({ aoMudarJogo }) {
   return (
     <div className="space-y-5">
-      <SubAbaJogo jogo="bf" aba={aba} setAba={setAba} />
-      {aba === 'stats' ? <BattlefieldStats /> : <SkinsRarosTab jogo="bf" />}
+      <BattlefieldStats aoMudarJogo={aoMudarJogo} />
     </div>
   )
 }
@@ -1686,7 +1542,7 @@ function Cs2Vivo() {
 
             {/* detalhe completo */}
             <div className="mt-2 grid grid-cols-4 gap-2">
-              <Célula label="MVPs" valor={p.mvps ?? '—'} cor="text-amber-300" />
+              <Célula label="MVPs (rondas)" valor={p.mvps ?? '—'} cor="text-amber-300" />
               <Célula label="Precisão" valor={p.precisao != null ? `${p.precisao}%` : '—'} cor="text-sky-300" />
               <Célula label="Vitórias" valor={p.vitorias ?? '—'} cor="text-green-400" />
               <Célula label="Partidas" valor={p.partidas ?? '—'} />
@@ -1701,7 +1557,6 @@ function Cs2Vivo() {
               <Célula label="Danos" valor={p.dano != null ? fmt(p.dano) : '—'} />
               <Célula label="Pistola" valor={p.pistola ?? '—'} />
               <Célula label="Mortes" valor={p.deaths ?? '—'} cor="text-gray-300" />
-              <Célula label="Horas" valor={p.horas != null ? `${p.horas} h` : '—'} cor="text-green-400" />
             </div>
           </motion.div>
         ))}
@@ -1714,14 +1569,23 @@ function Cs2Vivo() {
             <div className="mb-2 flex items-center justify-between">
               <p className="font-display text-sm font-black text-gray-300">{p.nick || p.steam}</p>
               <span className="rounded-md bg-yellow-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-yellow-400">
-                Privado
+                {p.motivo === 'nao-publico' ? 'Steam: recusado' : 'Sem dados'}
               </span>
             </div>
-            <p className="text-[12px] leading-snug text-gray-500">
-              Estatísticas escondidas pela Steam — o perfil destas contas
-              precisa de <span className="font-bold text-yellow-400">Editar perfil → Privacidade → Detalhes do jogo: Público</span>.
-              Depois cuida-se sozinho, sem mais nada.
-            </p>
+            {p.motivo === 'nao-publico' ? (
+              <p className="text-[12px] leading-snug text-gray-500">
+                A própria Steam devolve <span className="font-bold text-yellow-400">"Profile is not public"</span> para
+                esta conta — no jogo nada se vê, mesmo que o perfil se veja. Quem dono dela é que tem de fazer:{' '}
+                <span className="font-bold text-gray-300">Steam → editar perfil → Privacidade → "Detalhes do jogo: Público"</span>{' '}
+                (e na biblioteca: botão direito no CS2 → Gerir → "Definir como privado" <span className="font-bold">DESLIGADO</span>).
+              </p>
+            ) : (
+              <p className="text-[12px] leading-snug text-gray-500">
+                A Steam ainda não devolveu números para estas contas — pode ser
+                só um atraso/caches da Steam; repete em minutos (a página refresca
+                com o botão de atualizar).
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -1737,7 +1601,7 @@ function Cs2Vivo() {
             {[
               { label: 'Top kills', campo: 'kills', cor: 'text-violet-300' },
               { label: 'Melhor K/D', campo: 'kd', cor: 'text-white' },
-              { label: 'MVPs', campo: 'mvps', cor: 'text-amber-300' },
+              { label: 'MVPs (rondas)', campo: 'mvps', cor: 'text-amber-300' },
               { label: 'HS %', campo: 'hs', sufixo: '%', cor: 'text-sky-300' },
               { label: 'Precisão', campo: 'precisao', sufixo: '%', cor: 'text-sky-300' },
               { label: 'Vitórias', campo: 'vitorias', cor: 'text-green-400' },
@@ -2136,6 +2000,19 @@ function R6Stats() {
               : ''}
           </span>
         </div>
+      ) : d.auto?.credencial ? (
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-gray-300">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+          <p>
+            <span className="font-bold text-white">R6 automático (API da Ubisoft):</span> conta
+            ligada — a sincronizar.{' '}
+            {d.auto?.ultimoErro
+              ? `Última tentativa: ${d.auto.ultimoErro}`
+              : 'Ainda sem dados novos.'}{' '}
+            A Ubisoft limita pedidos por hora (e antigos do tracker ficam como recuo até a primeira
+            sincronização chegar).
+          </p>
+        </div>
       ) : (
         <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
@@ -2186,13 +2063,21 @@ function R6StatsPage() {
 
 export default function GamesPage() {
   const [tab, setTab] = useState(null)
+  /* qual dos três Battlefield está selecionado — muda a foto de fundo */
+  const [bfJogo, setBfJogo] = useState('bf1')
 
   /* marca o body quando um jogo com fundo está ativo
      (as colunas fixas ganham translucidez via CSS .painel-fixo) */
   useEffect(() => {
     const jogosComFundo = ['cs2', 'r6', 'fortnite', 'bf']
     document.body.classList.toggle('in-jogo', jogosComFundo.includes(tab))
-    return () => document.body.classList.remove('in-jogo')
+    // temática de cores por jogo
+    const tema = tab === null ? 'default' : tab === 'bf' ? 'bf1' : tab
+    document.body.dataset.theme = tema
+    return () => {
+      document.body.classList.remove('in-jogo')
+      document.body.dataset.theme = 'default'
+    }
   }, [tab])
 
   return (
@@ -2212,6 +2097,8 @@ export default function GamesPage() {
                   ? 'url(/coastliner6.jpg)'
                   : tab === 'fortnite'
                   ? 'url(/fortnite.jpg)'
+                  : tab === 'bf'
+                  ? 'url(/bf1.jpg)'
                   : 'url(/bf1.jpg)',
             }}
           />
@@ -2275,7 +2162,7 @@ export default function GamesPage() {
                 {tab === 'fortnite' ? (
                   <FortnitePage />
                 ) : tab === 'bf' ? (
-                  <BattlefieldPage />
+                  <BattlefieldPage aoMudarJogo={setBfJogo} />
                 ) : tab === 'r6' ? (
                   <R6StatsPage />
                 ) : (

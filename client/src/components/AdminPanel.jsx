@@ -33,6 +33,7 @@ import Estado from './Estado'
 import AdminStats from './AdminStats'
 import { BADGES, BadgeGem } from './BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
+import { confirmar, toast } from './Feedback'
 
 /* Data simples das contas (dd mmm aaaa) */
 const fmtUserDate = (iso) => {
@@ -400,6 +401,36 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
     }
   }
 
+  /* ---------- limpar specs/PCs de um membro ---------- */
+  const limparSpecs = async (u) => {
+    const ok = await confirmar(
+      `Apagar os dados do PC (specs) de ${u.username}? O painel de PCs fica sem leitura dele até se ler de novo.`,
+      { titulo: 'Limpar specs', okTexto: 'Apagar' },
+    )
+    if (!ok) return
+    setUsersError('')
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/limpar-specs`, {
+        method: 'POST',
+        headers: adminHeaders(),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const msg = data.error || 'Erro ao limpar as specs.'
+        setUsersError(msg)
+        toast.erro(msg)
+        return
+      }
+      setUserList((prev) =>
+        prev.map((x) => (x.id === u.id ? { ...x, tem_specs: false, specsTamanho: null } : x)),
+      )
+      toast.ok(`Specs de ${u.username} apagadas.`)
+    } catch {
+      setUsersError('Sem ligação ao servidor.')
+      toast.erro('Sem ligação ao servidor.')
+    }
+  }
+
   /* ---------- modo recuperação (nova pass pedido pelo user) ---------- */
   const toggleRecovery = async (u) => {
     const next = !u.recovery
@@ -553,15 +584,21 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   }
 
   const deletePost = async (id) => {
-    if (!window.confirm('Eliminar este anúncio?')) return
+    const ok = await confirmar('Eliminar este anúncio?', { titulo: 'Eliminar anúncio', okTexto: 'Eliminar' })
+    if (!ok) return
     try {
       const res = await fetch(`/api/posts/${id}`, {
         method: 'DELETE',
         headers: adminHeaders(),
       })
-      if (res.ok) setPosts((prev) => prev.filter((p) => p.id !== id))
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p.id !== id))
+        toast.ok('Anúncio eliminado.')
+      } else {
+        toast.erro('Não deu para eliminar o anúncio.')
+      }
     } catch {
-      /* sem rede */
+      toast.erro('Sem ligação ao servidor.')
     }
   }
 
@@ -654,15 +691,24 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   }
 
   const deleteClip = async (id) => {
-    if (!window.confirm('Eliminar este clip? O vídeo é apagado do servidor.')) return
+    const ok = await confirmar('Eliminar este clip? O vídeo é apagado do servidor.', {
+      titulo: 'Eliminar clip',
+      okTexto: 'Eliminar',
+    })
+    if (!ok) return
     try {
       const res = await fetch(`/api/clips/${id}`, {
         method: 'DELETE',
         headers: adminHeaders(),
       })
-      if (res.ok) setClips((prev) => prev.filter((c) => c.id !== id))
+      if (res.ok) {
+        setClips((prev) => prev.filter((c) => c.id !== id))
+        toast.ok('Clip eliminado.')
+      } else {
+        toast.erro('Não deu para eliminar o clip.')
+      }
     } catch {
-      /* sem rede */
+      toast.erro('Sem ligação ao servidor.')
     }
   }
 
@@ -1016,6 +1062,15 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                         >
                           {openUser === u.id ? 'Fechar' : 'Ligar conta'}
                         </button>
+                        {(u.specsTamanho || u.tem_specs) && (
+                          <button
+                            onClick={() => limparSpecs(u)}
+                            title="Apagar os dados do PC (specs, sinais vitais e avaliação) deste membro"
+                            className="rounded-full bg-red-500/15 px-3 py-1 text-[11px] font-bold text-red-300 ring-1 ring-red-400/30 hover:bg-red-500/25"
+                          >
+                            Limpar specs
+                          </button>
+                        )}
                       </div>
 
                       {openUser === u.id && (

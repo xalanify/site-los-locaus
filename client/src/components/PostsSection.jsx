@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Calendar, Plus, Trash2, Image as ImageIcon } from 'lucide-react'
+import { confirmar, toast } from './Feedback'
 
 export default function PostsSection({ isAdmin }) {
   const [posts, setPosts] = useState([])
@@ -44,7 +45,7 @@ export default function PostsSection({ isAdmin }) {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        alert(data.error || 'Erro ao criar publicação')
+        toast.erro(data.error || 'Erro ao criar publicação')
         return
       }
       const post = await res.json()
@@ -59,7 +60,8 @@ export default function PostsSection({ isAdmin }) {
   }
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('Apagar esta publicação?')) return
+    const ok = await confirmar('Apagar esta publicação?', { titulo: 'Apagar publicação', okTexto: 'Apagar' })
+    if (!ok) return
     try {
       const res = await fetch(`/api/posts/${postId}`, {
         method: 'DELETE',
@@ -67,17 +69,22 @@ export default function PostsSection({ isAdmin }) {
       })
       if (res.ok) {
         setPosts((prev) => prev.filter((p) => p.id !== postId))
+        toast.ok('Publicação apagada.')
       } else {
-        alert('Erro ao apagar. Faz login novamente como admin.')
+        toast.erro('Erro ao apagar. Faz login novamente como admin.')
       }
     } catch (error) {
       console.error('Erro ao eliminar publicação:', error)
+      toast.erro('Sem ligação ao servidor.')
     }
   }
 
   const handleClearAll = async () => {
-    if (!window.confirm('Apagar TODAS as publicações? Esta ação não pode ser desfeita.'))
-      return
+    const ok = await confirmar('Apagar TODAS as publicações? Esta ação não pode ser desfeita.', {
+      titulo: 'Apagar todas',
+      okTexto: 'Apagar tudo',
+    })
+    if (!ok) return
     try {
       const res = await fetch('/api/posts', {
         method: 'DELETE',
@@ -85,11 +92,13 @@ export default function PostsSection({ isAdmin }) {
       })
       if (res.ok) {
         setPosts([])
+        toast.ok('Publicações apagadas.')
       } else {
-        alert('Erro ao apagar. Faz login novamente como admin.')
+        toast.erro('Erro ao apagar. Faz login novamente como admin.')
       }
     } catch (error) {
       console.error('Erro ao limpar publicações:', error)
+      toast.erro('Sem ligação ao servidor.')
     }
   }
 

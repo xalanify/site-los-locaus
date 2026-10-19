@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import Navbar from './components/Navbar'
@@ -8,6 +8,7 @@ import RightColumn from './components/RightColumn'
 import MobileMenu from './components/MobileMenu'
 import BetaBadge from './components/BetaBadge'
 import Hero from './components/Hero'
+import InstalarApp from './components/InstalarApp'
 import VideosSection from './components/VideosSection'
 import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
@@ -16,6 +17,9 @@ import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
 import BootScreen from './components/BootScreen'
+import ErrorBoundary from './components/ErrorBoundary'
+import { Toasts, Dialogos } from './components/Feedback'
+import GatePage from './components/GatePage'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 import { enviarSpecs } from './lib/specs'
 
@@ -28,6 +32,56 @@ const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
+const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
+
+/* /perfil/:username — se o nome da rota é o do utilizador ligado,
+   mostra o MESMO perfil cheio da sidebar (bio, editar, distinções…);
+   os dos outros membros continuam na página pública. */
+function RotaPerfil({
+  user,
+  onRequestAuth,
+  onUserUpdate,
+  isAdmin,
+  onLogout,
+  onPanelClick,
+  onAuthClick,
+  onProfile,
+}) {
+  const { username } = useParams()
+  const [dono, setDono] = useState(false)
+  useEffect(() => {
+    // saber se a página é do utilizador ligado (username não distingue
+    // maiúsculas — o servidor guarda username_lower)
+    let vivo = true
+    if (!user || !user.username) {
+      setDono(false)
+      if (!user) onRequestAuth && onRequestAuth()
+      return undefined
+    }
+    const igual =
+      String(user.username).toLowerCase() === String(username || '').toLowerCase() ||
+      (user.username_lower && String(user.username_lower).toLowerCase() ===
+        String(username || '').toLowerCase())
+    setDono(igual)
+    return () => {
+      vivo = false
+    }
+  }, [user, username])
+  if (dono) {
+    return (
+      <ProfilePage
+        user={user}
+        isAdmin={isAdmin}
+        onLogout={onLogout}
+        onPanelClick={onPanelClick}
+        onAuthClick={onAuthClick}
+        onProfile={onProfile}
+        onUserUpdate={onUserUpdate}
+      />
+    )
+  }
+  return <PublicProfilePage user={user} onRequestAuth={onRequestAuth} onProfile={onProfile} />
+}
 
 function App() {
   const [entered, setEntered] = useState(false)
@@ -39,11 +93,21 @@ function App() {
   const [sessionChecked, setSessionChecked] = useState(
     () => !localStorage.getItem('userToken'),
   )
+  // Portão do site publicado: "em breve" + código. Fica desbloqueado
+  // neste browser depois de acertar no código (chave aj-gate-v1).
+  const [unlocked, setUnlocked] = useState(() => {
+    try {
+      return localStorage.getItem('aj-gate-v1') === '1'
+    } catch {
+      return false
+    }
+  })
   const location = useLocation()
   const navigate = useNavigate()
 
   // Sessão de utilizador guardada — obrigatória para entrar no site
   useEffect(() => {
+    if (!unlocked) return
     if (!localStorage.getItem('userToken')) {
       setSessionChecked(true)
       return
@@ -56,17 +120,17 @@ function App() {
       })
       .catch(() => {})
       .finally(() => setSessionChecked(true))
-  }, [])
+  }, [unlocked])
 
   // Presença — sinal online/offline na lista de membros
   useEffect(() => {
-    if (!sessionChecked || !user) return
+    if (!unlocked || !sessionChecked || !user) return
     const ping = () =>
       fetch('/api/users/presence', { method: 'POST', headers: authHeaders() }).catch(() => {})
     ping()
     const t = setInterval(ping, 30000)
     return () => clearInterval(t)
-  }, [sessionChecked, user])
+  }, [unlocked, sessionChecked, user])
 
   // Volta ao topo ao mudar de página
   useEffect(() => {
@@ -76,7 +140,7 @@ function App() {
   // Specs do PC — recolhidas no browser, enviadas de 3 em 3 dias
   // (ou logo na primeira entrada); o servidor guarda a baseline.
   useEffect(() => {
-    if (!sessionChecked || !user) return
+    if (!unlocked || !sessionChecked || !user) return
     try {
       const ultimo = Number(localStorage.getItem('specsAt') || 0)
       if (Date.now() - ultimo < 3 * 24 * 3600 * 1000) return
@@ -88,7 +152,7 @@ function App() {
     } catch {
       /* nada a fazer */
     }
-  }, [sessionChecked, user])
+  }, [unlocked, sessionChecked, user])
 
   // Conta de utilizador (a sessão é obrigatória para entrar)
   const handleAuthed = (data) => {
@@ -110,6 +174,18 @@ function App() {
 
   // Ver o perfil público de um membro — cada um tem página própria
   const openMember = (name) => navigate(`/perfil/${encodeURIComponent(name)}`)
+
+  // Sem o código certo, o site nem se monta: fica a página "em breve".
+  if (!unlocked) {
+    return (
+      <GatePage
+        onUnlock={() => {
+          setEntered(false) // o CMD de entrada toca a seguir
+          setUnlocked(true)
+        }}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen">
@@ -168,7 +244,11 @@ function App() {
                 <Sidebar user={user} isAdmin={isAdmin} />
                 {/* Coluna direita (só em ecrãs largos) */}
                 <RightColumn />
-                <main className="lg:pl-[260px] xl:pl-[280px] xl:pr-[320px]">
+                <main className="pb-24 lg:pb-0 lg:pl-[260px] xl:pl-[280px] xl:pr-[320px]">
+                  {/* Muro de erros: se uma página rebentar no render, só
+                      ela cai — e a key pelo caminho limpa o erro quando
+                      se navega para outro sítio */}
+                  <ErrorBoundary key={location.pathname}>
                   <Suspense
                     fallback={
                       <div className="flex min-h-[60vh] items-center justify-center">
@@ -195,6 +275,8 @@ function App() {
                           <BarraAnuncios />
                           {/* O canal: foto, nome, subscritores e visualizações */}
                           <Hero />
+                          {/* Só no telemóvel: instalar o site como app */}
+                          <InstalarApp />
                           {/* Os vídeos do canal, mais em baixo */}
                           <VideosSection />
                         </>
@@ -206,6 +288,8 @@ function App() {
                     <Route path="/pcs" element={<PcsPage />} />
                     {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}
                     <Route path="/ferramentas" element={<FerramentasPage />} />
+                    {/* InfoAoVivo (beta) — app nativo de overlays do PC */}
+                    <Route path="/infoaovivo" element={<InfoAoVivoPage />} />
                     <Route path="/distincoes" element={<UpdatesPage />} />
                     <Route path="/atualizacoes" element={<Navigate to="/distincoes" replace />} />
                     <Route
@@ -236,14 +320,21 @@ function App() {
                         />
                       }
                     />
-                    {/* Perfil público com página própria */}
+                    {/* Perfil público com página própria — se o nome
+                        na rota é o do utilizador ligado, mostra o
+                        MESMO perfil cheio da sidebar (bio, editar…) */}
                     <Route
                       path="/perfil/:username"
                       element={
-                        <PublicProfilePage
+                        <RotaPerfil
                           user={user}
                           onRequestAuth={() => setShowAuth(true)}
                           onProfile={openMember}
+                          onUserUpdate={setUser}
+                          isAdmin={isAdmin}
+                          onLogout={handleUserLogout}
+                          onPanelClick={() => setShowAdminPanel(true)}
+                          onAuthClick={() => setShowAuth(true)}
                         />
                       }
                     />
@@ -252,6 +343,7 @@ function App() {
                     </motion.div>
                   </AnimatePresence>
                   </Suspense>
+                  </ErrorBoundary>
                 </main>
                 <Footer />
                 <BackToTop />
@@ -276,6 +368,10 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Avisos do site (toasts) e diálogo de confirmação do site */}
+      <Toasts />
+      <Dialogos />
     </div>
   )
 }
