@@ -1014,7 +1014,10 @@ export default function ClipCard({
     }
   }
 
-  /* ---- transferir (o teu ficheiro, ou o remoto via cobalt) ---- */
+  /* ---- transferir (ficheiro próprio ou cópia MP4 no Storage) ----
+     O servidor devolve um URL do Supabase com Content-Disposition:
+     attachment. É isso que faz o download funcionar no telemóvel,
+     onde o browser não tem yt-dlp. */
   const [baixando, setBaixando] = useState(false)
   const download = async () => {
     if (!user) return onRequestAuth && onRequestAuth()
@@ -1022,28 +1025,50 @@ export default function ClipCard({
     setBusy(true)
     setBaixando(true)
     try {
-      // remoto: o servidor fala com o cobalt e manda o vídeo à máxima
-      const fin = c.remoto ? `/api/clips/${c.id}/download-remoto` : `/api/clips/${c.id}/download`
-      const res = await fetch(fin, { headers: authHeaders() })
+      const pedir = (rota) => fetch(rota, { headers: authHeaders() })
+      let res = await pedir(`/api/clips/${c.id}/download`)
+      // Clips antigos sem cópia: tenta o fallback remoto (só existe no PC local)
+      if (res.status === 409 || res.status === 404) {
+        const alt = await pedir(`/api/clips/${c.id}/download-remoto`)
+        if (alt.ok || alt.status !== 404) res = alt
+      }
       if (!res.ok) {
-        setBaixando(false)
         const d = await res.json().catch(() => null)
         if (res.status === 401) return onRequestAuth && onRequestAuth()
         toast.erro((d && d.error) || `Não deu para transferir (HTTP ${res.status}).`)
         return
       }
+
+      const tipo = String(res.headers.get('content-type') || '')
+      if (tipo.includes('application/json')) {
+        const d = await res.json()
+        if (!d || !d.url) throw new Error('URL em falta')
+        const a = document.createElement('a')
+        a.href = d.url
+        a.download = d.filename || `${c.title || 'clip'}.mp4`
+        a.target = '_blank'
+        a.rel = 'noopener noreferrer'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        update({ ...c, downloads: (c.downloads || 0) + 1 })
+        toast.ok('Transferência iniciada.')
+        return
+      }
+
+      // Compatibilidade: resposta em stream (PC local sem cópia)
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${c.title || 'clip'}${c.remoto ? '.mp4' : c.url ? c.url.slice(c.url.lastIndexOf('.')) : '.mp4'}`
+      a.download = `${c.title || 'clip'}.mp4`
       document.body.appendChild(a)
       a.click()
       a.remove()
       setTimeout(() => URL.revokeObjectURL(url), 5000)
       update({ ...c, downloads: (c.downloads || 0) + 1 })
     } catch {
-      /* sem rede */
+      toast.erro('Sem ligação ao servidor. Tenta outra vez.')
     } finally {
       setBusy(false)
       setBaixando(false)

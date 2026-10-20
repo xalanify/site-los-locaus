@@ -61,6 +61,84 @@ const PASSOS = [
      logs         jsonb
    )`,
   'CREATE INDEX IF NOT EXISTS tool_runs_inicio_idx ON public.tool_runs (inicio DESC)',
+
+  // ============================================================
+  //  Downloads dos clips (cópia MP4 no Storage)
+  //  Assim o telemóvel transfere direto do Supabase, sem yt-dlp.
+  // ============================================================
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS download_file text',
+
+  // ============================================================
+  //  CHAT GERAL
+  // ============================================================
+  `CREATE TABLE IF NOT EXISTS public.chat_messages (
+     id         bigint generated always as identity primary key,
+     user_id    bigint not null references public.users(id) on delete cascade,
+     body       text not null default '',
+     kind       text not null default 'text',
+     media_url  text,
+     media_type text,
+     clip_id    integer references public.clips(id) on delete set null,
+     created_at timestamptz not null default now(),
+     deleted_at timestamptz
+   )`,
+  'CREATE INDEX IF NOT EXISTS chat_messages_id_idx ON public.chat_messages (id)',
+  `CREATE TABLE IF NOT EXISTS public.chat_typing (
+     user_id   bigint primary key references public.users(id) on delete cascade,
+     typing_at timestamptz not null default now()
+   )`,
+
+  // ============================================================
+  //  PREVISÕES R6 (Tier 1 oficial da Ubisoft)
+  // ============================================================
+  `CREATE TABLE IF NOT EXISTS public.r6_matches (
+     id               bigint generated always as identity primary key,
+     external_id      bigint not null unique,
+     competition_id   bigint,
+     competition_name text,
+     competition_logo text,
+     championship_name text,
+     phase_name       text,
+     step_name        text,
+     format           integer,
+     team_a_id        bigint,
+     team_a           text,
+     team_a_logo      text,
+     team_b_id        bigint,
+     team_b           text,
+     team_b_logo      text,
+     start_time       timestamptz not null,
+     status           integer not null default 1,
+     score_a          integer not null default 0,
+     score_b          integer not null default 0,
+     winner           text,
+     maps             jsonb,
+     stream_url       text,
+     updated_at       timestamptz not null default now(),
+     created_at       timestamptz not null default now()
+   )`,
+  'CREATE INDEX IF NOT EXISTS r6_matches_start_idx ON public.r6_matches (start_time)',
+  'CREATE INDEX IF NOT EXISTS r6_matches_status_idx ON public.r6_matches (status, start_time)',
+  `CREATE TABLE IF NOT EXISTS public.r6_predictions (
+     match_id  bigint not null references public.r6_matches(id) on delete cascade,
+     user_id   bigint not null references public.users(id) on delete cascade,
+     pick      text not null check (pick in ('a', 'b')),
+     correct   boolean,
+     notified  boolean not null default false,
+     seen_at   timestamptz,
+     created_at timestamptz not null default now(),
+     updated_at timestamptz not null default now(),
+     primary key (match_id, user_id)
+   )`,
+  'CREATE INDEX IF NOT EXISTS r6_predictions_user_idx ON public.r6_predictions (user_id, created_at DESC)',
+  `CREATE TABLE IF NOT EXISTS public.r6_sync (
+     id         integer primary key,
+     last_sync  timestamptz,
+     last_ok    timestamptz,
+     last_error text,
+     build_id   text
+   )`,
+  'INSERT INTO public.r6_sync (id) VALUES (1) ON CONFLICT (id) DO NOTHING',
 ];
 
 (async () => {

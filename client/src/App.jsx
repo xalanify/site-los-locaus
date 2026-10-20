@@ -33,6 +33,8 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
+const ChatPage = lazy(() => import('./pages/ChatPage'))
+const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
 
 /* /perfil/:username — se o nome da rota é o do utilizador ligado,
    mostra o MESMO perfil cheio da sidebar (bio, editar, distinções…);
@@ -284,6 +286,8 @@ function App() {
                     />
                     {/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
+                    <Route path="/chat" element={<ChatPage user={user} />} />
+                    <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     {/* PCs dos membros: dashboard de specs — aberto a todos */}
                     <Route path="/pcs" element={<PcsPage />} />
                     {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}

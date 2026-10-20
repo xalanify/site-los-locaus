@@ -21,6 +21,21 @@ function publicUrl(bucket, path) {
   return `${SUPA()}/storage/v1/object/public/${bucket}/${path}`;
 }
 
+/** Garante que um bucket existe (público por omissão). */
+async function ensureBucket(bucket, isPublic = true) {
+  if (!isConfigured()) throw new Error('Storage por configurar');
+  const r = await fetch(`${SUPA()}/storage/v1/bucket`, {
+    method: 'POST',
+    headers: headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ id: bucket, name: bucket, public: isPublic }),
+  });
+  if (r.ok || r.status === 409) return true;
+  const txt = await r.text();
+  // 400/duplicate também pode significar que já existe
+  if (/exist|duplicate/i.test(txt)) return true;
+  throw new Error(`Storage bucket ${r.status} — ${txt.slice(0, 140)}`);
+}
+
 /** URL de subida assinada — o browser usa esta para enviar o ficheiro.
  *  (o Supabase devolve { url, token }; a url é relativa a /storage/v1) */
 async function signedUploadUrl(bucket, path, { expiresIn = 3600 } = {}) {
@@ -79,6 +94,7 @@ function readUrl(bucket, path, isPublic = true) {
 module.exports = {
   isConfigured,
   publicUrl,
+  ensureBucket,
   signedUploadUrl,
   signedReadUrl,
   upload,

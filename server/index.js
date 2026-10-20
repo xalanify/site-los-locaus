@@ -107,6 +107,10 @@ app.use((req, res, next) => {
   express.json({ limit: '32kb' })(req, res, next);
 });
 
+// A publicação no YouTube manda a capa (frame em base64) — precisa de
+// um limite maior do que o das outras rotas.
+app.use('/api/clips/pub/confirm', express.json({ limit: '6mb' }));
+
 const ORIGENS_PERMITIDAS = new Set(
   [process.env.SITE_URL, 'https://locaus.vercel.app']
     .filter(Boolean)
@@ -182,6 +186,12 @@ app.use('/api/infoaovivo', infoaovivoRouter);
 app.use('/api/users/specs', specsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/clips', clipsRouter);
+// Chat geral (polling curto; funciona na Vercel e no telemóvel)
+const { chatRouter } = require('./routes/chat');
+app.use('/api/chat', chatRouter);
+// Previsões R6 (dados oficiais da Ubisoft)
+const { previsoesRouter } = require('./routes/previsoes');
+app.use('/api/previsoes', previsoesRouter);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Não encontrado' }));
 

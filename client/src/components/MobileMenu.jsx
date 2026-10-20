@@ -12,6 +12,8 @@ import {
   LogOut,
   Sparkles,
   X,
+  MessageCircle,
+  Swords,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AvatarImg from './AvatarImg'
@@ -33,6 +35,8 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
   const itens = [
     { name: 'Página inicial', icon: Home, path: '/' },
     { name: 'Clips e Publicações', icon: Clapperboard, path: '/clips' },
+    { name: 'Chat geral', icon: MessageCircle, path: '/chat' },
+    { name: 'Previsões R6', icon: Swords, path: '/previsoes' },
     { name: 'Distinções', icon: Trophy, path: '/distincoes' },
     { name: 'Membros', icon: Users, path: '/membros' },
     // Jogos, Specs e Ferramentas: abertas a todos os membros

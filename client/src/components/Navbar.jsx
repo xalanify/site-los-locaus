@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Youtube, Clapperboard, History, Home, User } from 'lucide-react'
+import { Youtube, Clapperboard, Home, User, MessageCircle, Trophy } from 'lucide-react'
 import Sino from './Sino'
 import AvatarImg from './AvatarImg'
 
@@ -25,10 +25,11 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
     }
   }
 
-  const isDistincoes = location.pathname === '/distincoes'
   const isHome = location.pathname === '/'
   const isProfile = location.pathname === '/perfil'
   const isClips = location.pathname === '/clips'
+  const isChat = location.pathname === '/chat'
+  const isPrevisoes = location.pathname === '/previsoes'
 
   const links = [
     {
@@ -44,10 +45,16 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
       active: isClips,
     },
     {
-      name: 'Distinções',
-      icon: History,
-      action: () => navigate('/distincoes'),
-      active: isDistincoes,
+      name: 'Chat geral',
+      icon: MessageCircle,
+      action: () => navigate('/chat'),
+      active: isChat,
+    },
+    {
+      name: 'Previsões',
+      icon: Trophy,
+      action: () => navigate('/previsoes'),
+      active: isPrevisoes,
     },
   ]
 

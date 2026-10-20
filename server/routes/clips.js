@@ -121,6 +121,8 @@ async function decorate(db, rows, auth) {
     likes: Number(c.likes) || 0,
     saves: Number(c.saves) || 0,
     downloads: Number(c.downloads) || 0,
+    // Já existe uma cópia MP4 transferível (ficheiro próprio ou cópia no Storage)
+    download_ready: !!(c.download_file || c.file),
     views: Number(c.views) || 0,
     comments_count: countBy.get(Number(c.id)) || 0,
     author: c.username || '???',
@@ -284,6 +286,21 @@ router.post('/upload-url', requireUserOrAdmin, async (req, res) => {
 });
 
 // Depois de o browser subir o vídeo, fica registar a linha
+// URL assinada para guardar a cópia MP4 que o telemóvel pode transferir
+router.post('/download-url', requireUserOrAdmin, async (req, res) => {
+  try {
+    if (!storage.isConfigured()) {
+      return res.status(503).json({ error: 'Storage por configurar.' });
+    }
+    const file = 'downloads/' + crypto.randomBytes(16).toString('hex') + '.mp4';
+    const uploadUrl = await storage.signedUploadUrl(BUCKET, file);
+    res.json({ path: file, uploadUrl, maxMB: MAX_MB });
+  } catch (error) {
+    console.error('Erro clips download-url:', error.message);
+    res.status(500).json({ error: 'Não deu para preparar a transferência.' });
+  }
+});
+
 router.post('/confirm', requireUserOrAdmin, async (req, res) => {
   try {
     const db = getDb();
@@ -477,11 +494,25 @@ router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
     if (!uid) return res.status(401).json({ error: 'Inicia sessão para continuares' });
 
     const meta = metaFromQuery(b);
+    // Cópia MP4 para transferência no telemóvel (upload direto do browser)
+    let downloadFile = '';
+    const pedidoDownload = String(b.downloadFile || '');
+    if (/^downloads\/[a-f0-9]{32}\.mp4$/.test(pedidoDownload)) {
+      try {
+        const r = await fetch(storage.publicUrl(BUCKET, pedidoDownload), {
+          method: 'HEAD',
+          signal: AbortSignal.timeout(5000),
+        });
+        if (r.ok) downloadFile = pedidoDownload;
+      } catch {
+        // sem problema: o clip publica na mesma
+      }
+    }
     // Capa NOSSA: um frame do vídeo que o browser guardou antes de subir
     const capa = await guardarCapa(videoId, b.thumb);
     const result = await db
       .prepare(
-        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, youtube_id, youtube_thumb, thumb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, youtube_id, youtube_thumb, thumb, download_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
       )
       .run(
         uid,
@@ -494,6 +525,7 @@ router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
         info.id,
         null, // nunca guardamos a capa da plataforma
         capa,
+        downloadFile || null,
       );
 
     const row = await db
@@ -976,6 +1008,31 @@ function acharYtDlp() {
   }
 }
 
+/* Devolve o URL público com "?download=" (o Supabase manda o
+   Content-Disposition: attachment, que é o que faz o telemóvel
+   guardar o ficheiro em vez de o abrir num leitor). */
+function transferenciaDoClip(clip) {
+  const rel = clip.download_file || clip.file;
+  if (!rel) return null;
+  const safe =
+    String(clip.title || 'clip')
+      .replace(/[^\p{L}\p{N} _-]/gu, '_')
+      .slice(0, 60)
+      .trim() || 'clip';
+  const ext = (String(rel).match(/\.[a-z0-9]{2,5}$/i) || ['.mp4'])[0];
+  const filename = safe + ext;
+  return {
+    url: storage.publicUrl(BUCKET, rel) + '?download=' + encodeURIComponent(filename),
+    filename,
+  };
+}
+
+async function contarDownload(db, id) {
+  try {
+    await db.prepare('UPDATE clips SET downloads = downloads + 1 WHERE id = ?').run(id);
+  } catch {}
+}
+
 router.get('/:id/download-remoto', attachAuth, async (req, res) => {
   try {
     const db = getDb();
@@ -983,14 +1040,22 @@ router.get('/:id/download-remoto', attachAuth, async (req, res) => {
     const clip = await db.prepare('SELECT * FROM clips WHERE id = ?').get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
     if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
+
+    // Já há uma cópia MP4 no Storage: é essa que o telemóvel transfere.
+    const copia = transferenciaDoClip(clip);
+    if (copia) {
+      await contarDownload(db, id);
+      return res.json(copia);
+    }
+
     if (!clip.youtube_id) {
       return res.status(400).json({ error: 'Este clip já tem ficheiro próprio (usa Transferir normal).' });
     }
 
     const yt = acharYtDlp();
     if (!yt) {
-      return res.status(502).json({
-        error: 'yt-dlp não está instalado neste PC — corre: winget install --id yt-dlp.yt-dlp',
+      return res.status(503).json({
+        error: 'A cópia para telemóvel ainda está a ser preparada. Tenta novamente daqui a pouco.',
       });
     }
 
@@ -1086,7 +1151,7 @@ router.get('/:id/download-remoto', attachAuth, async (req, res) => {
   }
 });
 
-// Transferir o vídeo original (conta para downloads)
+// Transferir o vídeo (ficheiro próprio OU cópia MP4 no Storage)
 router.get('/:id/download', attachAuth, async (req, res) => {
   try {
     const db = getDb();
@@ -1095,17 +1160,20 @@ router.get('/:id/download', attachAuth, async (req, res) => {
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
     if (!canSee(clip, req.auth)) return res.status(403).json({ error: 'Clip privado' });
 
-    await db.prepare('UPDATE clips SET downloads = downloads + 1 WHERE id = ?').run(id);
-    const safe = String(clip.title || 'clip')
-      .replace(/[^\p{L}\p{N} _-]/gu, '_')
-      .slice(0, 60);
-    // Sem ficheiro nosso (vídeo remoto): nada para transferir.
-    if (clip.youtube_id || !clip.file) {
+    const dl = transferenciaDoClip(clip);
+    if (!dl) {
+      if (clip.youtube_id) {
+        return res.status(409).json({
+          error: 'A cópia para telemóvel ainda está a ser preparada. Tenta novamente daqui a pouco.',
+          codigo: 'sem-copia',
+        });
+      }
       return res.status(404).json({ error: 'Este clip não tem ficheiro para transferir.' });
     }
-    // Em vez de passar o vídeo pela função, mandamos o browser para o Storage
-    res.redirect(storage.publicUrl(BUCKET, clip.file));
-    void safe;
+
+    await contarDownload(db, id);
+    if (req.query.redirect === '1') return res.redirect(dl.url);
+    res.json(dl);
   } catch (error) {
     console.error('Erro clip download:', error.message);
     res.status(500).json({ error: 'Erro interno' });
