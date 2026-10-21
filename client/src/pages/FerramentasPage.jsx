@@ -364,7 +364,7 @@ export default function FerramentasPage() {
           setJobId(null)
         }
       } catch { /* rede oscilou; tenta no próximo */ }
-    }, 700)
+    }, 2500)
     jobPollRef.current = iv
   }
 
@@ -373,7 +373,7 @@ export default function FerramentasPage() {
     const job = await pedirTrabalho(payload)
     const fim = Date.now() + timeoutMs
     while (Date.now() < fim) {
-      await new Promise((r) => setTimeout(r, 700))
+      await new Promise((r) => setTimeout(r, 1200))
       const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.job) throw new Error('Perdi o trabalho do PC.')
@@ -447,7 +447,7 @@ export default function FerramentasPage() {
       } catch { /* sem rede */ }
     }
     atualizar()
-    const iv = setInterval(atualizar, 5000)
+    const iv = setInterval(atualizar, 10000)
     return () => {
       vivo = false
       clearInterval(iv)

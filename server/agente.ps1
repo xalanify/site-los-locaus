@@ -17,6 +17,7 @@ try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::
 
 $Site = $Site.TrimEnd('/')
 $Headers = @{ Authorization = "Bearer $Token" }
+$UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
 $Base = Join-Path $env:LOCALAPPDATA 'LocausPC'
 try { New-Item -ItemType Directory -Force -Path $Base | Out-Null } catch {}
 $LogFile = Join-Path $Base 'agente.log'
@@ -39,7 +40,7 @@ if (-not $mutex.WaitOne(0)) { Log 'agent already running'; exit }
 
 function PostJson([string]$url, $obj) {
   $body = $obj | ConvertTo-Json -Depth 6 -Compress
-  return Invoke-RestMethod -Uri $url -Method Post -Headers $Headers -ContentType 'application/json' -Body $body -TimeoutSec 60
+  return Invoke-RestMethod -Uri $url -Method Post -Headers $Headers -UserAgent $UA -ContentType 'application/json' -Body $body -TimeoutSec 60
 }
 
 function ReadNew([string]$path, [ref]$pos) {
@@ -95,6 +96,7 @@ function RunJob($job) {
   $pendentes = New-Object System.Collections.ArrayList
   $limite = (Get-Date).AddSeconds([int]$job.tempo)
   $ultimoEnvio = Get-Date
+  $ultimoControlo = [DateTime]::MinValue
   $cancelado = $false
   $saiu = $false
 
@@ -104,7 +106,7 @@ function RunJob($job) {
     foreach ($l in (ReadNew $err ([ref]$posErr))) { [void]$pendentes.Add($l) }
 
     $agora = Get-Date
-    if ($pendentes.Count -gt 0 -and ($agora - $ultimoEnvio).TotalMilliseconds -ge 700) {
+    if ($pendentes.Count -gt 0 -and ($agora - $ultimoEnvio).TotalMilliseconds -ge 2500) {
       $lote = @($pendentes.ToArray())
       $pendentes.Clear()
       $ultimoEnvio = $agora
@@ -117,9 +119,10 @@ function RunJob($job) {
       }
     }
 
-    if (-not $cancelado) {
+    if (-not $cancelado -and ($agora - $ultimoControlo).TotalMilliseconds -ge 4000) {
+      $ultimoControlo = $agora
       try {
-        $c = Invoke-RestMethod -Uri "$Site/api/agente/jobs/$id/controlo" -Headers $Headers -TimeoutSec 15
+        $c = Invoke-RestMethod -Uri "$Site/api/agente/jobs/$id/controlo" -Headers $Headers -UserAgent $UA -TimeoutSec 15
         if ($c.cancelar) { $cancelado = $true }
         if ($c.encerrar) { $saiu = $true }
       } catch {}
@@ -179,18 +182,23 @@ Log "agent started for $Site"
 $falhas = 0
 while ($true) {
   try {
-    $r = Invoke-RestMethod -Uri "$Site/api/agente/proximo" -Headers $Headers -TimeoutSec 40
+    $r = Invoke-RestMethod -Uri "$Site/api/agente/proximo" -Headers $Headers -UserAgent $UA -TimeoutSec 40
     $falhas = 0
     if ($r.encerrar) { Log 'agent asked to stop'; break }
     if ($r.job) {
       RunJob $r.job
     } else {
-      Start-Sleep -Seconds 2
+      Start-Sleep -Seconds 5
     }
   } catch {
     $falhas++
     $msg = $_.Exception.Message
     if ($msg -match '401|Unauthorized') { Log 'agent token expired'; break }
+    if ($msg -match '403|Forbidden|challenge|Security Checkpoint') {
+      Log 'agent blocked by the site firewall; waiting 60s'
+      Start-Sleep -Seconds 60
+      continue
+    }
     Log "poll failed ($falhas): $msg"
     if ($falhas -ge 20) { break }
     Start-Sleep -Seconds 3

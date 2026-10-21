@@ -367,7 +367,7 @@ export default function PcsPage() {
         })
     }
     ver()
-    const iv = setInterval(ver, 5000)
+    const iv = setInterval(ver, 10000)
     return () => {
       vivo = false
       clearInterval(iv)
@@ -395,14 +395,19 @@ export default function PcsPage() {
     setErroLeitura(null)
     setPassos([])
 
-    const iv = setInterval(() => {
-      fetch('/api/users/specs/status', { headers: authHeaders() })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => {
-          if (d && Array.isArray(d.passos)) setPassos(d.passos)
-        })
-        .catch(() => {})
-    }, 700)
+    /* No modo local o servidor corre o PowerShell e o browser vê os
+       passos. Na nuvem o agente faz o trabalho e nós seguimos o job. */
+    let iv = null
+    if (podeLocal) {
+      iv = setInterval(() => {
+        fetch('/api/users/specs/status', { headers: authHeaders() })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && Array.isArray(d.passos)) setPassos(d.passos)
+          })
+          .catch(() => {})
+      }, 2000)
+    }
 
     try {
       const r = await fetch('/api/users/specs/deep', {
@@ -410,9 +415,58 @@ export default function PcsPage() {
         headers: authHeaders(),
       })
       const d = await r.json().catch(() => ({}))
+
+      if (r.status === 202 && d.async && d.jobId) {
+        const jobId = d.jobId
+        const limite = Date.now() + 180000
+        while (Date.now() < limite) {
+          await new Promise((ok) => setTimeout(ok, 2000))
+          const jr = await fetch(`/api/agente/jobs/${jobId}`, { headers: authHeaders() })
+          const jd = await jr.json().catch(() => ({}))
+          if (!jr.ok || !jd.job) {
+            setErroLeitura('Perdi a leitura do PC. Tenta outra vez.')
+            return
+          }
+          const p = (Array.isArray(jd.job.logs) ? jd.job.logs : [])
+            .map((x) => String((x && x.l) || ''))
+            .filter((x) => /^\[passo\]/i.test(x))
+            .map((x) => x.replace(/^\[passo\]\s*/i, ''))
+          if (p.length) setPassos(p)
+
+          const st = jd.job.status
+          if (st === 'pendente' || st === 'a_correr') continue
+          if (st !== 'concluido') {
+            setErroLeitura(jd.job.erro || 'A leitura do PC falhou.')
+            return
+          }
+
+          const fr = await fetch('/api/users/specs/deep/fim', {
+            method: 'POST',
+            headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobId }),
+          })
+          const fd = await fr.json().catch(() => ({}))
+          if (!fr.ok) {
+            setErroLeitura(fd.error || 'Não deu para guardar a leitura.')
+            return
+          }
+          if (Array.isArray(fd.passos) && fd.passos.length) setPassos(fd.passos)
+          setLido(fd)
+          setPortao(false)
+          carregar()
+          if (!fd.details?.bench) setTimeout(() => correrBench(), 500)
+          return
+        }
+        setErroLeitura('O PC demorou demasiado a responder.')
+        return
+      }
+
       if (!r.ok) {
         setErroLeitura(d?.error || 'Não deu para ler o PC.')
-        if (r.status === 501) setPodeLocal(false)
+        if (r.status === 501) {
+          setPodeLocal(false)
+          setAgenteOnline(false)
+        }
       } else {
         if (Array.isArray(d.passos) && d.passos.length) setPassos(d.passos)
         setLido(d)
@@ -424,7 +478,7 @@ export default function PcsPage() {
     } catch {
       setErroLeitura('Não deu para falar com o servidor.')
     } finally {
-      clearInterval(iv)
+      if (iv) clearInterval(iv)
       setLendo(false)
     }
   }

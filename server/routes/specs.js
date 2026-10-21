@@ -53,6 +53,13 @@ async function lerPeloAgente(uid, tipo, timeoutMs) {
   return { ok: true, dados, passos: r.passos || [] };
 }
 
+/* Grava uma leitura completa e devolve o mesmo formato da rota local. */
+async function guardarLeitura(uid, dados, passos) {
+  const detalhes = { ...dados, avaliacao: pcs.analisar(dados) };
+  const guardado = await salvarDeep(uid, pcs.camposBasicos(dados), detalhes);
+  return { ok: true, passos: passos || [], ...guardado };
+}
+
 const clean = (v, max = 120) => (v == null ? null : String(v).trim().slice(0, max) || null);
 const num = (v) => {
   const n = Number(v);
@@ -401,24 +408,53 @@ router.get(
 );
 
 // POST /api/users/specs/deep — corre o PowerShell no PC do servidor
+// (na nuvem: enfileira no agente e devolve 202; o browser acompanha o
+// trabalho e chama /deep/fim quando ele acabar — sem funções de 60 s)
 router.post(
   '/deep',
   requireUser,
   safe(async (req, res) => {
     const uid = Number(req.auth.uid);
     if (!pcs.podeLocal()) {
-      const r = await lerPeloAgente(uid, 'specs', 52000);
-      if (!r.ok) return res.status(r.offline ? 501 : 500).json({ error: r.erro });
-      const detalhes = { ...r.dados, avaliacao: pcs.analisar(r.dados) };
-      const guardado = await salvarDeep(uid, pcs.camposBasicos(r.dados), detalhes);
-      return res.json({ ok: true, passos: r.passos, ...guardado });
+      const st = await agente.estado(uid);
+      if (!st.online) {
+        return res.status(501).json({
+          error:
+            'O PC não está ligado ao site. Abre a página Ferramentas Windows e liga o PC com o LOCAUS-PC.bat.',
+        });
+      }
+      const job = await agente.criarJob(uid, { tipo: 'specs' }, false);
+      if (!job.ok) {
+        return res.status(400).json({ error: job.erro || 'Não deu para pedir a leitura ao PC.' });
+      }
+      return res.status(202).json({ ok: true, async: true, jobId: job.job.id, passos: [] });
     }
     const r = await pcs.correr();
     if (!r.ok) return res.status(500).json({ error: r.erro || 'Não deu para ler o PC.' });
+    res.json(await guardarLeitura(uid, r.dados, r.passos));
+  }),
+);
 
-    const detalhes = { ...r.dados, avaliacao: pcs.analisar(r.dados) };
-    const guardado = await salvarDeep(uid, pcs.camposBasicos(r.dados), detalhes);
-    res.json({ ok: true, passos: r.passos, ...guardado });
+// POST /api/users/specs/deep/fim — guarda a leitura feita pelo agente
+router.post(
+  '/deep/fim',
+  requireUser,
+  safe(async (req, res) => {
+    const uid = Number(req.auth.uid);
+    const jobId = Number(req.body && req.body.jobId);
+    if (!jobId) return res.status(400).json({ error: 'Falta o trabalho da leitura.' });
+    const j = await agente.obterJob(uid, jobId);
+    if (!j) return res.status(404).json({ error: 'Leitura não encontrada.' });
+    if (['pendente', 'a_correr'].includes(j.status)) {
+      return res.status(202).json({ ok: false, pendente: true, status: j.status });
+    }
+    if (j.status !== 'concluido') {
+      return res.status(400).json({ error: j.erro || 'A leitura do PC falhou.' });
+    }
+    const dados = j.resultado && j.resultado.dados;
+    if (!dados) return res.status(500).json({ error: 'O PC não devolveu os dados.' });
+    const passos = (j.resultado && j.resultado.passos) || [];
+    res.json(await guardarLeitura(uid, dados, passos));
   }),
 );
 
