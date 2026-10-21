@@ -17,6 +17,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import { R6_TORNEIOS } from '../data/r6Torneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 
@@ -557,6 +558,58 @@ export default function PrevisoesPage({ user }) {
           </span>
         )}
       </div>
+
+      {/* Palmarés R6 — últimos torneios Tier 1 */}
+      <section className="mb-4 overflow-hidden rounded-2xl border border-violet-400/20 bg-gradient-to-b from-violet-600/10 to-[#17102a] p-3 shadow-xl shadow-violet-950/15 sm:p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-400/30">
+            <Trophy className="h-4 w-4 text-violet-300" />
+          </span>
+          <h2 className="font-display text-base font-black text-white">Palmarés R6</h2>
+          <span className="ml-auto rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-violet-300 ring-1 ring-violet-400/20">
+            Últimos torneios
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="flex min-w-max gap-3">
+            {R6_TORNEIOS.map((t) => (
+              <div
+                key={t.id}
+                className="w-72 shrink-0 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-violet-400/40 hover:bg-white/[0.05]"
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <img src={t.logo} alt="" className="h-7 w-7 rounded object-contain" loading="lazy" />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-black leading-tight text-white">{t.nome}</p>
+                    <p className="text-[10px] font-semibold text-gray-400">
+                      {t.campeonato} · {t.local}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-gray-300">
+                  <span>Datas:</span>
+                  <span className="text-white">
+                    {t.dataInicio} — {t.dataFim}
+                  </span>
+                  <span>Camião:</span>
+                  <span className="text-emerald-300">{t.campeao.nome}</span>
+                  <span>Vice:</span>
+                  <span className="text-amber-300">{t.vice.nome}</span>
+                  <span>3.º:</span>
+                  <span className="text-orange-300">{t.terceiro.nome}</span>
+                  <span>MVP:</span>
+                  <span className="text-violet-300">
+                    {t.mvp.nome} ({t.mvp.equipa})
+                  </span>
+                </div>
+                <div className="mt-2 rounded-lg bg-white/5 px-2 py-1 text-center text-[11px] font-black text-white">
+                  Resultado final: {t.resultadoFinal}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {erro && (
         <div className="mb-3 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">

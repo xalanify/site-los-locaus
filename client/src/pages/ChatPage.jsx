@@ -11,17 +11,75 @@ import {
   Play,
   ChevronUp,
   Sparkles,
+  ArrowDown,
+  Copy,
+  Check,
+  Maximize2,
+  Users,
+  Hash,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from '../components/Feedback'
 
-const EMOJIS = [
-  '😀', '😂', '🤣', '😊', '😍', '😘', '😎', '🤔', '😅', '😭',
-  '😡', '🤯', '🥳', '😴', '🤝', '👏', '🙌', '🔥', '💜', '💀',
-  '🎮', '🕹️', '🏆', '⚡', '💥', '🎯', '👀', '✅', '❌', '🤡',
-  '🍀', '🚀', '🐐', '🧠', '😤', '🫡', '🤝', '💪', '👑', '🎉',
+/* Emojis por categoria — o picker do telemóvel é só um botão */
+const EMOJI_CATEGORIAS = [
+  {
+    id: 'recentes',
+    nome: 'Recentes',
+    emojis: [],
+  },
+  {
+    id: 'rostos',
+    nome: 'Rostos',
+    emojis: [
+      '😀', '😂', '🤣', '😊', '😍', '😘', '😎', '🤔', '😅', '😭',
+      '😡', '🤯', '🥳', '😴', '🤠', '🤡', '👻', '💀', '🫡', '🤓',
+    ],
+  },
+  {
+    id: 'gestos',
+    nome: 'Gestos',
+    emojis: ['👍', '👎', '👌', '✌️', '🤝', '👏', '🙌', '💪', '🙏', '🫶', '👊', '✊', '🤞', '👋', '🖕', '🤙'],
+  },
+  {
+    id: 'gaming',
+    nome: 'Gaming',
+    emojis: ['🎮', '🕹️', '🏆', '🥇', '🥈', '🥉', '🎯', '🔥', '💥', '⚡', '💣', '🛡️', '🗡️', '🚀', '👀', '🧠'],
+  },
+  {
+    id: 'objetos',
+    nome: 'Objetos',
+    emojis: ['❤️', '💜', '💙', '💚', '🧡', '⭐', '🌟', '💯', '✅', '❌', '❗', '🎉', '🎁', '💰', '🍀', '🧿'],
+  },
+  {
+    id: 'animais',
+    nome: 'Animais',
+    emojis: ['🐐', '🦊', '🐺', '🐻', '🐼', '🐸', '🦁', '🐯', '🐍', '🦖', '🐧', '🦉', '🐝', '🦋', '🐢', '🦈'],
+  },
 ]
+
+const RECENTES_CHAVE = 'aj-chat-emoji-recentes'
+const MAX_RECENTES = 24
+
+function lerRecentes() {
+  try {
+    const l = JSON.parse(localStorage.getItem(RECENTES_CHAVE) || '[]')
+    return Array.isArray(l) ? l.slice(0, MAX_RECENTES) : []
+  } catch {
+    return []
+  }
+}
+
+function guardarRecente(e) {
+  try {
+    const l = lerRecentes().filter((x) => x !== e)
+    l.unshift(e)
+    localStorage.setItem(RECENTES_CHAVE, JSON.stringify(l.slice(0, MAX_RECENTES)))
+  } catch {
+    /* sem armazenamento */
+  }
+}
 
 const linkify = (texto) => {
   const partes = String(texto || '').split(/(https?:\/\/[^\s]+)/g)
@@ -99,6 +157,7 @@ export default function ChatPage({ user }) {
   const [pendingMedia, setPendingMedia] = useState(null)
   const [pendingClip, setPendingClip] = useState(null)
   const [emojiAberto, setEmojiAberto] = useState(false)
+  const [emojiCat, setEmojiCat] = useState('recentes')
   const [clipsAberto, setClipsAberto] = useState(false)
   const [clips, setClips] = useState([])
   const [clipsLoading, setClipsLoading] = useState(false)
@@ -106,6 +165,7 @@ export default function ChatPage({ user }) {
   const [hasMore, setHasMore] = useState(false)
   const [novasMensagens, setNovasMensagens] = useState(false)
   const [erro, setErro] = useState('')
+  const [onlineCount, setOnlineCount] = useState(0)
 
   const listaRef = useRef(null)
   const fimRef = useRef(null)
@@ -195,6 +255,22 @@ export default function ChatPage({ user }) {
       vivo = false
       clearInterval(t)
     }
+  }, [])
+
+  // Atualiza o número de membros online a cada 30s
+  useEffect(() => {
+    const fetchOnline = async () => {
+      try {
+        const r = await fetch('/api/users/list', { headers: authHeaders() })
+        if (!r.ok) return
+        const d = await r.json()
+        const count = (d.users || []).filter((u) => u.online).length
+        setOnlineCount(count)
+      } catch {}
+    }
+    fetchOnline()
+    const t = setInterval(fetchOnline, 30000)
+    return () => clearInterval(t)
   }, [])
 
   const onScroll = () => {
@@ -346,8 +422,15 @@ export default function ChatPage({ user }) {
 
   const inserirEmoji = (e) => {
     setTexto((t) => t + e)
+    guardarRecente(e)
     setEmojiAberto(false)
     setTimeout(() => textareaRef.current && textareaRef.current.focus(), 20)
+  }
+
+  const emojisAtuais = () => {
+    if (emojiCat === 'recentes') return lerRecentes()
+    const c = EMOJI_CATEGORIAS.find((c) => c.id === emojiCat)
+    return c ? c.emojis : []
   }
 
   let diaAnterior = ''
@@ -365,7 +448,14 @@ export default function ChatPage({ user }) {
             <p className="truncate text-[11px] font-semibold text-gray-400">
               {typing.length
                 ? `${typing.map((t) => t.username).slice(0, 2).join(', ')}${typing.length > 2 ? ' e mais' : ''} a escrever…`
-                : 'Toda a comunidade, em tempo real'}
+                : (
+                  <span>
+                    Toda a comunidade, em tempo real
+                    {onlineCount > 0 ? (
+                      <span className="text-emerald-300"> · {onlineCount} membros online</span>
+                    ) : null}
+                  </span>
+                )}
             </p>
           </div>
           <span className="hidden items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20 sm:flex">
@@ -544,16 +634,39 @@ export default function ChatPage({ user }) {
         {/* compositor */}
         <div className="relative border-t border-white/10 bg-[#0d0a16] p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-3">
           {emojiAberto && (
-            <div className="absolute bottom-full left-2 right-2 mb-2 grid max-h-56 grid-cols-8 gap-1 overflow-y-auto rounded-2xl border border-white/10 bg-[#171122] p-2 shadow-2xl sm:left-3 sm:right-auto sm:w-80">
-              {EMOJIS.map((e) => (
-                <button
-                  key={e}
-                  onClick={() => inserirEmoji(e)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-xl transition-colors hover:bg-white/10"
-                >
-                  {e}
-                </button>
-              ))}
+            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-white/10 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
+              <div className="flex gap-1 overflow-x-auto border-b border-white/10 p-1.5">
+                {EMOJI_CATEGORIAS.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setEmojiCat(c.id)}
+                    className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition ${
+                      emojiCat === c.id
+                        ? 'bg-violet-500 text-white'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    {c.nome}
+                  </button>
+                ))}
+              </div>
+              <div className="grid max-h-52 grid-cols-8 gap-0.5 overflow-y-auto p-1.5">
+                {emojisAtuais().length ? (
+                  emojisAtuais().map((e) => (
+                    <button
+                      key={e}
+                      onClick={() => inserirEmoji(e)}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-xl transition-colors hover:bg-white/10"
+                    >
+                      {e}
+                    </button>
+                  ))
+                ) : (
+                  <p className="col-span-8 px-2 py-6 text-center text-[11px] font-semibold text-gray-500">
+                    Ainda não usaste emojis. Escolhe um numa categoria.
+                  </p>
+                )}
+              </div>
             </div>
           )}
           <div className="flex items-end gap-1.5">

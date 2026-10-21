@@ -5,11 +5,12 @@ import { Download, Share, Smartphone, X } from 'lucide-react'
    INSTALAR COMO APP (PWA) — só em telemóvel
    ------------------------------------------------------------
    Aparece na home, por baixo do cartão do canal:
-   · Android/Chrome: usa o beforeinstallprompt (instalação nativa)
-   · iPhone/iPad: mostra as instruções Partilhar → Adicionar ao
-     Ecrã Principal (a Apple não deixa o botão instalar sozinho)
-   · Se já estiver instalado (standalone), não aparece
-   · O X esconde para sempre neste browser
+   · Android/Chrome: o browser dispara beforeinstallprompt e
+     o botão abre o prompt de instalação nativo num clique direto.
+   · iPhone/iPad: a Apple não deixa instalar com API, então o
+     clique mostra um mini-guia Partilhar → Adicionar ao Ecrã Principal.
+   · Se já estiver instalado (standalone), não aparece.
+   · O X esconde para sempre neste browser.
    ============================================================ */
 
 const CHAVE = 'aj-install-dismiss'
@@ -30,10 +31,8 @@ function jaInstalado() {
 }
 
 export default function InstalarApp() {
-  const [prompt, setPrompt] = useState(null)
   const [visivel, setVisivel] = useState(false)
   const [ajuda, setAjuda] = useState('') // 'ios' | 'manual'
-  const [ios, setIos] = useState(false)
 
   useEffect(() => {
     if (!eTelemovel() || jaInstalado()) return undefined
@@ -42,38 +41,23 @@ export default function InstalarApp() {
     } catch {
       /* segue */
     }
-
-    const ua = navigator.userAgent || ''
-    setIos(/iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1))
     setVisivel(true)
-
-    const guardarPrompt = (e) => {
-      e.preventDefault()
-      setPrompt(e)
-      setVisivel(true)
-    }
-    const jaFicou = () => setVisivel(false)
-
-    window.addEventListener('beforeinstallprompt', guardarPrompt)
-    window.addEventListener('appinstalled', jaFicou)
-    return () => {
-      window.removeEventListener('beforeinstallprompt', guardarPrompt)
-      window.removeEventListener('appinstalled', jaFicou)
-    }
   }, [])
 
-  if (!visivel) return null
+  const prompt = window.__ajInstallPrompt || null
 
   const instalar = async () => {
     if (prompt) {
-      await prompt.prompt()
-      const escolha = await prompt.userChoice
-      setPrompt(null)
-      if (escolha && escolha.outcome === 'accepted') setVisivel(false)
+      try {
+        await prompt.prompt()
+        const escolha = await prompt.userChoice
+        if (escolha && escolha.outcome === 'accepted') setVisivel(false)
+      } catch {}
       return
     }
-    // sem prompt nativo: iPhone -> instruções da Apple;
-    // outros browsers -> instruções genéricas do menu
+    // Sem prompt nativo: iPhone -> instruções da Apple; outros -> menu do browser
+    const ua = navigator.userAgent || ''
+    const ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)
     setAjuda(ios ? 'ios' : 'manual')
   }
 
@@ -85,6 +69,8 @@ export default function InstalarApp() {
       /* sem armazenamento */
     }
   }
+
+  if (!visivel) return null
 
   return (
     <div className="mx-auto mt-4 max-w-2xl px-4 sm:hidden">

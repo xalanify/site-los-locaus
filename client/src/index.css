@@ -76,6 +76,28 @@ body {
   padding-bottom: 6.5rem;
 }
 
+/* ============================================================
+   PWA no telemóvel — sem zoom (pinch/double-tap)
+   ------------------------------------------------------------
+   Quando a app corre em modo standalone (ícone no ecrã
+   principal), não faz sentido dar zoom: o layout já é
+   pensado para telemóvel. Bloqueia o pinch-zoom e o
+   double-tap zoom, mantendo o scroll normal.
+   ============================================================ */
+html.pwa-no-zoom,
+html.pwa-no-zoom body,
+html.pwa-no-zoom #root {
+  touch-action: pan-x pan-y;
+  overscroll-behavior-y: none;
+}
+
+html.pwa-no-zoom img,
+html.pwa-no-zoom video,
+html.pwa-no-zoom canvas,
+html.pwa-no-zoom svg {
+  touch-action: pan-x pan-y;
+}
+
 /* seleção de texto na cor do site */
 ::selection {
   background: rgb(var(--aj-600) / 0.55);

@@ -50,7 +50,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Página inicial', icon: Home, action: () => goTo('#home'), active: isHome && !location.hash },
     { name: 'Clips e Publicações', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
     { name: 'Chat geral', icon: MessageCircle, action: () => navigate('/chat'), active: isChat },
-    { name: 'Previsões R6', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes, badge: 'Novo' },
+    { name: 'Previsões', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes, badge: 'Novo' },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
