@@ -15,7 +15,8 @@ const os = require('os');
 const path = require('path');
 const { getDb } = require('./database');
 
-const podeLocal = () => process.platform === 'win32' && !process.env.VERCEL;
+const podeLocal = () =>
+  process.platform === 'win32' && !process.env.VERCEL && process.env.AGENTE_REMOTO !== '1';
 
 const WINGET = (id) =>
   `winget install --id ${id} -e --accept-package-agreements --accept-source-agreements --disable-interactivity`;
@@ -1902,19 +1903,15 @@ function detectarInstalados() {
    --------------------------------------------------------------- */
 let procAtual = null;
 
-function executar(id, arg, quem, soAdmin, acoes) {
-  if (!podeLocal()) {
-    return { ok: false, erro: 'Este servidor não está num PC Windows (a Vercel não tem PowerShell).' };
-  }
-  if (estado.aCorrer) return { ok: false, erro: 'Já há uma ferramenta em curso.' };
-
+/* Prepara o comando sem correr. É usado pelo agente local quando o
+   site está na nuvem: o servidor monta o script (só a partir do
+   catálogo, nunca a partir de texto do browser) e o PC executa-o. */
+function preparar(id, arg, soAdmin, acoes) {
   const f = FERRAMENTAS.find((x) => x.id === id);
   if (!f) return { ok: false, erro: 'Ferramenta desconhecida.' };
   if (f.soAdmin && !soAdmin) {
-    console.log('[ferramentas] bloqueado (soAdmin):', id, '->', quem);
     return { ok: false, erro: 'Esta ferramenta está reservada a administradores (em teste).' };
   }
-  if (f.soAdmin) console.log('[xalana] a correr', id, '->', quem);
 
   let cmd = f.cmd;
 
@@ -1961,14 +1958,71 @@ Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
     cmd = cmd.replace('{{DISCO}}', v);
   }
 
-  return arrancar(cmd, {
+  return {
+    ok: true,
     id,
     nome: f.nome,
+    cmd,
+    comando: CABECALHO + cmd,
     tempo: f.tempo || 180000,
     normal: f.normal,
     arg: f.livre || f.disco ? String(arg || '').trim() : null,
+    soAdmin: Boolean(f.soAdmin),
+    cat: f.cat,
+    perigo: f.perigo,
+  };
+}
+
+function executar(id, arg, quem, soAdmin, acoes) {
+  if (!podeLocal()) {
+    return { ok: false, erro: 'Este servidor não está num PC Windows (a Vercel não tem PowerShell).' };
+  }
+  if (estado.aCorrer) return { ok: false, erro: 'Já há uma ferramenta em curso.' };
+
+  const p = preparar(id, arg, soAdmin, acoes);
+  if (!p.ok) return p;
+  if (p.soAdmin) console.log('[xalana] a correr', id, '->', quem);
+
+  return arrancar(p.cmd, {
+    id: p.id,
+    nome: p.nome,
+    tempo: p.tempo,
+    normal: p.normal,
+    arg: p.arg,
     quem,
   });
+}
+
+/* Comandos fixos usados pelo agente (não dependem do catálogo). */
+function prepararDiscos() {
+  return {
+    ok: true,
+    id: 'discos',
+    nome: 'Discos do PC',
+    tempo: 30000,
+    comando:
+      "Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object { $_.DeviceID }",
+    tipoResultado: 'linhas',
+  };
+}
+
+function prepararInstalados() {
+  return {
+    ok: true,
+    id: 'instalados',
+    nome: 'Programas instalados',
+    tempo: 90000,
+    comando: 'winget list --disable-interactivity',
+    tipoResultado: 'instalados',
+  };
+}
+
+function parseInstalados(texto) {
+  const baixo = String(texto || '').toLowerCase();
+  const instalados = PROGRAMAS_CATALOGO
+    .filter((x) => x.wingetId && baixo.includes(x.wingetId.toLowerCase()))
+    .map((x) => x.id);
+  return { ok: true, instalados };
 }
 
 /* ---------------------------------------------------------------
@@ -1976,12 +2030,7 @@ Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
    ---------------------------------------------------------------
    Para cada programa: winget uninstall + limpa pastas, registo,
    tasks e serviços. Corre tudo num script e mostra os logs. */
-function desinstalar(ids, quem) {
-  if (!podeLocal()) {
-    return { ok: false, erro: 'Este servidor não está num PC Windows.' };
-  }
-  if (estado.aCorrer) return { ok: false, erro: 'Já há uma ferramenta em curso.' };
-
+function prepararDesinstalar(ids) {
   const validos = (Array.isArray(ids) ? ids : [])
     .map((id) => FERRAMENTAS.find((x) => x.id === id))
     .filter((f) => f && f.cat === 'Programas' && f.wingetId);
@@ -2098,11 +2147,30 @@ else { Write-Output "=== ${f.nome}: [!] nao o encontrei no registo - verifica o 
   });
 
   const cmd = blocos.join('\n') + "\nWrite-Output 'Desinstalacao de todos os selecionados concluida.'";
-  return arrancar(cmd, {
+  return {
+    ok: true,
     id: 'desinstalar',
     nome: `Desinstalar ${validos.length} programa(s)`,
+    cmd,
+    comando: CABECALHO + cmd,
     tempo: 900000,
     arg: validos.map((f) => f.wingetId).join(', '),
+    ids: validos.map((f) => f.id),
+  };
+}
+
+function desinstalar(ids, quem) {
+  if (!podeLocal()) {
+    return { ok: false, erro: 'Este servidor não está num PC Windows.' };
+  }
+  if (estado.aCorrer) return { ok: false, erro: 'Já há uma ferramenta em curso.' };
+  const p = prepararDesinstalar(ids);
+  if (!p.ok) return p;
+  return arrancar(p.cmd, {
+    id: p.id,
+    nome: p.nome,
+    tempo: p.tempo,
+    arg: p.arg,
     quem,
   });
 }
@@ -2276,4 +2344,20 @@ function arrancar(cmd, { id, nome, tempo, normal, arg, quem }) {
   return { ok: true, id, nome };
 }
 
-module.exports = { podeLocal, listar, executar, desinstalar, detectarInstalados, estadoPublico, parar, historico, discosFixos, textoCodigo };
+module.exports = {
+  podeLocal,
+  listar,
+  preparar,
+  prepararDesinstalar,
+  prepararDiscos,
+  prepararInstalados,
+  parseInstalados,
+  executar,
+  desinstalar,
+  detectarInstalados,
+  estadoPublico,
+  parar,
+  historico,
+  discosFixos,
+  textoCodigo,
+};

@@ -7,6 +7,8 @@ let fila = Promise.resolve();
 
 /** Não atrasa o pedido: corre em paralelo e só regista erros. */
 function trackVisitor(req, res, next) {
+  // O agente local faz polling de 2 em 2 segundos: não conta como visita.
+  if (String(req.originalUrl || '').startsWith('/api/agente')) return next();
   const db = getDb();
   const ip = req.ip || req.connection.remoteAddress;
   const userAgent = req.headers['user-agent'] || '';

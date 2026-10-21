@@ -139,6 +139,46 @@ const PASSOS = [
      build_id   text
    )`,
   'INSERT INTO public.r6_sync (id) VALUES (1) ON CONFLICT (id) DO NOTHING',
+
+  // ============================================================
+  //  Agente local (site na nuvem -> PC Windows)
+  // ============================================================
+  `CREATE TABLE IF NOT EXISTS public.agente_sessoes (
+     id         bigint generated always as identity primary key,
+     user_id    bigint not null references public.users(id) on delete cascade,
+     nome       text,
+     token_hash text not null unique,
+     versao     text,
+     plataforma text,
+     criado_em  timestamptz not null default now(),
+     visto_em   timestamptz,
+     expira_em  timestamptz not null
+   )`,
+  'CREATE INDEX IF NOT EXISTS agente_sessoes_user_idx ON public.agente_sessoes (user_id, criado_em DESC)',
+  `CREATE TABLE IF NOT EXISTS public.agente_jobs (
+     id            bigint generated always as identity primary key,
+     sessao_id     bigint not null references public.agente_sessoes(id) on delete cascade,
+     user_id       bigint not null references public.users(id) on delete cascade,
+     tipo          text not null,
+     ferramenta_id text,
+     arg           text,
+     acoes         jsonb,
+     ids           jsonb,
+     comando       text not null,
+     nome          text,
+     tempo         integer,
+     status        text not null default 'pendente',
+     logs          jsonb not null default '[]'::jsonb,
+     resultado     jsonb,
+     erro          text,
+     codigo        integer,
+     cancelar      boolean not null default false,
+     criado_em     timestamptz not null default now(),
+     inicio_em     timestamptz,
+     fim_em        timestamptz
+   )`,
+  'CREATE INDEX IF NOT EXISTS agente_jobs_sessao_idx ON public.agente_jobs (sessao_id, status, id)',
+  'CREATE INDEX IF NOT EXISTS agente_jobs_user_idx ON public.agente_jobs (user_id, criado_em DESC)',
 ];
 
 (async () => {

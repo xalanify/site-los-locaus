@@ -286,6 +286,7 @@ export default function PcsPage() {
 
   /* leitura real do PC (PowerShell) */
   const [podeLocal, setPodeLocal] = useState(null) // null = ainda não sabemos
+  const [agenteOnline, setAgenteOnline] = useState(false)
   const [lendo, setLendo] = useState(false)
   const [passos, setPassos] = useState([])
   const [lido, setLido] = useState(null) // { passos, spec, details }
@@ -351,15 +352,26 @@ export default function PcsPage() {
 
   /* dá para correr o PowerShell no PC onde está o servidor? */
   useEffect(() => {
-    fetch('/api/users/specs/status', { headers: authHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d) {
+    let vivo = true
+    const ver = () => {
+      fetch('/api/users/specs/status', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!vivo || !d) return
           setPodeLocal(Boolean(d.podeLocal))
+          setAgenteOnline(Boolean(d.agenteOnline))
           if (Array.isArray(d.passos) && d.aCorrer) setPassos(d.passos)
-        }
-      })
-      .catch(() => setPodeLocal(false))
+        })
+        .catch(() => {
+          if (vivo) setPodeLocal((v) => (v == null ? false : v))
+        })
+    }
+    ver()
+    const iv = setInterval(ver, 5000)
+    return () => {
+      vivo = false
+      clearInterval(iv)
+    }
   }, [])
 
   const copiarComando = async () => {
@@ -372,6 +384,8 @@ export default function PcsPage() {
       /* o utilizador pode selecionar à mão a caixa do comando */
     }
   }
+
+  const podeExecutar = Boolean(podeLocal || agenteOnline)
 
   /* corre o script no PC do servidor e mostra o que ele vai fazendo */
   const lerPC = async () => {
@@ -530,7 +544,7 @@ export default function PcsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {podeLocal && (
+                  {podeExecutar && (
                     <button
                       onClick={lerPC}
                       disabled={lendo}
@@ -540,7 +554,7 @@ export default function PcsPage() {
                       {lendo ? 'A ler o PC…' : 'Ler o meu PC agora'}
                     </button>
                   )}
-                  {!podeLocal && podeLocal !== null && (
+                  {!podeExecutar && podeLocal !== null && (
                     <button
                       onClick={() => setPortao(false)}
                       className="btn-glass rounded-full px-5 py-2.5 text-sm font-bold text-gray-300"
@@ -558,7 +572,7 @@ export default function PcsPage() {
                   <p className="mt-3 text-[13px] font-bold text-red-400">{erroLeitura}</p>
                 )}
 
-                {!podeLocal && !lendo && podeLocal !== null && (
+                {!podeExecutar && !lendo && podeLocal !== null && (
                   <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                     <p className="mb-2 text-[12px] leading-relaxed text-gray-400">
                       Este servidor não tem PowerShell (Vercel). Corre este comando no PC e o
@@ -579,7 +593,7 @@ export default function PcsPage() {
                 )}
 
                 {/* só depois de falhar (ou de não haver PowerShell) dá para passar */}
-                {(erroLeitura || (!podeLocal && podeLocal !== null)) && !lendo && (
+                {(erroLeitura || (!podeExecutar && podeLocal !== null)) && !lendo && (
                   <button
                     onClick={() => setPortao(false)}
                     className="mt-3 w-full text-center text-[11px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-gray-300"
@@ -610,7 +624,7 @@ export default function PcsPage() {
                 As máquinas do grupo com valores lidos no Windows. Clique numa linha para ver tudo.
               </p>
             </div>
-            {podeLocal === false && (
+            {!podeExecutar && podeLocal !== null && (
               <button
                 onClick={() => setPortao(true)}
                 className="flex items-center gap-2 rounded-full btn-glass px-5 py-2.5 text-sm font-bold text-gray-300"
@@ -799,7 +813,7 @@ export default function PcsPage() {
               Ler o meu PC
             </h2>
 
-            {podeLocal && (
+            {podeExecutar && (
               <button
                 onClick={lerPC}
                 disabled={lendo}
@@ -855,7 +869,7 @@ export default function PcsPage() {
 
           {erroLeitura && <p className="mt-3 text-sm font-bold text-red-400">{erroLeitura}</p>}
 
-          {!podeLocal && !lendo && podeLocal !== null && (
+          {!podeExecutar && !lendo && podeLocal !== null && (
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
               <p className="mb-2 text-[13px] leading-relaxed text-gray-400">
                 Sem PowerShell no servidor. Corre o comando no PC — ele envia o resultado para o

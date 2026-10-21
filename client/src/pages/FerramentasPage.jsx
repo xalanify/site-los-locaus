@@ -185,6 +185,12 @@ export default function FerramentasPage() {
   const [nomeCorrer, setNomeCorrer] = useState(null)
   const [parando, setParando] = useState(false)
   const aCorrerRef = useRef(null)
+  /* agente local (site na nuvem -> PC Windows) */
+  const [agente, setAgente] = useState({ online: false, sessao: null, job: null })
+  const [aLigarPc, setALigarPc] = useState(false)
+  const [jobId, setJobId] = useState(null)
+  const jobPollRef = useRef(null)
+  const discosPedidosRef = useRef(false)
 
   /* Ações selecionadas por nível do Otimizador by Xalana.
      Cada nível PARTE do anterior: normal = mínimo + extras,
@@ -225,15 +231,21 @@ export default function FerramentasPage() {
     setADetectar(true)
     setAviso(null)
     try {
-      const r = await fetch('/api/ferramentas/instalados', { headers: authHeaders() })
-      const d = await r.json().catch(() => ({}))
-      if (r.ok && Array.isArray(d.instalados)) {
-        setInstalados(new Set(d.instalados))
+      if (dados?.podeLocal === false && agente.online) {
+        const j = await esperarTrabalho({ tipo: 'instalados' }, 120000)
+        const l = Array.isArray(j.resultado?.instalados) ? j.resultado.instalados : []
+        setInstalados(new Set(l))
       } else {
-        setAviso(d.erro || 'Não deu para verificar os programas instalados.')
+        const r = await fetch('/api/ferramentas/instalados', { headers: authHeaders() })
+        const d = await r.json().catch(() => ({}))
+        if (r.ok && Array.isArray(d.instalados)) {
+          setInstalados(new Set(d.instalados))
+        } else {
+          setAviso(d.erro || 'Não deu para verificar os programas instalados.')
+        }
       }
-    } catch {
-      setAviso('Não deu para falar com o servidor.')
+    } catch (e) {
+      setAviso(e.message || 'Não deu para falar com o servidor.')
     } finally {
       setADetectar(false)
     }
@@ -246,6 +258,16 @@ export default function FerramentasPage() {
     const ids = Array.from(selecionados).filter((id) => instalados.has(id))
     if (!ids.length) return
     setAviso(null)
+    if (dados?.podeLocal === false && agente.online) {
+      try {
+        const job = await pedirTrabalho({ tipo: 'desinstalar', ids })
+        setNomeCorrer(job.nome || 'Desinstalação de programas')
+        seguirTrabalho(job)
+      } catch (e) {
+        setAviso(e.message || 'Não deu para desinstalar.')
+      }
+      return
+    }
     try {
       const r = await fetch('/api/ferramentas/desinstalar', {
         method: 'POST',
@@ -290,11 +312,156 @@ export default function FerramentasPage() {
 
   useEffect(carregar, [])
 
+  /* ---------- agente local (site na nuvem -> PC Windows) ---------- */
+  const pedirTrabalho = async (payload) => {
+    const r = await fetch('/api/agente/jobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(payload),
+    })
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok || !d.job) throw new Error(d.erro || d.error || 'O PC não aceitou o trabalho.')
+    return d.job
+  }
+
+  /* mostra no terminal os logs de um trabalho do agente */
+  const seguirTrabalho = (job) => {
+    if (jobPollRef.current) clearInterval(jobPollRef.current)
+    setJobId(job.id)
+    setNomeCorrer(job.nome || 'Ferramenta')
+    setEstado((prev) => ({
+      ...(prev || {}),
+      aCorrer: job.ferramenta_id || job.id,
+      logs: [],
+      fim: null,
+      erro: null,
+      codigo: null,
+      codigoTexto: null,
+      podeLocal: false,
+      podeParar: true,
+    }))
+    const iv = setInterval(async () => {
+      try {
+        const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
+        const d = await r.json().catch(() => ({}))
+        if (!r.ok || !d.job) return
+        const j = d.job
+        const aAndar = j.status === 'pendente' || j.status === 'a_correr'
+        setEstado((prev) => ({
+          ...(prev || {}),
+          aCorrer: aAndar ? (j.ferramenta_id || job.id) : null,
+          logs: Array.isArray(j.logs) ? j.logs : [],
+          fim: j.fim_em,
+          erro: j.erro || null,
+          codigo: j.codigo,
+          codigoTexto: j.codigo == null ? null : (j.codigo === 0 ? 'sucesso' : (j.erro || `código ${j.codigo}`)),
+          podeLocal: false,
+          podeParar: aAndar,
+        }))
+        if (!aAndar) {
+          clearInterval(iv)
+          jobPollRef.current = null
+          setJobId(null)
+        }
+      } catch { /* rede oscilou; tenta no próximo */ }
+    }, 700)
+    jobPollRef.current = iv
+  }
+
+  /* espera por um trabalho rápido (discos, programas instalados) */
+  const esperarTrabalho = async (payload, timeoutMs = 120000) => {
+    const job = await pedirTrabalho(payload)
+    const fim = Date.now() + timeoutMs
+    while (Date.now() < fim) {
+      await new Promise((r) => setTimeout(r, 700))
+      const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.job) throw new Error('Perdi o trabalho do PC.')
+      if (!['pendente', 'a_correr'].includes(d.job.status)) return d.job
+    }
+    throw new Error('O PC demorou demasiado a responder.')
+  }
+
+  const pedirDiscos = async () => {
+    try {
+      const j = await esperarTrabalho({ tipo: 'discos' }, 40000)
+      const l = Array.isArray(j.resultado?.discos) ? j.resultado.discos : []
+      if (l.length) {
+        setDiscos(l)
+        setDiscoSel((v) => v || l[0])
+      }
+    } catch { /* sem discos: o seletor fica vazio */ }
+  }
+
+  const ligarPc = async () => {
+    if (aLigarPc) return
+    setALigarPc(true)
+    setAviso(null)
+    try {
+      const r = await fetch('/api/agente/sessao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ nome: 'PC Windows' }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.token) throw new Error(d.error || d.erro || 'Não deu para criar a sessão.')
+      const a = document.createElement('a')
+      a.href = `/api/agente/baixar?token=${encodeURIComponent(d.token)}`
+      a.download = 'LOCAUS-PC.bat'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setAviso('LOCAUS-PC.bat descarregado. Abre-o no PC e aceita o pedido de administrador; o site liga-se sozinho.')
+    } catch (e) {
+      setAviso(e.message || 'Não deu para ligar o PC.')
+    } finally {
+      setALigarPc(false)
+    }
+  }
+
+  const desligarPc = async () => {
+    try {
+      await fetch('/api/agente/sessao', { method: 'DELETE', headers: authHeaders() })
+      setAgente({ online: false, sessao: null, job: null })
+      setJobId(null)
+      if (jobPollRef.current) { clearInterval(jobPollRef.current); jobPollRef.current = null }
+      setAviso('PC desligado do site.')
+    } catch {
+      setAviso('Não deu para desligar o PC.')
+    }
+  }
+
+  /* o site pergunta ao agente se o PC está ligado */
+  useEffect(() => {
+    let vivo = true
+    const atualizar = async () => {
+      try {
+        const r = await fetch('/api/agente/estado', { headers: authHeaders() })
+        const d = await r.json().catch(() => ({}))
+        if (!vivo || !r.ok) return
+        setAgente((prev) => ({ ...prev, ...d }))
+        if (d.online && !discosPedidosRef.current) {
+          discosPedidosRef.current = true
+          pedirDiscos()
+        }
+      } catch { /* sem rede */ }
+    }
+    atualizar()
+    const iv = setInterval(atualizar, 5000)
+    return () => {
+      vivo = false
+      clearInterval(iv)
+      if (jobPollRef.current) clearInterval(jobPollRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const aCorrer = estado?.aCorrer || null
 
-  /* acompanha os logs enquanto há trabalho */
+  /* acompanha os logs enquanto há trabalho (só no modo local;
+     no modo agente quem acompanha é o seguirTrabalho) */
   useEffect(() => {
-    if (!aCorrer) return undefined
+    if (!aCorrer || dados?.podeLocal === false) return undefined
     const iv = setInterval(() => {
       fetch('/api/ferramentas/status', { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
@@ -302,7 +469,7 @@ export default function FerramentasPage() {
         .catch(() => {})
     }, 700)
     return () => clearInterval(iv)
-  }, [aCorrer])
+  }, [aCorrer, dados?.podeLocal])
 
   /* o terminal acompanha o fundo */
   useEffect(() => {
@@ -355,6 +522,22 @@ export default function FerramentasPage() {
     setAviso(null)
     const alvo = ferramentas.find((f) => f.id === id)
     const arg = argOverride !== undefined ? argOverride : alvo?.disco ? discoSel : idLivre
+    if (dados?.podeLocal === false) {
+      if (!agente.online) {
+        setAviso('Liga o teu PC primeiro (botão "Ligar este PC").')
+        avancarFila()
+        return
+      }
+      try {
+        const job = await pedirTrabalho({ tipo: 'tool', id, arg, acoes })
+        setNomeCorrer(job.nome || alvo?.nome || 'Ferramenta')
+        seguirTrabalho(job)
+      } catch (e) {
+        setAviso(e.message || 'Não deu para enviar a ferramenta para o PC.')
+        avancarFila()
+      }
+      return
+    }
     try {
       const r = await fetch('/api/ferramentas/run', {
         method: 'POST',
@@ -381,6 +564,22 @@ export default function FerramentasPage() {
     if (parando || !aCorrer) return
     setParando(true)
     setAviso(null)
+    const alvoJob = jobId || agente?.job?.id
+    if (dados?.podeLocal === false && alvoJob) {
+      try {
+        const r = await fetch(`/api/agente/jobs/${alvoJob}/cancelar`, {
+          method: 'POST',
+          headers: authHeaders(),
+        })
+        const d = await r.json().catch(() => ({}))
+        if (!r.ok) setAviso(d.erro || 'Não deu para parar.')
+      } catch {
+        setAviso('Não deu para falar com o servidor.')
+      } finally {
+        setParando(false)
+      }
+      return
+    }
     try {
       const r = await fetch('/api/ferramentas/stop', {
         method: 'POST',
@@ -456,6 +655,7 @@ export default function FerramentasPage() {
 
   const logs = estado?.logs || []
   const podeLocal = dados?.podeLocal
+  const podeExecutar = Boolean(podeLocal || agente.online)
 
   return (
     <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
@@ -473,13 +673,55 @@ export default function FerramentasPage() {
           </p>
         </motion.div>
 
-        {podeLocal === false && (
-          <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-[13px] text-yellow-200">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
-            <p>
-              Este site está alojado na nuvem (Vercel) — as ferramentas só correm quando o site
-              está num PC Windows local (INICIAR.bat).
-            </p>
+        {podeLocal === false && !agente.online && (
+          <div className="mb-6 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4 text-[13px] text-violet-100">
+            <div className="flex items-start gap-2.5">
+              <Monitor className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
+              <div className="min-w-0">
+                <p className="font-semibold text-white">Ligar este PC ao site</p>
+                <p className="mt-1 text-violet-100/80">
+                  O site está na nuvem e não tem PowerShell. Descarrega o <b>LOCAUS-PC.bat</b>,
+                  abre-o no PC Windows e aceita o pedido de administrador. Fica ligado em segundo
+                  plano — depois podes mandar executar daqui ou do telemóvel.
+                </p>
+                <button
+                  type="button"
+                  onClick={ligarPc}
+                  disabled={aLigarPc}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {aLigarPc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  {aLigarPc ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
+                </button>
+                <p className="mt-2 text-[11px] text-violet-200/60">
+                  Se estiveres no telemóvel, descarrega e abre o ficheiro no PC. O site deteta-o
+                  sozinho em poucos segundos.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {podeLocal === false && agente.online && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              </span>
+              <span>
+                <b>PC ligado</b>
+                {agente.sessao?.nome ? ` · ${agente.sessao.nome}` : ''} — as ferramentas correm no
+                teu Windows.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={desligarPc}
+              className="rounded-lg border border-emerald-500/30 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 transition-colors hover:bg-emerald-500/15"
+            >
+              Desligar PC
+            </button>
           </div>
         )}
 
@@ -583,7 +825,7 @@ export default function FerramentasPage() {
                 {Array.from(selecionados).some((id) => instalados.has(id)) && (
                   <button
                     onClick={desinstalarSelecionados}
-                    disabled={aCorrer}
+                    disabled={aCorrer || !podeExecutar}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-red-500 disabled:opacity-50"
                     title="Desinstala por completo (winget + limpa pastas, registo, tasks e serviços — estilo Revo)"
                   >
@@ -599,7 +841,7 @@ export default function FerramentasPage() {
                     programarFila(ids.slice(1))
                     executar(ids[0])
                   }}
-                  disabled={aCorrer}
+                  disabled={aCorrer || !podeExecutar}
                   className="rounded-lg bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
                   title="Corre os selecionados um de cada vez, por ordem"
                 >
@@ -777,7 +1019,7 @@ export default function FerramentasPage() {
                       if (!ids.length || aCorrer) return
                       executar(`xalana-${nivel}`, null, ids)
                     }}
-                    disabled={aCorrer}
+                    disabled={aCorrer || !podeExecutar}
                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
                   >
                     <Play className="h-4 w-4" fill="currentColor" />
@@ -840,7 +1082,7 @@ export default function FerramentasPage() {
                               if (!marcadas.length || aCorrer) return
                               executar(`xalana-${nivel}`, null, marcadas)
                             }}
-                            disabled={aCorrer || marcadas.length === 0}
+                            disabled={aCorrer || !podeExecutar || marcadas.length === 0}
                             className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-40"
                           >
                             <Check className="h-4 w-4" />
@@ -1012,7 +1254,7 @@ export default function FerramentasPage() {
                   ) : (
                     <button
                       onClick={() => executar(f.id)}
-                      disabled={ocupado || podeLocal === false}
+                      disabled={ocupado || !(podeLocal || agente.online)}
                       className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
                     >
                       {aCorrer === f.id ? (
@@ -1052,7 +1294,7 @@ export default function FerramentasPage() {
           {busca.trim()
             ? `${visiveis.length} de ${ferramentas.length} ferramentas`
             : `${ferramentas.length} ferramentas`} ·{' '}
-          {dados?.estado?.podeLocal ? 'pronto para executar' : aCorrer ? 'a correr' : 'estado desconhecido'}
+          {aCorrer ? 'a correr' : (podeLocal || agente.online) ? 'pronto para executar' : 'PC desligado'}
         </p>
       </div>
 

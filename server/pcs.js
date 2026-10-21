@@ -14,7 +14,8 @@ const path = require('path');
 const SCRIPT = path.join(__dirname, 'scripts', 'lerpc.ps1');
 
 /* Só faz sentido em Windows fora da Vercel (lá não há PowerShell). */
-const podeLocal = () => process.platform === 'win32' && !process.env.VERCEL;
+const podeLocal = () =>
+  process.platform === 'win32' && !process.env.VERCEL && process.env.AGENTE_REMOTO !== '1';
 
 /* estado da recolha — o site lê isto para mostrar os passos a andar */
 const estado = {

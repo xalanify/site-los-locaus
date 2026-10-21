@@ -9,7 +9,8 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const SCRIPT = path.join(__dirname, 'scripts', 'saude.ps1');
-const podeLocal = () => process.platform === 'win32' && !process.env.VERCEL;
+const podeLocal = () =>
+  process.platform === 'win32' && !process.env.VERCEL && process.env.AGENTE_REMOTO !== '1';
 
 let aCorrer = false;
 let cache = null; // { dados, em }

@@ -14,7 +14,8 @@
 
   "functions": {
     "api/index.js": {
-      "includeFiles": "{historico-*.html,server/data/*.json,vercel-site/*}"
+      "maxDuration": 60,
+      "includeFiles": "{historico-*.html,server/data/*.json,vercel-site/*,server/agente.ps1,server/scripts/*.ps1}"
     }
   },
 

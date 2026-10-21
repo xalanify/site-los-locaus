@@ -17,6 +17,7 @@ const { adminRouter } = require('./routes/admin');
 const { notificationsRouter } = require('./routes/notifications');
 const { specsRouter } = require('./routes/specs');
 const { ferramentasRouter } = require('./routes/ferramentas');
+const { agenteRouter } = require('./routes/agente');
 const { trackVisitor } = require('./middleware/tracker');
 const { backendInfo } = require('./usersStore');
 
@@ -103,13 +104,22 @@ if (emBreveHtml) {
 // O import do R6 manda páginas HTML grandes (dezenas de MB) — esse
 // caminho tem o seu próprio parser com limite maior na rota.
 app.use((req, res, next) => {
-  if (req.path === '/api/admin/r6/import' || req.path === '/api/clips/pub/confirm') return next();
+  if (
+    req.path === '/api/admin/r6/import' ||
+    req.path === '/api/clips/pub/confirm' ||
+    req.path.startsWith('/api/agente')
+  ) {
+    return next();
+  }
   express.json({ limit: '32kb' })(req, res, next);
 });
 
-// A publicação no YouTube manda a capa (frame em base64) — precisa de
+// A publicação no YouTube manda a capa (frame em base64) - precisa de
 // um limite maior do que o das outras rotas.
 app.use('/api/clips/pub/confirm', express.json({ limit: '6mb' }));
+
+// O agente local envia logs e, no fim, a saída das specs/saúde.
+app.use('/api/agente', express.json({ limit: '2mb' }));
 
 const ORIGENS_PERMITIDAS = new Set(
   [process.env.SITE_URL, 'https://locaus.vercel.app']
@@ -178,6 +188,8 @@ app.use('/api/posts', postsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/games', gamesRouter);
 app.use('/api/ferramentas', ferramentasRouter);
+// Agente local: permite ao site na nuvem correr as ferramentas no PC
+app.use('/api/agente', agenteRouter);
 // InfoAoVivo (beta): app nativo de overlays do PC
 const infoaovivoRouter = require('./routes/infoaovivo');
 app.use('/api/infoaovivo', infoaovivoRouter);

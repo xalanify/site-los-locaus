@@ -18,6 +18,7 @@ const jwt = require('jsonwebtoken');
 const { getDb } = require('../database');
 const { requireUser, JWT_SECRET } = require('../middleware/auth');
 const pcs = require('../pcs');
+const agente = require('../agente');
 
 const router = express.Router();
 
@@ -31,6 +32,26 @@ const safe = (fn) => async (req, res) => {
     res.status(500).json({ error: 'Erro interno' });
   }
 };
+
+/* Quando o site está na nuvem, a leitura é feita pelo agente local. */
+async function lerPeloAgente(uid, tipo, timeoutMs) {
+  const st = await agente.estado(uid);
+  if (!st.online) {
+    return {
+      ok: false,
+      offline: true,
+      erro:
+        'O PC não está ligado ao site. Abre a página Ferramentas Windows e liga o PC com o LOCAUS-PC.bat.',
+    };
+  }
+  const job = await agente.criarJob(uid, { tipo }, false);
+  if (!job.ok) return { ok: false, erro: job.erro || 'Não deu para pedir a leitura ao PC.' };
+  const r = await agente.esperarJob(job.job.id, timeoutMs);
+  if (!r.ok) return { ok: false, erro: r.erro || 'O PC não respondeu.' };
+  const dados = r.resultado && r.resultado.dados;
+  if (!dados) return { ok: false, erro: 'O PC não devolveu os dados.' };
+  return { ok: true, dados, passos: r.passos || [] };
+}
 
 const clean = (v, max = 120) => (v == null ? null : String(v).trim().slice(0, max) || null);
 const num = (v) => {
@@ -340,15 +361,38 @@ router.post(
 );
 
 // GET /api/users/specs/status — como vai a leitura local (para mostrar os passos)
-router.get('/status', requireUser, (req, res) => {
-  res.json(pcs.estadoPublico());
-});
+router.get(
+  '/status',
+  requireUser,
+  safe(async (req, res) => {
+    if (pcs.podeLocal()) return res.json(pcs.estadoPublico());
+    const uid = Number(req.auth.uid);
+    const st = await agente.estado(uid);
+    const job = st.job && st.job.tipo === 'specs' ? st.job : null;
+    const passos = (Array.isArray(job?.logs) ? job.logs : [])
+      .map((x) => String((x && x.l) || ''))
+      .filter((x) => /^\[passo\]/i.test(x))
+      .map((x) => x.replace(/^\[passo\]\s*/i, ''));
+    res.json({
+      podeLocal: false,
+      agenteOnline: Boolean(st.online),
+      aCorrer: Boolean(job),
+      passos,
+    });
+  }),
+);
 
 // GET /api/users/specs/health — saúde do PC (discos, temps, boots)
 router.get(
   '/health',
   requireUser,
   safe(async (req, res) => {
+    const uid = Number(req.auth.uid);
+    if (!pcs.podeLocal()) {
+      const r = await lerPeloAgente(uid, 'saude', 45000);
+      if (!r.ok) return res.status(r.offline ? 501 : 500).json({ error: r.erro });
+      return res.json({ ok: true, dados: r.dados, cache: false });
+    }
     const saude = require('../saude');
     const r = await saude.correr();
     if (!r.ok) return res.status(500).json({ error: r.erro || 'Não deu para ler a saúde do PC.' });
@@ -363,10 +407,11 @@ router.post(
   safe(async (req, res) => {
     const uid = Number(req.auth.uid);
     if (!pcs.podeLocal()) {
-      return res.status(501).json({
-        error:
-          'Este servidor não está num Windows local. Copia o comando de baixo e corre-o no PowerShell do teu PC.',
-      });
+      const r = await lerPeloAgente(uid, 'specs', 52000);
+      if (!r.ok) return res.status(r.offline ? 501 : 500).json({ error: r.erro });
+      const detalhes = { ...r.dados, avaliacao: pcs.analisar(r.dados) };
+      const guardado = await salvarDeep(uid, pcs.camposBasicos(r.dados), detalhes);
+      return res.json({ ok: true, passos: r.passos, ...guardado });
     }
     const r = await pcs.correr();
     if (!r.ok) return res.status(500).json({ error: r.erro || 'Não deu para ler o PC.' });
