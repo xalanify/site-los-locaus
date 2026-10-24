@@ -230,6 +230,8 @@ export default function ChatPage({ user }) {
         lastIdRef.current = Number(d.last_id) || 0
         setLoading(false)
         setTimeout(() => scrollFundo(false), 30)
+        // segundo acerto (depois de as imagens/média carregarem e mudarem a altura)
+        setTimeout(() => scrollFundo(false), 400)
       } catch (e) {
         if (vivo) {
           setErro(e.message || 'Sem ligação ao chat.')

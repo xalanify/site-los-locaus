@@ -562,10 +562,10 @@ export default function PrevisoesPage({ user }) {
       <div className="relative z-10">
 
       {/* seletor de jogo: Rainbow Six (ativo) vs CS2 (em breve) */}
-      <div className="mb-4 grid grid-cols-2 gap-2">
+      <div className="mt-2 mb-4 grid grid-cols-2 gap-2">
         <button
           onClick={() => setJogo('r6')}
-          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-black transition-all ${
+          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
             jogo === 'r6'
               ? 'border-violet-400/40 bg-gradient-to-b from-violet-600/40 to-fuchsia-600/20 text-white shadow-lg shadow-violet-950/30'
               : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
@@ -575,7 +575,7 @@ export default function PrevisoesPage({ user }) {
         </button>
         <button
           onClick={() => setJogo('cs2')}
-          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-black transition-all ${
+          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
             jogo === 'cs2'
               ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/30 to-sky-900/20 text-white'
               : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
