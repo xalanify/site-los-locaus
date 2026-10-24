@@ -1,10 +1,34 @@
 [
-  { "nick": "Sheik Caralhao", "steam": "76561199214897766" },
-  { "nick": "HABIBI GIRL", "steam": "76561199229037683" },
-  { "nick": "RABIXO", "steam": "76561198790850904" },
-  { "nick": "MOHAMED HABIBI", "steam": "76561199464778162" },
-  { "nick": "simas", "steam": "76561198758225853" },
-  { "nick": "xalana", "steam": "76561199005005585" },
-  { "nick": "XANDY", "steam": "76561198652533399" },
-  { "nick": "_.TaKe.EASy._", "steam": "76561199118652789" }
+  {
+    "nick": "Sheik Caralhao",
+    "steam": "76561199214897766"
+  },
+  {
+    "nick": "HABIBI GIRL",
+    "steam": "76561199229037683"
+  },
+  {
+    "nick": "RABIXO",
+    "steam": "76561198790850904"
+  },
+  {
+    "nick": "MOHAMED HABIBI",
+    "steam": "76561199464778162"
+  },
+  {
+    "nick": "simas",
+    "steam": "76561198758225853"
+  },
+  {
+    "nick": "xalana",
+    "steam": "76561199005005585"
+  },
+  {
+    "nick": "XANDY",
+    "steam": "76561198652533399"
+  },
+  {
+    "nick": "_.TaKe.EASy._",
+    "steam": "76561199118652789"
+  }
 ]

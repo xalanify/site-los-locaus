@@ -18,6 +18,7 @@ const { notificationsRouter } = require('./routes/notifications');
 const { specsRouter } = require('./routes/specs');
 const { ferramentasRouter } = require('./routes/ferramentas');
 const { agenteRouter } = require('./routes/agente');
+const { pcRouter } = require('./routes/pc');
 const { trackVisitor } = require('./middleware/tracker');
 const { backendInfo } = require('./usersStore');
 
@@ -190,6 +191,8 @@ app.use('/api/games', gamesRouter);
 app.use('/api/ferramentas', ferramentasRouter);
 // Agente local: permite ao site na nuvem correr as ferramentas no PC
 app.use('/api/agente', agenteRouter);
+// PC embutido: o servidor local executa os trabalhos no próprio PC
+app.use('/api/pc', pcRouter);
 // InfoAoVivo (beta): app nativo de overlays do PC
 const infoaovivoRouter = require('./routes/infoaovivo');
 app.use('/api/infoaovivo', infoaovivoRouter);

@@ -652,4 +652,71 @@ router.get('/skins-raros', (req, res) => {
   res.json(SKINS_RAROS || {});
 });
 
+// ============================================================
+// Diagnóstico — o que está configurado e o que falta
+// Mostra ao admin exatamente o que tem de fazer para cada
+// jogo ter stats ao vivo (chaves no .env da Vercel).
+// ============================================================
+router.get('/diagnostico', (req, res) => {
+  try {
+    const steamKey = Boolean((process.env.STEAM_API_KEY || '').trim());
+    const ubiEmail = Boolean((process.env.UBI_EMAIL || '').trim());
+    const ubiPass = Boolean((process.env.UBI_PASSWORD || '').trim());
+    const fnToken = Boolean((process.env.FORTNITE_API_TOKEN || '').trim());
+
+    let r6Jogadores = [];
+    try {
+      const j = require('../data/r6-jogadores.json');
+      if (Array.isArray(j)) r6Jogadores = j.map((x) => (typeof x === 'string' ? x : x.nick)).filter(Boolean);
+    } catch {}
+
+    let cs2Membros = [];
+    try {
+      const live = require('../cs2live');
+      cs2Membros = (live.membros() || []).map((m) => (typeof m === 'string' ? m : m.nick)).filter(Boolean);
+    } catch {}
+
+    res.json({
+      cs2: {
+        ativo: steamKey,
+        fonte: 'Steam Web API (oficial, gratuita)',
+        problema: steamKey ? null : 'STEAM_API_KEY não está definida no .env / Vercel',
+        nota: 'Perfis da Steam têm de ser PÚBLICOS para devolver stats. O jogador ativa em: Steam > Privacidade > Detalhes do perfil > Público.',
+        membros: cs2Membros.length,
+      },
+      r6: {
+        ativo: ubiEmail && ubiPass,
+        fonte: 'Ubisoft API (open source, via SwiftCODA/R6-API)',
+        problema: !ubiEmail || !ubiPass
+          ? 'UBI_EMAIL e/ou UBI_PASSWORD não estão definidas no .env / Vercel'
+          : (r6ubi.estado.ultimoErro || null),
+        nota: 'Precisa de uma conta Ubisoft gratuita (sem 2FA) criada em ubisoft.com. Guarda as credenciais no .env.',
+        jogadores: r6Jogadores.length,
+        estado: {
+          credencial: r6ubi.estado.credencial,
+          ultimaTentativa: r6ubi.estado.ultimaTentativa,
+          ultimoErro: r6ubi.estado.ultimoErro,
+          falhasSeguidas: r6ubi.estado.falhasSeguidas,
+        },
+      },
+      fortnite: {
+        ativo: fnToken,
+        fonte: 'fortnite-api.com (open source, token gratuito)',
+        problema: fnToken
+          ? null
+          : 'FORTNITE_API_TOKEN não está definida no .env / Vercel',
+        nota: 'Token GRATUITO: entra no Discord discord.gg/fortniteapi e pede em #support. Depois adiciona FORTNITE_API_TOKEN=teu_token ao .env (local) e nas variáveis da Vercel.',
+      },
+      ambiente: {
+        vercel: Boolean(process.env.VERCEL),
+        nodeEnv: process.env.NODE_ENV || 'development',
+        siteUrl: process.env.SITE_URL || null,
+      },
+    });
+  } catch (error) {
+    console.error('Erro games/diagnostico:', error.message);
+    res.status(500).json({ error: 'Erro no diagnóstico.' });
+  }
+});
+
 module.exports = { gamesRouter: router };

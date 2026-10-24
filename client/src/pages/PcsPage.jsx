@@ -12,6 +12,7 @@ import {
   Terminal,
   Lock,
   Download,
+  Loader2,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
@@ -347,20 +348,19 @@ export default function PcsPage() {
   useEffect(() => {
     let vivo = true
     const ver = () => {
-      fetch('/api/users/specs/status', { headers: authHeaders() })
+      fetch('/api/pc/estado', { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (!vivo || !d) return
           setPodeLocal(Boolean(d.podeLocal))
-          const online = Boolean(d.agenteOnline)
+          const online = Boolean(d.online)
           setAgenteOnline(online)
-          /* se o .bat acabou de ligar o PC, mostra o aviso */
+          /* se o PC acabou de ligar, mostra o aviso */
           if (online && !agenteAntes.current) {
             setPcLigado(true)
             setTimeout(() => setPcLigado(false), 5000)
           }
           agenteAntes.current = online
-          if (Array.isArray(d.passos) && d.aCorrer) setPassos(d.passos)
         })
         .catch(() => {
           if (vivo) setPodeLocal((v) => (v == null ? false : v))
@@ -376,29 +376,20 @@ export default function PcsPage() {
 
   const podeExecutar = Boolean(podeLocal || agenteOnline)
 
-  /* descarrega o mini-app (LOCAUS-PC.exe) — abre a janela da app já
-     ligada ao site, com estado + botões Ligar/Desligar */
+  /* verifica se o PC está ligado (servidor local) */
   const [aLigarApp, setALigarApp] = useState(false)
   const ligarApp = async () => {
     if (aLigarApp) return
     setALigarApp(true)
     try {
-      /* cria (ou reaproveita) a sessão deste utilizador e descarrega a app
-         já atada ao login — a janela abre e fica ligada ao site */
-      const r = await fetch('/api/agente/sessao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ nome: 'PC Windows' }),
-      })
+      const r = await fetch('/api/pc/estado', { headers: authHeaders() })
       const d = await r.json().catch(() => ({}))
-      if (!r.ok || !d.token) throw new Error(d.error || d.erro || 'Não deu para criar a sessão.')
-      const a = document.createElement('a')
-      a.href = `/api/agente/baixar-exe?token=${encodeURIComponent(d.token)}`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
+      if (r.ok && d.online) {
+        setPcLigado(true)
+        setTimeout(() => setPcLigado(false), 5000)
+      }
     } catch {
-      /* o utilizador pode ir à Ferramentas Windows descarregar */
+      /* sem rede */
     } finally {
       setALigarApp(false)
     }
@@ -419,90 +410,66 @@ export default function PcsPage() {
     setErroLeitura(null)
     setPassos([])
 
-    /* No modo local o servidor corre o PowerShell e o browser vê os
-       passos. Na nuvem o agente faz o trabalho e nós seguimos o job. */
-    let iv = null
-    if (podeLocal) {
-      iv = setInterval(() => {
-        fetch('/api/users/specs/status', { headers: authHeaders() })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => {
-            if (d && Array.isArray(d.passos)) setPassos(d.passos)
-          })
-          .catch(() => {})
-      }, 2000)
-    }
-
     try {
-      const r = await fetch('/api/users/specs/deep', {
+      /* cria o job no PC embutido */
+      const r = await fetch('/api/pc/trabalho', {
         method: 'POST',
-        headers: authHeaders(),
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ tipo: 'specs' }),
       })
       const d = await r.json().catch(() => ({}))
-
-      if (r.status === 202 && d.async && d.jobId) {
-        const jobId = d.jobId
-        const limite = Date.now() + 180000
-        while (Date.now() < limite) {
-          await new Promise((ok) => setTimeout(ok, 2000))
-          const jr = await fetch(`/api/agente/jobs/${jobId}`, { headers: authHeaders() })
-          const jd = await jr.json().catch(() => ({}))
-          if (!jr.ok || !jd.job) {
-            setErroLeitura('Perdi a leitura do PC. Tenta outra vez.')
-            return
-          }
-          const p = (Array.isArray(jd.job.logs) ? jd.job.logs : [])
-            .map((x) => String((x && x.l) || ''))
-            .filter((x) => /^\[passo\]/i.test(x))
-            .map((x) => x.replace(/^\[passo\]\s*/i, ''))
-          if (p.length) setPassos(p)
-
-          const st = jd.job.status
-          if (st === 'pendente' || st === 'a_correr') continue
-          if (st !== 'concluido') {
-            setErroLeitura(jd.job.erro || 'A leitura do PC falhou.')
-            return
-          }
-
-          const fr = await fetch('/api/users/specs/deep/fim', {
-            method: 'POST',
-            headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobId }),
-          })
-          const fd = await fr.json().catch(() => ({}))
-          if (!fr.ok) {
-            setErroLeitura(fd.error || 'Não deu para guardar a leitura.')
-            return
-          }
-          if (Array.isArray(fd.passos) && fd.passos.length) setPassos(fd.passos)
-          setLido(fd)
-          setPortao(false)
-          carregar()
-          if (!fd.details?.bench) setTimeout(() => correrBench(), 500)
-          return
-        }
-        setErroLeitura('O PC demorou demasiado a responder.')
+      if (!r.ok || !d.job) {
+        setErroLeitura(d.erro || d.error || 'Não deu para ler o PC.')
         return
       }
+      const jobId = d.job.id
 
-      if (!r.ok) {
-        setErroLeitura(d?.error || 'Não deu para ler o PC.')
-        if (r.status === 501) {
-          setPodeLocal(false)
-          setAgenteOnline(false)
+      /* segue o job até terminar */
+      const limite = Date.now() + 180000
+      while (Date.now() < limite) {
+        await new Promise((ok) => setTimeout(ok, 2000))
+        const jr = await fetch(`/api/pc/trabalhos/${jobId}`, { headers: authHeaders() })
+        const jd = await jr.json().catch(() => ({}))
+        if (!jr.ok || !jd.job) {
+          setErroLeitura('Perdi a leitura do PC. Tenta outra vez.')
+          return
         }
-      } else {
-        if (Array.isArray(d.passos) && d.passos.length) setPassos(d.passos)
-        setLido(d)
-        setPortao(false) // leitura feita -> a aba abre
+        const p = (Array.isArray(jd.job.logs) ? jd.job.logs : [])
+          .map((x) => String((x && x.l) || ''))
+          .filter((x) => /^\[passo\]/i.test(x))
+          .map((x) => x.replace(/^\[passo\]\s*/i, ''))
+        if (p.length) setPassos(p)
+
+        const st = jd.job.status
+        if (st === 'pendente' || st === 'a_correr') continue
+        if (st !== 'concluido') {
+          setErroLeitura(jd.job.erro || 'A leitura do PC falhou.')
+          return
+        }
+
+        /* guarda o resultado */
+        const fr = await fetch('/api/users/specs/deep/fim', {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobId, resultado: jd.job.resultado }),
+        })
+        const fd = await fr.json().catch(() => ({}))
+        if (!fr.ok) {
+          setErroLeitura(fd.error || 'Não deu para guardar a leitura.')
+          return
+        }
+        if (Array.isArray(fd.passos) && fd.passos.length) setPassos(fd.passos)
+        setLido(fd)
+        setPortao(false)
         carregar()
-        // 2.º passo: com o PC já lido, corre automaticamente o bench da CPU
-        if (!d.details?.bench) setTimeout(() => correrBench(), 500)
+        if (!fd.details?.bench) setTimeout(() => correrBench(), 500)
+        return
       }
+      setErroLeitura('O PC demorou demasiado a responder.')
+      return
     } catch {
       setErroLeitura('Não deu para falar com o servidor.')
     } finally {
-      if (iv) clearInterval(iv)
       setLendo(false)
     }
   }
@@ -608,9 +575,9 @@ export default function PcsPage() {
               PCs / Specs
             </h1>
             <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
-              Esta página só abre com a app <b className="text-white">LOCAUS-PC</b> ligada
-              ao site. Descarrega, abre e clica em <b className="text-white">Ligar ao
-              site</b> — as specs do teu PC e a página desbloqueiam aqui sozinhos.
+              Esta página precisa de falar com o teu Windows. O site está ligado ao PC
+              onde corre o servidor — clica em <b className="text-white">Ler o meu PC</b>
+              para leres as specs e desbloqueares a página.
             </p>
             <button
               type="button"
@@ -618,12 +585,12 @@ export default function PcsPage() {
               disabled={aLigarApp}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
             >
-              {aLigarApp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              {aLigarApp ? 'A preparar…' : 'Descarregar a app LOCAUS-PC'}
+              {podeExecutar ? <RefreshCcw className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+              {podeExecutar ? 'Ler o meu PC agora' : 'PC a ligar…'}
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
-              A app é só tua: liga o teu Windows ao teu login do site. Ninguém vê as specs
-              sem a própria app ligada.
+              O servidor corre no teu PC — as specs são lidas diretamente do Windows,
+              sem apps nem ficheiros para descarregar.
             </p>
           </motion.div>
         </div>
@@ -658,9 +625,9 @@ export default function PcsPage() {
                       Ligar o teu PC ao site
                     </h2>
                     <p className="mt-1 text-[13px] leading-relaxed text-gray-400">
-                      Para ler as specs e usar as ferramentas, o site precisa de falar com o
-                      teu Windows. Descarrega a <b>app LOCAUS-PC</b> e clica em "Ligar ao site" —
-                      fica ligada em segundo plano e este aviso desaparece sozinho.
+                      Para ler as specs e usar as ferramentas, o site fala diretamente com
+                      o teu Windows. Clica em <b className="text-white">Ler o meu PC</b> —
+                      fica ligado em segundo plano e este aviso desaparece sozinho.
                     </p>
                   </div>
                 </div>
@@ -707,7 +674,7 @@ export default function PcsPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
             </span>
-            <span><b>PC ligado</b> — a app LOCAUS-PC está a comunicar com o site. Podes usar tudo.</span>
+            <span><b>PC ligado</b> — o servidor está a comunicar com o teu Windows. Podes usar tudo.</span>
           </div>
         )}
 

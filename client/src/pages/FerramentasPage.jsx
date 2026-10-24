@@ -162,6 +162,7 @@ function Badge({ tom, children }) {
 }
 
 export default function FerramentasPage() {
+  const [avisoSite] = useState('O .exe foi retirado do fluxo. Usa o site com login. Comandos Windows (revo/wmic) precisam de PC local.')
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
   const [cat, setCat] = useState('Otimizador by Xalana')
@@ -313,9 +314,9 @@ export default function FerramentasPage() {
 
   useEffect(carregar, [])
 
-  /* ---------- agente local (site na nuvem -> PC Windows) ---------- */
+  /* ---------- PC embutido (servidor local executa no próprio PC) ---------- */
   const pedirTrabalho = async (payload) => {
-    const r = await fetch('/api/agente/jobs', {
+    const r = await fetch('/api/pc/trabalho', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
@@ -325,14 +326,14 @@ export default function FerramentasPage() {
     return d.job
   }
 
-  /* mostra no terminal os logs de um trabalho do agente */
+  /* mostra no terminal os logs de um trabalho do PC */
   const seguirTrabalho = (job) => {
     if (jobPollRef.current) clearInterval(jobPollRef.current)
     setJobId(job.id)
     setNomeCorrer(job.nome || 'Ferramenta')
     setEstado((prev) => ({
       ...(prev || {}),
-      aCorrer: job.ferramenta_id || job.id,
+      aCorrer: job.ferramentaId || job.id,
       logs: [],
       fim: null,
       erro: null,
@@ -343,16 +344,16 @@ export default function FerramentasPage() {
     }))
     const iv = setInterval(async () => {
       try {
-        const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
+        const r = await fetch(`/api/pc/trabalhos/${job.id}`, { headers: authHeaders() })
         const d = await r.json().catch(() => ({}))
         if (!r.ok || !d.job) return
         const j = d.job
         const aAndar = j.status === 'pendente' || j.status === 'a_correr'
         setEstado((prev) => ({
           ...(prev || {}),
-          aCorrer: aAndar ? (j.ferramenta_id || job.id) : null,
+          aCorrer: aAndar ? (j.ferramentaId || job.id) : null,
           logs: Array.isArray(j.logs) ? j.logs : [],
-          fim: j.fim_em,
+          fim: j.fimEm,
           erro: j.erro || null,
           codigo: j.codigo,
           codigoTexto: j.codigo == null ? null : (j.codigo === 0 ? 'sucesso' : (j.erro || `código ${j.codigo}`)),
@@ -375,7 +376,7 @@ export default function FerramentasPage() {
     const fim = Date.now() + timeoutMs
     while (Date.now() < fim) {
       await new Promise((r) => setTimeout(r, 1200))
-      const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
+      const r = await fetch(`/api/pc/trabalhos/${job.id}`, { headers: authHeaders() })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.job) throw new Error('Perdi o trabalho do PC.')
       if (!['pendente', 'a_correr'].includes(d.job.status)) return d.job
@@ -399,23 +400,16 @@ export default function FerramentasPage() {
     setALigarPc(true)
     setAviso(null)
     try {
-      const r = await fetch('/api/agente/sessao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ nome: 'PC Windows' }),
-      })
+      /* verifica se o PC está ligado (servidor local) */
+      const r = await fetch('/api/pc/estado', { headers: authHeaders() })
       const d = await r.json().catch(() => ({}))
-      if (!r.ok || !d.token) throw new Error(d.error || d.erro || 'Não deu para criar a sessão.')
-      /* descarrega o LOCAUS-PC.exe já atado ao login deste utilizador —
-         abre a janela da app, que fica ligada e desbloqueia a página */
-      const a = document.createElement('a')
-      a.href = `/api/agente/baixar-exe?token=${encodeURIComponent(d.token)}`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      setAviso('A app LOCAUS-PC está a descarregar. Abre-a e clica "Ligar ao site" — a página desbloqueia aqui sozinha.')
+      if (r.ok && d.online) {
+        setAviso('PC ligado! O servidor está a comunicar com o teu Windows.')
+      } else {
+        setAviso('O PC está ligado ao servidor local. Podes usar as ferramentas.')
+      }
     } catch (e) {
-      setAviso(e.message || 'Não deu para ligar o PC.')
+      setAviso(e.message || 'Não deu para verificar o PC.')
     } finally {
       setALigarPc(false)
     }
@@ -433,18 +427,18 @@ export default function FerramentasPage() {
     }
   }
 
-  /* o site pergunta ao agente se o PC está ligado */
+  /* o site pergunta ao PC embutido se está ligado */
   const agenteAntes = useRef(false)
   const [pcLigado, setPcLigado] = useState(false)
   useEffect(() => {
     let vivo = true
     const atualizar = async () => {
       try {
-        const r = await fetch('/api/agente/estado', { headers: authHeaders() })
+        const r = await fetch('/api/pc/estado', { headers: authHeaders() })
         const d = await r.json().catch(() => ({}))
         if (!vivo || !r.ok) return
         const online = Boolean(d.online)
-        /* se o .bat acabou de ligar o PC, mostra o aviso */
+        /* se o PC acabou de ligar, mostra o aviso */
         if (online && !agenteAntes.current) {
           setPcLigado(true)
           setTimeout(() => setPcLigado(false), 5000)
@@ -601,7 +595,7 @@ export default function FerramentasPage() {
     const alvoJob = jobId || agente?.job?.id
     if (dados?.podeLocal === false && alvoJob) {
       try {
-        const r = await fetch(`/api/agente/jobs/${alvoJob}/cancelar`, {
+        const r = await fetch(`/api/pc/trabalhos/${alvoJob}/cancelar`, {
           method: 'POST',
           headers: authHeaders(),
         })
@@ -712,9 +706,9 @@ export default function FerramentasPage() {
               Ferramentas Windows
             </h1>
             <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
-              Esta página só abre com a app <b className="text-white">LOCAUS-PC</b> ligada
-              ao site. Descarrega, abre e clica em <b className="text-white">Ligar ao
-              site</b> — a página desbloqueia aqui sozinha.
+              Esta página precisa de falar com o teu Windows. O site está ligado ao PC
+              onde corre o servidor — clica em <b className="text-white">Ligar PC</b>
+              para desbloqueares as ferramentas.
             </p>
             <button
               type="button"
@@ -722,8 +716,8 @@ export default function FerramentasPage() {
               disabled={aLigarPc}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-violet-500 disabled:opacity-60"
             >
-              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              {aLigarPc ? 'A preparar…' : 'Descarregar a app LOCAUS-PC'}
+              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
+              {aLigarPc ? 'A verificar…' : 'Ligar PC'}
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
               A app é só tua: liga o teu Windows ao teu login do site. Ninguém vê as
@@ -751,6 +745,11 @@ export default function FerramentasPage() {
           </p>
         </motion.div>
 
+        {/* aviso: PC ligado ao servidor local */}
+        <div className="mb-4 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-[13px] text-violet-200">
+          <b>Modo local ativo.</b> O servidor corre no teu PC — as ferramentas executam diretamente no Windows.
+        </div>
+
         {/* aviso temporário: a app ligou o PC */}
         {pcLigado && (
           <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
@@ -758,7 +757,7 @@ export default function FerramentasPage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
             </span>
-            <span><b>PC ligado</b> — a app LOCAUS-PC está a comunicar com o site. Podes usar as ferramentas.</span>
+            <span><b>PC ligado</b> — o servidor está a comunicar com o teu Windows. Podes usar as ferramentas.</span>
           </div>
         )}
 

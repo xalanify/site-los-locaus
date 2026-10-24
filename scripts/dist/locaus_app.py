@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """LOCAUS PC — ligar o PC ao site (janela visível)."""
-import os, sys, json, time, base64, subprocess, threading, shutil, webbrowser
+import os, sys, json, time, base64, subprocess, threading, shutil
 import tkinter as tk
 from tkinter import ttk
 
 SITE = "https://locaus.vercel.app"
 TOKEN = os.environ.get("LOCAUS_TOKEN", "")
-VERSAO = "1.0"
+VERSAO = "1.1"
 
 def resource_path(rel):
     base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
@@ -36,13 +36,12 @@ def guardar_token(tok):
     except Exception:
         pass
 
-def pedir_token():
-    """Se não há token, abre o site para o user ligar (o site gera o token)."""
+def limpar_token():
+    """Remove o token guardado (sessão expirada)."""
     try:
-        webbrowser.open(SITE + "/ligar")
+        os.remove(os.path.expanduser("~/.locaus-token.json"))
     except Exception:
         pass
-    return False
 
 class App:
     def __init__(self, root):
@@ -50,12 +49,12 @@ class App:
         self.token = ler_token()
         guardar_token(self.token)
         self.proc = None
-        self.estado = "parado"   # parado | a_ligar | ligado | desligado
+        self.estado = "parado"   # parado | a_ligar | ligado | desligado | sem_token
         self.erro = ""
         self._build()
         if not self.token:
             self.estado = "sem_token"
-            self.erro = "Sem token. Abre o site para ligar."
+            self.erro = "Vai ao site → Ferramentas → 'Descarregar app' para renovar."
             self._tick()
             return
         self._iniciar()
@@ -105,12 +104,13 @@ class App:
                  "desligado": "#9ca3af", "sem_token": "#f87171"}
         textos = {"parado": "Parado", "a_ligar": "A ligar ao site…",
                   "ligado": "Ligado ao site ✓", "desligado": "Desligado",
-                  "sem_token": "Sem token"}
+                  "sem_token": "Sessão expirada"}
         self.lbl.configure(text=textos.get(self.estado, self.estado),
                            fg=cores.get(self.estado, "#9ca3af"))
         self.detalhe.configure(text=self.erro or {
             "ligado": "O site deteta este PC em segundos.",
             "a_ligar": "A comunicar…",
+            "sem_token": "Vai ao site → Ferramentas → 'Descarregar app' para renovar.",
         }.get(self.estado, ""))
         ligado = self.estado in ("ligado", "a_ligar")
         self.btn.configure(state="disabled" if ligado else "normal",
@@ -119,8 +119,7 @@ class App:
 
     def _iniciar(self):
         if not self.token:
-            self._set("sem_token", "Sem token. Clica para abrir o site e ligar.")
-            pedir_token()
+            self._set("sem_token", "Vai ao site → Ferramentas → 'Descarregar app' para renovar.")
             return
         self._set("a_ligar", "A arrancar o agente…")
         threading.Thread(target=self._run, daemon=True).start()
@@ -136,7 +135,10 @@ class App:
             if self.proc.poll() is None:
                 self._set("ligado", "")
             else:
-                self._set("desligado", "O agente terminou cedo. Verifica a internet.")
+                # o agente saiu cedo → provavelmente token expirado (401)
+                limpar_token()
+                self.token = ""
+                self._set("sem_token", "Sessão expirada. Vai ao site → Ferramentas → 'Descarregar app'.")
         except Exception as e:
             self._set("desligado", str(e))
 

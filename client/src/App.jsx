@@ -376,6 +376,8 @@ function App() {
                     <Route path="/pcs" element={<PcsPage />} />
                     {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}
                     <Route path="/ferramentas" element={<FerramentasPage />} />
+                    {/* /ligar: a app abria este endereço — manda para as ferramentas */}
+                    <Route path="/ligar" element={<Navigate to="/ferramentas" replace />} />
                     {/* InfoAoVivo (beta) — app nativo de overlays do PC */}
                     <Route path="/infoaovivo" element={<InfoAoVivoPage />} />
                     <Route path="/distincoes" element={<UpdatesPage />} />

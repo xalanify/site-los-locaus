@@ -2153,8 +2153,41 @@ foreach ($chave in $chaves) {
   if (Get-ItemProperty $chave -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" }) { $continua = $true }
 }
 if ($lugar -and (Test-Path $lugar)) { $continua = $true }
-if ($removido -and -not $continua) { Write-Output "=== ${f.nome}: [ok] saiu do PC ===" }
-elseif ($removido) { Write-Output "=== ${f.nome}: [!] quase - rebuçados alguns (reinicia e vê ou desinstala nas Definições) ===" }
+
+# 7b) SE continuar: 2ª PASSAGEM à força (estilo Revo) — mata processos,
+#     apaga pastas e registo outra vez, e verifica de novo
+if ($continua) {
+  Write-Output "  [força] 2ª passagem - a limpar os restos..."
+  if ($lugar) {
+    Get-Process -ErrorAction SilentlyContinue |
+      Where-Object { $_.Path -and $_.Path.StartsWith($lugar.TrimEnd('\'), [System.StringComparison]::OrdinalIgnoreCase) } |
+      Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 400
+    try { Remove-Item $lugar -Recurse -Force -ErrorAction Stop; Write-Output "  [força] pasta final removida: $lugar" } catch {}
+  }
+  foreach ($pasta in ($pastas | Select-Object -Unique)) {
+    if ($pasta -and (Test-Path $pasta)) {
+      try { Remove-Item $pasta -Recurse -Force -ErrorAction Stop; Write-Output "  [força] pasta removida: $pasta" } catch {}
+    }
+  }
+  foreach ($rg in @("HKLM:\\SOFTWARE\\$nb", "HKLM:\\SOFTWARE\\WOW6432Node\\$nb", "HKCU:\\Software\\$nb", "HKLM:\\SOFTWARE\\$cnome", "HKCU:\\Software\\$cnome")) {
+    if (Test-Path $rg) { try { Remove-Item $rg -Recurse -Force -ErrorAction Stop } catch {} }
+  }
+  foreach ($chave in $chaves) {
+    Get-ItemProperty $chave -ErrorAction SilentlyContinue |
+      Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" } |
+      ForEach-Object { try { Remove-Item -Path $_.PSPath -Recurse -Force -ErrorAction Stop } catch {} }
+  }
+  Start-Sleep -Milliseconds 300
+  $continua = $false
+  foreach ($chave in $chaves) {
+    if (Get-ItemProperty $chave -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" }) { $continua = $true }
+  }
+  if ($lugar -and (Test-Path $lugar)) { $continua = $true }
+}
+
+if (-not $continua) { Write-Output "=== ${f.nome}: [ok] saiu do PC (verificado) ===" }
+elseif ($removido) { Write-Output "=== ${f.nome}: [!] quase - ficou um resto (reinicia o PC e volta a desinstalar) ===" }
 else { Write-Output "=== ${f.nome}: [!] nao o encontrei - se for portable, a pasta foi procurada em Program Files/AppData/Downloads ===" }
 `;
   });

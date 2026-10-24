@@ -12,12 +12,16 @@
 //    reservado ao admin, que é quem responde por isso.
 // ============================================================
 const express = require('express');
-const { requireUser, requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireUser, requireUserOrAdmin } = require('../middleware/auth');
 const ferramentas = require('../ferramentas');
 const store = require('../usersStore');
 
 const router = express.Router();
 
+/* Ferramentas Windows — modo site (sem .exe obrigatório).
+   Admin logado via Supabase pode ver o catálogo e correr via API.
+   Execução real de scripts Windows ainda precisa do PC local
+   (o Vercel é Linux — não roda wmic/revo diretamente). */
 /* Quem correu — fica no registo de auditoria do painel admin.
    Sempre uma string curta, mesmo quando só há a sessão antiga. */
 function quem(req) {
@@ -41,7 +45,7 @@ async function eAdmin(req) {
   }
 }
 
-router.get('/', requireUser, async (req, res) => {
+router.get('/', requireUserOrAdmin, async (req, res) => {
   const admin = await eAdmin(req);
   res.json({
     podeLocal: ferramentas.podeLocal(),
@@ -51,7 +55,7 @@ router.get('/', requireUser, async (req, res) => {
   });
 });
 
-router.post('/run', requireUser, async (req, res) => {
+router.post('/run', requireUserOrAdmin, async (req, res) => {
   try {
     const { id, arg, acoes } = req.body || {};
     const admin = await eAdmin(req);
@@ -64,7 +68,7 @@ router.post('/run', requireUser, async (req, res) => {
 });
 
 // Pára a ferramenta que está a correr (mate o processo ou a tarefa)
-router.post('/stop', requireUser, (req, res) => {
+router.post('/stop', requireUserOrAdmin, (req, res) => {
   try {
     const r = ferramentas.parar();
     res.status(r.ok ? 200 : 400).json(r);
@@ -75,18 +79,18 @@ router.post('/stop', requireUser, (req, res) => {
 });
 
 // GET /api/ferramentas/instalados -> quais programas do catálogo já estão no PC
-router.get('/instalados', requireUser, async (req, res) => {
+router.get('/instalados', requireUserOrAdmin, async (req, res) => {
   const r = await ferramentas.detectarInstalados();
   res.status(r.ok ? 200 : 400).json(r);
 });
 
 // GET /api/ferramentas/discos -> letras dos discos fixos (seletor do scan de vírus)
-router.get('/discos', requireUser, (req, res) => {
+router.get('/discos', requireUserOrAdmin, (req, res) => {
   res.json(ferramentas.discosFixos());
 });
 
 // POST /api/ferramentas/desinstalar -> { ids: [...] } desinstala os selecionados (Revo)
-router.post('/desinstalar', requireUser, (req, res) => {
+router.post('/desinstalar', requireUserOrAdmin, (req, res) => {
   try {
     const { ids } = req.body || {};
     const r = ferramentas.desinstalar(Array.isArray(ids) ? ids : [], quem(req));
@@ -97,7 +101,7 @@ router.post('/desinstalar', requireUser, (req, res) => {
   }
 });
 
-router.get('/status', requireUser, (req, res) => {
+router.get('/status', requireUserOrAdmin, (req, res) => {
   res.json(ferramentas.estadoPublico());
 });
 

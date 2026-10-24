@@ -19,7 +19,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { requireUser } = require('../middleware/auth');
+const { requireUser, requireUserOrAdmin } = require('../middleware/auth');
 const agente = require('../agente');
 const store = require('../usersStore');
 
@@ -106,7 +106,7 @@ router.get('/script', (req, res) => {
   }
 });
 
-router.post('/sessao', requireUser, async (req, res) => {
+router.post('/sessao', requireUserOrAdmin, async (req, res) => {
   try {
     const uid = Number(req.auth.uid);
     if (!uid) return res.status(401).json({ error: 'Sessão sem conta.' });
@@ -123,7 +123,11 @@ router.post('/sessao', requireUser, async (req, res) => {
   }
 });
 
-router.get('/estado', requireUser, async (req, res) => {
+router.get('/ping', (req, res) => {
+  res.json({ ok: true, online: true, msg: 'PC conectado via .bat' })
+})
+
+router.get('/estado', requireUserOrAdmin, async (req, res) => {
   try {
     res.json(await agente.estado(Number(req.auth.uid)));
   } catch (e) {
@@ -148,36 +152,20 @@ router.get('/baixar', async (req, res) => {
   }
 });
 
-// Mini-app .exe (mesmo agente, mas com janela visível + botão Desligar).
-// O user descarrega um LOCAUS-PC.bat que lança o .exe já com o token —
-// assim não há nada para copiar: clica no .bat, abre a janela, fica ligado.
+// Mini-app .exe — serve o ficheiro diretamente (sem .bat intermediário).
+// O user clica no botão, descarrega o LOCAUS-PC.exe, abre-o e clica
+// "Ligar ao site" na janela da app.
 router.get('/baixar-exe', async (req, res) => {
   try {
     const token = String(req.query.token || '');
     const s = await agente.validarToken(token);
     if (!s) return res.status(401).type('text/plain').send('Sessao invalida ou expirada. Cria outra no site.');
-    const site = baseDoSite(req);
     const exe = path.join(__dirname, '..', 'LOCAUS-PC.exe');
     if (!fs.existsSync(exe)) return res.status(404).type('text/plain').send('O mini-app ainda nao esta disponivel.');
-    const exeBuf = fs.readFileSync(exe);
-    // Atalho: guarda o .exe ao lado e arranca com o token embutido.
-    const bat = [
-      '@echo off',
-      'title LOCAUS PC',
-      'setlocal',
-      'set "EXE=%~dp0LOCAUS-PC.exe"',
-      'if not exist "%EXE%" (',
-      '  echo A descarregar o LOCAUS-PC.exe (12 MB)...',
-      '  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $ProgressPreference=\'SilentlyContinue\'; Invoke-WebRequest -Uri (\'%SITE%/api/agente/exe?token=%TOKEN%\') -UseBasicParsing -OutFile (\'%EXE%\') -ErrorAction Stop } catch { exit 1 }"',
-      '  if errorlevel 1 ( echo Falhou o download do mini-app. Verifica a internet & pause & exit /b 1 )',
-      ')',
-      'start "" "%EXE%" --token=%TOKEN%',
-      'exit /b 0',
-    ].join('\r\n').replace('%SITE%', site).replace('%TOKEN%', token);
     res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', 'attachment; filename="LOCAUS-PC.bat"');
+    res.setHeader('Content-Disposition', 'attachment; filename="LOCAUS-PC.exe"');
     res.setHeader('Cache-Control', 'no-store');
-    res.send(Buffer.from(bat, 'ascii'));
+    res.send(fs.readFileSync(exe));
   } catch (e) {
     console.error('Agente /baixar-exe:', e);
     res.status(500).type('text/plain').send('Erro ao descarregar o mini-app.');

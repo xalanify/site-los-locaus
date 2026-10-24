@@ -23,6 +23,9 @@ import {
   AlertCircle,
   Search,
   Loader2,
+  TrendingUp,
+  Medal,
+  Sparkles,
 } from 'lucide-react'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
@@ -236,8 +239,7 @@ function GameChooser({ onPick }) {
       color: 'text-purple-400',
       ring: 'hover:border-purple-500',
       bg: 'bg-purple-500/10',
-      desc: 'Estatísticas — em desenvolvimento.',
-      emBreve: true,
+      desc: 'Estatísticas — pesquisa por nome de jogador (fortnite-api.com).',
     },
     {
       id: 'bf',
@@ -605,18 +607,173 @@ function SubAbaJogo({ jogo, aba, setAba }) {
 }
 
 function FortniteStats() {
+  const [query, setQuery] = useState('')
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const search = async (e) => {
+    e?.preventDefault()
+    const name = query.trim()
+    if (!name || loading) return
+    setLoading(true)
+    setError('')
+    setData(null)
+    try {
+      const r = await fetch(`/api/games/fortnite-player?name=${encodeURIComponent(name)}`)
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d?.ok) {
+        setError(d?.error || 'Jogador não encontrado ou erro na API.')
+        return
+      }
+      setData(d)
+    } catch {
+      setError('Sem resposta do servidor.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fmt = (v) => v == null ? '—' : Number(v).toLocaleString('pt-PT')
+
+  const Card = ({ label, valor, icon: Ic, cor = 'text-white' }) => (
+    <motion.div
+      className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      {Ic && <Ic className="mx-auto mb-1.5 h-5 w-5 opacity-80" />}
+      <p className={`font-display text-2xl font-black ${cor}`}>{valor}</p>
+      <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+    </motion.div>
+  )
+
+  const d = data?.data
+  const stats = d?.stats?.all?.overall
+  const br = d?.stats?.br?.overall
+  const zero = d?.stats?.zero_build?.overall
+
   return (
-    <div className="glass mx-auto max-w-xl rounded-2xl p-8 text-center">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-purple-500/15">
-        <Flame className="h-8 w-8 text-purple-400" />
-      </div>
-      <h2 className="gradient-text font-display text-xl font-black sm:text-2xl">Fortnite</h2>
-      <p className="mt-3 text-[13px] font-bold text-gray-400">
-        As estatísticas do Fortnite estão em desenvolvimento.
-      </p>
-      <p className="mt-1 text-[11px] text-gray-500">
-        Em breve: pesquisa por nome, vitórias, K/D, partidas por modo.
-      </p>
+    <div className="space-y-5">
+      {/* Search */}
+      <form onSubmit={search} className="glass mx-auto max-w-md rounded-2xl p-4">
+        <div className="flex items-center gap-2">
+          <Search className="h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Nome do jogador (ex: Ninja, Bugha...)"
+            className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none"
+            disabled={loading}
+          />
+          <button
+            type="submit"
+            disabled={loading || !query.trim()}
+            className="rounded-lg bg-purple-500/20 px-4 py-1.5 text-sm font-bold text-purple-300 hover:bg-purple-500/30 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Pesquisar'}
+          </button>
+        </div>
+        <p className="mt-2 text-[11px] text-gray-500 text-center">
+          Dados via <a href="https://fortnite-api.com" target="_blank" rel="noopener" className="underline hover:text-purple-400">fortnite-api.com</a> — perfis públicos apenas.
+        </p>
+        {error && (
+          <p className="mt-2 text-center text-sm text-red-400">{error}</p>
+        )}
+      </form>
+
+      {/* Results */}
+      {d && (
+        <div className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass rounded-2xl p-5"
+          >
+            <div className="flex flex-wrap items-center gap-4">
+              {d.account?.avatar && (
+                <img src={d.account.avatar} alt="" className="h-16 w-16 rounded-full object-cover" />
+              )}
+              <div>
+                <p className="font-display text-xl font-black text-white">
+                  {d.account.name}
+                </p>
+                <p className="text-sm text-gray-400">
+                  ID: {d.account.id} · Nível: {d.account.level ?? '—'}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {(stats || br || zero) && (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {stats && (
+                <>
+                  <Card label="Vitórias" valor={fmt(stats.wins)} icon={Trophy} cor="text-yellow-300" />
+                  <Card label="Partidas" valor={fmt(stats.matches)} icon={Gamepad2} />
+                  <Card label="K/D" valor={stats.kd?.toFixed(2) ?? '—'} icon={Target} cor="text-sky-300" />
+                  <Card label="Win %" valor={`${stats.winRate?.toFixed(1) ?? '—'}%`} icon={TrendingUp} cor="text-green-300" />
+                  <Card label="Kills" valor={fmt(stats.kills)} icon={Crosshair} cor="text-violet-300" />
+                  <Card label="Top 10" valor={fmt(stats.top10)} icon={Medal} cor="text-amber-300" />
+                  <Card label="K/partida" valor={stats.kpg?.toFixed(2) ?? '—'} icon={Sparkles} cor="text-purple-300" />
+                  <Card label="Minutos jogados" valor={fmt(stats.minutesPlayed)} icon={Clock} />
+                </>
+              )}
+            </div>
+          )}
+
+          {(br || zero) && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {br && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass rounded-2xl p-4 border border-emerald-500/30"
+                >
+                  <h4 className="mb-3 flex items-center gap-2 text-sm font-black text-emerald-300">
+                    <Target className="h-4 w-4" /> Battle Royale
+                  </h4>
+                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                    <div><p className="font-black text-white">{fmt(br.wins)}</p><p className="text-[10px] text-gray-500">Vitórias</p></div>
+                    <div><p className="font-black text-sky-300">{br.kd?.toFixed(2) ?? '—'}</p><p className="text-[10px] text-gray-500">K/D</p></div>
+                    <div><p className="font-black text-violet-300">{fmt(br.kills)}</p><p className="text-[10px] text-gray-500">Kills</p></div>
+                    <div><p className="font-black text-green-300">{br.winRate?.toFixed(1) ?? '—'}%</p><p className="text-[10px] text-gray-500">Win%</p></div>
+                  </div>
+                </motion.div>
+              )}
+              {zero && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass rounded-2xl p-4 border border-purple-500/30"
+                >
+                  <h4 className="mb-3 flex items-center gap-2 text-sm font-black text-purple-300">
+                    <Sparkles className="h-4 w-4" /> Zero Build
+                  </h4>
+                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                    <div><p className="font-black text-white">{fmt(zero.wins)}</p><p className="text-[10px] text-gray-500">Vitórias</p></div>
+                    <div><p className="font-black text-sky-300">{zero.kd?.toFixed(2) ?? '—'}</p><p className="text-[10px] text-gray-500">K/D</p></div>
+                    <div><p className="font-black text-violet-300">{fmt(zero.kills)}</p><p className="text-[10px] text-gray-500">Kills</p></div>
+                    <div><p className="font-black text-green-300">{zero.winRate?.toFixed(1) ?? '—'}%</p><p className="text-[10px] text-gray-500">Win%</p></div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          )}
+
+          {!stats && !br && !zero && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass rounded-2xl p-6 text-center text-gray-400"
+            >
+              <Target className="mx-auto mb-2 h-7 w-7 text-gray-500" />
+              <p>Este jogador não tem estatísticas públicas disponíveis.</p>
+            </motion.div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -1735,9 +1892,14 @@ const maxRankDe = (p, rp) => {
 function R6Squad({ players, maxRp = {} }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <Users className="h-5 w-5 text-violet-400" />
-        <h4 className="text-lg font-bold text-white sm:text-xl">Esquadrão</h4>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Users className="h-5 w-5 text-violet-400" />
+          <h4 className="text-lg font-bold text-white sm:text-xl">Esquadrão</h4>
+        </div>
+        <span className="text-[11px] text-gray-500 shrink-0">
+          Fonte: tracker.gg (manual) · clica em refresh se atualizares o JSON
+        </span>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {players.map((p, i) => {
@@ -1754,7 +1916,7 @@ function R6Squad({ players, maxRp = {} }) {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 * i }}
-              className="rounded-xl bg-white/5 p-4"
+              className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
             >
               <div className="mb-3 flex items-center gap-3">
                 {p.avatar ? (
@@ -1789,28 +1951,28 @@ function R6Squad({ players, maxRp = {} }) {
                   />
                 )}
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div>
+              <div className="grid grid-cols-6 gap-2 text-center text-xs mb-2">
+                <div className="col-span-2">
                   <div className="font-black text-white">{fmt(ov.matchesPlayed || 0)}</div>
                   <div className="text-gray-500">Partidas</div>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <div className="font-black text-violet-400">{wr}%</div>
                   <div className="text-gray-500">Vitórias</div>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <div className="font-black text-yellow-400">{ov.kdRatio ?? '—'}</div>
                   <div className="text-gray-500">K/D</div>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <div className="font-black text-green-400">{ov.killsPerMatch ?? '—'}</div>
                   <div className="text-gray-500">K/partida</div>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <div className="font-black text-purple-400">{fmt(ov.kills || 0)}</div>
                   <div className="text-gray-500">Kills</div>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <div className="font-black text-blue-400">{fmtSecs(ov.timePlayed || 0)}</div>
                   <div className="text-gray-500">Tempo</div>
                 </div>
@@ -1849,9 +2011,9 @@ function R6Squad({ players, maxRp = {} }) {
           )
         })}
       </div>
-      <p className="mt-4 text-xs text-gray-500">
+      <p className="mt-4 text-center text-xs text-gray-500">
         Nível, rank da temporada, rank máximo e números de carreira de cada membro — só o
-        esquadrão.
+        esquadrão. Dados do <code className="text-violet-400">server/data/r6.json</code> (export do tracker.gg).
       </p>
     </div>
   )
@@ -1985,12 +2147,12 @@ function R6Stats() {
     <div className="space-y-6">
       {/* estado da atualização — engine Ubisoft (open source) */}
       {d.auto?.ligado ? (
-        <div className="flex items-center gap-2.5 rounded-xl border border-green-500/25 bg-green-500/5 px-4 py-2.5 text-[13px] text-gray-300">
+        <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-green-500/25 bg-green-500/5 px-4 py-2.5 text-[13px] text-gray-300">
           <span className="relative inline-flex h-2.5 w-2.5 place-items-center">
             <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-green-400 opacity-60" />
             <span className="h-2 w-2 rounded-full bg-green-400" />
           </span>
-          <span>
+          <span className="flex-1 min-w-0">
             Estatísticas <span className="font-bold text-green-400">automáticas</span> — API da
             Ubisoft (open source SwiftCODA/R6-API)
             {d.auto.intervaloMin
@@ -2001,11 +2163,18 @@ function R6Stats() {
               ? ` · dados ${new Date(d.updatedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
               : ''}
           </span>
+          <button
+            onClick={load}
+            className="rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-gray-300 hover:bg-white/10 shrink-0"
+            title="Atualizar agora"
+          >
+            <RotateCcw className="inline h-3 w-3 mr-1" /> Refresh
+          </button>
         </div>
       ) : d.auto?.credencial ? (
-        <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-gray-300">
+        <div className="flex flex-wrap items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-gray-300">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
-          <p>
+          <p className="flex-1 min-w-0">
             <span className="font-bold text-white">R6 automático (API da Ubisoft):</span> conta
             ligada — a sincronizar.{' '}
             {d.auto?.ultimoErro
@@ -2014,11 +2183,18 @@ function R6Stats() {
             A Ubisoft limita pedidos por hora (e antigos do tracker ficam como recuo até a primeira
             sincronização chegar).
           </p>
+          <button
+            onClick={load}
+            className="rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-gray-300 hover:bg-white/10"
+            title="Forçar nova sincronização"
+          >
+            <RotateCcw className="inline h-3 w-3 mr-1" /> Sync
+          </button>
         </div>
       ) : (
-        <div className="flex items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
+        <div className="flex flex-wrap items-start gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-sm text-gray-300">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-          <p>
+          <p className="flex-1 min-w-0">
             <span className="font-bold text-white">R6 automático (API da Ubisoft):</span> falta só a
             conta — cria uma conta Ubisoft gratuita, coloca{' '}
             <code className="text-violet-300">UBI_EMAIL=...</code> e{' '}
@@ -2027,6 +2203,13 @@ function R6Stats() {
             atualiza o esquadrão sozinho (open source SwiftCODA/R6-API) — sem tracker.gg nem
             carregamentos manuais.
           </p>
+          <button
+            onClick={load}
+            className="rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-gray-300 hover:bg-white/10"
+            title="Recarregar dados do tracker.gg"
+          >
+            <RotateCcw className="inline h-3 w-3 mr-1" /> Refresh
+          </button>
         </div>
       )}
 

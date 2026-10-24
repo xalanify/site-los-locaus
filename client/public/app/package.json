@@ -1,0 +1,1 @@
+{"name":"locaus-pc","version":"1.0.0","main":"main.js","scripts":{"start":"electron .","build":"electron-builder --win"},"build":{"win":{"target":"nsis"}},"dependencies":{"electron":"^25.0.0"}}

@@ -20,7 +20,7 @@ const { getDb } = require('./database');
 const ferramentas = require('./ferramentas');
 
 const SESSAO_MS = 12 * 60 * 60 * 1000; // 12 h
-const ONLINE_MS = 25 * 1000; // agente conta como ligado se falou nos últimos 25 s
+const ONLINE_MS = 90 * 1000; // agente conta como ligado se falou nos últimos 90 s
 
 const hashToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
 
