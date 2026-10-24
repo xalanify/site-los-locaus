@@ -640,16 +640,23 @@ async function fortniteStats(nome) {
 router.get('/fortnite', async (req, res) => {
   try {
     const token = (process.env.FORTNITE_API_TOKEN || '').trim();
-    if (!token) {
-      return res.status(503).json({ ok: false, error: 'Falta a FORTNITE_API_TOKEN.' });
-    }
+    // snapshot do tracker.gg (importado no admin) — complementa a API
+    let trn = {};
+    try {
+      const snap = await require('../fortnitestore').ler();
+      if (snap && snap.jogadores) trn = snap.jogadores;
+    } catch { /* sem snapshot */ }
     const jogadores = await Promise.all(
       FORTNITE_FIXOS.map(async (nome) => {
+        const tracker = trn[String(nome).toLowerCase()] || null;
+        if (!token) {
+          return { nome, ok: false, data: null, tracker };
+        }
         try {
           const data = await fortniteStats(nome);
-          return { nome, ok: Boolean(data), data };
+          return { nome, ok: Boolean(data), data, tracker };
         } catch {
-          return { nome, ok: false, data: null };
+          return { nome, ok: false, data: null, tracker };
         }
       }),
     );
@@ -769,6 +776,46 @@ function parsePreco(txt) {
   return Number.isFinite(n) ? n : null;
 }
 
+/* Preços de mercado em EUR via Skinport (uma tabela para todos os
+   itens). A Steam limita muito o priceoverview (429), por isso esta
+   tabela é a fonte principal e a Steam fica só como recurso. */
+const SKINPORT_TTL = 6 * 3600 * 1000;
+const skinport = { t: 0, mapa: null, aCarregar: null };
+
+async function tabelaSkinport() {
+  if (skinport.mapa && Date.now() - skinport.t < SKINPORT_TTL) return skinport.mapa;
+  if (skinport.aCarregar) return skinport.aCarregar;
+  skinport.aCarregar = (async () => {
+    for (let tentativa = 0; tentativa < 2; tentativa++) {
+      try {
+        const r = await fetch('https://api.skinport.com/v1/items?app_id=730&currency=EUR', {
+          headers: { 'User-Agent': 'SiteLosLocaus/1.0', Accept: 'application/json' },
+          signal: AbortSignal.timeout(20000),
+        });
+        if (!r.ok) throw new Error('skinport ' + r.status);
+        const lista = await r.json();
+        const mapa = new Map();
+        for (const it of Array.isArray(lista) ? lista : []) {
+          const nome = it && it.market_hash_name;
+          if (!nome) continue;
+          const v = Number(it.min_price ?? it.suggested_price ?? it.median_price);
+          if (Number.isFinite(v) && v > 0) mapa.set(nome, v);
+        }
+        skinport.mapa = mapa;
+        skinport.t = Date.now();
+        return mapa;
+      } catch (e) {
+        console.warn(`Skinport preços (tentativa ${tentativa + 1}):`, e.message);
+        if (tentativa === 0) await new Promise((ok) => setTimeout(ok, 400));
+      }
+    }
+    return skinport.mapa || new Map();
+  })().finally(() => {
+    skinport.aCarregar = null;
+  });
+  return skinport.aCarregar;
+}
+
 async function precoItem(hash) {
   const c = PRICE_CACHE.get(hash);
   if (c && Date.now() - c.t < 6 * 3600 * 1000) return c.v;
@@ -834,20 +881,32 @@ router.get('/cs2-inventario', async (req, res) => {
       cont.set(k, cur);
     }
 
-    // preços dos itens negociáveis (até 30 únicos, 4 em paralelo)
-    const lista = [...cont.values()].filter((x) => x.marketable).slice(0, 30);
-    const fila = [...lista];
+    // preços: tabela Skinport (EUR) e, só para o que faltar, a Steam
+    const tabela = cont.size ? await tabelaSkinport() : new Map();
+    const mercaveis = [...cont.values()].filter((x) => x.marketable);
+    const semTabela = mercaveis.filter((x) => !tabela.has(x.nome)).slice(0, 8);
+
     const precos = [];
-    const trabalhadores = Array.from({ length: 4 }, async () => {
-      while (fila.length) {
-        const it = fila.shift();
-        const v = await precoItem(it.nome);
-        if (v != null) precos.push({ ...it, preco: v, total: Number((v * it.qtd).toFixed(2)) });
-      }
-    });
-    await Promise.all(trabalhadores);
+    const precoPorNome = new Map();
+    for (const it of mercaveis) {
+      let v = tabela.get(it.nome);
+      if (v == null && semTabela.includes(it)) v = await precoItem(it.nome);
+      if (v == null) continue;
+      const linha = { ...it, preco: v, total: Number((v * it.qtd).toFixed(2)) };
+      precos.push(linha);
+      precoPorNome.set(it.nome, linha);
+    }
     precos.sort((a, b) => b.total - a.total);
     const valor = precos.reduce((s, x) => s + x.total, 0);
+
+    // lista completa (com preço quando existe), para o modal
+    const itens = [...cont.values()]
+      .map((it) => {
+        const pr = precoPorNome.get(it.nome);
+        return { ...it, preco: pr ? pr.preco : null, total: pr ? pr.total : null };
+      })
+      .sort((a, b) => (b.total || 0) - (a.total || 0) || b.qtd - a.qtd)
+      .slice(0, 240);
 
     const payload = {
       ok: true,
@@ -857,9 +916,12 @@ router.get('/cs2-inventario', async (req, res) => {
       avaliados: precos.length,
       valorEstimado: Number(valor.toFixed(2)),
       moeda: 'EUR',
+      fonte: 'Skinport (mercado)',
       topItens: precos.slice(0, 24),
-      itens: [...cont.values()].sort((a, b) => b.qtd - a.qtd).slice(0, 80),
-      parcial: cont.size > precos.length,
+      itens,
+      itensListados: itens.length,
+      parcial: mercaveis.length > precos.length,
+      semPreco: Math.max(0, mercaveis.length - precos.length),
     };
     INV_CACHE.set(steamid, { t: Date.now(), v: payload });
     res.json(payload);

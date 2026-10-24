@@ -681,8 +681,134 @@ function extrairApi(conteudo) {
   }
 }
 
+/* ============================================================
+   Operadores (página "Operators Stats" do tracker.gg)
+   ------------------------------------------------------------
+   Cada operador é uma <tr data-key="Ash-...-all-43"> (temporada)
+   ou "...-all-all" (todas as seasons). Os valores estão em
+   <span class="truncate"> dentro de cada <td>.
+   Ordem: Operador, Rounds, Win%, K/D, HS%, Wins, Losses,
+          Kills, Deaths, Assists, Aces, TKs.
+   ============================================================ */
+function parseOperators(html) {
+  const rows = [...html.matchAll(/<tr[^>]*data-key="([^"]+)"[^>]*>([\s\S]*?)<\/tr>/gi)];
+  if (!rows.length) return null;
+  const out = [];
+  for (const r of rows) {
+    const key = r[1];
+    const tds = r[2].split(/<td[\s>]/).slice(1);
+    const cells = tds.map((td) => {
+      const m = td.match(/<span[^>]*class="truncate"[^>]*>([\s\S]*?)<\/span>/);
+      return m ? m[1].replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
+    });
+    if (!cells[0]) continue;
+    out.push({
+      nome: cells[0],
+      rounds: numDe(cells[1]),
+      win: cells[2] || null,
+      kd: numDe(cells[3]),
+      hs: cells[4] || null,
+      wins: numDe(cells[5]),
+      losses: numDe(cells[6]),
+      kills: numDe(cells[7]),
+      deaths: numDe(cells[8]),
+      assists: numDe(cells[9]),
+      aces: numDe(cells[10]),
+      tks: numDe(cells[11]),
+      allTime: /-all-all$/i.test(key),
+    });
+  }
+  return out;
+}
+
+/* handle do jogador a partir do <title> das páginas do tracker.gg */
+function handleDoTitulo(html) {
+  const t = String(html || '').match(/<title>([^<]*)<\/title>/i);
+  if (!t) return null;
+  const m = t[1].match(/^(.+?)'s\b/i);
+  return m ? m[1].trim() : null;
+}
+
+/* ============================================================
+   Importação da página "Operators Stats" (temporada ou all time)
+   ============================================================ */
+async function importarOperadores(html, handle) {
+  const ops = parseOperators(html);
+  if (!ops || !ops.length) {
+    return { ok: false, erro: 'Não encontrei a tabela de operadores neste ficheiro.' };
+  }
+  const total = ops.length;
+  const allTime = ops.every((o) => o.allTime);
+  const lista = ops
+    .map(({ allTime: _ignorar, ...resto }) => resto)
+    .sort((a, b) => (b.rounds || 0) - (a.rounds || 0));
+
+  const dados = (await r6store.ler()) || { players: [] };
+  if (!Array.isArray(dados.players)) dados.players = [];
+
+  const chave = String(handle).toLowerCase();
+  let p = dados.players.find(
+    (x) =>
+      String(x.key || x.handle || '').toLowerCase() === chave ||
+      String(x.handle || '').toLowerCase() === chave,
+  );
+  let novo = false;
+  if (!p) {
+    p = {
+      key: chave,
+      id: handle,
+      handle,
+      avatar: null,
+      level: null,
+      season: null,
+      rank: null,
+      overview: {},
+      modes: [],
+      maxRank: null,
+    };
+    dados.players.push(p);
+    novo = true;
+  }
+
+  const season = allTime ? null : temporadaVisivel(html);
+  const registo = {
+    season,
+    total,
+    ops: lista,
+    importadoEm: new Date().toISOString(),
+  };
+  if (allTime) p.operatorsAllTime = registo;
+  else p.operatorsSeason = registo;
+
+  dados.source = 'import';
+  dados.updatedAt = new Date().toISOString();
+  await r6store.guardar(dados);
+  estado.atualizacoes++;
+
+  return {
+    ok: true,
+    tipo: allTime ? 'operadores (todas as seasons)' : `operadores (${season || 'temporada'})`,
+    handle,
+    novo,
+    total,
+    temporada: season,
+    allTime,
+  };
+}
+
 async function importarJson(conteudo) {
   try {
+    // páginas de operadores têm uma tabela própria (operators-table)
+    if (
+      typeof conteudo === 'string' &&
+      (/operators-table/i.test(conteudo) ||
+        (/Operators Stats/i.test(conteudo) &&
+          /data-key="[^"]*-all-(all|\d+)"/i.test(conteudo)))
+    ) {
+      const handleOp = handleDoTitulo(conteudo);
+      if (handleOp) return await importarOperadores(conteudo, handleOp);
+    }
+
     const api = extrairApi(conteudo);
     if (!api) {
       return { ok: false, erro: 'Não encontrei dados do jogador (platformInfo) neste ficheiro.' };

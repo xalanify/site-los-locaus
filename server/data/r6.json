@@ -1,2447 +1,4015 @@
 {
   "source": "import",
-  "updatedAt": "2026-10-16T21:16:27.047Z",
+  "matches": [
+    {
+      "dc": "EU WEST 3",
+      "id": "69305715-1450-4999-9104-8ff822cfb476",
+      "rl": 2,
+      "rw": 4,
+      "ts": "2026-10-01T23:01:32.971+00:00",
+      "dur": 1645176,
+      "map": "Lair",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/lair.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 2,
+          "d": 4,
+          "k": 3,
+          "hs": 1,
+          "rp": 2041,
+          "sc": 4,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 4,
+          "k": 7,
+          "hs": 2,
+          "rp": 2700,
+          "sc": 4,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU West",
+      "id": "f03aa4d6-65c0-4dc9-947f-fae50ba288e8",
+      "rl": 5,
+      "rw": 4,
+      "ts": "2026-09-27T19:41:24.622+00:00",
+      "dur": 2250069,
+      "map": "Villa",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 4,
+          "d": 8,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 0,
+          "d": 8,
+          "k": 7,
+          "hs": 2,
+          "rp": null,
+          "sc": 4,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "7bead179-300f-4ef0-bead-2c03264ca526",
+      "rl": 3,
+      "rw": 1,
+      "ts": "2026-09-27T15:57:02.472+00:00",
+      "dur": 952952,
+      "map": "Villa",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "loss",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 2,
+          "d": 4,
+          "k": 7,
+          "hs": 2,
+          "rp": null,
+          "sc": 1,
+          "key": "xalanix-"
+        },
+        {
+          "a": 1,
+          "d": 4,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 1,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 0,
+          "d": 3,
+          "k": 2,
+          "hs": 0,
+          "rp": null,
+          "sc": 1,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "f242fa2a-7671-411f-9506-980ace41c715",
+      "rl": 0,
+      "rw": 3,
+      "ts": "2026-09-27T15:40:04.666+00:00",
+      "dur": 736435,
+      "map": "Lair",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/lair.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 3,
+          "hs": 1,
+          "rp": null,
+          "sc": 3,
+          "key": "xalanix-"
+        },
+        {
+          "a": 0,
+          "d": 0,
+          "k": 3,
+          "hs": 3,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 0,
+          "d": 0,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "7d60497e-e128-40a7-a6f9-1196af08ba1a",
+      "rl": 0,
+      "rw": 3,
+      "ts": "2026-09-27T15:27:00.045+00:00",
+      "dur": 559941,
+      "map": "Nighthaven Labs",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 1,
+          "k": 3,
+          "hs": 2,
+          "rp": null,
+          "sc": 3,
+          "key": "xalanix-"
+        },
+        {
+          "a": 1,
+          "d": 0,
+          "k": 5,
+          "hs": 5,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 0,
+          "d": 1,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "d995606f-5f26-4bf2-bbc1-10cbd061a6e5",
+      "rl": 1,
+      "rw": 3,
+      "ts": "2026-09-27T15:15:59.506+00:00",
+      "dur": 790608,
+      "map": "Favela",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/favela.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 2,
+          "k": 8,
+          "hs": 6,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 0,
+          "d": 1,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "3a99e728-332e-45b5-bea6-dcd0056fe20b",
+      "rl": 4,
+      "rw": 5,
+      "ts": "2026-09-27T14:56:13.363+00:00",
+      "dur": 2449581,
+      "map": "Villa",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 0,
+          "d": 6,
+          "k": 10,
+          "hs": 8,
+          "rp": 2904,
+          "sc": 5,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "4ae8db45-7d55-4a6d-b12c-b4e4754a77f6",
+      "rl": 1,
+      "rw": 4,
+      "ts": "2026-09-26T11:44:52.629+00:00",
+      "dur": 1278011,
+      "map": "Border",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 0,
+          "d": 3,
+          "k": 3,
+          "hs": 1,
+          "rp": 2871,
+          "sc": 4,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "c6eae509-a932-4795-8c9e-dc12bc2640bf",
+      "rl": 4,
+      "rw": 2,
+      "ts": "2026-09-25T21:01:19.206+00:00",
+      "dur": 1733806,
+      "map": "Clubhouse",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
+      "result": "loss",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 0,
+          "d": 6,
+          "k": 2,
+          "hs": 0,
+          "rp": 2003,
+          "sc": 2,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 0,
+          "d": 5,
+          "k": 8,
+          "hs": 4,
+          "rp": null,
+          "sc": 2,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "34ea9424-f168-47ba-954f-8dc10bbfcb19",
+      "rl": 0,
+      "rw": 4,
+      "ts": "2026-09-25T20:31:33.655+00:00",
+      "dur": 963833,
+      "map": "Consulate",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 1,
+          "d": 0,
+          "k": 6,
+          "hs": 2,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 2,
+          "k": 9,
+          "hs": 8,
+          "rp": null,
+          "sc": 4,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "9cab506c-d744-4189-9442-17d230b46ed8",
+      "rl": 4,
+      "rw": 1,
+      "ts": "2026-09-25T20:11:46.995+00:00",
+      "dur": 1333711,
+      "map": "Coastline",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/coastline.jpg",
+      "result": "loss",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 1,
+          "d": 5,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 1,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 5,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 1,
+          "key": "xalanix-"
+        },
+        {
+          "a": 0,
+          "d": 5,
+          "k": 3,
+          "hs": 3,
+          "rp": 2837,
+          "sc": 1,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "381a9bc5-13f6-43b6-bbca-414951260aa0",
+      "rl": 1,
+      "rw": 4,
+      "ts": "2026-09-25T19:48:46.443+00:00",
+      "dur": 1235680,
+      "map": "Border",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 0,
+          "d": 1,
+          "k": 4,
+          "hs": 4,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 3,
+          "k": 8,
+          "hs": 7,
+          "rp": null,
+          "sc": 4,
+          "key": "xalanix-"
+        },
+        {
+          "a": 1,
+          "d": 2,
+          "k": 2,
+          "hs": 2,
+          "rp": null,
+          "sc": 4,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "41379652-264f-45dd-b72b-62ee158a220b",
+      "rl": 3,
+      "rw": 1,
+      "ts": "2026-09-24T20:22:09.262+00:00",
+      "dur": 879362,
+      "map": "Bank",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/bank.jpg",
+      "result": "loss",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 4,
+          "k": 2,
+          "hs": 2,
+          "rp": null,
+          "sc": 1,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 4,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 1,
+          "key": "xalanix-"
+        },
+        {
+          "a": 0,
+          "d": 4,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 1,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 1,
+          "d": 4,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 1,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "07f9d053-e779-49f9-b076-99f3b09f3857",
+      "rl": 0,
+      "rw": 3,
+      "ts": "2026-09-24T20:06:35.669+00:00",
+      "dur": 714992,
+      "map": "Yacht",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/yacht.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 2,
+          "k": 5,
+          "hs": 1,
+          "rp": null,
+          "sc": 3,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 2,
+          "d": 1,
+          "k": 5,
+          "hs": 4,
+          "rp": null,
+          "sc": 3,
+          "key": "xalanix-"
+        },
+        {
+          "a": 1,
+          "d": 2,
+          "k": 4,
+          "hs": 4,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 2,
+          "d": 3,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "6a50d7ea-f960-4476-8815-6e49e1d4c984",
+      "rl": 0,
+      "rw": 0,
+      "ts": "2026-09-24T19:58:42.175+00:00",
+      "dur": 1309477,
+      "map": "Border",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "draw",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 0,
+          "d": 0,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 0,
+          "d": 0,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "xalanix-"
+        },
+        {
+          "a": 0,
+          "d": 0,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "d943fabf-48f4-4d80-a125-d0c7cb8217f4",
+      "rl": 1,
+      "rw": 3,
+      "ts": "2026-09-24T19:54:03.047+00:00",
+      "dur": 721780,
+      "map": "Fortress",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/fortress.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 4,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 2,
+          "k": 8,
+          "hs": 5,
+          "rp": null,
+          "sc": 3,
+          "key": "xalanix-"
+        },
+        {
+          "a": 1,
+          "d": 1,
+          "k": 3,
+          "hs": 2,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        },
+        {
+          "a": 2,
+          "d": 1,
+          "k": 3,
+          "hs": 1,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "394cec5d-8076-4f94-b961-0efe565ba39f",
+      "rl": 4,
+      "rw": 2,
+      "ts": "2026-09-14T19:32:28.153+00:00",
+      "dur": 1597618,
+      "map": "Kafe Dostoyevsky",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
+      "result": "loss",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 1,
+          "d": 4,
+          "k": 5,
+          "hs": 3,
+          "rp": null,
+          "sc": 2,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 1,
+          "d": 5,
+          "k": 2,
+          "hs": 2,
+          "rp": null,
+          "sc": 2,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "17ef798b-e6d7-4777-a068-253d28ef81f6",
+      "rl": 1,
+      "rw": 4,
+      "ts": "2026-09-14T19:04:56.03+00:00",
+      "dur": 1283458,
+      "map": "Clubhouse",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
+      "result": "win",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 5,
+          "hs": 4,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        },
+        {
+          "a": 0,
+          "d": 3,
+          "k": 5,
+          "hs": 4,
+          "rp": null,
+          "sc": 4,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "24137b1e-0df3-46d7-b065-359c95a59449",
+      "rl": 2,
+      "rw": 2,
+      "ts": "2026-09-14T18:42:04.354+00:00",
+      "dur": 1381582,
+      "map": "Chalet",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "draw",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 3,
+          "k": 3,
+          "hs": 0,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "22b2a3f1-10c2-4100-b8bd-0aa3fb5c471f",
+      "rl": 0,
+      "rw": 2,
+      "ts": "2026-09-14T18:26:41.011+00:00",
+      "dur": 1218493,
+      "map": "Villa",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "win",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 0,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "04a994b5-bd8a-49a1-a062-46f296aa6b1f",
+      "rl": 2,
+      "rw": 0,
+      "ts": "2026-09-13T21:27:41.399+00:00",
+      "dur": 951442,
+      "map": "Chalet",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 0,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "3024c716-1370-421c-98f2-7d8543b23d94",
+      "rl": 2,
+      "rw": 0,
+      "ts": "2026-09-13T11:09:14.162+00:00",
+      "dur": 1222525,
+      "map": "Clubhouse",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 3,
+          "k": 1,
+          "hs": 1,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "e9a3152d-2362-485a-b4ce-29cdf0b15f06",
+      "rl": 4,
+      "rw": 1,
+      "ts": "2026-09-13T10:48:06.304+00:00",
+      "dur": 995735,
+      "map": "Kafe Dostoyevsky",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 2,
+          "hs": 2,
+          "rp": null,
+          "sc": 1,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "1fe467c3-b1e4-4a2e-a13a-396599dd561c",
+      "rl": 2,
+      "rw": 0,
+      "ts": "2026-09-13T10:30:29.321+00:00",
+      "dur": 741813,
+      "map": "Villa",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 0,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "5f0918cb-0532-4aff-ad82-fea3e6036b58",
+      "rl": 3,
+      "rw": 1,
+      "ts": "2026-09-13T10:23:56.253+00:00",
+      "dur": 1197811,
+      "map": "Kafe Dostoyevsky",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 1,
+          "d": 3,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 2,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "ccb02dfe-4aa7-4632-932e-b278147ef290",
+      "rl": 2,
+      "rw": 0,
+      "ts": "2026-09-12T22:36:33.223+00:00",
+      "dur": 1166395,
+      "map": "Chalet",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 4,
+          "key": "m4xi01504"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "257ef16f-9552-4699-8621-1ee2fb2d829d",
+      "rl": 3,
+      "rw": 2,
+      "ts": "2026-09-11T21:53:08.043+00:00",
+      "dur": 1134981,
+      "map": "House",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/house.jpg",
+      "result": "loss",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 5,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 2,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "b600438f-a716-4098-b808-517a0bcd1a00",
+      "rl": 3,
+      "rw": 1,
+      "ts": "2026-09-11T21:33:05.675+00:00",
+      "dur": 929032,
+      "map": "Stadium Alpha",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/stadium-alpha.jpg",
+      "result": "loss",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 2,
+          "d": 4,
+          "k": 1,
+          "hs": 1,
+          "rp": null,
+          "sc": 1,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "f3dbdd5c-b001-435e-b5fe-18916b4277d8",
+      "rl": 0,
+      "rw": 3,
+      "ts": "2026-09-11T21:16:11.603+00:00",
+      "dur": 845833,
+      "map": "Oregon",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 0,
+          "d": 1,
+          "k": 6,
+          "hs": 3,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "2a70e81d-b8f9-48dd-91d9-45e725a72f1d",
+      "rl": 0,
+      "rw": 3,
+      "ts": "2026-09-11T21:01:09.913+00:00",
+      "dur": 688392,
+      "map": "Coastline",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/coastline.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 3,
+          "d": 3,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "c5fbf091-fe19-4195-aa02-2068bc3eea22",
+      "rl": 4,
+      "rw": 3,
+      "ts": "2026-09-10T23:16:51.175+00:00",
+      "dur": 1449187,
+      "map": "Chalet",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 6,
+          "k": 5,
+          "hs": 4,
+          "rp": null,
+          "sc": 3,
+          "key": "xalanix-"
+        },
+        {
+          "a": 1,
+          "d": 5,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 3,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "bdf474d2-476c-4d99-8433-190b6070c50f",
+      "rl": 4,
+      "rw": 1,
+      "ts": "2026-09-09T22:34:01.115+00:00",
+      "dur": 816406,
+      "map": "Border",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 4,
+          "hs": 3,
+          "rp": null,
+          "sc": 1,
+          "key": "xalana."
+        },
+        {
+          "a": 0,
+          "d": 4,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 1,
+          "key": "xandy_r6"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "d0e36829-dad0-4cec-a9c4-e0545cbe3561",
+      "rl": 4,
+      "rw": 2,
+      "ts": "2026-09-09T22:19:02.818+00:00",
+      "dur": 1028766,
+      "map": "Clubhouse",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 2,
+          "hs": 2,
+          "rp": null,
+          "sc": 2,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "27ed5ab0-a2ab-492a-b0e0-852891a5908c",
+      "rl": 3,
+      "rw": 4,
+      "ts": "2026-09-09T22:01:12.035+00:00",
+      "dur": 1273523,
+      "map": "Kafe Dostoyevsky",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
+      "result": "win",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 1,
+          "d": 5,
+          "k": 3,
+          "hs": 3,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "83040d2b-98c5-417c-b489-ee1edafac983",
+      "rl": 4,
+      "rw": 3,
+      "ts": "2026-09-09T21:38:30.2+00:00",
+      "dur": 1219909,
+      "map": "Oregon",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
+      "result": "loss",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 3,
+          "hs": 2,
+          "rp": null,
+          "sc": 3,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "972f3632-46dc-404f-bf9a-b6ad2495444b",
+      "rl": 3,
+      "rw": 4,
+      "ts": "2026-09-09T21:13:59.56+00:00",
+      "dur": 1189647,
+      "map": "Chalet",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "win",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 2,
+          "d": 3,
+          "k": 11,
+          "hs": 7,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "03ac550d-64fa-49fb-8223-96060c91ff1f",
+      "rl": 3,
+      "rw": 4,
+      "ts": "2026-09-09T20:53:39.233+00:00",
+      "dur": 1290883,
+      "map": "Chalet",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "win",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 0,
+          "d": 5,
+          "k": 6,
+          "hs": 3,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "9d1676ef-8d40-45d2-9e65-ef8e2059c89f",
+      "rl": 1,
+      "rw": 4,
+      "ts": "2026-09-09T20:31:36.552+00:00",
+      "dur": 799708,
+      "map": "Oregon",
+      "mode": "Event",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
+      "result": "win",
+      "modeKey": "event",
+      "players": [
+        {
+          "a": 1,
+          "d": 2,
+          "k": 2,
+          "hs": 0,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "143690a7-9f36-4c7b-bbf6-e24196d8b53e",
+      "rl": 0,
+      "rw": 1,
+      "ts": "2026-09-07T23:12:19.631+00:00",
+      "dur": 741250,
+      "map": "Theme Park",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/theme-park.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 0,
+          "d": 1,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "28ad5f84-bb25-43b6-8f1d-f49c2c7dff0b",
+      "rl": 4,
+      "rw": 2,
+      "ts": "2026-09-06T14:42:15.207+00:00",
+      "dur": 1559853,
+      "map": "Kafe Dostoyevsky",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 2,
+          "d": 5,
+          "k": 4,
+          "hs": 3,
+          "rp": null,
+          "sc": 2,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "1cedbfa9-8b11-4331-80bc-4cd5bd0005cb",
+      "rl": 5,
+      "rw": 4,
+      "ts": "2026-09-06T14:13:42.685+00:00",
+      "dur": 2505890,
+      "map": "Villa",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 4,
+          "d": 6,
+          "k": 12,
+          "hs": 7,
+          "rp": null,
+          "sc": 4,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "284fa09f-e427-4cc8-b115-67aa451a5c99",
+      "rl": 4,
+      "rw": 0,
+      "ts": "2026-09-06T13:31:13.583+00:00",
+      "dur": 967383,
+      "map": "Border",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 1,
+          "d": 4,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 0,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "984cef5f-c94e-44a4-9959-1e2e27b59494",
+      "rl": 5,
+      "rw": 4,
+      "ts": "2026-09-06T02:47:58.87+00:00",
+      "dur": 2306034,
+      "map": "Skyscraper",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/skyscraper.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 2,
+          "d": 8,
+          "k": 8,
+          "hs": 7,
+          "rp": null,
+          "sc": 4,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU West",
+      "id": "7b84d19b-bd5e-4c1c-bd51-3961f40dd5e4",
+      "rl": 3,
+      "rw": 5,
+      "ts": "2026-09-06T02:08:26.895+00:00",
+      "dur": 1927066,
+      "map": "Nighthaven Labs",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
+      "result": "win",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 5,
+          "hs": 2,
+          "rp": null,
+          "sc": 5,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU West",
+      "id": "f61c26b7-9217-4aab-bc16-9b6370062451",
+      "rl": 4,
+      "rw": 0,
+      "ts": "2026-09-04T22:34:29.921+00:00",
+      "dur": 936840,
+      "map": "Border",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 1,
+          "hs": 1,
+          "rp": null,
+          "sc": 0,
+          "key": "xalanix-"
+        },
+        {
+          "a": 0,
+          "d": 4,
+          "k": 1,
+          "hs": 1,
+          "rp": null,
+          "sc": 0,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "ebab1951-7498-41f8-b9a3-4be4f8ec82fd",
+      "rl": 4,
+      "rw": 1,
+      "ts": "2026-09-04T22:17:26.46+00:00",
+      "dur": 1413698,
+      "map": "Nighthaven Labs",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 7,
+          "hs": 4,
+          "rp": null,
+          "sc": 1,
+          "key": "xalanix-"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "f81c6695-d66a-4637-bd2f-5ae335e696fc",
+      "rl": 2,
+      "rw": 3,
+      "ts": "2026-09-04T21:52:23.611+00:00",
+      "dur": 1315694,
+      "map": "Fortress",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/fortress.jpg",
+      "result": "win",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 1,
+          "hs": 1,
+          "rp": null,
+          "sc": 4,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "7f55c2f4-22d8-4db0-a532-0ae79d9f6b58",
+      "rl": 2,
+      "rw": 2,
+      "ts": "2026-09-04T21:28:50.435+00:00",
+      "dur": 1398344,
+      "map": "House",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/house.jpg",
+      "result": "draw",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 2,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "25392857-02c5-4b6b-9436-4c3a596eea41",
+      "rl": 0,
+      "rw": 4,
+      "ts": "2026-09-04T21:03:29.536+00:00",
+      "dur": 976870,
+      "map": "Skyscraper",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/skyscraper.jpg",
+      "result": "win",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 1,
+          "d": 0,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 4,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "859bfceb-5450-48dc-ac9a-74bb13641afa",
+      "rl": 4,
+      "rw": 0,
+      "ts": "2026-09-03T22:45:41.041+00:00",
+      "dur": 862884,
+      "map": "Consulate",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 0,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "b2392554-c21e-4283-9d22-3c0424d22ef2",
+      "rl": 4,
+      "rw": 1,
+      "ts": "2026-09-03T21:20:14.608+00:00",
+      "dur": 1198524,
+      "map": "Consulate",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 5,
+          "k": 1,
+          "hs": 0,
+          "rp": null,
+          "sc": 1,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "f7a46fd9-fa70-423f-a854-6560f428a325",
+      "rl": 5,
+      "rw": 3,
+      "ts": "2026-09-03T20:24:20.484+00:00",
+      "dur": 2152010,
+      "map": "Border",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 3,
+          "d": 8,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 3,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "c83fd5d1-1908-45aa-9b7f-52168d8a687c",
+      "rl": 4,
+      "rw": 5,
+      "ts": "2026-09-03T19:45:43.347+00:00",
+      "dur": 2542788,
+      "map": "Nighthaven Labs",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
+      "result": "win",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 5,
+          "k": 7,
+          "hs": 3,
+          "rp": null,
+          "sc": 5,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU West",
+      "id": "fcd5c310-994c-4b85-82ab-0483ef749701",
+      "rl": 4,
+      "rw": 0,
+      "ts": "2026-09-03T19:02:33.578+00:00",
+      "dur": 912769,
+      "map": "Coastline",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/coastline.jpg",
+      "result": "loss",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 0,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "686ef66d-dedc-4d8b-b152-c73bcd78ffd6",
+      "rl": 2,
+      "rw": 4,
+      "ts": "2026-09-03T00:11:28.02+00:00",
+      "dur": 1374636,
+      "map": "Chalet",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
+      "result": "win",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 3,
+          "hs": 1,
+          "rp": null,
+          "sc": 4,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 3",
+      "id": "09f81b2d-b3a9-449c-8b43-7b4e89ac1231",
+      "rl": 0,
+      "rw": 4,
+      "ts": "2026-09-02T23:47:40.836+00:00",
+      "dur": 1026139,
+      "map": "Clubhouse",
+      "mode": "Unranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
+      "result": "win",
+      "modeKey": "standard",
+      "players": [
+        {
+          "a": 1,
+          "d": 3,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 4,
+          "key": "simao270413"
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "8572555b-5011-4f15-8b8a-5c3f9a746a39",
+      "rl": 1,
+      "rw": 3,
+      "ts": "2026-08-28T23:53:26.298+00:00",
+      "dur": 990841,
+      "map": "Presidential Plane",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/presidential-plane.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 1,
+          "d": 2,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 3,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "fda6210c-0fd2-4cd9-8aff-dd2e197a421f",
+      "rl": 0,
+      "rw": 3,
+      "ts": "2026-08-28T23:36:05.763+00:00",
+      "dur": 817371,
+      "map": "Nighthaven Labs",
+      "mode": "Quick Match",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
+      "result": "win",
+      "modeKey": "quick-match",
+      "players": [
+        {
+          "a": 0,
+          "d": 0,
+          "k": 7,
+          "hs": 4,
+          "rp": null,
+          "sc": 3,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU SOUTH 1",
+      "id": "011f3c71-f861-4641-ab51-669ec3829370",
+      "rl": 0,
+      "rw": 1,
+      "ts": "2026-08-05T14:52:44.363+00:00",
+      "dur": 507619,
+      "map": "Lair",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/lair.jpg",
+      "result": "win",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 4,
+          "d": 14,
+          "k": 22,
+          "hs": 7,
+          "rp": null,
+          "sc": 22,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "c08d8df8-2264-48bc-a81c-e30d7278d2e8",
+      "rl": 2,
+      "rw": 4,
+      "ts": "2026-07-31T16:15:20.661+00:00",
+      "dur": 1712778,
+      "map": "Fortress",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/fortress.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 2,
+          "d": 4,
+          "k": 4,
+          "hs": 1,
+          "rp": 3427,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "35300dca-609d-40f6-8d95-41079165efe4",
+      "rl": 1,
+      "rw": 4,
+      "ts": "2026-07-30T22:48:28.296+00:00",
+      "dur": 1473549,
+      "map": "Villa",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 1,
+          "d": 3,
+          "k": 6,
+          "hs": 4,
+          "rp": 3404,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "6780130a-d3ad-48f7-ba73-1ccbd1ea025f",
+      "rl": 2,
+      "rw": 4,
+      "ts": "2026-07-30T22:22:06.443+00:00",
+      "dur": 1750780,
+      "map": "Kafe Dostoyevsky",
+      "mode": "Ranked",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
+      "result": "win",
+      "modeKey": "ranked",
+      "players": [
+        {
+          "a": 0,
+          "d": 3,
+          "k": 15,
+          "hs": 5,
+          "rp": 3378,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "c345bdc0-ad04-4a34-b817-db4fcf3e4224",
+      "rl": 4,
+      "rw": 3,
+      "ts": "2026-07-18T14:18:49.093+00:00",
+      "dur": 949821,
+      "map": "Clubhouse",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
+      "result": "loss",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 3,
+          "hs": 2,
+          "rp": null,
+          "sc": 3,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "cf1ba4cf-2d2a-4a00-8f7e-d113ffe95880",
+      "rl": 2,
+      "rw": 4,
+      "ts": "2026-07-18T14:02:41.624+00:00",
+      "dur": 724645,
+      "map": "Outback",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
+      "result": "win",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU West",
+      "id": "36ba7294-b88a-4849-b9f2-5f1212c26b56",
+      "rl": 3,
+      "rw": 4,
+      "ts": "2026-07-18T13:48:39.256+00:00",
+      "dur": 1067333,
+      "map": "Consulate",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
+      "result": "win",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU Central",
+      "id": "6fa304ea-e92c-43e1-91a9-7f9620a88a56",
+      "rl": 4,
+      "rw": 0,
+      "ts": "2026-07-18T13:18:04.745+00:00",
+      "dur": 514401,
+      "map": "Outback",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
+      "result": "loss",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 4,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 0,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "4ec737a1-6085-47fd-a0a8-0fe236d6f972",
+      "rl": 0,
+      "rw": 2,
+      "ts": "2026-07-18T13:08:46.85+00:00",
+      "dur": 232843,
+      "map": "Oregon",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
+      "result": "win",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 0,
+          "k": 2,
+          "hs": 1,
+          "rp": null,
+          "sc": 3,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "7c790b9c-8aa5-46bd-a523-83214df6c638",
+      "rl": 2,
+      "rw": 4,
+      "ts": "2026-07-18T13:03:47.99+00:00",
+      "dur": 813454,
+      "map": "Outback",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
+      "result": "win",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 2,
+          "k": 4,
+          "hs": 2,
+          "rp": null,
+          "sc": 4,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    },
+    {
+      "dc": "EU WEST 2",
+      "id": "94755515-03eb-42dd-bf4a-b6385a1a5db9",
+      "rl": 0,
+      "rw": 1,
+      "ts": "2026-07-18T12:49:13.599+00:00",
+      "dur": 144145,
+      "map": "Outback",
+      "mode": "Arcade",
+      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
+      "result": "win",
+      "modeKey": "arcade",
+      "players": [
+        {
+          "a": 0,
+          "d": 0,
+          "k": 0,
+          "hs": 0,
+          "rp": null,
+          "sc": 1,
+          "key": "xalana."
+        }
+      ],
+      "surrender": false
+    }
+  ],
   "players": [
     {
-      "key": "xalana.",
       "id": "xalana.",
-      "handle": "xalana.",
-      "avatar": "https://ubisoft-avatars.akamaized.net/dc398379-b967-4d98-b295-9259b1d4f7d0/default_256_256.png",
-      "level": 191,
-      "season": 43,
+      "key": "xalana.",
       "rank": {
-        "season": "Y11S3",
-        "points": 0,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/unranked.png?v=5",
         "name": "NO RANK",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/unranked.png?v=5"
+        "points": 0,
+        "season": "Y11S3"
       },
-      "overview": {
-        "matchesPlayed": 840,
-        "matchesWon": 451,
-        "matchesLost": 343,
-        "matchesAbandoned": 46,
-        "kills": 5366,
-        "deaths": 4083,
-        "assists": 135,
-        "headshots": 1749,
-        "timePlayed": 1727874,
-        "kdRatio": 1.31,
-        "killsPerMatch": 6.4
-      },
+      "level": 191,
       "modes": [
         {
           "name": "Ranked",
           "stats": {
-            "matchesPlayed": 491,
-            "matchesWon": 272,
-            "matchesLost": 217,
             "kills": 2546,
             "deaths": 2048,
-            "timePlayed": 0,
             "kdRatio": 1.24,
-            "killsPerMatch": 5.19
+            "matchesWon": 272,
+            "timePlayed": 0,
+            "matchesLost": 217,
+            "killsPerMatch": 5.19,
+            "matchesPlayed": 491
           }
         },
         {
           "name": "Arcade",
           "stats": {
-            "matchesPlayed": 109,
-            "matchesWon": 51,
-            "matchesLost": 32,
             "kills": 1533,
             "deaths": 1152,
-            "timePlayed": 0,
             "kdRatio": 1.33,
-            "killsPerMatch": 14.06
+            "matchesWon": 51,
+            "timePlayed": 0,
+            "matchesLost": 32,
+            "killsPerMatch": 14.06,
+            "matchesPlayed": 109
           }
         },
         {
           "name": "Event",
           "stats": {
-            "matchesPlayed": 25,
-            "matchesWon": 13,
-            "matchesLost": 12,
             "kills": 178,
             "deaths": 135,
-            "timePlayed": 0,
             "kdRatio": 1.32,
-            "killsPerMatch": 7.12
+            "matchesWon": 13,
+            "timePlayed": 0,
+            "matchesLost": 12,
+            "killsPerMatch": 7.12,
+            "matchesPlayed": 25
           }
         },
         {
           "name": "Unranked + Quick Match",
           "stats": {
-            "matchesPlayed": 211,
-            "matchesWon": 114,
-            "matchesLost": 80,
             "kills": 1088,
             "deaths": 729,
-            "timePlayed": 0,
             "kdRatio": 1.49,
-            "killsPerMatch": 5.16
+            "matchesWon": 114,
+            "timePlayed": 0,
+            "matchesLost": 80,
+            "killsPerMatch": 5.16,
+            "matchesPlayed": 211
           }
         },
         {
           "name": "Dual Front",
           "stats": {
-            "matchesPlayed": 4,
-            "matchesWon": 1,
-            "matchesLost": 2,
             "kills": 21,
             "deaths": 19,
-            "timePlayed": 0,
             "kdRatio": 1.11,
-            "killsPerMatch": 5.25
+            "matchesWon": 1,
+            "timePlayed": 0,
+            "matchesLost": 2,
+            "killsPerMatch": 5.25,
+            "matchesPlayed": 4
           }
         }
       ],
+      "avatar": "https://ubisoft-avatars.akamaized.net/dc398379-b967-4d98-b295-9259b1d4f7d0/default_256_256.png",
+      "handle": "xalana.",
+      "season": 43,
       "maxRank": {
-        "name": "EMERALD III",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/emerald-3.png?v=5",
         "rp": 3753,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/emerald-3.png?v=5",
+        "name": "EMERALD III",
         "season": "Y11S1"
+      },
+      "overview": {
+        "kills": 5366,
+        "deaths": 4083,
+        "assists": 135,
+        "kdRatio": 1.31,
+        "headshots": 1749,
+        "matchesWon": 451,
+        "timePlayed": 1727874,
+        "matchesLost": 343,
+        "killsPerMatch": 6.4,
+        "matchesPlayed": 840,
+        "matchesAbandoned": 46
+      },
+      "operatorsSeason": {
+        "ops": [
+          {
+            "hs": "41.7%",
+            "kd": 1.33,
+            "tks": 0,
+            "win": "53.8%",
+            "aces": 0,
+            "nome": "Solid Snake",
+            "wins": 7,
+            "kills": 12,
+            "deaths": 9,
+            "losses": 6,
+            "rounds": 13,
+            "assists": 1
+          },
+          {
+            "hs": "23.1%",
+            "kd": 1.44,
+            "tks": 0,
+            "win": "63.6%",
+            "aces": 0,
+            "nome": "Ash",
+            "wins": 7,
+            "kills": 13,
+            "deaths": 9,
+            "losses": 4,
+            "rounds": 11,
+            "assists": 6
+          },
+          {
+            "hs": "60.0%",
+            "kd": 0.56,
+            "tks": 0,
+            "win": "40.0%",
+            "aces": 0,
+            "nome": "Mute",
+            "wins": 4,
+            "kills": 5,
+            "deaths": 9,
+            "losses": 6,
+            "rounds": 10,
+            "assists": 2
+          },
+          {
+            "hs": "50.0%",
+            "kd": 2.4,
+            "tks": 0,
+            "win": "66.7%",
+            "aces": 0,
+            "nome": "Fenrir",
+            "wins": 6,
+            "kills": 12,
+            "deaths": 5,
+            "losses": 3,
+            "rounds": 9,
+            "assists": 2
+          },
+          {
+            "hs": "60.0%",
+            "kd": 0.83,
+            "tks": 0,
+            "win": "62.5%",
+            "aces": 0,
+            "nome": "Ela",
+            "wins": 5,
+            "kills": 5,
+            "deaths": 6,
+            "losses": 3,
+            "rounds": 8,
+            "assists": 2
+          },
+          {
+            "hs": "33.3%",
+            "kd": 1.2,
+            "tks": 0,
+            "win": "42.9%",
+            "aces": 0,
+            "nome": "Montagne",
+            "wins": 3,
+            "kills": 6,
+            "deaths": 5,
+            "losses": 4,
+            "rounds": 7,
+            "assists": 3
+          },
+          {
+            "hs": "33.3%",
+            "kd": 0.75,
+            "tks": 0,
+            "win": "50.0%",
+            "aces": 0,
+            "nome": "Tubarão",
+            "wins": 3,
+            "kills": 3,
+            "deaths": 4,
+            "losses": 3,
+            "rounds": 6,
+            "assists": 1
+          },
+          {
+            "hs": "14.3%",
+            "kd": 2.33,
+            "tks": 0,
+            "win": "40.0%",
+            "aces": 0,
+            "nome": "Bandit",
+            "wins": 2,
+            "kills": 7,
+            "deaths": 3,
+            "losses": 3,
+            "rounds": 5,
+            "assists": 1
+          },
+          {
+            "hs": "100.0%",
+            "kd": 0.67,
+            "tks": 0,
+            "win": "25.0%",
+            "aces": 0,
+            "nome": "Denari",
+            "wins": 1,
+            "kills": 2,
+            "deaths": 3,
+            "losses": 3,
+            "rounds": 4,
+            "assists": 2
+          },
+          {
+            "hs": "40.0%",
+            "kd": 1.67,
+            "tks": 0,
+            "win": "25.0%",
+            "aces": 0,
+            "nome": "Solis",
+            "wins": 1,
+            "kills": 5,
+            "deaths": 3,
+            "losses": 3,
+            "rounds": 4,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0.67,
+            "tks": 0,
+            "win": "25.0%",
+            "aces": 0,
+            "nome": "Azami",
+            "wins": 1,
+            "kills": 2,
+            "deaths": 3,
+            "losses": 3,
+            "rounds": 4,
+            "assists": 0
+          },
+          {
+            "hs": "33.3%",
+            "kd": 1,
+            "tks": 0,
+            "win": "33.3%",
+            "aces": 0,
+            "nome": "Grim",
+            "wins": 1,
+            "kills": 3,
+            "deaths": 3,
+            "losses": 2,
+            "rounds": 3,
+            "assists": 0
+          },
+          {
+            "hs": "25.0%",
+            "kd": 2,
+            "tks": 0,
+            "win": "66.7%",
+            "aces": 0,
+            "nome": "Striker",
+            "wins": 2,
+            "kills": 4,
+            "deaths": 2,
+            "losses": 1,
+            "rounds": 3,
+            "assists": 1
+          },
+          {
+            "hs": "40.0%",
+            "kd": 5,
+            "tks": 0,
+            "win": "33.3%",
+            "aces": 0,
+            "nome": "Deimos",
+            "wins": 1,
+            "kills": 5,
+            "deaths": 1,
+            "losses": 2,
+            "rounds": 3,
+            "assists": 0
+          },
+          {
+            "hs": "100.0%",
+            "kd": 0.5,
+            "tks": 0,
+            "win": "33.3%",
+            "aces": 0,
+            "nome": "Zofia",
+            "wins": 1,
+            "kills": 1,
+            "deaths": 2,
+            "losses": 2,
+            "rounds": 3,
+            "assists": 2
+          },
+          {
+            "hs": "50.0%",
+            "kd": 4,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Twitch",
+            "wins": 2,
+            "kills": 4,
+            "deaths": 1,
+            "losses": 0,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0.5,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Skopós",
+            "wins": 0,
+            "kills": 1,
+            "deaths": 2,
+            "losses": 2,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "33.3%",
+            "kd": 1.5,
+            "tks": 0,
+            "win": "50.0%",
+            "aces": 0,
+            "nome": "Kapkan",
+            "wins": 1,
+            "kills": 3,
+            "deaths": 2,
+            "losses": 1,
+            "rounds": 2,
+            "assists": 2
+          },
+          {
+            "hs": "0.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Hibana",
+            "wins": 2,
+            "kills": 1,
+            "deaths": 1,
+            "losses": 0,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Goyo",
+            "wins": 2,
+            "kills": 0,
+            "deaths": 2,
+            "losses": 0,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0.5,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "IQ",
+            "wins": 0,
+            "kills": 1,
+            "deaths": 2,
+            "losses": 2,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "50.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Ram",
+            "wins": 0,
+            "kills": 2,
+            "deaths": 2,
+            "losses": 2,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Lion",
+            "wins": 0,
+            "kills": 2,
+            "deaths": 2,
+            "losses": 2,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "100.0%",
+            "kd": 0.5,
+            "tks": 0,
+            "win": "50.0%",
+            "aces": 0,
+            "nome": "Alibi",
+            "wins": 1,
+            "kills": 1,
+            "deaths": 2,
+            "losses": 1,
+            "rounds": 2,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Gridlock",
+            "wins": 0,
+            "kills": 1,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "100.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Vigil",
+            "wins": 1,
+            "kills": 1,
+            "deaths": 1,
+            "losses": 0,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "100.0%",
+            "kd": 2,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Finka",
+            "wins": 1,
+            "kills": 2,
+            "deaths": 0,
+            "losses": 0,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Capitão",
+            "wins": 0,
+            "kills": 0,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "100.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Doc",
+            "wins": 1,
+            "kills": 1,
+            "deaths": 0,
+            "losses": 0,
+            "rounds": 1,
+            "assists": 1
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Nomad",
+            "wins": 0,
+            "kills": 0,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Glaz",
+            "wins": 0,
+            "kills": 0,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Kaid",
+            "wins": 0,
+            "kills": 0,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "100.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Warden",
+            "wins": 0,
+            "kills": 1,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Thermite",
+            "wins": 0,
+            "kills": 1,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 1,
+            "tks": 0,
+            "win": "100.0%",
+            "aces": 0,
+            "nome": "Buck",
+            "wins": 1,
+            "kills": 1,
+            "deaths": 0,
+            "losses": 0,
+            "rounds": 1,
+            "assists": 0
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Oryx",
+            "wins": 0,
+            "kills": 0,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 1
+          },
+          {
+            "hs": "0.0%",
+            "kd": 0,
+            "tks": 0,
+            "win": "0.0%",
+            "aces": 0,
+            "nome": "Jackal",
+            "wins": 0,
+            "kills": 0,
+            "deaths": 1,
+            "losses": 1,
+            "rounds": 1,
+            "assists": 0
+          }
+        ],
+        "total": 37,
+        "season": "Y11S3",
+        "importadoEm": "2026-10-24T20:12:58.421Z"
+      },
+      "operatorsAllTime": {
+        "season": null,
+        "total": 74,
+        "ops": [
+          {
+            "nome": "Ash",
+            "rounds": 274,
+            "win": "43.8%",
+            "kd": 1.44,
+            "hs": "56.9%",
+            "wins": 120,
+            "losses": 154,
+            "kills": 276,
+            "deaths": 192,
+            "assists": 48,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Azami",
+            "rounds": 220,
+            "win": "58.2%",
+            "kd": 1.6,
+            "hs": "47.7%",
+            "wins": 128,
+            "losses": 92,
+            "kills": 222,
+            "deaths": 139,
+            "assists": 52,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Solid Snake",
+            "rounds": 180,
+            "win": "52.8%",
+            "kd": 1.49,
+            "hs": "62.4%",
+            "wins": 95,
+            "losses": 85,
+            "kills": 186,
+            "deaths": 125,
+            "assists": 30,
+            "aces": 1,
+            "tks": 1
+          },
+          {
+            "nome": "Deimos",
+            "rounds": 158,
+            "win": "47.5%",
+            "kd": 1.26,
+            "hs": "39.3%",
+            "wins": 75,
+            "losses": 83,
+            "kills": 140,
+            "deaths": 111,
+            "assists": 28,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Montagne",
+            "rounds": 139,
+            "win": "46.0%",
+            "kd": 0.89,
+            "hs": "45.5%",
+            "wins": 64,
+            "losses": 75,
+            "kills": 88,
+            "deaths": 99,
+            "assists": 16,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Tubarão",
+            "rounds": 133,
+            "win": "51.9%",
+            "kd": 1.35,
+            "hs": "29.8%",
+            "wins": 69,
+            "losses": 64,
+            "kills": 131,
+            "deaths": 97,
+            "assists": 22,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Bandit",
+            "rounds": 124,
+            "win": "57.3%",
+            "kd": 1.16,
+            "hs": "41.9%",
+            "wins": 71,
+            "losses": 53,
+            "kills": 93,
+            "deaths": 80,
+            "assists": 30,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Melusi",
+            "rounds": 122,
+            "win": "59.0%",
+            "kd": 1.51,
+            "hs": "61.2%",
+            "wins": 72,
+            "losses": 50,
+            "kills": 121,
+            "deaths": 80,
+            "assists": 29,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Vigil",
+            "rounds": 120,
+            "win": "63.3%",
+            "kd": 1.33,
+            "hs": "33.7%",
+            "wins": 76,
+            "losses": 44,
+            "kills": 104,
+            "deaths": 78,
+            "assists": 25,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Warden",
+            "rounds": 116,
+            "win": "62.9%",
+            "kd": 1.57,
+            "hs": "65.3%",
+            "wins": 73,
+            "losses": 43,
+            "kills": 118,
+            "deaths": 75,
+            "assists": 27,
+            "aces": 1,
+            "tks": 2
+          },
+          {
+            "nome": "Twitch",
+            "rounds": 110,
+            "win": "45.5%",
+            "kd": 1.4,
+            "hs": "48.6%",
+            "wins": 50,
+            "losses": 60,
+            "kills": 105,
+            "deaths": 75,
+            "assists": 25,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Valkyrie",
+            "rounds": 108,
+            "win": "54.6%",
+            "kd": 1.06,
+            "hs": "50.0%",
+            "wins": 59,
+            "losses": 49,
+            "kills": 82,
+            "deaths": 77,
+            "assists": 32,
+            "aces": 1,
+            "tks": 1
+          },
+          {
+            "nome": "Ela",
+            "rounds": 98,
+            "win": "61.2%",
+            "kd": 1.44,
+            "hs": "59.6%",
+            "wins": 60,
+            "losses": 38,
+            "kills": 104,
+            "deaths": 72,
+            "assists": 30,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Aruni",
+            "rounds": 91,
+            "win": "59.3%",
+            "kd": 1.16,
+            "hs": "36.1%",
+            "wins": 54,
+            "losses": 37,
+            "kills": 72,
+            "deaths": 62,
+            "assists": 27,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Lesion",
+            "rounds": 87,
+            "win": "65.5%",
+            "kd": 1.55,
+            "hs": "57.3%",
+            "wins": 57,
+            "losses": 30,
+            "kills": 82,
+            "deaths": 53,
+            "assists": 36,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Dokkaebi",
+            "rounds": 83,
+            "win": "44.6%",
+            "kd": 1.21,
+            "hs": "57.9%",
+            "wins": 37,
+            "losses": 46,
+            "kills": 76,
+            "deaths": 63,
+            "assists": 18,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Nomad",
+            "rounds": 83,
+            "win": "49.4%",
+            "kd": 1.22,
+            "hs": "52.8%",
+            "wins": 41,
+            "losses": 42,
+            "kills": 72,
+            "deaths": 59,
+            "assists": 14,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "IQ",
+            "rounds": 75,
+            "win": "46.7%",
+            "kd": 1.17,
+            "hs": "50.0%",
+            "wins": 35,
+            "losses": 40,
+            "kills": 62,
+            "deaths": 53,
+            "assists": 12,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Mira",
+            "rounds": 72,
+            "win": "63.9%",
+            "kd": 1.44,
+            "hs": "58.1%",
+            "wins": 46,
+            "losses": 26,
+            "kills": 62,
+            "deaths": 43,
+            "assists": 16,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Iana",
+            "rounds": 72,
+            "win": "45.8%",
+            "kd": 1.25,
+            "hs": "55.0%",
+            "wins": 33,
+            "losses": 39,
+            "kills": 60,
+            "deaths": 48,
+            "assists": 9,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Blitz",
+            "rounds": 72,
+            "win": "55.6%",
+            "kd": 0.98,
+            "hs": "39.2%",
+            "wins": 40,
+            "losses": 32,
+            "kills": 51,
+            "deaths": 52,
+            "assists": 12,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Fenrir",
+            "rounds": 66,
+            "win": "59.1%",
+            "kd": 1.62,
+            "hs": "61.9%",
+            "wins": 39,
+            "losses": 27,
+            "kills": 63,
+            "deaths": 39,
+            "assists": 16,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Skopós",
+            "rounds": 66,
+            "win": "54.5%",
+            "kd": 1.52,
+            "hs": "37.3%",
+            "wins": 36,
+            "losses": 30,
+            "kills": 67,
+            "deaths": 44,
+            "assists": 12,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Buck",
+            "rounds": 65,
+            "win": "49.2%",
+            "kd": 1.63,
+            "hs": "61.2%",
+            "wins": 32,
+            "losses": 33,
+            "kills": 67,
+            "deaths": 41,
+            "assists": 8,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Solis",
+            "rounds": 63,
+            "win": "44.4%",
+            "kd": 1.38,
+            "hs": "59.7%",
+            "wins": 28,
+            "losses": 35,
+            "kills": 62,
+            "deaths": 45,
+            "assists": 10,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Jäger",
+            "rounds": 63,
+            "win": "73.0%",
+            "kd": 1.23,
+            "hs": "41.7%",
+            "wins": 46,
+            "losses": 17,
+            "kills": 48,
+            "deaths": 39,
+            "assists": 10,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Hibana",
+            "rounds": 58,
+            "win": "50.0%",
+            "kd": 0.71,
+            "hs": "51.7%",
+            "wins": 29,
+            "losses": 29,
+            "kills": 29,
+            "deaths": 41,
+            "assists": 12,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Lion",
+            "rounds": 58,
+            "win": "36.2%",
+            "kd": 1.04,
+            "hs": "50.0%",
+            "wins": 21,
+            "losses": 37,
+            "kills": 48,
+            "deaths": 46,
+            "assists": 7,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Thermite",
+            "rounds": 56,
+            "win": "39.3%",
+            "kd": 0.84,
+            "hs": "42.1%",
+            "wins": 22,
+            "losses": 34,
+            "kills": 38,
+            "deaths": 45,
+            "assists": 9,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Grim",
+            "rounds": 56,
+            "win": "39.3%",
+            "kd": 1,
+            "hs": "44.2%",
+            "wins": 22,
+            "losses": 34,
+            "kills": 43,
+            "deaths": 43,
+            "assists": 3,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Flores",
+            "rounds": 55,
+            "win": "52.7%",
+            "kd": 1.21,
+            "hs": "51.2%",
+            "wins": 29,
+            "losses": 26,
+            "kills": 41,
+            "deaths": 34,
+            "assists": 13,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Ram",
+            "rounds": 52,
+            "win": "40.4%",
+            "kd": 1.76,
+            "hs": "47.8%",
+            "wins": 21,
+            "losses": 31,
+            "kills": 67,
+            "deaths": 38,
+            "assists": 9,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Smoke",
+            "rounds": 50,
+            "win": "54.0%",
+            "kd": 1.03,
+            "hs": "61.1%",
+            "wins": 27,
+            "losses": 23,
+            "kills": 36,
+            "deaths": 35,
+            "assists": 15,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Mute",
+            "rounds": 50,
+            "win": "56.0%",
+            "kd": 1.39,
+            "hs": "52.2%",
+            "wins": 28,
+            "losses": 22,
+            "kills": 46,
+            "deaths": 33,
+            "assists": 13,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Blackbeard",
+            "rounds": 49,
+            "win": "46.9%",
+            "kd": 0.71,
+            "hs": "40.0%",
+            "wins": 23,
+            "losses": 26,
+            "kills": 25,
+            "deaths": 35,
+            "assists": 11,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Mozzie",
+            "rounds": 46,
+            "win": "56.5%",
+            "kd": 1.84,
+            "hs": "65.2%",
+            "wins": 26,
+            "losses": 20,
+            "kills": 46,
+            "deaths": 25,
+            "assists": 5,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Capitão",
+            "rounds": 42,
+            "win": "35.7%",
+            "kd": 1.62,
+            "hs": "51.9%",
+            "wins": 15,
+            "losses": 27,
+            "kills": 52,
+            "deaths": 32,
+            "assists": 4,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Pulse",
+            "rounds": 42,
+            "win": "42.9%",
+            "kd": 1.33,
+            "hs": "40.0%",
+            "wins": 18,
+            "losses": 24,
+            "kills": 40,
+            "deaths": 30,
+            "assists": 6,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Kapkan",
+            "rounds": 41,
+            "win": "58.5%",
+            "kd": 1.6,
+            "hs": "55.0%",
+            "wins": 24,
+            "losses": 17,
+            "kills": 40,
+            "deaths": 25,
+            "assists": 22,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Glaz",
+            "rounds": 40,
+            "win": "42.5%",
+            "kd": 1.33,
+            "hs": "45.0%",
+            "wins": 17,
+            "losses": 23,
+            "kills": 40,
+            "deaths": 30,
+            "assists": 11,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Castle",
+            "rounds": 40,
+            "win": "62.5%",
+            "kd": 1.21,
+            "hs": "28.6%",
+            "wins": 25,
+            "losses": 15,
+            "kills": 35,
+            "deaths": 29,
+            "assists": 7,
+            "aces": 0,
+            "tks": 1
+          },
+          {
+            "nome": "Oryx",
+            "rounds": 37,
+            "win": "62.2%",
+            "kd": 1.21,
+            "hs": "52.9%",
+            "wins": 23,
+            "losses": 14,
+            "kills": 34,
+            "deaths": 28,
+            "assists": 4,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Jackal",
+            "rounds": 35,
+            "win": "42.9%",
+            "kd": 1.17,
+            "hs": "51.9%",
+            "wins": 15,
+            "losses": 20,
+            "kills": 27,
+            "deaths": 23,
+            "assists": 2,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Rauora",
+            "rounds": 34,
+            "win": "73.5%",
+            "kd": 2.11,
+            "hs": "17.5%",
+            "wins": 25,
+            "losses": 9,
+            "kills": 40,
+            "deaths": 19,
+            "assists": 7,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Frost",
+            "rounds": 34,
+            "win": "67.6%",
+            "kd": 1.14,
+            "hs": "66.7%",
+            "wins": 23,
+            "losses": 11,
+            "kills": 24,
+            "deaths": 21,
+            "assists": 13,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Sentry",
+            "rounds": 33,
+            "win": "63.6%",
+            "kd": 1.21,
+            "hs": "55.2%",
+            "wins": 21,
+            "losses": 12,
+            "kills": 29,
+            "deaths": 24,
+            "assists": 6,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Osa",
+            "rounds": 33,
+            "win": "57.6%",
+            "kd": 1.56,
+            "hs": "32.1%",
+            "wins": 19,
+            "losses": 14,
+            "kills": 28,
+            "deaths": 18,
+            "assists": 7,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Striker",
+            "rounds": 33,
+            "win": "48.5%",
+            "kd": 1.27,
+            "hs": "48.5%",
+            "wins": 16,
+            "losses": 17,
+            "kills": 33,
+            "deaths": 26,
+            "assists": 6,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Fuze",
+            "rounds": 27,
+            "win": "44.4%",
+            "kd": 1.25,
+            "hs": "55.0%",
+            "wins": 12,
+            "losses": 15,
+            "kills": 20,
+            "deaths": 16,
+            "assists": 5,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Thatcher",
+            "rounds": 27,
+            "win": "48.1%",
+            "kd": 1.47,
+            "hs": "44.0%",
+            "wins": 13,
+            "losses": 14,
+            "kills": 25,
+            "deaths": 17,
+            "assists": 6,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Ying",
+            "rounds": 27,
+            "win": "63.0%",
+            "kd": 1.88,
+            "hs": "50.0%",
+            "wins": 17,
+            "losses": 10,
+            "kills": 30,
+            "deaths": 16,
+            "assists": 5,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Thorn",
+            "rounds": 25,
+            "win": "52.0%",
+            "kd": 0.94,
+            "hs": "47.1%",
+            "wins": 13,
+            "losses": 12,
+            "kills": 17,
+            "deaths": 18,
+            "assists": 16,
+            "aces": 1,
+            "tks": 0
+          },
+          {
+            "nome": "Denari",
+            "rounds": 23,
+            "win": "56.5%",
+            "kd": 1.35,
+            "hs": "73.9%",
+            "wins": 13,
+            "losses": 10,
+            "kills": 23,
+            "deaths": 17,
+            "assists": 11,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Wamai",
+            "rounds": 23,
+            "win": "52.2%",
+            "kd": 0.55,
+            "hs": "63.6%",
+            "wins": 12,
+            "losses": 11,
+            "kills": 11,
+            "deaths": 20,
+            "assists": 6,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Goyo",
+            "rounds": 22,
+            "win": "54.5%",
+            "kd": 0.78,
+            "hs": "64.3%",
+            "wins": 12,
+            "losses": 10,
+            "kills": 14,
+            "deaths": 18,
+            "assists": 5,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Alibi",
+            "rounds": 19,
+            "win": "52.6%",
+            "kd": 1.08,
+            "hs": "57.1%",
+            "wins": 10,
+            "losses": 9,
+            "kills": 14,
+            "deaths": 13,
+            "assists": 4,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Caveira",
+            "rounds": 18,
+            "win": "66.7%",
+            "kd": 1.27,
+            "hs": "14.3%",
+            "wins": 12,
+            "losses": 6,
+            "kills": 14,
+            "deaths": 11,
+            "assists": 2,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Sledge",
+            "rounds": 18,
+            "win": "66.7%",
+            "kd": 1,
+            "hs": "41.7%",
+            "wins": 12,
+            "losses": 6,
+            "kills": 12,
+            "deaths": 12,
+            "assists": 2,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Kaid",
+            "rounds": 17,
+            "win": "70.6%",
+            "kd": 1.89,
+            "hs": "29.4%",
+            "wins": 12,
+            "losses": 5,
+            "kills": 17,
+            "deaths": 9,
+            "assists": 4,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Zofia",
+            "rounds": 15,
+            "win": "60.0%",
+            "kd": 0.5,
+            "hs": "100.0%",
+            "wins": 9,
+            "losses": 6,
+            "kills": 6,
+            "deaths": 12,
+            "assists": 3,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Ace",
+            "rounds": 13,
+            "win": "53.8%",
+            "kd": 1.75,
+            "hs": "64.3%",
+            "wins": 7,
+            "losses": 6,
+            "kills": 14,
+            "deaths": 8,
+            "assists": 3,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Echo",
+            "rounds": 12,
+            "win": "33.3%",
+            "kd": 1,
+            "hs": "70.0%",
+            "wins": 4,
+            "losses": 8,
+            "kills": 10,
+            "deaths": 10,
+            "assists": 1,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Thunderbird",
+            "rounds": 11,
+            "win": "36.4%",
+            "kd": 0.67,
+            "hs": "66.7%",
+            "wins": 4,
+            "losses": 7,
+            "kills": 6,
+            "deaths": 9,
+            "assists": 2,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Brava",
+            "rounds": 11,
+            "win": "36.4%",
+            "kd": 1,
+            "hs": "11.1%",
+            "wins": 4,
+            "losses": 7,
+            "kills": 9,
+            "deaths": 9,
+            "assists": 0,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Doc",
+            "rounds": 11,
+            "win": "63.6%",
+            "kd": 1.83,
+            "hs": "81.8%",
+            "wins": 7,
+            "losses": 4,
+            "kills": 11,
+            "deaths": 6,
+            "assists": 4,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Amaru",
+            "rounds": 10,
+            "win": "70.0%",
+            "kd": 0.89,
+            "hs": "50.0%",
+            "wins": 7,
+            "losses": 3,
+            "kills": 8,
+            "deaths": 9,
+            "assists": 6,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Tachanka",
+            "rounds": 7,
+            "win": "71.4%",
+            "kd": 0.67,
+            "hs": "0.0%",
+            "wins": 5,
+            "losses": 2,
+            "kills": 2,
+            "deaths": 3,
+            "assists": 1,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Nøkk",
+            "rounds": 6,
+            "win": "50.0%",
+            "kd": 1.5,
+            "hs": "66.7%",
+            "wins": 3,
+            "losses": 3,
+            "kills": 6,
+            "deaths": 4,
+            "assists": 2,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Gridlock",
+            "rounds": 5,
+            "win": "20.0%",
+            "kd": 0.6,
+            "hs": "33.3%",
+            "wins": 1,
+            "losses": 4,
+            "kills": 3,
+            "deaths": 5,
+            "assists": 0,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Clash",
+            "rounds": 5,
+            "win": "0.0%",
+            "kd": 0.4,
+            "hs": "50.0%",
+            "wins": 0,
+            "losses": 5,
+            "kills": 2,
+            "deaths": 5,
+            "assists": 0,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Finka",
+            "rounds": 4,
+            "win": "25.0%",
+            "kd": 1,
+            "hs": "66.7%",
+            "wins": 1,
+            "losses": 3,
+            "kills": 3,
+            "deaths": 3,
+            "assists": 2,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Rook",
+            "rounds": 3,
+            "win": "100.0%",
+            "kd": 4,
+            "hs": "75.0%",
+            "wins": 3,
+            "losses": 0,
+            "kills": 4,
+            "deaths": 1,
+            "assists": 1,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Maestro",
+            "rounds": 3,
+            "win": "0.0%",
+            "kd": 2.5,
+            "hs": "40.0%",
+            "wins": 0,
+            "losses": 3,
+            "kills": 5,
+            "deaths": 2,
+            "assists": 3,
+            "aces": 0,
+            "tks": 0
+          },
+          {
+            "nome": "Zero",
+            "rounds": 2,
+            "win": "100.0%",
+            "kd": 1,
+            "hs": "0.0%",
+            "wins": 2,
+            "losses": 0,
+            "kills": 2,
+            "deaths": 2,
+            "assists": 2,
+            "aces": 0,
+            "tks": 0
+          }
+        ],
+        "importadoEm": "2026-10-24T20:12:58.511Z"
       }
     },
     {
-      "key": "m4xi01504",
       "id": "22ed8511-6740-4829-9488-2c41fed19cef",
-      "handle": "m4xi01504",
-      "avatar": "https://ubisoft-avatars.akamaized.net/22ed8511-6740-4829-9488-2c41fed19cef/default_256_256.png",
-      "level": 52,
-      "season": 43,
+      "key": "m4xi01504",
       "rank": {
-        "season": "Y11S3",
-        "points": 2013,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-5.png?v=5",
         "name": "SILVER V",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-5.png?v=5"
+        "points": 2013,
+        "season": "Y11S3"
+      },
+      "level": 52,
+      "modes": [
+        {
+          "name": "Ranked",
+          "stats": {
+            "kills": 22,
+            "deaths": 20,
+            "kdRatio": 1.1,
+            "matchesWon": 3,
+            "timePlayed": 0,
+            "matchesLost": 3,
+            "killsPerMatch": 3.67,
+            "matchesPlayed": 6
+          }
+        },
+        {
+          "name": "Arcade",
+          "stats": {
+            "kills": 7,
+            "deaths": 11,
+            "kdRatio": 0.64,
+            "matchesWon": 0,
+            "timePlayed": 0,
+            "matchesLost": 1,
+            "killsPerMatch": 7,
+            "matchesPlayed": 1
+          }
+        },
+        {
+          "name": "Event",
+          "stats": {
+            "kills": 51,
+            "deaths": 70,
+            "kdRatio": 0.73,
+            "matchesWon": 11,
+            "timePlayed": 0,
+            "matchesLost": 8,
+            "killsPerMatch": 2.04,
+            "matchesPlayed": 25
+          }
+        },
+        {
+          "name": "Unranked + Quick Match",
+          "stats": {
+            "kills": 265,
+            "deaths": 321,
+            "kdRatio": 0.83,
+            "matchesWon": 46,
+            "timePlayed": 0,
+            "matchesLost": 34,
+            "killsPerMatch": 3.05,
+            "matchesPlayed": 87
+          }
+        }
+      ],
+      "avatar": "https://ubisoft-avatars.akamaized.net/22ed8511-6740-4829-9488-2c41fed19cef/default_256_256.png",
+      "handle": "m4xi01504",
+      "season": 43,
+      "maxRank": {
+        "rp": 2053,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-5.png?v=5",
+        "name": "SILVER V",
+        "season": "Y11S3"
       },
       "overview": {
-        "matchesPlayed": 119,
-        "matchesWon": 60,
-        "matchesLost": 46,
-        "matchesAbandoned": 13,
         "kills": 345,
         "deaths": 422,
         "assists": 0,
-        "headshots": 146,
-        "timePlayed": 188148,
         "kdRatio": 0.82,
-        "killsPerMatch": 2.9
-      },
-      "modes": [
-        {
-          "name": "Ranked",
-          "stats": {
-            "matchesPlayed": 6,
-            "matchesWon": 3,
-            "matchesLost": 3,
-            "kills": 22,
-            "deaths": 20,
-            "timePlayed": 0,
-            "kdRatio": 1.1,
-            "killsPerMatch": 3.67
-          }
-        },
-        {
-          "name": "Arcade",
-          "stats": {
-            "matchesPlayed": 1,
-            "matchesWon": 0,
-            "matchesLost": 1,
-            "kills": 7,
-            "deaths": 11,
-            "timePlayed": 0,
-            "kdRatio": 0.64,
-            "killsPerMatch": 7
-          }
-        },
-        {
-          "name": "Event",
-          "stats": {
-            "matchesPlayed": 25,
-            "matchesWon": 11,
-            "matchesLost": 8,
-            "kills": 51,
-            "deaths": 70,
-            "timePlayed": 0,
-            "kdRatio": 0.73,
-            "killsPerMatch": 2.04
-          }
-        },
-        {
-          "name": "Unranked + Quick Match",
-          "stats": {
-            "matchesPlayed": 87,
-            "matchesWon": 46,
-            "matchesLost": 34,
-            "kills": 265,
-            "deaths": 321,
-            "timePlayed": 0,
-            "kdRatio": 0.83,
-            "killsPerMatch": 3.05
-          }
-        }
-      ],
-      "maxRank": {
-        "name": "SILVER V",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-5.png?v=5",
-        "rp": 2053,
-        "season": "Y11S3"
+        "headshots": 146,
+        "matchesWon": 60,
+        "timePlayed": 188148,
+        "matchesLost": 46,
+        "killsPerMatch": 2.9,
+        "matchesPlayed": 119,
+        "matchesAbandoned": 13
       }
     },
     {
-      "key": "xalanix-",
       "id": "8703183b-d572-4796-bac7-bb68fe181525",
-      "handle": "xalanix-",
-      "avatar": "https://ubisoft-avatars.akamaized.net/8703183b-d572-4796-bac7-bb68fe181525/default_256_256.png",
-      "level": 83,
-      "season": 43,
+      "key": "xalanix-",
       "rank": {
-        "season": "Y11S3",
-        "points": 2800,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-2.png?v=5",
         "name": "GOLD II",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-2.png?v=5"
+        "points": 2806,
+        "season": "Y11S3"
       },
-      "overview": {
-        "matchesPlayed": 380,
-        "matchesWon": 204,
-        "matchesLost": 138,
-        "matchesAbandoned": 38,
-        "kills": 2866,
-        "deaths": 1957,
-        "assists": 5,
-        "headshots": 429,
-        "timePlayed": 273133,
-        "kdRatio": 1.46,
-        "killsPerMatch": 7.5
-      },
+      "level": 83,
       "modes": [
         {
           "name": "Ranked",
           "stats": {
-            "matchesPlayed": 16,
-            "matchesWon": 13,
-            "matchesLost": 3,
             "kills": 135,
             "deaths": 55,
-            "timePlayed": 0,
             "kdRatio": 2.45,
-            "killsPerMatch": 8.44
+            "matchesWon": 13,
+            "timePlayed": 0,
+            "matchesLost": 3,
+            "killsPerMatch": 8.44,
+            "matchesPlayed": 16
           }
         },
         {
           "name": "Arcade",
           "stats": {
-            "matchesPlayed": 139,
-            "matchesWon": 68,
-            "matchesLost": 53,
             "kills": 1361,
             "deaths": 1076,
-            "timePlayed": 0,
             "kdRatio": 1.26,
-            "killsPerMatch": 9.79
+            "matchesWon": 68,
+            "timePlayed": 0,
+            "matchesLost": 53,
+            "killsPerMatch": 9.79,
+            "matchesPlayed": 139
           }
         },
         {
           "name": "Event",
           "stats": {
-            "matchesPlayed": 15,
-            "matchesWon": 9,
-            "matchesLost": 5,
             "kills": 187,
             "deaths": 129,
-            "timePlayed": 0,
             "kdRatio": 1.45,
-            "killsPerMatch": 12.47
+            "matchesWon": 9,
+            "timePlayed": 0,
+            "matchesLost": 5,
+            "killsPerMatch": 12.47,
+            "matchesPlayed": 15
           }
         },
         {
           "name": "Unranked + Quick Match",
           "stats": {
-            "matchesPlayed": 177,
-            "matchesWon": 96,
-            "matchesLost": 62,
             "kills": 996,
             "deaths": 559,
-            "timePlayed": 0,
             "kdRatio": 1.78,
-            "killsPerMatch": 5.63
+            "matchesWon": 96,
+            "timePlayed": 0,
+            "matchesLost": 62,
+            "killsPerMatch": 5.63,
+            "matchesPlayed": 177
           }
         }
       ],
+      "avatar": "https://ubisoft-avatars.akamaized.net/8703183b-d572-4796-bac7-bb68fe181525/default_256_256.png",
+      "handle": "xalanix-",
+      "season": 43,
       "maxRank": {
-        "name": "GOLD II",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-2.png?v=5",
         "rp": 2836,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/gold-2.png?v=5",
+        "name": "GOLD II",
         "season": "Split Fire"
+      },
+      "overview": {
+        "kills": 2883,
+        "deaths": 1965,
+        "assists": 5,
+        "kdRatio": 1.47,
+        "headshots": 429,
+        "matchesWon": 205,
+        "timePlayed": 273133,
+        "matchesLost": 139,
+        "killsPerMatch": 7.5,
+        "matchesPlayed": 382,
+        "matchesAbandoned": 38
       }
     },
     {
-      "key": "xandy_r6",
       "id": "fe41db9b-72fb-4704-9a48-c77171b36cc3",
-      "handle": "xandy_R6",
-      "avatar": "https://ubisoft-avatars.akamaized.net/fe41db9b-72fb-4704-9a48-c77171b36cc3/default_256_256.png",
-      "level": 81,
-      "season": 43,
+      "key": "xandy_r6",
       "rank": {
-        "season": "Y11S3",
-        "points": 3062,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/platinum-5.png?v=5",
         "name": "PLATINUM V",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/platinum-5.png?v=5"
+        "points": 3062,
+        "season": "Y11S3"
+      },
+      "level": 81,
+      "modes": [
+        {
+          "name": "Ranked",
+          "stats": {
+            "kills": 36,
+            "deaths": 33,
+            "kdRatio": 1.09,
+            "matchesWon": 4,
+            "timePlayed": 0,
+            "matchesLost": 3,
+            "killsPerMatch": 5.14,
+            "matchesPlayed": 7
+          }
+        },
+        {
+          "name": "Arcade",
+          "stats": {
+            "kills": 64,
+            "deaths": 71,
+            "kdRatio": 0.9,
+            "matchesWon": 0,
+            "timePlayed": 0,
+            "matchesLost": 4,
+            "killsPerMatch": 16,
+            "matchesPlayed": 4
+          }
+        },
+        {
+          "name": "Event",
+          "stats": {
+            "kills": 40,
+            "deaths": 40,
+            "kdRatio": 1,
+            "matchesWon": 6,
+            "timePlayed": 0,
+            "matchesLost": 4,
+            "killsPerMatch": 3.64,
+            "matchesPlayed": 11
+          }
+        },
+        {
+          "name": "Unranked + Quick Match",
+          "stats": {
+            "kills": 213,
+            "deaths": 137,
+            "kdRatio": 1.55,
+            "matchesWon": 22,
+            "timePlayed": 0,
+            "matchesLost": 14,
+            "killsPerMatch": 5.92,
+            "matchesPlayed": 36
+          }
+        }
+      ],
+      "avatar": "https://ubisoft-avatars.akamaized.net/fe41db9b-72fb-4704-9a48-c77171b36cc3/default_256_256.png",
+      "handle": "xandy_R6",
+      "season": 43,
+      "maxRank": {
+        "rp": 3062,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/platinum-5.png?v=5",
+        "name": "PLATINUM V",
+        "season": "Y11S3"
       },
       "overview": {
-        "matchesPlayed": 58,
-        "matchesWon": 32,
-        "matchesLost": 25,
-        "matchesAbandoned": 1,
         "kills": 353,
         "deaths": 281,
         "assists": 19,
-        "headshots": 665,
-        "timePlayed": 288951,
         "kdRatio": 1.26,
-        "killsPerMatch": 6.09
-      },
-      "modes": [
-        {
-          "name": "Ranked",
-          "stats": {
-            "matchesPlayed": 7,
-            "matchesWon": 4,
-            "matchesLost": 3,
-            "kills": 36,
-            "deaths": 33,
-            "timePlayed": 0,
-            "kdRatio": 1.09,
-            "killsPerMatch": 5.14
-          }
-        },
-        {
-          "name": "Arcade",
-          "stats": {
-            "matchesPlayed": 4,
-            "matchesWon": 0,
-            "matchesLost": 4,
-            "kills": 64,
-            "deaths": 71,
-            "timePlayed": 0,
-            "kdRatio": 0.9,
-            "killsPerMatch": 16
-          }
-        },
-        {
-          "name": "Event",
-          "stats": {
-            "matchesPlayed": 11,
-            "matchesWon": 6,
-            "matchesLost": 4,
-            "kills": 40,
-            "deaths": 40,
-            "timePlayed": 0,
-            "kdRatio": 1,
-            "killsPerMatch": 3.64
-          }
-        },
-        {
-          "name": "Unranked + Quick Match",
-          "stats": {
-            "matchesPlayed": 36,
-            "matchesWon": 22,
-            "matchesLost": 14,
-            "kills": 213,
-            "deaths": 137,
-            "timePlayed": 0,
-            "kdRatio": 1.55,
-            "killsPerMatch": 5.92
-          }
-        }
-      ],
-      "maxRank": {
-        "name": "PLATINUM V",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/platinum-5.png?v=5",
-        "rp": 3062,
-        "season": "Y11S3"
+        "headshots": 665,
+        "matchesWon": 32,
+        "timePlayed": 288951,
+        "matchesLost": 25,
+        "killsPerMatch": 6.09,
+        "matchesPlayed": 58,
+        "matchesAbandoned": 1
       }
     },
     {
-      "key": "simao270413",
       "id": "b481d40c-7b84-481e-90e0-98b4354fdea6",
-      "handle": "Simao270413",
-      "avatar": "https://ubisoft-avatars.akamaized.net/b481d40c-7b84-481e-90e0-98b4354fdea6/default_256_256.png",
-      "level": 29,
-      "season": 43,
+      "key": "simao270413",
       "rank": {
-        "season": "Y11S3",
-        "points": 0,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/unranked.png?v=5",
         "name": "NO RANK",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/unranked.png?v=5"
+        "points": 0,
+        "season": "Y11S3"
       },
+      "level": 29,
+      "modes": [
+        {
+          "name": "Unranked + Quick Match",
+          "stats": {
+            "kills": 141,
+            "deaths": 193,
+            "kdRatio": 0.73,
+            "matchesWon": 31,
+            "timePlayed": 0,
+            "matchesLost": 28,
+            "killsPerMatch": 2.1,
+            "matchesPlayed": 67
+          }
+        }
+      ],
+      "avatar": "https://ubisoft-avatars.akamaized.net/b481d40c-7b84-481e-90e0-98b4354fdea6/default_256_256.png",
+      "handle": "Simao270413",
+      "season": 43,
+      "maxRank": null,
       "overview": {
-        "matchesPlayed": 67,
-        "matchesWon": 31,
-        "matchesLost": 28,
-        "matchesAbandoned": 8,
         "kills": 141,
         "deaths": 193,
         "assists": 0,
-        "headshots": 47,
-        "timePlayed": 104282,
         "kdRatio": 0.73,
-        "killsPerMatch": 2.1
-      },
-      "modes": [
-        {
-          "name": "Unranked + Quick Match",
-          "stats": {
-            "matchesPlayed": 67,
-            "matchesWon": 31,
-            "matchesLost": 28,
-            "kills": 141,
-            "deaths": 193,
-            "timePlayed": 0,
-            "kdRatio": 0.73,
-            "killsPerMatch": 2.1
-          }
-        }
-      ],
-      "maxRank": null
+        "headshots": 47,
+        "matchesWon": 31,
+        "timePlayed": 104282,
+        "matchesLost": 28,
+        "killsPerMatch": 2.1,
+        "matchesPlayed": 67,
+        "matchesAbandoned": 8
+      }
     },
     {
-      "key": "take.easy._",
       "id": "TaKe.EASy._",
-      "handle": "TaKe.EASy._",
-      "avatar": "https://ubisoft-avatars.akamaized.net/52a61a07-67ff-4eb2-bb32-2c6cdbb7040e/default_256_256.png",
-      "level": 71,
-      "season": null,
+      "key": "take.easy._",
       "rank": {
-        "season": "Y11S3",
-        "points": 2190,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-4.png?v=5",
         "name": "SILVER IV",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-4.png?v=5"
+        "points": 2190,
+        "season": "Y11S3"
+      },
+      "level": 71,
+      "modes": [],
+      "avatar": "https://ubisoft-avatars.akamaized.net/52a61a07-67ff-4eb2-bb32-2c6cdbb7040e/default_256_256.png",
+      "handle": "TaKe.EASy._",
+      "season": null,
+      "maxRank": {
+        "rp": 2190,
+        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-4.png?v=5",
+        "name": "SILVER IV",
+        "season": "Split Fire"
       },
       "overview": {
-        "matchesPlayed": 177,
-        "matchesWon": 93,
-        "matchesLost": 76,
-        "matchesAbandoned": 8,
         "kills": 826,
         "deaths": 601,
         "kdRatio": 1.37,
-        "killsPerMatch": 4.7
-      },
-      "modes": [],
-      "maxRank": {
-        "name": "SILVER IV",
-        "img": "https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/silver-4.png?v=5",
-        "rp": 2190,
-        "season": "Split Fire"
+        "matchesWon": 93,
+        "matchesLost": 76,
+        "killsPerMatch": 4.7,
+        "matchesPlayed": 177,
+        "matchesAbandoned": 8
       }
     }
   ],
-  "matches": [
-    {
-      "id": "69305715-1450-4999-9104-8ff822cfb476",
-      "ts": "2026-10-01T23:01:32.971+00:00",
-      "dur": 1645176,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Lair",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/lair.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 3,
-          "d": 4,
-          "a": 2,
-          "hs": 1,
-          "sc": 4,
-          "rp": 2041
-        },
-        {
-          "key": "xalanix-",
-          "k": 7,
-          "d": 4,
-          "a": 1,
-          "hs": 2,
-          "sc": 4,
-          "rp": 2700
-        }
-      ]
-    },
-    {
-      "id": "f03aa4d6-65c0-4dc9-947f-fae50ba288e8",
-      "ts": "2026-09-27T19:41:24.622+00:00",
-      "dur": 2250069,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU West",
-      "surrender": false,
-      "rw": 4,
-      "rl": 5,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 2,
-          "d": 8,
-          "a": 4,
-          "hs": 1,
-          "sc": 4,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 7,
-          "d": 8,
-          "a": 0,
-          "hs": 2,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "7bead179-300f-4ef0-bead-2c03264ca526",
-      "ts": "2026-09-27T15:57:02.472+00:00",
-      "dur": 952952,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 1,
-      "rl": 3,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 7,
-          "d": 4,
-          "a": 2,
-          "hs": 2,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 2,
-          "d": 4,
-          "a": 1,
-          "hs": 1,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 2,
-          "d": 3,
-          "a": 0,
-          "hs": 0,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "f242fa2a-7671-411f-9506-980ace41c715",
-      "ts": "2026-09-27T15:40:04.666+00:00",
-      "dur": 736435,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Lair",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/lair.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 3,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 3,
-          "d": 2,
-          "a": 0,
-          "hs": 1,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 3,
-          "d": 0,
-          "a": 0,
-          "hs": 3,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 0,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "7d60497e-e128-40a7-a6f9-1196af08ba1a",
-      "ts": "2026-09-27T15:27:00.045+00:00",
-      "dur": 559941,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Nighthaven Labs",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 3,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 3,
-          "d": 1,
-          "a": 1,
-          "hs": 2,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 5,
-          "d": 0,
-          "a": 1,
-          "hs": 5,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 1,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "d995606f-5f26-4bf2-bbc1-10cbd061a6e5",
-      "ts": "2026-09-27T15:15:59.506+00:00",
-      "dur": 790608,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Favela",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/favela.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 3,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 8,
-          "d": 2,
-          "a": 1,
-          "hs": 6,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 1,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "3a99e728-332e-45b5-bea6-dcd0056fe20b",
-      "ts": "2026-09-27T14:56:13.363+00:00",
-      "dur": 2449581,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 5,
-      "rl": 4,
-      "result": "win",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 10,
-          "d": 6,
-          "a": 0,
-          "hs": 8,
-          "sc": 5,
-          "rp": 2904
-        }
-      ]
-    },
-    {
-      "id": "4ae8db45-7d55-4a6d-b12c-b4e4754a77f6",
-      "ts": "2026-09-26T11:44:52.629+00:00",
-      "dur": 1278011,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 4,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 3,
-          "d": 3,
-          "a": 0,
-          "hs": 1,
-          "sc": 4,
-          "rp": 2871
-        }
-      ]
-    },
-    {
-      "id": "c6eae509-a932-4795-8c9e-dc12bc2640bf",
-      "ts": "2026-09-25T21:01:19.206+00:00",
-      "dur": 1733806,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Clubhouse",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 2,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 2,
-          "d": 6,
-          "a": 0,
-          "hs": 0,
-          "sc": 2,
-          "rp": 2003
-        },
-        {
-          "key": "xalanix-",
-          "k": 8,
-          "d": 5,
-          "a": 0,
-          "hs": 4,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "34ea9424-f168-47ba-954f-8dc10bbfcb19",
-      "ts": "2026-09-25T20:31:33.655+00:00",
-      "dur": 963833,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Consulate",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 6,
-          "d": 0,
-          "a": 1,
-          "hs": 2,
-          "sc": 4,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 9,
-          "d": 2,
-          "a": 1,
-          "hs": 8,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "9cab506c-d744-4189-9442-17d230b46ed8",
-      "ts": "2026-09-25T20:11:46.995+00:00",
-      "dur": 1333711,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Coastline",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/coastline.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 1,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 2,
-          "d": 5,
-          "a": 1,
-          "hs": 1,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 2,
-          "d": 5,
-          "a": 1,
-          "hs": 1,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 3,
-          "d": 5,
-          "a": 0,
-          "hs": 3,
-          "sc": 1,
-          "rp": 2837
-        }
-      ]
-    },
-    {
-      "id": "381a9bc5-13f6-43b6-bbca-414951260aa0",
-      "ts": "2026-09-25T19:48:46.443+00:00",
-      "dur": 1235680,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 4,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 4,
-          "d": 1,
-          "a": 0,
-          "hs": 4,
-          "sc": 4,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 8,
-          "d": 3,
-          "a": 1,
-          "hs": 7,
-          "sc": 4,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 2,
-          "d": 2,
-          "a": 1,
-          "hs": 2,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "41379652-264f-45dd-b72b-62ee158a220b",
-      "ts": "2026-09-24T20:22:09.262+00:00",
-      "dur": 879362,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Bank",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/bank.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 1,
-      "rl": 3,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 2,
-          "d": 4,
-          "a": 1,
-          "hs": 2,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 4,
-          "d": 4,
-          "a": 1,
-          "hs": 2,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 2,
-          "d": 4,
-          "a": 0,
-          "hs": 1,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 4,
-          "a": 1,
-          "hs": 0,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "07f9d053-e779-49f9-b076-99f3b09f3857",
-      "ts": "2026-09-24T20:06:35.669+00:00",
-      "dur": 714992,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Yacht",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/yacht.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 3,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 5,
-          "d": 2,
-          "a": 1,
-          "hs": 1,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 5,
-          "d": 1,
-          "a": 2,
-          "hs": 4,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 4,
-          "d": 2,
-          "a": 1,
-          "hs": 4,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 3,
-          "a": 2,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "6a50d7ea-f960-4476-8815-6e49e1d4c984",
-      "ts": "2026-09-24T19:58:42.175+00:00",
-      "dur": 1309477,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 0,
-      "rl": 0,
-      "result": "draw",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 0,
-          "d": 0,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 0,
-          "d": 0,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 0,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "d943fabf-48f4-4d80-a125-d0c7cb8217f4",
-      "ts": "2026-09-24T19:54:03.047+00:00",
-      "dur": 721780,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Fortress",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/fortress.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 3,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 0,
-          "d": 4,
-          "a": 1,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xalanix-",
-          "k": 8,
-          "d": 2,
-          "a": 1,
-          "hs": 5,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 3,
-          "d": 1,
-          "a": 1,
-          "hs": 2,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 3,
-          "d": 1,
-          "a": 2,
-          "hs": 1,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "394cec5d-8076-4f94-b961-0efe565ba39f",
-      "ts": "2026-09-14T19:32:28.153+00:00",
-      "dur": 1597618,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Kafe Dostoyevsky",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 2,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 5,
-          "d": 4,
-          "a": 1,
-          "hs": 3,
-          "sc": 2,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 2,
-          "d": 5,
-          "a": 1,
-          "hs": 2,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "17ef798b-e6d7-4777-a068-253d28ef81f6",
-      "ts": "2026-09-14T19:04:56.03+00:00",
-      "dur": 1283458,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Clubhouse",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 4,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 5,
-          "d": 2,
-          "a": 0,
-          "hs": 4,
-          "sc": 4,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 5,
-          "d": 3,
-          "a": 0,
-          "hs": 4,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "24137b1e-0df3-46d7-b065-359c95a59449",
-      "ts": "2026-09-14T18:42:04.354+00:00",
-      "dur": 1381582,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 2,
-      "rl": 2,
-      "result": "draw",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 3,
-          "d": 3,
-          "a": 0,
-          "hs": 0,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "22b2a3f1-10c2-4100-b8bd-0aa3fb5c471f",
-      "ts": "2026-09-14T18:26:41.011+00:00",
-      "dur": 1218493,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 2,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 2,
-          "d": 0,
-          "a": 0,
-          "hs": 1,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "04a994b5-bd8a-49a1-a062-46f296aa6b1f",
-      "ts": "2026-09-13T21:27:41.399+00:00",
-      "dur": 951442,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 0,
-      "rl": 2,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 0,
-          "d": 2,
-          "a": 0,
-          "hs": 0,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "3024c716-1370-421c-98f2-7d8543b23d94",
-      "ts": "2026-09-13T11:09:14.162+00:00",
-      "dur": 1222525,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Clubhouse",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 0,
-      "rl": 2,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 1,
-          "d": 3,
-          "a": 0,
-          "hs": 1,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "e9a3152d-2362-485a-b4ce-29cdf0b15f06",
-      "ts": "2026-09-13T10:48:06.304+00:00",
-      "dur": 995735,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Kafe Dostoyevsky",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 1,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 2,
-          "d": 4,
-          "a": 0,
-          "hs": 2,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "1fe467c3-b1e4-4a2e-a13a-396599dd561c",
-      "ts": "2026-09-13T10:30:29.321+00:00",
-      "dur": 741813,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 0,
-      "rl": 2,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 0,
-          "d": 2,
-          "a": 0,
-          "hs": 0,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "5f0918cb-0532-4aff-ad82-fea3e6036b58",
-      "ts": "2026-09-13T10:23:56.253+00:00",
-      "dur": 1197811,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Kafe Dostoyevsky",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 1,
-      "rl": 3,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 1,
-          "d": 3,
-          "a": 1,
-          "hs": 0,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "ccb02dfe-4aa7-4632-932e-b278147ef290",
-      "ts": "2026-09-12T22:36:33.223+00:00",
-      "dur": 1166395,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 0,
-      "rl": 2,
-      "result": "loss",
-      "players": [
-        {
-          "key": "m4xi01504",
-          "k": 0,
-          "d": 2,
-          "a": 0,
-          "hs": 0,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "257ef16f-9552-4699-8621-1ee2fb2d829d",
-      "ts": "2026-09-11T21:53:08.043+00:00",
-      "dur": 1134981,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "House",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/house.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 2,
-      "rl": 3,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 4,
-          "d": 5,
-          "a": 1,
-          "hs": 2,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "b600438f-a716-4098-b808-517a0bcd1a00",
-      "ts": "2026-09-11T21:33:05.675+00:00",
-      "dur": 929032,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Stadium Alpha",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/stadium-alpha.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 1,
-      "rl": 3,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 1,
-          "d": 4,
-          "a": 2,
-          "hs": 1,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "f3dbdd5c-b001-435e-b5fe-18916b4277d8",
-      "ts": "2026-09-11T21:16:11.603+00:00",
-      "dur": 845833,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Oregon",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 3,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 6,
-          "d": 1,
-          "a": 0,
-          "hs": 3,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "2a70e81d-b8f9-48dd-91d9-45e725a72f1d",
-      "ts": "2026-09-11T21:01:09.913+00:00",
-      "dur": 688392,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Coastline",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/coastline.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 3,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xandy_r6",
-          "k": 0,
-          "d": 3,
-          "a": 3,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "c5fbf091-fe19-4195-aa02-2068bc3eea22",
-      "ts": "2026-09-10T23:16:51.175+00:00",
-      "dur": 1449187,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 3,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 5,
-          "d": 6,
-          "a": 0,
-          "hs": 4,
-          "sc": 3,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 4,
-          "d": 5,
-          "a": 1,
-          "hs": 2,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "bdf474d2-476c-4d99-8433-190b6070c50f",
-      "ts": "2026-09-09T22:34:01.115+00:00",
-      "dur": 816406,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 1,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 4,
-          "d": 4,
-          "a": 0,
-          "hs": 3,
-          "sc": 1,
-          "rp": null
-        },
-        {
-          "key": "xandy_r6",
-          "k": 0,
-          "d": 4,
-          "a": 0,
-          "hs": 0,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "d0e36829-dad0-4cec-a9c4-e0545cbe3561",
-      "ts": "2026-09-09T22:19:02.818+00:00",
-      "dur": 1028766,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Clubhouse",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 2,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 2,
-          "d": 4,
-          "a": 0,
-          "hs": 2,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "27ed5ab0-a2ab-492a-b0e0-852891a5908c",
-      "ts": "2026-09-09T22:01:12.035+00:00",
-      "dur": 1273523,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Kafe Dostoyevsky",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 3,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 3,
-          "d": 5,
-          "a": 1,
-          "hs": 3,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "83040d2b-98c5-417c-b489-ee1edafac983",
-      "ts": "2026-09-09T21:38:30.2+00:00",
-      "dur": 1219909,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Oregon",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 3,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 3,
-          "d": 4,
-          "a": 0,
-          "hs": 2,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "972f3632-46dc-404f-bf9a-b6ad2495444b",
-      "ts": "2026-09-09T21:13:59.56+00:00",
-      "dur": 1189647,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 4,
-      "rl": 3,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 11,
-          "d": 3,
-          "a": 2,
-          "hs": 7,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "03ac550d-64fa-49fb-8223-96060c91ff1f",
-      "ts": "2026-09-09T20:53:39.233+00:00",
-      "dur": 1290883,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 4,
-      "rl": 3,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 6,
-          "d": 5,
-          "a": 0,
-          "hs": 3,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "9d1676ef-8d40-45d2-9e65-ef8e2059c89f",
-      "ts": "2026-09-09T20:31:36.552+00:00",
-      "dur": 799708,
-      "mode": "Event",
-      "modeKey": "event",
-      "map": "Oregon",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 2,
-          "d": 2,
-          "a": 1,
-          "hs": 0,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "143690a7-9f36-4c7b-bbf6-e24196d8b53e",
-      "ts": "2026-09-07T23:12:19.631+00:00",
-      "dur": 741250,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Theme Park",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/theme-park.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 1,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 1,
-          "a": 0,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "28ad5f84-bb25-43b6-8f1d-f49c2c7dff0b",
-      "ts": "2026-09-06T14:42:15.207+00:00",
-      "dur": 1559853,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Kafe Dostoyevsky",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 2,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 4,
-          "d": 5,
-          "a": 2,
-          "hs": 3,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "1cedbfa9-8b11-4331-80bc-4cd5bd0005cb",
-      "ts": "2026-09-06T14:13:42.685+00:00",
-      "dur": 2505890,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 4,
-      "rl": 5,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 12,
-          "d": 6,
-          "a": 4,
-          "hs": 7,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "284fa09f-e427-4cc8-b115-67aa451a5c99",
-      "ts": "2026-09-06T13:31:13.583+00:00",
-      "dur": 967383,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 0,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 0,
-          "d": 4,
-          "a": 1,
-          "hs": 0,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "984cef5f-c94e-44a4-9959-1e2e27b59494",
-      "ts": "2026-09-06T02:47:58.87+00:00",
-      "dur": 2306034,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Skyscraper",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/skyscraper.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 5,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 8,
-          "d": 8,
-          "a": 2,
-          "hs": 7,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "7b84d19b-bd5e-4c1c-bd51-3961f40dd5e4",
-      "ts": "2026-09-06T02:08:26.895+00:00",
-      "dur": 1927066,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Nighthaven Labs",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
-      "dc": "EU West",
-      "surrender": false,
-      "rw": 5,
-      "rl": 3,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 5,
-          "d": 4,
-          "a": 0,
-          "hs": 2,
-          "sc": 5,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "f61c26b7-9217-4aab-bc16-9b6370062451",
-      "ts": "2026-09-04T22:34:29.921+00:00",
-      "dur": 936840,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU West",
-      "surrender": false,
-      "rw": 0,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 1,
-          "d": 4,
-          "a": 0,
-          "hs": 1,
-          "sc": 0,
-          "rp": null
-        },
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 4,
-          "a": 0,
-          "hs": 1,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "ebab1951-7498-41f8-b9a3-4be4f8ec82fd",
-      "ts": "2026-09-04T22:17:26.46+00:00",
-      "dur": 1413698,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Nighthaven Labs",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 1,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalanix-",
-          "k": 7,
-          "d": 4,
-          "a": 0,
-          "hs": 4,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "f81c6695-d66a-4637-bd2f-5ae335e696fc",
-      "ts": "2026-09-04T21:52:23.611+00:00",
-      "dur": 1315694,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Fortress",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/fortress.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 3,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 2,
-          "a": 0,
-          "hs": 1,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "7f55c2f4-22d8-4db0-a532-0ae79d9f6b58",
-      "ts": "2026-09-04T21:28:50.435+00:00",
-      "dur": 1398344,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "House",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/house.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 2,
-      "rl": 2,
-      "result": "draw",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 2,
-          "a": 0,
-          "hs": 0,
-          "sc": 2,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "25392857-02c5-4b6b-9436-4c3a596eea41",
-      "ts": "2026-09-04T21:03:29.536+00:00",
-      "dur": 976870,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Skyscraper",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/skyscraper.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 0,
-          "a": 1,
-          "hs": 0,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "859bfceb-5450-48dc-ac9a-74bb13641afa",
-      "ts": "2026-09-03T22:45:41.041+00:00",
-      "dur": 862884,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Consulate",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 0,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 4,
-          "a": 0,
-          "hs": 0,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "b2392554-c21e-4283-9d22-3c0424d22ef2",
-      "ts": "2026-09-03T21:20:14.608+00:00",
-      "dur": 1198524,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Consulate",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 1,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 1,
-          "d": 5,
-          "a": 0,
-          "hs": 0,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "f7a46fd9-fa70-423f-a854-6560f428a325",
-      "ts": "2026-09-03T20:24:20.484+00:00",
-      "dur": 2152010,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Border",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/border.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 3,
-      "rl": 5,
-      "result": "loss",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 8,
-          "a": 3,
-          "hs": 0,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "c83fd5d1-1908-45aa-9b7f-52168d8a687c",
-      "ts": "2026-09-03T19:45:43.347+00:00",
-      "dur": 2542788,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Nighthaven Labs",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 5,
-      "rl": 4,
-      "result": "win",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 7,
-          "d": 5,
-          "a": 0,
-          "hs": 3,
-          "sc": 5,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "fcd5c310-994c-4b85-82ab-0483ef749701",
-      "ts": "2026-09-03T19:02:33.578+00:00",
-      "dur": 912769,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Coastline",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/coastline.jpg",
-      "dc": "EU West",
-      "surrender": false,
-      "rw": 0,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 4,
-          "a": 0,
-          "hs": 0,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "686ef66d-dedc-4d8b-b152-c73bcd78ffd6",
-      "ts": "2026-09-03T00:11:28.02+00:00",
-      "dur": 1374636,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Chalet",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/chalet.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 4,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 3,
-          "d": 2,
-          "a": 0,
-          "hs": 1,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "09f81b2d-b3a9-449c-8b43-7b4e89ac1231",
-      "ts": "2026-09-02T23:47:40.836+00:00",
-      "dur": 1026139,
-      "mode": "Unranked",
-      "modeKey": "standard",
-      "map": "Clubhouse",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
-      "dc": "EU WEST 3",
-      "surrender": false,
-      "rw": 4,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "simao270413",
-          "k": 0,
-          "d": 3,
-          "a": 1,
-          "hs": 0,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "8572555b-5011-4f15-8b8a-5c3f9a746a39",
-      "ts": "2026-08-28T23:53:26.298+00:00",
-      "dur": 990841,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Presidential Plane",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/presidential-plane.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 3,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 4,
-          "d": 2,
-          "a": 1,
-          "hs": 2,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "fda6210c-0fd2-4cd9-8aff-dd2e197a421f",
-      "ts": "2026-08-28T23:36:05.763+00:00",
-      "dur": 817371,
-      "mode": "Quick Match",
-      "modeKey": "quick-match",
-      "map": "Nighthaven Labs",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/nighthaven-labs.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 3,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 7,
-          "d": 0,
-          "a": 0,
-          "hs": 4,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "011f3c71-f861-4641-ab51-669ec3829370",
-      "ts": "2026-08-05T14:52:44.363+00:00",
-      "dur": 507619,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Lair",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/lair.jpg",
-      "dc": "EU SOUTH 1",
-      "surrender": false,
-      "rw": 1,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 22,
-          "d": 14,
-          "a": 4,
-          "hs": 7,
-          "sc": 22,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "c08d8df8-2264-48bc-a81c-e30d7278d2e8",
-      "ts": "2026-07-31T16:15:20.661+00:00",
-      "dur": 1712778,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Fortress",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/fortress.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 4,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 4,
-          "d": 4,
-          "a": 2,
-          "hs": 1,
-          "sc": 4,
-          "rp": 3427
-        }
-      ]
-    },
-    {
-      "id": "35300dca-609d-40f6-8d95-41079165efe4",
-      "ts": "2026-07-30T22:48:28.296+00:00",
-      "dur": 1473549,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Villa",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/villa.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 4,
-      "rl": 1,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 6,
-          "d": 3,
-          "a": 1,
-          "hs": 4,
-          "sc": 4,
-          "rp": 3404
-        }
-      ]
-    },
-    {
-      "id": "6780130a-d3ad-48f7-ba73-1ccbd1ea025f",
-      "ts": "2026-07-30T22:22:06.443+00:00",
-      "dur": 1750780,
-      "mode": "Ranked",
-      "modeKey": "ranked",
-      "map": "Kafe Dostoyevsky",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/kafe-dostoyevsky.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 4,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 15,
-          "d": 3,
-          "a": 0,
-          "hs": 5,
-          "sc": 4,
-          "rp": 3378
-        }
-      ]
-    },
-    {
-      "id": "c345bdc0-ad04-4a34-b817-db4fcf3e4224",
-      "ts": "2026-07-18T14:18:49.093+00:00",
-      "dur": 949821,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Clubhouse",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/clubhouse.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 3,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 3,
-          "d": 4,
-          "a": 0,
-          "hs": 2,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "cf1ba4cf-2d2a-4a00-8f7e-d113ffe95880",
-      "ts": "2026-07-18T14:02:41.624+00:00",
-      "dur": 724645,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Outback",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 4,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 4,
-          "d": 2,
-          "a": 0,
-          "hs": 2,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "36ba7294-b88a-4849-b9f2-5f1212c26b56",
-      "ts": "2026-07-18T13:48:39.256+00:00",
-      "dur": 1067333,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Consulate",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/consulate.jpg",
-      "dc": "EU West",
-      "surrender": false,
-      "rw": 4,
-      "rl": 3,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 4,
-          "d": 2,
-          "a": 0,
-          "hs": 2,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "6fa304ea-e92c-43e1-91a9-7f9620a88a56",
-      "ts": "2026-07-18T13:18:04.745+00:00",
-      "dur": 514401,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Outback",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
-      "dc": "EU Central",
-      "surrender": false,
-      "rw": 0,
-      "rl": 4,
-      "result": "loss",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 0,
-          "d": 4,
-          "a": 0,
-          "hs": 0,
-          "sc": 0,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "4ec737a1-6085-47fd-a0a8-0fe236d6f972",
-      "ts": "2026-07-18T13:08:46.85+00:00",
-      "dur": 232843,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Oregon",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/oregon.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 2,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 2,
-          "d": 0,
-          "a": 0,
-          "hs": 1,
-          "sc": 3,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "7c790b9c-8aa5-46bd-a523-83214df6c638",
-      "ts": "2026-07-18T13:03:47.99+00:00",
-      "dur": 813454,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Outback",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 4,
-      "rl": 2,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 4,
-          "d": 2,
-          "a": 0,
-          "hs": 2,
-          "sc": 4,
-          "rp": null
-        }
-      ]
-    },
-    {
-      "id": "94755515-03eb-42dd-bf4a-b6385a1a5db9",
-      "ts": "2026-07-18T12:49:13.599+00:00",
-      "dur": 144145,
-      "mode": "Arcade",
-      "modeKey": "arcade",
-      "map": "Outback",
-      "mapImg": "https://trackercdn.com/cdn/r6.tracker.network/images/maps/outback.jpg",
-      "dc": "EU WEST 2",
-      "surrender": false,
-      "rw": 1,
-      "rl": 0,
-      "result": "win",
-      "players": [
-        {
-          "key": "xalana.",
-          "k": 0,
-          "d": 0,
-          "a": 0,
-          "hs": 0,
-          "sc": 1,
-          "rp": null
-        }
-      ]
-    }
-  ]
+  "updatedAt": "2026-10-24T20:12:58.512Z"
 }

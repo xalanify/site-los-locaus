@@ -402,7 +402,13 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         const partes = []
         if (bons.length) {
           partes.push(
-            `Importado: ${bons.map((r) => r.handle + (r.mudou ? '' : ' (sem mudanças)')).join(', ')} (${bons.length}/${resul.length}).`,
+            `Importado: ${bons
+              .map((r) =>
+                r.tipo
+                  ? `${r.handle} — ${r.tipo}${r.total ? ` (${r.total} operadores)` : ''}`
+                  : r.handle + (r.mudou ? '' : ' (sem mudanças)'),
+              )
+              .join(', ')} (${bons.length}/${resul.length}).`,
           )
         }
         if (maus.length) {
@@ -1393,10 +1399,12 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
               {/* importar JSON guardados um a um */}
               <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
-                <p className="mb-1 text-[13px] font-bold text-white">Atualizar estatísticas</p>
+                <p className="mb-1 text-[13px] font-bold text-white">Atualizar estatísticas e operadores</p>
                 <p className="mb-3 text-[12px] leading-relaxed text-gray-400">
                   Abre a página de cada jogador no tracker.gg e usa <b>Guardar como…</b> (HTML).
-                  Escolhe aqui os ficheiros guardados — o site lê os dados e atualiza os números.
+                  Podes importar três tipos de ficheiro: <b>perfil</b> (visão geral),{' '}
+                  <b>operadores da temporada</b> e <b>operadores all time</b> (o ficheiro com
+                  &quot;all time&quot; no nome). O site identifica o jogador e o tipo automaticamente.
                 </p>
                 <input
                   ref={r6FileRef}

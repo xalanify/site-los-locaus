@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Gamepad2,
@@ -608,12 +609,464 @@ function SubAbaJogo({ jogo, aba, setAba }) {
   )
 }
 
+/* ------------------------------------------------------------
+   Fortnite — perfil completo do tracker.gg (TRN)
+   ------------------------------------------------------------ */
+const nFN = (v) => (v == null ? '—' : Number(v).toLocaleString('pt-PT'))
+
+function MiniStat({ label, valor, cor = 'text-white', sufixo = '' }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-2 py-2.5 text-center">
+      <p className={`font-display text-lg font-black leading-tight ${cor}`}>
+        {valor}
+        {sufixo}
+      </p>
+      <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+    </div>
+  )
+}
+
+function FortniteTrackerModal({ jogador, onClose }) {
+  const tracker = jogador?.tracker || null
+  const p = tracker?.perfil || null
+  const [aba, setAba] = useState('resumo')
+
+  const abas = [
+    { id: 'resumo', label: 'Resumo' },
+    { id: 'ranked', label: 'Competitivo' },
+    { id: 'playlists', label: 'Playlists' },
+    { id: 'recentes', label: 'Partidas' },
+  ]
+
+  const vida = p?.vida || {}
+  const win = vida.WinRatio ?? null
+  const melhor = p?.melhorRank
+  const atual = p?.rankAtual
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:p-6"
+      onClick={onClose}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b12]/95 shadow-2xl shadow-black/60"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="border-b border-white/10 px-4 py-4 sm:px-6"
+          style={{ background: 'linear-gradient(120deg, rgba(217,70,239,0.16), transparent 65%)' }}
+        >
+          <div className="flex items-center gap-3">
+            {tracker?.avatar || jogador?.data?.account?.avatar ? (
+              <img
+                src={tracker?.avatar || jogador.data.account.avatar}
+                alt=""
+                className="h-12 w-12 rounded-full object-cover ring-2 ring-white/10"
+              />
+            ) : (
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-fuchsia-500/20 text-lg font-black text-fuchsia-300">
+                {(jogador?.nome || '?').slice(0, 1).toUpperCase()}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-fuchsia-300">
+                Fortnite Tracker (TRN)
+              </p>
+              <h3 className="truncate font-display text-xl font-black text-white">
+                {tracker?.nome || jogador?.nome}
+              </h3>
+              <p className="text-[11px] font-semibold text-gray-500">
+                {[p?.temporada, p?.pais, p?.input === 'kbm' ? 'KB/M' : p?.input]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            </div>
+            <a
+              href={`https://fortnitetracker.com/profile/all/${encodeURIComponent(
+                tracker?.nome || jogador?.nome || '',
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden rounded-full border border-fuchsia-400/30 bg-fuchsia-500/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-fuchsia-200 hover:bg-fuchsia-500/25 sm:block"
+            >
+              Abrir no TRN
+            </a>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Fechar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {p && (
+            <div className="mt-4 flex gap-1.5 overflow-x-auto pb-0.5">
+              {abas.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => setAba(a.id)}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
+                    aba === a.id
+                      ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25'
+                      : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+          {!p ? (
+            <div className="py-10 text-center">
+              <Info className="mx-auto mb-3 h-8 w-8 text-yellow-400" />
+              <p className="text-sm text-gray-300">
+                Ainda não há dados do tracker.gg para <b>{jogador?.nome}</b>.
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-xs text-gray-500">
+                No painel de admin → Fortnite → abre o perfil no tracker.gg, guarda a página com{' '}
+                <b>Guardar como…</b> e importa o ficheiro.
+              </p>
+            </div>
+          ) : aba === 'resumo' ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <MiniStat label="Partidas" valor={nFN(vida.Matches)} />
+                <MiniStat label="Vitórias" valor={nFN(vida.Top1)} cor="text-yellow-300" />
+                <MiniStat
+                  label="Win %"
+                  valor={win == null ? '—' : Number(win).toFixed(1)}
+                  sufixo="%"
+                  cor="text-green-300"
+                />
+                <MiniStat label="K/D" valor={vida.KD ?? '—'} cor="text-sky-300" />
+                <MiniStat label="Kills" valor={nFN(vida.Kills)} cor="text-violet-300" />
+                <MiniStat label="K/partida" valor={vida.KPG ?? '—'} cor="text-fuchsia-300" />
+                <MiniStat label="Tempo" valor={vida.MinutesPlayed_txt || '—'} />
+                <MiniStat
+                  label="TRN rating"
+                  valor={nFN(vida.TRNRating)}
+                  cor="text-emerald-300"
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    Top 3 / 5 / 10
+                  </p>
+                  <p className="font-display text-2xl font-black text-amber-300">
+                    {nFN(vida.Top3_5_10)}
+                  </p>
+                  <p className="text-[11px] text-gray-500">
+                    Top 6/12/25: <b className="text-gray-300">{nFN(vida.Top6_12_25)}</b>
+                  </p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    Rank atual
+                  </p>
+                  {atual?.atualRank ? (
+                    <div className="flex items-center gap-2">
+                      {atual.atualRank.icone && (
+                        <img src={atual.atualRank.icone} alt="" className="h-9 w-9 object-contain" />
+                      )}
+                      <div>
+                        <p className="font-display text-lg font-black text-white">
+                          {atual.atualRank.nome}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          {atual.modo} · {atual.season}
+                          {atual.atualRank.elo ? ` · ${nFN(atual.atualRank.elo)} Elo` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Sem rank nesta temporada.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { titulo: 'Últimos 7 dias', d: p.ultimos7, cor: 'text-sky-300' },
+                  { titulo: 'Últimos 30 dias', d: p.ultimos30, cor: 'text-violet-300' },
+                ].map(({ titulo, d, cor: c }) =>
+                  d ? (
+                    <div key={titulo} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                      <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        {titulo}
+                      </p>
+                      <div className="grid grid-cols-4 gap-1 text-center">
+                        <div>
+                          <p className={`font-display text-base font-black ${c}`}>{nFN(d.partidas)}</p>
+                          <p className="text-[8px] font-bold uppercase text-gray-500">Partidas</p>
+                        </div>
+                        <div>
+                          <p className="font-display text-base font-black text-yellow-300">{nFN(d.vitorias)}</p>
+                          <p className="text-[8px] font-bold uppercase text-gray-500">Wins</p>
+                        </div>
+                        <div>
+                          <p className="font-display text-base font-black text-green-300">
+                            {d.winPct == null ? '—' : `${Number(d.winPct).toFixed(1)}%`}
+                          </p>
+                          <p className="text-[8px] font-bold uppercase text-gray-500">Win%</p>
+                        </div>
+                        <div>
+                          <p className="font-display text-base font-black text-sky-300">{d.kd ?? '—'}</p>
+                          <p className="text-[8px] font-bold uppercase text-gray-500">K/D</p>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-[11px] text-gray-500">
+                        Kills: <b className="text-gray-300">{nFN(d.kills)}</b> · Tempo:{' '}
+                        <b className="text-gray-300">{d.tempo || '—'}</b>
+                      </p>
+                    </div>
+                  ) : null,
+                )}
+              </div>
+
+              {tracker.importadoEm && (
+                <p className="text-right text-[10px] text-gray-600">
+                  Importado a {new Date(tracker.importadoEm).toLocaleString('pt-PT')}
+                </p>
+              )}
+            </div>
+          ) : aba === 'ranked' ? (
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/[0.06] p-3">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-fuchsia-300">
+                    Rank atual
+                  </p>
+                  {atual?.atualRank ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        {atual.atualRank.icone && (
+                          <img src={atual.atualRank.icone} alt="" className="h-14 w-14 object-contain" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-display text-2xl font-black text-white">
+                            {atual.atualRank.nome}
+                          </p>
+                          <p className="text-[11px] font-semibold text-gray-400">
+                            {atual.modo}
+                            {atual.season ? ` · ${atual.season}` : ''}
+                          </p>
+                          {atual.atualRank.elo && (
+                            <p className="text-[11px] font-bold text-emerald-300">
+                              {nFN(atual.atualRank.elo)} Elo
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {atual.atualRank.progresso != null && (
+                        <div className="mt-3">
+                          <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full rounded-full bg-fuchsia-400"
+                              style={{ width: `${Math.min(100, Math.max(0, atual.atualRank.progresso))}%` }}
+                            />
+                          </div>
+                          <p className="mt-1 text-right text-[10px] text-gray-500">
+                            {Math.round(atual.atualRank.progresso)}% para o próximo nível
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-500">Sem rank nesta temporada.</p>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-amber-400/20 bg-amber-500/[0.05] p-3">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-amber-300">
+                    Melhor de sempre
+                  </p>
+                  {melhor ? (
+                    <div className="flex items-center gap-3">
+                      {melhor.icone && (
+                        <img src={melhor.icone} alt="" className="h-14 w-14 object-contain" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-display text-2xl font-black text-white">{melhor.nome}</p>
+                        <p className="text-[11px] font-semibold text-gray-400">
+                          {melhor.modo}
+                          {melhor.season ? ` · ${melhor.season}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Sem dados.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="w-full min-w-[520px] text-sm">
+                  <thead className="bg-white/[0.04] text-[10px] uppercase tracking-wider text-gray-500">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Season</th>
+                      <th className="px-3 py-2 text-left">Modo</th>
+                      <th className="px-3 py-2 text-right">Rank</th>
+                      <th className="px-3 py-2 text-right">Pico</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {p.ranks.map((r, i) => (
+                      <tr
+                        key={`${r.season}-${r.modo}-${i}`}
+                        className={`border-t border-white/5 ${i % 2 ? 'bg-white/[0.015]' : ''}`}
+                      >
+                        <td className="whitespace-nowrap px-3 py-2 text-gray-300">
+                          {r.season || '—'}
+                          {r.isCurrent && (
+                            <span className="ml-1.5 rounded-full bg-fuchsia-500/20 px-1.5 py-0.5 text-[9px] font-black text-fuchsia-300">
+                              ATUAL
+                            </span>
+                          )}
+                          {r.legacy && (
+                            <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[9px] font-bold text-gray-400">
+                              legacy
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-gray-400">{r.modo}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right">
+                          <span className="inline-flex items-center gap-1.5 font-bold text-white">
+                            {r.atualRank?.icone && (
+                              <img src={r.atualRank.icone} alt="" className="h-5 w-5 object-contain" />
+                            )}
+                            {r.atualRank?.nome || '—'}
+                          </span>
+                          {r.atualRank?.elo ? (
+                            <span className="ml-1 text-[10px] text-gray-500">
+                              {nFN(r.atualRank.elo)} Elo
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-gray-400">
+                          <span className="inline-flex items-center gap-1.5">
+                            {r.picoRank?.icone && (
+                              <img src={r.picoRank.icone} alt="" className="h-5 w-5 object-contain" />
+                            )}
+                            {r.picoRank?.nome || '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : aba === 'playlists' ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {p.playlists.map((pl) => (
+                <div key={pl.chave} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="font-display text-base font-black text-white">{pl.nome}</p>
+                    <p className="text-[10px] font-bold text-gray-500">
+                      {nFN(pl.Matches)} partidas
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 text-center">
+                    <div>
+                      <p className="font-display text-base font-black text-yellow-300">{nFN(pl.Top1)}</p>
+                      <p className="text-[8px] font-bold uppercase text-gray-500">Wins</p>
+                    </div>
+                    <div>
+                      <p className="font-display text-base font-black text-green-300">
+                        {pl.WinRatio == null ? '—' : `${Number(pl.WinRatio).toFixed(1)}%`}
+                      </p>
+                      <p className="text-[8px] font-bold uppercase text-gray-500">Win%</p>
+                    </div>
+                    <div>
+                      <p className="font-display text-base font-black text-sky-300">{pl.KD ?? '—'}</p>
+                      <p className="text-[8px] font-bold uppercase text-gray-500">K/D</p>
+                    </div>
+                    <div>
+                      <p className="font-display text-base font-black text-violet-300">{nFN(pl.Kills)}</p>
+                      <p className="text-[8px] font-bold uppercase text-gray-500">Kills</p>
+                    </div>
+                  </div>
+                  <p className="mt-2 flex flex-wrap justify-between gap-1 text-[10px] text-gray-500">
+                    <span>
+                      TRN: <b className="text-gray-300">{nFN(pl.TRNRating)}</b>
+                    </span>
+                    {pl.Top10 > 0 && (
+                      <span>
+                        Top 10: <b className="text-gray-300">{nFN(pl.Top10)}</b>
+                      </span>
+                    )}
+                    {pl.Top25 > 0 && (
+                      <span>
+                        Top 25: <b className="text-gray-300">{nFN(pl.Top25)}</b>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {p.recentes.length === 0 ? (
+                <p className="py-8 text-center text-sm text-gray-500">Sem partidas recentes.</p>
+              ) : (
+                p.recentes.map((m, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2"
+                  >
+                    <div
+                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg text-sm font-black ${
+                        m.colocacao === 1
+                          ? 'bg-yellow-500/20 text-yellow-300'
+                          : m.ranked
+                            ? 'bg-fuchsia-500/15 text-fuchsia-300'
+                            : 'bg-white/10 text-gray-300'
+                      }`}
+                    >
+                      {m.colocacao === 1 ? 'W' : m.colocacao ?? '–'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-bold text-white">{m.modo}</p>
+                      <p className="text-[10px] text-gray-500">
+                        {m.data ? new Date(m.data).toLocaleString('pt-PT') : '—'}
+                        {m.mapa ? ` · ${m.mapa}` : ''}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right text-[11px]">
+                      <p className="font-black text-violet-300">{nFN(m.kills)} kills</p>
+                      <p className="text-[10px] text-gray-500">
+                        {m.partidas > 1 ? `${m.partidas} partidas · ` : ''}
+                        {nFN(m.score)} pts
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </div>,
+    document.body,
+  )
+}
+
 function FortniteStats() {
   const [query, setQuery] = useState('')
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fixos, setFixos] = useState([])
+  const [trackerAberto, setTrackerAberto] = useState(null)
 
   useEffect(() => {
     let vivo = true
@@ -788,15 +1241,84 @@ function FortniteStats() {
                         <p className="text-[9px] font-bold uppercase text-gray-500">Passe</p>
                       </div>
                     </div>
+                  ) : j.tracker?.perfil ? (
+                    <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+                      <div>
+                        <p className="font-display text-base font-black text-sky-300">
+                          {j.tracker.perfil.vida?.KD ?? '—'}
+                        </p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">K/D</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-violet-300">
+                          {fmt(j.tracker.perfil.vida?.Kills)}
+                        </p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-yellow-300">
+                          {fmt(j.tracker.perfil.vida?.Top1)}
+                        </p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Vitórias</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-green-300">
+                          {j.tracker.perfil.vida?.WinRatio != null
+                            ? `${Number(j.tracker.perfil.vida.WinRatio).toFixed(1)}%`
+                            : '—'}
+                        </p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Win%</p>
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-xs text-gray-500">Perfil não encontrado ou sem dados.</p>
                   )}
+
+                  {/* rank do competitivo + perfil completo do tracker.gg */}
+                  {j.tracker?.perfil?.rankAtual?.atualRank && (
+                    <div className="mt-3 flex items-center gap-2 rounded-lg border border-fuchsia-400/20 bg-fuchsia-500/[0.06] px-2.5 py-2">
+                      {j.tracker.perfil.rankAtual.atualRank.icone && (
+                        <img
+                          src={j.tracker.perfil.rankAtual.atualRank.icone}
+                          alt=""
+                          className="h-8 w-8 shrink-0 object-contain"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[9px] font-black uppercase tracking-wider text-fuchsia-300">
+                          Ranked · {j.tracker.perfil.rankAtual.modo}
+                        </p>
+                        <p className="truncate text-[12px] font-black text-white">
+                          {j.tracker.perfil.rankAtual.atualRank.nome}
+                          {j.tracker.perfil.rankAtual.atualRank.elo
+                            ? ` · ${fmt(j.tracker.perfil.rankAtual.atualRank.elo)} Elo`
+                            : ''}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setTrackerAberto(j)}
+                    className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
+                      j.tracker
+                        ? 'border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-200 hover:bg-fuchsia-500/20 hover:text-white'
+                        : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" /> Perfil completo (TRN)
+                  </button>
                 </motion.div>
               )
             })}
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {trackerAberto && (
+          <FortniteTrackerModal jogador={trackerAberto} onClose={() => setTrackerAberto(null)} />
+        )}
+      </AnimatePresence>
 
       {/* Results */}
       {d && (
@@ -1910,7 +2432,8 @@ function Cs2Vivo() {
         </div>
       )}
 
-      {invModal && (
+      {invModal &&
+        createPortal(
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
           onClick={() => setInvModal(null)}
@@ -1968,12 +2491,69 @@ function Cs2Vivo() {
                         </p>
                       </div>
                     </div>
+                    {Number(d.dados.avaliados) === 0 && (
+                      <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-400/25 bg-amber-500/[0.07] px-3 py-2.5">
+                        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                        <p className="text-[11px] leading-snug text-amber-100/90">
+                          Nenhum item deste inventário tem preço de mercado (itens não negociáveis
+                          ou sem cotação). O inventário completo aparece em baixo, com as imagens.
+                        </p>
+                      </div>
+                    )}
+
+                    {(d.dados.topItens || []).length > 0 && (
+                      <>
+                        <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
+                          Itens mais valiosos
+                        </p>
+                        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                          {(d.dados.topItens || []).map((it) => (
+                            <div
+                              key={it.nome}
+                              className="relative rounded-xl border border-white/10 bg-white/[0.03] p-2"
+                            >
+                              {it.qtd > 1 && (
+                                <span className="absolute right-1.5 top-1.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-black text-white">
+                                  {it.qtd}×
+                                </span>
+                              )}
+                              {it.icone ? (
+                                <img
+                                  src={`https://community.cloudflare.steamstatic.com/economy/image/${it.icone}/128fx128f?allowcrossorigin=true`}
+                                  alt=""
+                                  className="mx-auto h-16 w-16 object-contain"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="mx-auto h-16 w-16 rounded bg-white/5" />
+                              )}
+                              <p className="mt-1 line-clamp-2 text-[10px] font-bold leading-tight text-white">
+                                {it.nome}
+                              </p>
+                              <p className="text-[10px] font-black text-emerald-300">
+                                {Number(it.total).toFixed(2)} €
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
                     <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
-                      Itens mais valiosos
+                      Inventário completo{' '}
+                      <span className="text-gray-600">({d.dados.unicos} itens únicos)</span>
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                      {(d.dados.topItens || []).map((it) => (
-                        <div key={it.nome} className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
+                      {(d.dados.itens || []).map((it, i) => (
+                        <div
+                          key={it.nome + i}
+                          className="relative rounded-xl border border-white/10 bg-white/[0.03] p-2"
+                        >
+                          {it.qtd > 1 && (
+                            <span className="absolute right-1.5 top-1.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-black text-white">
+                              {it.qtd}×
+                            </span>
+                          )}
                           {it.icone ? (
                             <img
                               src={`https://community.cloudflare.steamstatic.com/economy/image/${it.icone}/128fx128f?allowcrossorigin=true`}
@@ -1982,21 +2562,39 @@ function Cs2Vivo() {
                               loading="lazy"
                             />
                           ) : (
-                            <div className="mx-auto h-16 w-16 rounded bg-white/5" />
+                            <div className="mx-auto grid h-16 w-16 place-items-center rounded bg-white/5 text-[9px] text-gray-600">
+                              sem imagem
+                            </div>
                           )}
                           <p className="mt-1 line-clamp-2 text-[10px] font-bold leading-tight text-white">
                             {it.nome}
                           </p>
-                          <p className="text-[10px] font-black text-emerald-300">
-                            {Number(it.total).toFixed(2)} €{' '}
-                            <span className="font-semibold text-gray-500">({it.qtd}×)</span>
+                          <p
+                            className={`text-[10px] font-black ${
+                              it.total != null ? 'text-emerald-300' : 'text-gray-600'
+                            }`}
+                          >
+                            {it.total != null ? `${Number(it.total).toFixed(2)} €` : 'sem preço'}
                           </p>
+                          {it.raridade && (
+                            <p className="mt-0.5 truncate text-[8px] uppercase tracking-wide text-gray-600">
+                              {it.raridade}
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
-                    {d.dados.parcial && (
+                    {Number(d.dados.unicos) > Number(d.dados.itensListados || 0) && (
+                      <p className="mt-3 text-[10px] text-gray-600">
+                        A mostrar os primeiros {d.dados.itensListados} de {d.dados.unicos} itens
+                        únicos (os mais valiosos primeiro).
+                      </p>
+                    )}
+                    {d.dados.parcial && Number(d.dados.avaliados) > 0 && (
                       <p className="mt-3 text-[10px] leading-snug text-gray-600">
-                        Estimativa parcial: só entram os itens com preço de mercado na Steam.
+                        Estimativa de mercado: {d.dados.avaliados} de{' '}
+                        {Number(d.dados.avaliados) + Number(d.dados.semPreco || 0)} itens negociáveis
+                        com cotação ({d.dados.fonte || 'Skinport'}).
                       </p>
                     )}
                   </div>
@@ -2004,7 +2602,8 @@ function Cs2Vivo() {
               })()}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )
@@ -2081,7 +2680,316 @@ const maxRankDe = (p, rp) => {
   return rankFromRp(rp)
 }
 
+/* ------------------------------------------------------------
+   R6 — operadores (import do tracker.gg: temporada + all time)
+   ------------------------------------------------------------ */
+const slugOperador = (nome) =>
+  String(nome || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+function IconeOperador({ nome, className = 'h-9 w-9' }) {
+  const [erro, setErro] = useState(false)
+  if (erro || !nome) {
+    return (
+      <span
+        className={`${className} grid shrink-0 place-items-center rounded-lg bg-white/10 text-[11px] font-black text-gray-300`}
+      >
+        {String(nome || '?').slice(0, 1).toUpperCase()}
+      </span>
+    )
+  }
+  return (
+    <img
+      src={`/r6/operators/${slugOperador(nome)}.png`}
+      alt={nome}
+      title={nome}
+      className={`${className} shrink-0 rounded-lg object-contain`}
+      loading="lazy"
+      onError={() => setErro(true)}
+    />
+  )
+}
+
+const pctNum = (v) => {
+  if (v == null) return null
+  const n = Number(String(v).replace('%', '').replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+
+function TabelaOperadores({ ops = [] }) {
+  const [ordem, setOrdem] = useState({ campo: 'rounds', desc: true })
+  const maxRondas = Math.max(1, ...ops.map((o) => Number(o.rounds) || 0))
+
+  const lista = useMemo(() => {
+    const valor = (o) => {
+      if (ordem.campo === 'win' || ordem.campo === 'hs') return pctNum(o[ordem.campo]) ?? -1
+      return Number(o[ordem.campo]) || 0
+    }
+    return ops.slice().sort((a, b) => (ordem.desc ? valor(b) - valor(a) : valor(a) - valor(b)))
+  }, [ops, ordem])
+
+  const cabecalho = (campo, label, titulo) => (
+    <th
+      onClick={() =>
+        setOrdem((o) => (o.campo === campo ? { campo, desc: !o.desc } : { campo, desc: true }))
+      }
+      className="cursor-pointer select-none whitespace-nowrap px-2 py-2 text-right text-[10px] font-black uppercase tracking-wider text-gray-500 hover:text-white"
+      title={titulo || label}
+    >
+      {label}
+      {ordem.campo === campo && (
+        <span className="ml-1 text-violet-400">{ordem.desc ? '▾' : '▴'}</span>
+      )}
+    </th>
+  )
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-white/10">
+      <table className="w-full min-w-[640px] border-collapse text-sm">
+        <thead className="bg-white/[0.04]">
+          <tr>
+            <th className="sticky left-0 z-10 bg-[#11111a] px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-gray-500">
+              Operador
+            </th>
+            {cabecalho('rounds', 'Rondas', 'Rondas jogadas')}
+            {cabecalho('win', 'Win %', 'Percentagem de vitórias')}
+            {cabecalho('kd', 'K/D')}
+            {cabecalho('hs', 'HS %', 'Headshots')}
+            {cabecalho('kills', 'Kills')}
+            {cabecalho('deaths', 'Deaths')}
+            {cabecalho('assists', 'Assist.')}
+            {cabecalho('aces', 'Aces')}
+            {cabecalho('tks', 'TKs', 'Team kills')}
+          </tr>
+        </thead>
+        <tbody>
+          {lista.map((o, i) => {
+            const win = pctNum(o.win)
+            const hs = pctNum(o.hs)
+            return (
+              <tr
+                key={o.nome + i}
+                className={`border-t border-white/5 ${i % 2 ? 'bg-white/[0.015]' : ''} hover:bg-violet-500/[0.06]`}
+              >
+                <td className="sticky left-0 z-10 bg-[#0d0d15] px-3 py-2">
+                  <div className="flex items-center gap-2.5">
+                    <IconeOperador nome={o.nome} className="h-8 w-8" />
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-white">{o.nome}</p>
+                      <div className="mt-1 h-1 w-20 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-violet-400/80"
+                          style={{
+                            width: `${Math.max(4, ((Number(o.rounds) || 0) / maxRondas) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right font-black text-white">
+                  {fmt(o.rounds)}
+                </td>
+                <td
+                  className={`whitespace-nowrap px-2 py-2 text-right font-bold ${
+                    win == null ? 'text-gray-500' : win >= 50 ? 'text-green-400' : 'text-red-400'
+                  }`}
+                >
+                  {o.win ?? '—'}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-sky-300">
+                  {o.kd ?? '—'}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-amber-300">
+                  {o.hs ?? '—'}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-violet-300">
+                  {fmt(o.kills)}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right text-gray-300">
+                  {fmt(o.deaths)}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right text-gray-300">
+                  {fmt(o.assists)}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-yellow-300">
+                  {fmt(o.aces)}
+                </td>
+                <td className="whitespace-nowrap px-2 py-2 text-right text-gray-500">
+                  {fmt(o.tks)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function R6OperadoresModal({ jogador, onClose }) {
+  const season = jogador.operatorsSeason || null
+  const all = jogador.operatorsAllTime || null
+  const [aba, setAba] = useState(season ? 'season' : 'all')
+  const atual = aba === 'season' ? season : all
+  const ops = atual?.ops || []
+  const cor = PLAYER_COLORS[jogador.key] || '#f97316'
+
+  const totais = useMemo(() => {
+    const t = { rounds: 0, kills: 0, deaths: 0, wins: 0, losses: 0, assists: 0, aces: 0, tks: 0 }
+    for (const o of ops) {
+      for (const k of Object.keys(t)) t[k] += Number(o[k]) || 0
+    }
+    return t
+  }, [ops])
+
+  const melhor = useMemo(
+    () => ops.slice().sort((a, b) => (Number(b.rounds) || 0) - (Number(a.rounds) || 0))[0] || null,
+    [ops],
+  )
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:p-6"
+      onClick={onClose}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b12]/95 shadow-2xl shadow-black/60"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="relative border-b border-white/10 px-4 py-4 sm:px-6"
+          style={{ background: `linear-gradient(120deg, ${cor}22, transparent 65%)` }}
+        >
+          <div className="flex items-center gap-3">
+            {jogador.avatar ? (
+              <img
+                src={jogador.avatar}
+                alt=""
+                className="h-12 w-12 rounded-full object-cover ring-2 ring-white/10"
+              />
+            ) : (
+              <span
+                className="grid h-12 w-12 place-items-center rounded-full text-lg font-black"
+                style={{ backgroundColor: `${cor}22`, color: cor }}
+              >
+                {(jogador.handle || '?').slice(0, 1).toUpperCase()}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                Operadores · Rainbow Six
+              </p>
+              <h3 className="truncate font-display text-xl font-black text-white">{jogador.handle}</h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Fechar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              onClick={() => setAba('season')}
+              disabled={!season}
+              className={`rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+                aba === 'season'
+                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                  : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+              }`}
+            >
+              Temporada {season?.season || ''}
+            </button>
+            <button
+              onClick={() => setAba('all')}
+              disabled={!all}
+              className={`rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+                aba === 'all'
+                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                  : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+              }`}
+            >
+              Todas as seasons
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+          {!atual ? (
+            <p className="py-10 text-center text-sm text-gray-400">
+              Ainda não há operadores importados. No admin, abre a página de operadores do
+              tracker.gg, guarda com <b>Guardar como…</b> e importa aqui.
+            </p>
+          ) : (
+            <>
+              <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
+                  <p className="font-display text-xl font-black text-white">{ops.length}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Operadores</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
+                  <p className="font-display text-xl font-black text-violet-300">{fmt(totais.rounds)}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Rondas</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
+                  <p className="font-display text-xl font-black text-sky-300">{fmt(totais.kills)}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Kills</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
+                  <p className="font-display text-xl font-black text-emerald-300">
+                    {totais.deaths ? (totais.kills / totais.deaths).toFixed(2) : '—'}
+                  </p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">K/D</p>
+                </div>
+              </div>
+
+              {melhor && (
+                <div className="mb-4 flex items-center gap-3 rounded-xl border border-violet-400/20 bg-violet-500/[0.07] px-3 py-2.5">
+                  <IconeOperador nome={melhor.nome} className="h-10 w-10" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-violet-300">
+                      Mais jogado
+                    </p>
+                    <p className="truncate font-bold text-white">{melhor.nome}</p>
+                  </div>
+                  <p className="text-right text-[11px] text-gray-400">
+                    <b className="text-white">{fmt(melhor.rounds)}</b> rondas
+                    <br />
+                    <b className="text-sky-300">{melhor.kd ?? '—'}</b> K/D ·{' '}
+                    <b className="text-amber-300">{melhor.hs ?? '—'}</b> HS
+                  </p>
+                </div>
+              )}
+
+              <TabelaOperadores ops={ops} />
+
+              <p className="mt-3 text-right text-[10px] text-gray-600">
+                {atual.importadoEm
+                  ? `Importado a ${new Date(atual.importadoEm).toLocaleString('pt-PT')}`
+                  : ''}
+                {' · '}clica nos títulos para ordenar
+              </p>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>,
+    document.body,
+  )
+}
+
 function R6Squad({ players, maxRp = {} }) {
+  const [opsAberto, setOpsAberto] = useState(null)
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -2199,14 +3107,34 @@ function R6Squad({ players, maxRp = {} }) {
                   )
                 })()}
               </div>
+
+              {/* Operadores — janela flutuante */}
+              <button
+                onClick={() => setOpsAberto(p)}
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-violet-400/25 bg-violet-500/10 py-1.5 text-[11px] font-black uppercase tracking-wider text-violet-200 transition-colors hover:bg-violet-500/20 hover:text-white"
+              >
+                <Swords className="h-3.5 w-3.5" /> Operadores
+                {p.operatorsSeason?.total || p.operatorsAllTime?.total ? (
+                  <span className="rounded-full bg-black/30 px-1.5 py-0.5 text-[9px] text-gray-300">
+                    {p.operatorsSeason?.total || p.operatorsAllTime?.total}
+                  </span>
+                ) : null}
+              </button>
             </motion.div>
           )
         })}
       </div>
       <p className="mt-4 text-center text-xs text-gray-500">
-        Nível, rank da temporada, rank máximo e números de carreira de cada membro — só o
-        esquadrão. Dados do <code className="text-violet-400">server/data/r6.json</code> (export do tracker.gg).
+        Nível, rank da temporada, rank máximo, números de carreira e operadores de cada membro —
+        só o esquadrão. Dados do <code className="text-violet-400">tracker.gg</code> (import manual
+        no painel de admin).
       </p>
+
+      <AnimatePresence>
+        {opsAberto && (
+          <R6OperadoresModal jogador={opsAberto} onClose={() => setOpsAberto(null)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -2337,8 +3265,35 @@ function R6Stats() {
 
   return (
     <div className="space-y-6">
-      {/* estado da atualização — engine Ubisoft (open source) */}
-      {d.auto?.ligado ? (
+      {/* estado da atualização */}
+      {d.auto?.modo === 'manual' ? (
+        <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] px-4 py-2.5 text-[13px] text-gray-300">
+          <span className="relative inline-flex h-2.5 w-2.5 place-items-center">
+            <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-violet-400 opacity-60" />
+            <span className="h-2 w-2 rounded-full bg-violet-400" />
+          </span>
+          <span className="flex-1 min-w-0">
+            Estatísticas do <span className="font-bold text-violet-300">tracker.gg</span> (import
+            manual no painel de admin)
+            {d.temporada ? ` · temporada ${d.temporada}` : ''}
+            {d.updatedAt
+              ? ` · dados ${new Date(d.updatedAt).toLocaleString('pt-PT', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}`
+              : ''}
+          </span>
+          <button
+            onClick={load}
+            className="rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-bold text-gray-300 hover:bg-white/10 shrink-0"
+            title="Atualizar agora"
+          >
+            <RotateCcw className="inline h-3 w-3 mr-1" /> Refresh
+          </button>
+        </div>
+      ) : d.auto?.ligado ? (
         <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-green-500/25 bg-green-500/5 px-4 py-2.5 text-[13px] text-gray-300">
           <span className="relative inline-flex h-2.5 w-2.5 place-items-center">
             <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-green-400 opacity-60" />
@@ -2347,9 +3302,7 @@ function R6Stats() {
           <span className="flex-1 min-w-0">
             Estatísticas <span className="font-bold text-green-400">automáticas</span> — API da
             Ubisoft (open source SwiftCODA/R6-API)
-            {d.auto.intervaloMin
-              ? ` · a cada ${d.auto.intervaloMin} min`
-              : ''}
+            {d.auto.intervaloMin ? ` · a cada ${d.auto.intervaloMin} min` : ''}
             {d.temporada ? ` · temporada ${d.temporada}` : ''}
             {d.updatedAt
               ? ` · dados ${new Date(d.updatedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
@@ -2409,10 +3362,7 @@ function R6Stats() {
 
       <p className="text-center text-xs text-gray-500">
         <Star className="mr-1 inline h-3 w-3 text-violet-400" />
-        Dados da API oficial da Ubisoft
-        {d.auto?.fonte === 'ubisoft' && d.auto?.credencial
-          ? ' — atualização automática, sem tracker.gg'
-          : ' — lidos localmente enquanto a conta Ubisoft não está no .env'}
+        Dados do tracker.gg — import manual no painel de admin (perfil + operadores)
         {d.updatedAt
           ? ' · atualizado a ' +
             new Date(d.updatedAt).toLocaleString('pt-PT', {
