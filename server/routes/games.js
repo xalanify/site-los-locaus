@@ -668,6 +668,20 @@ router.get('/fortnite', async (req, res) => {
   }
 });
 // ============================================================
+// Fortnite — próximos torneios (Liquipedia: majors + copas diárias)
+// ============================================================
+router.get('/fortnite/torneios', async (req, res) => {
+  try {
+    const dados = await require('../fortnitetorneios').listar(req.query.region || 'EU');
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(dados);
+  } catch (e) {
+    console.error('Erro games/fortnite/torneios:', e.message);
+    res.status(502).json({ ok: false, erro: 'Não foi possível ler os torneios.', torneios: [] });
+  }
+});
+
+// ============================================================
 // Battlefield — BF1 / BFV / BF6 (snapshot tracker.gg)
 // ============================================================
 router.get('/bf', (req, res) => {

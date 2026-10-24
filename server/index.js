@@ -114,6 +114,7 @@ if (emBreveHtml) {
 app.use((req, res, next) => {
   if (
     req.path === '/api/admin/r6/import' ||
+    req.path === '/api/admin/fortnite/import' ||
     req.path === '/api/clips/pub/confirm' ||
     req.path.startsWith('/api/agente')
   ) {
@@ -241,6 +242,11 @@ if (!IS_VERCEL) {
 
 app.use((err, req, res, next) => {
   console.error(err.message);
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json({
+      error: 'O ficheiro é demasiado grande para este pedido. Usa a caixa de import própria (R6/Fortnite) no painel.',
+    });
+  }
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
 

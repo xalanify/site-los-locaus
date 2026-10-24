@@ -54,6 +54,20 @@ Por cada contador (1, 2, 3):
 > Só quem autoriza é a conta do canal (2–3 contas vossas). Os membros do site
 > nunca veem ecrã nenhum do Google.
 
+### Se o upload falhar com `invalid_grant`
+
+Significa que o refresh token já não é válido. As causas normais são:
+
+- a app OAuth ficou em **Testing** e o refresh token expirou ao fim de **7 dias**;
+- mudaste a palavra-passe da conta Google;
+- revogaste o acesso da app em <https://myaccount.google.com/permissions>;
+- o refresh token foi gerado sem **"Use your own OAuth credentials"**.
+
+Para resolver: volta ao passo 5, gera um refresh token novo e substitui
+`YT_REFRESH_TOKEN_1` no `.env`/Vercel. Depois de gerar o token, abre o
+**OAuth consent screen** e carrega em **Publish app** (não precisa de
+verificação para uso próprio). Assim o token deixa de expirar aos 7 dias.
+
 ## 2. Valores no `server/.env`
 
 ```env

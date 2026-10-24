@@ -1,8 +1,10 @@
 /* ============================================================
-   Torneios competitivos de Fortnite — próximos eventos
+   Torneios de Fortnite — lista de reserva (fallback)
    ------------------------------------------------------------
-   Edita este ficheiro para atualizar os torneios (não há API
-   pública gratuita para o calendário competitivo da Epic).
+   A lista principal vem automaticamente do calendário oficial
+   da Epic (via FNJPNews) em /api/games/fortnite/torneios, com
+   todos os torneios e copas diárias. Este ficheiro só é usado
+   se essa API falhar.
    Cada entrada: { id, nome, local, inicio, fim, circuito, premio }
    `inicio`/`fim` em ISO (ex: '2026-11-14T15:00:00Z').
    ============================================================ */

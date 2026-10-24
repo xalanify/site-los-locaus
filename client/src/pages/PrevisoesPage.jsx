@@ -506,12 +506,74 @@ function Countdown({ inicio }) {
   )
 }
 
+const REGIOES_FN = [
+  { id: 'EU', label: 'Europa' },
+  { id: 'NAC', label: 'NA Central' },
+  { id: 'NAE', label: 'NA East' },
+  { id: 'NAW', label: 'NA West' },
+  { id: 'OCE', label: 'Oceânia' },
+  { id: 'ME', label: 'Médio Oriente' },
+  { id: 'BR', label: 'Brasil' },
+  { id: 'ASIA', label: 'Ásia' },
+]
+
 function FortniteTorneiosTab() {
-  const agora = Date.now()
-  const futuros = FORTNITE_TORNEIOS.filter((t) => new Date(t.fim).getTime() > agora).sort(
-    (a, b) => new Date(a.inicio) - new Date(b.inicio),
-  )
-  const prox = futuros[0]
+  const [regiao, setRegiao] = useState('EU')
+  const [dados, setDados] = useState(null)
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
+
+  useEffect(() => {
+    let vivo = true
+    setCarregando(true)
+    setErro('')
+    fetch(`/api/games/fortnite/torneios?region=${regiao}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!vivo) return
+        setDados(d)
+        if (!d?.ok) setErro(d?.erro || 'Não deu para atualizar o calendário.')
+      })
+      .catch(() => {
+        if (vivo) setErro('Sem ligação ao calendário de torneios.')
+      })
+      .finally(() => {
+        if (vivo) setCarregando(false)
+      })
+    return () => {
+      vivo = false
+    }
+  }, [regiao])
+
+  const remotos = Array.isArray(dados?.torneios) ? dados.torneios : []
+  const usarRemotos = remotos.length > 0
+
+  const futuros = useMemo(() => {
+    if (usarRemotos) return remotos
+    return FORTNITE_TORNEIOS.map((t) => ({
+      ...t,
+      estado: 'upcoming',
+      regiao: null,
+      imagem: null,
+      link: null,
+    }))
+      .filter((t) => new Date(t.fim).getTime() > Date.now())
+      .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))
+  }, [remotos, usarRemotos])
+
+  const vivos = futuros.filter((t) => t.estado === 'live')
+  const proximo = futuros.find((t) => t.estado !== 'live') || futuros[0] || null
+
+  const grupos = useMemo(() => {
+    const mapa = new Map()
+    for (const t of futuros) {
+      if (t.estado === 'live') continue
+      const chave = new Date(t.inicio).toDateString()
+      if (!mapa.has(chave)) mapa.set(chave, [])
+      mapa.get(chave).push(t)
+    }
+    return [...mapa.entries()]
+  }, [futuros])
 
   return (
     <div className="space-y-4">
@@ -520,14 +582,66 @@ function FortniteTorneiosTab() {
           <Flame className="h-7 w-7" />
         </span>
         <h2 className="mt-3 font-display text-xl font-black uppercase text-white">
-          Previsões Fortnite
+          Torneios Fortnite
         </h2>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-gray-400">
-          Os próximos torneios competitivos de Fortnite. As previsões chegam em breve.
+        <p className="mx-auto mt-1 max-w-md text-sm text-gray-400">
+          Todos os torneios do calendário oficial — FNCS, Cash Cups, Ranked Cups e copas
+          diárias/semanais — atualizados automaticamente.
         </p>
       </div>
 
-      {prox && (
+      {/* seletor de região */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {REGIOES_FN.map((r) => (
+          <button
+            key={r.id}
+            onClick={() => setRegiao(r.id)}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
+              regiao === r.id
+                ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25'
+                : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+
+      {vivos.length > 0 && (
+        <div className="space-y-2">
+          {vivos.map((t) => (
+            <a
+              key={t.id}
+              href={t.link || undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (!t.link) e.preventDefault()
+              }}
+              className="flex items-center gap-3 rounded-2xl border border-red-400/30 bg-red-500/[0.08] px-3 py-2.5"
+            >
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-red-400 opacity-60" />
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-black uppercase tracking-widest text-red-300">
+                  A decorrer agora
+                </p>
+                <p className="truncate text-sm font-black text-white">{t.nome}</p>
+                <p className="text-[10px] font-semibold text-gray-400">
+                  {t.regiao || t.local || ''} · até {fmtHora(t.fim)}
+                </p>
+              </div>
+              {t.imagem && (
+                <img src={t.imagem} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+              )}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {proximo && (
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -535,57 +649,131 @@ function FortniteTorneiosTab() {
         >
           <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-fuchsia-500/15 blur-3xl" />
           <div className="relative flex flex-wrap items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-fuchsia-500/15 ring-1 ring-fuchsia-400/30">
-              <Trophy className="h-6 w-6 text-fuchsia-300" />
-            </span>
+            {proximo.imagem ? (
+              <img
+                src={proximo.imagem}
+                alt=""
+                className="h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-fuchsia-400/30"
+              />
+            ) : (
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-fuchsia-500/15 ring-1 ring-fuchsia-400/30">
+                <Trophy className="h-6 w-6 text-fuchsia-300" />
+              </span>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300">
                 Próximo torneio
               </p>
-              <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">{prox.nome}</h3>
+              <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">
+                {proximo.nome}
+              </h3>
               <p className="truncate text-[11px] font-semibold text-gray-400">
-                {prox.circuito} · {prox.local}
+                {proximo.regiao || proximo.local}
+                {proximo.circuito ? ` · ${proximo.circuito}` : ''}
               </p>
               <p className="mt-0.5 text-[11px] font-semibold text-gray-500">
-                {fmtDataHora(prox.inicio)} — {fmtDataHora(prox.fim)}
+                {fmtDataHora(proximo.inicio)} — {fmtDataHora(proximo.fim)}
               </p>
             </div>
-            <Countdown inicio={prox.inicio} />
+            <Countdown inicio={proximo.inicio} />
           </div>
         </motion.section>
       )}
 
       <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-400">
-          <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
-        </h2>
-        {futuros.length === 0 ? (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-400">
+            <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
+          </h2>
+          <span className="text-[10px] font-semibold text-gray-600">
+            {carregando
+              ? 'A atualizar…'
+              : dados?.atualizadoEm
+                ? `Atualizado ${fmtHora(dados.atualizadoEm)} · ${dados.fonte || 'FNJPNews'}`
+                : usarRemotos
+                  ? ''
+                  : 'Lista local'}
+          </span>
+        </div>
+
+        {erro && !usarRemotos && (
+          <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+            {erro} A mostrar a lista local.
+          </p>
+        )}
+
+        {carregando && !usarRemotos ? (
+          <div className="flex items-center justify-center gap-2 py-8 text-sm text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" /> A carregar torneios…
+          </div>
+        ) : futuros.length === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">
-            Sem torneios anunciados de momento. Volta mais tarde.
+            Sem torneios anunciados nesta região. Tenta outra região.
           </p>
         ) : (
-          <div className="space-y-2">
-            {futuros.map((t) => (
-              <div
-                key={t.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-white">{t.nome}</p>
-                  <p className="truncate text-[11px] font-semibold text-gray-400">
-                    {t.circuito} · {t.local}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[11px] font-bold text-fuchsia-300">{fmtDataHora(t.inicio)}</p>
-                  <p className="text-[10px] font-semibold text-gray-500">até {fmtDataHora(t.fim)}</p>
+          <div className="space-y-4">
+            {grupos.map(([dia, lista]) => (
+              <div key={dia}>
+                <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-fuchsia-300/80">
+                  {fmtDia(lista[0].inicio)}
+                </p>
+                <div className="space-y-1.5">
+                  {lista.map((t) => (
+                    <a
+                      key={`${t.id}|${t.inicio}`}
+                      href={t.link || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        if (!t.link) e.preventDefault()
+                      }}
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5 transition-colors hover:border-fuchsia-400/25 hover:bg-fuchsia-500/[0.06]"
+                    >
+                      {t.imagem ? (
+                        <img
+                          src={t.imagem}
+                          alt=""
+                          className="h-11 w-11 shrink-0 rounded-lg object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/5 text-fuchsia-300">
+                          <Trophy className="h-4 w-4" />
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] font-black text-white">{t.nome}</p>
+                        <p className="truncate text-[10px] font-semibold text-gray-500">
+                          {[t.regiao || t.local, t.descricao].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-[11px] font-black text-fuchsia-300">
+                          {fmtHora(t.inicio)} – {fmtHora(t.fim)}
+                        </p>
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-gray-600">
+                          {t.estado === 'live' ? 'Ao vivo' : 'Início'}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </div>
             ))}
           </div>
         )}
+
         <p className="mt-3 text-center text-[10px] font-semibold text-gray-600">
-          Lista editável em <code className="text-fuchsia-400">client/src/data/fortniteTorneios.js</code>.
+          Calendário oficial da Epic via{' '}
+          <a
+            href="https://uefn.fnjpnews.com/en/tournaments"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-fuchsia-400 underline-offset-2 hover:underline"
+          >
+            FNJPNews
+          </a>{' '}
+          · atualiza sozinho
         </p>
       </section>
     </div>
