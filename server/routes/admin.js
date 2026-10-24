@@ -471,6 +471,42 @@ router.get('/r6/links', requireAdmin, async (req, res) => {
   }
 });
 
+router.get('/fortnite/links', requireAdmin, async (req, res) => {
+  try {
+    res.json({ ok: true, jogadores: require('../fortniteauto').links() });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+router.post(
+  '/fortnite/import',
+  express.json({ limit: '40mb' }),
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const fn = require('../fortniteauto');
+      const body = req.body || {};
+      const itens = Array.isArray(body) ? body : Array.isArray(body.jsons) ? body.jsons : [body];
+      const resultados = [];
+      for (const it of itens) resultados.push(await fn.importar(it));
+      const ok = resultados.filter((r) => r.ok).length;
+      res.json({ ok: ok > 0, importados: ok, total: resultados.length, resultados });
+    } catch (error) {
+      console.error('Erro fortnite/import:', error.message);
+      res.status(500).json({ ok: false, error: 'Não foi possível importar.' });
+    }
+  },
+);
+
+router.get('/fortnite/status', requireAdmin, async (req, res) => {
+  try {
+    res.json(await require('../fortniteauto').estado());
+  } catch {
+    res.json({ ok: false, jogadores: [] });
+  }
+});
+
 router.post('/r6/refresh', requireAdmin, async (req, res) => {
   try {
     const r6 = require('../r6auto');

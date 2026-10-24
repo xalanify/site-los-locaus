@@ -27,6 +27,7 @@ import {
   RefreshCcw,
   ScrollText,
   Bell,
+  Flame,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
@@ -319,6 +320,49 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       setR6Links(Array.isArray(d.jogadores) ? d.jogadores : [])
     } catch {
       setR6Links([])
+    }
+  }
+
+  /* ---------- Fortnite: links + import tracker.gg ---------- */
+  const [fnLinks, setFnLinks] = useState(null)
+  const fnFileRef = useRef(null)
+  const [fnImportMsg, setFnImportMsg] = useState(null)
+  const abrirLinksFn = async () => {
+    try {
+      const res = await fetch('/api/admin/fortnite/links', { headers: adminHeaders() })
+      const d = await res.json().catch(() => ({}))
+      setFnLinks(Array.isArray(d.jogadores) ? d.jogadores : [])
+    } catch {
+      setFnLinks([])
+    }
+  }
+  const importarFn = async (ev) => {
+    const ficheiros = Array.from(ev.target.files || [])
+    if (!ficheiros.length) return
+    setFnImportMsg(null)
+    const conteudos = []
+    for (const f of ficheiros) {
+      try {
+        conteudos.push(await f.text())
+      } catch {}
+    }
+    if (!conteudos.length) return
+    try {
+      const res = await fetch('/api/admin/fortnite/import', {
+        method: 'POST',
+        headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsons: conteudos }),
+      })
+      const d = await res.json().catch(() => ({}))
+      const bons = (d.resultados || []).filter((r) => r.ok)
+      setFnImportMsg({
+        ok: Boolean(d.ok),
+        texto: d.ok
+          ? `Importado: ${bons.map((r) => r.nome).join(', ')} (${bons.length}/${d.total}).`
+          : (d.resultados || [])[0]?.erro || 'Não deu para importar.',
+      })
+    } catch {
+      setFnImportMsg({ ok: false, texto: 'Sem ligação ao servidor.' })
     }
   }
 
@@ -1406,6 +1450,63 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 )}
               </div>
               {r6Msg && <p className="mt-2 text-[13px] font-bold text-red-400">{r6Msg}</p>}
+            </div>
+
+            {/* ---------- Fortnite: tracker.gg (save as) ---------- */}
+            <div className="glass mt-4 rounded-xl p-4">
+              <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
+                <Flame className="h-4 w-4 text-fuchsia-400" /> Fortnite — tracker.gg
+              </h3>
+              <p className="text-[13px] text-gray-400">
+                Abre os perfis no tracker.gg, guarda com <b>Guardar como…</b> e importa aqui os
+                ficheiros (o tracker tem muito mais informação que a API).
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={abrirLinksFn}
+                  className="rounded-full border border-fuchsia-400/40 bg-fuchsia-500/20 px-4 py-2 text-[12px] font-black text-fuchsia-200 hover:bg-fuchsia-500/30"
+                >
+                  Mostrar links dos perfis
+                </button>
+                <button
+                  onClick={() => fnFileRef.current && fnFileRef.current.click()}
+                  className="rounded-full bg-fuchsia-500 px-4 py-2 text-[12px] font-black text-black hover:bg-fuchsia-400"
+                >
+                  Importar ficheiros
+                </button>
+                <input
+                  ref={fnFileRef}
+                  type="file"
+                  accept=".html,.htm,.json,.txt"
+                  multiple
+                  onChange={importarFn}
+                  className="hidden"
+                />
+              </div>
+              {fnLinks && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {fnLinks.map((l) => (
+                    <a
+                      key={l.nome}
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-bold text-gray-200 hover:bg-fuchsia-500/30 hover:text-white"
+                    >
+                      {l.nome}
+                    </a>
+                  ))}
+                </div>
+              )}
+              {fnImportMsg && (
+                <p
+                  className={`mt-2 text-[12px] font-bold ${
+                    fnImportMsg.ok ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {fnImportMsg.texto}
+                </p>
+              )}
             </div>
 
             {/* ---------- Notificações: teste de push ---------- */}

@@ -214,6 +214,23 @@ function mapPlayer(api, antigo) {
     });
   }
 
+  // operadores (se o ficheiro do tracker trouxer segmentos de operador)
+  const ops = segs.filter((s) => s && /operator/i.test(String(s.type || '')));
+  if (ops.length) {
+    p.operators = ops.map((s) => {
+      const nome =
+        (s.metadata && (s.metadata.name || s.metadata.operator || s.metadata.operatorName)) ||
+        'Operador';
+      const base = {};
+      for (const [destino, candidatos] of Object.entries(mapa)) {
+        const v = stat(s, ...candidatos);
+        if (v != null) base[destino] = v;
+      }
+      base.timePlayed = stat(s, 'timePlayed', 'timePlayedSeconds') ?? base.timePlayed;
+      return { name: nome, stats: base };
+    });
+  }
+
   // já há dados reais — deixa de contar como "à espera de dados"
   if (p.semDados) delete p.semDados;
 
