@@ -337,4 +337,33 @@ async function sincronizar({ force = false } = {}) {
   return aCorrer;
 }
 
-module.exports = { sincronizar };
+/* Próximo torneio (stage) que ainda não começou — para a contagem
+   decrescente automática no site. Vem do calendário oficial. */
+async function proximoTorneio() {
+  const home = await getData('');
+  const agora = Date.now() / 1000;
+  const candidatos = [];
+  const regioes = (home.calendar && home.calendar.regions) || [];
+  for (const reg of regioes) {
+    for (const camp of reg.championships || []) {
+      for (const et of camp.stages || []) {
+        const inicio = segundos(et.startTimestamp);
+        const fim = segundos(et.endTimestamp);
+        if (inicio > agora) {
+          candidatos.push({
+            nome: et.name || camp.name || 'Torneio',
+            campeonato: camp.name || '',
+            regiao: reg.name || '',
+            inicio: new Date(inicio * 1000).toISOString(),
+            fim: fim ? new Date(fim * 1000).toISOString() : null,
+            logo: camp.logoUrl || camp.darkLogoUrl || null,
+          });
+        }
+      }
+    }
+  }
+  candidatos.sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
+  return candidatos[0] || null;
+}
+
+module.exports = { sincronizar, proximoTorneio };

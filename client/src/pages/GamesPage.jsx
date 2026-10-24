@@ -1645,13 +1645,6 @@ function Cs2Vivo() {
               'Sem ligação à Steam Web API agora — as estatísticas de baixo continuam disponíveis.'}
           </p>
         </div>
-        <FormLigar
-          nick={cs2Nick}
-          setNick={setCs2Nick}
-          onLigar={ligar}
-          aLigar={aLigar}
-          msg={msgLigar}
-        />
       </div>
     )
   }
@@ -1775,43 +1768,43 @@ function Cs2Vivo() {
         ))}
       </div>
 
-      {/* Rankings ao vivo — comparar os jogadores ligados (nada de ficheiros) */}
+      {/* Ranking do esquadrão — ao vivo, com ícones */}
       {jog.length > 1 && (
-        <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-          <h4 className="mb-3 flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-gray-300">
+        <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <h4 className="mb-4 flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-gray-300">
             <Trophy className="h-4 w-4 text-amber-300" />
-            Rankings do esquadrão — ao vivo
+            Ranking do esquadrão — ao vivo
           </h4>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { label: 'Top kills', campo: 'kills', cor: 'text-violet-300' },
-              { label: 'Melhor K/D', campo: 'kd', cor: 'text-white' },
-              { label: 'MVPs (rondas)', campo: 'mvps', cor: 'text-amber-300' },
-              { label: 'HS %', campo: 'hs', sufixo: '%', cor: 'text-sky-300' },
-              { label: 'Precisão', campo: 'precisao', sufixo: '%', cor: 'text-sky-300' },
-              { label: 'Vitórias', campo: 'vitorias', cor: 'text-green-400' },
+              { label: 'Top kills', campo: 'kills', cor: 'text-violet-300', icon: Swords },
+              { label: 'Melhor K/D', campo: 'kd', cor: 'text-white', icon: Target },
+              { label: 'MVPs (rondas)', campo: 'mvps', cor: 'text-amber-300', icon: Medal },
+              { label: 'HS %', campo: 'hs', sufixo: '%', cor: 'text-sky-300', icon: Crosshair },
+              { label: 'Precisão', campo: 'precisao', sufixo: '%', cor: 'text-sky-300', icon: Crosshair },
+              { label: 'Vitórias', campo: 'vitorias', cor: 'text-green-400', icon: Trophy },
             ].map((r) => {
+              const Ico = r.icon
               const ordem = [...jog].sort(
                 (a, b) => (Number(b?.[r.campo]) || -1) - (Number(a?.[r.campo]) || -1),
               )
               const val = (x) =>
                 x?.[r.campo] != null && x?.[r.campo] !== '' ? `${x[r.campo]}${r.sufixo || ''}` : '—'
+              const POS = ['text-amber-300', 'text-slate-300', 'text-orange-400']
               return (
-                <div key={r.campo} className="rounded-lg bg-white/[0.05] p-3">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-gray-500">
-                    {r.label}
+                <div key={r.campo} className="rounded-xl border border-white/5 bg-white/[0.04] p-3">
+                  <p className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
+                    <Ico className="h-3 w-3" /> {r.label}
                   </p>
                   {ordem.slice(0, 3).map((x, xi) => (
-                    <p
-                      key={x.steam}
-                      className="mt-1 flex items-center justify-between gap-2 text-[13px]"
-                    >
-                      <span className="min-w-0 truncate font-bold text-gray-200">
-                        {['🥇', '🥈', '🥉'][xi]} {x.nick || x.nome}
+                    <p key={x.steam} className="mt-1 flex items-center gap-2 text-[13px]">
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-black ${POS[xi]}`}>
+                        {xi + 1}
                       </span>
-                      <span
-                        className={`shrink-0 font-black ${xi === 0 ? r.cor : 'text-gray-400'}`}
-                      >
+                      <span className="min-w-0 flex-1 truncate font-bold text-gray-200">
+                        {x.nick || x.nome}
+                      </span>
+                      <span className={`shrink-0 font-black ${xi === 0 ? r.cor : 'text-gray-400'}`}>
                         {val(x)}
                       </span>
                     </p>
@@ -1820,26 +1813,8 @@ function Cs2Vivo() {
               )
             })}
           </div>
-          <p className="mt-3 text-[11px] leading-snug text-gray-500">
-            Calculado de imediato com o que a Steam mostra ao vivo de cada jogador. A Steam
-            não publica as partidas uma a uma (nem as 10 melhores nem as 10 últimas de cada
-            conta) — isso só seria possível se os jogadores ligassem as contas ao FACEIT.
-          </p>
         </div>
       )}
-
-      <div className="mt-4 border-t border-white/10 pt-4">
-        <p className="mb-2 text-[12px] text-gray-500">
-          Queres acrescentar mais alguém ao vivo? Escreve só o nome da Steam:
-        </p>
-        <FormLigar
-          nick={cs2Nick}
-          setNick={setCs2Nick}
-          onLigar={ligar}
-          aLigar={aLigar}
-          msg={msgLigar}
-        />
-      </div>
     </div>
   )
 }

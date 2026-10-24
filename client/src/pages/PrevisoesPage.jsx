@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { R6_TORNEIOS } from '../data/r6Torneios'
+import { CS2_TORNEIOS } from '../data/cs2Torneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 
@@ -396,6 +397,77 @@ function Podium({ users }) {
   )
 }
 
+/* ============================================================
+   Próximo torneio — contagem decrescente automática (calendário
+   oficial da Ubisoft). Aparece quando não há jogos marcados.
+   ============================================================ */
+function ProximoTorneio() {
+  const [t, setT] = useState(null)
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    let vivo = true
+    fetch('/api/previsoes/proximo-torneio')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (vivo) setT(d && d.torneio ? d.torneio : null)
+      })
+      .catch(() => {})
+    const iv = setInterval(() => setTick((x) => x + 1), 60000)
+    return () => {
+      vivo = false
+      clearInterval(iv)
+    }
+  }, [])
+
+  if (!t) return null
+  const ms = new Date(t.inicio).getTime() - Date.now()
+  if (!Number.isFinite(ms) || ms <= 0) return null
+  const dias = Math.floor(ms / 86400000)
+  const horas = Math.floor((ms % 86400000) / 3600000)
+  const mins = Math.floor((ms % 3600000) / 60000)
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative mb-4 overflow-hidden rounded-3xl border border-amber-400/25 bg-gradient-to-r from-amber-500/15 via-[#17102a] to-violet-600/10 p-4 shadow-xl shadow-amber-950/10 sm:p-5"
+    >
+      <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-amber-500/15 blur-3xl" />
+      <div className="relative flex flex-wrap items-center gap-4">
+        {t.logo ? (
+          <img src={t.logo} alt="" className="h-12 w-12 shrink-0 rounded-xl object-contain" loading="lazy" />
+        ) : (
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-500/15 ring-1 ring-amber-400/30">
+            <Trophy className="h-6 w-6 text-amber-300" />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+            Próximo torneio{t.regiao ? ` · ${t.regiao}` : ''}
+          </p>
+          <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">{t.nome}</h3>
+          {t.campeonato && t.campeonato !== t.nome && (
+            <p className="truncate text-[11px] font-semibold text-gray-400">{t.campeonato}</p>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {[
+            { v: dias, l: 'dias' },
+            { v: horas, l: 'horas' },
+            { v: mins, l: 'min' },
+          ].map((x) => (
+            <div key={x.l} className="rounded-xl border border-white/10 bg-black/30 px-2.5 py-1.5 text-center">
+              <p className="font-display text-lg font-black tabular-nums text-white">{x.v}</p>
+              <p className="text-[8px] font-black uppercase tracking-wider text-gray-500">{x.l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.section>
+  )
+}
+
 export default function PrevisoesPage({ user }) {
   const [matches, setMatches] = useState([])
   const [tab, setTab] = useState('proximos')
@@ -523,7 +595,8 @@ export default function PrevisoesPage({ user }) {
     setTimeout(() => setResultadosNovos([]), 250)
   }
 
-  const proximos = matches.filter((m) => m.status === 1 || m.status === 2)
+  const recente = (m) => Date.now() - new Date(m.start_time).getTime() < 6 * 3600 * 1000
+  const proximos = matches.filter((m) => m.status === 1 || (m.status === 2 && recente(m)))
   const resultados = matches.filter((m) => m.status === 3)
   const aoVivo = proximos.filter((m) => m.status === 2)
   const acertos = resultados.filter((m) => m.correct === true).length
@@ -589,23 +662,85 @@ export default function PrevisoesPage({ user }) {
       </div>
 
       {jogo === 'cs2' && (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-sky-400/20 bg-gradient-to-b from-sky-600/10 to-[#17102a] px-6 py-16 text-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-300 ring-1 ring-sky-400/30">
-            <Target className="h-8 w-8" />
-          </span>
-          <h2 className="mt-4 font-display text-xl font-black uppercase text-white">
-            Previsões CS2
-          </h2>
-          <p className="mt-2 max-w-sm text-sm text-gray-400">
-            Estamos a preparar as previsões dos jogos profissionais de Counter-Strike.
-            Em breve vais poder escolher os vencedores por aqui.
-          </p>
-          <button
-            onClick={() => setJogo('r6')}
-            className="mt-5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white hover:brightness-110"
-          >
-            Ver Rainbow Six
-          </button>
+        <div className="space-y-4">
+          <div className="rounded-3xl border border-sky-400/20 bg-gradient-to-b from-sky-600/10 to-[#17102a] p-5 text-center">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-300 ring-1 ring-sky-400/30">
+              <Target className="h-7 w-7" />
+            </span>
+            <h2 className="mt-3 font-display text-xl font-black uppercase text-white">
+              Previsões CS2
+            </h2>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-gray-400">
+              Em breve vais poder prever os jogos profissionais de Counter-Strike.
+              Enquanto isso, vê o palmarés dos últimos grandes torneios.
+            </p>
+          </div>
+
+          <section className="overflow-hidden rounded-2xl border border-sky-400/20 bg-gradient-to-b from-sky-600/10 to-[#17102a] p-3 shadow-xl shadow-sky-950/15 sm:p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/15 ring-1 ring-sky-400/30">
+                <Trophy className="h-4 w-4 text-sky-300" />
+              </span>
+              <h2 className="font-display text-base font-black text-white">Palmarés CS2</h2>
+              <span className="ml-auto rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-sky-300 ring-1 ring-sky-400/20">
+                Últimos majors
+              </span>
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <div className="flex min-w-max gap-3">
+                {CS2_TORNEIOS.map((t, i) => (
+                  <article
+                    key={t.id}
+                    className={`group relative w-80 shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
+                      i === 0
+                        ? 'border-amber-400/30 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] shadow-lg shadow-amber-950/20'
+                        : 'border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-white/[0.05]'
+                    }`}
+                  >
+                    {i === 0 && (
+                      <span className="absolute right-3 top-3 rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+                        Mais recente
+                      </span>
+                    )}
+                    <div className="mb-3">
+                      <h3 className="truncate pr-16 text-sm font-black leading-tight text-white">{t.nome}</h3>
+                      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-gray-400">
+                        <span className="inline-flex items-center gap-1">
+                          <Calendar className="h-3 w-3" /> {t.dataInicio} — {t.dataFim}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {t.local}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 rounded-lg bg-amber-500/[0.08] px-2 py-1">
+                        <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-500">Campeão</span>
+                        <Crown className="h-3 w-3 text-amber-300" />
+                        <span className="min-w-0 flex-1 truncate text-xs font-bold text-amber-300">{t.campeao}</span>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-2 py-1">
+                        <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-500">Vice</span>
+                        <Medal className="h-3 w-3 text-slate-300" />
+                        <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-300">{t.vice}</span>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5 text-[10px] font-semibold">
+                      <span className="inline-flex min-w-0 items-center gap-1 truncate text-sky-300">
+                        <Star className="h-3 w-3 shrink-0" /> MVP: {t.mvp.nome} · {t.mvp.equipa}
+                      </span>
+                      <span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-black text-white">
+                        Final {t.resultadoFinal}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <p className="mt-2 text-center text-[10px] font-semibold text-gray-500">
+              Podes atualizar esta lista em <code className="text-sky-400">client/src/data/cs2Torneios.js</code>.
+            </p>
+          </section>
         </div>
       )}
 
@@ -644,6 +779,9 @@ export default function PrevisoesPage({ user }) {
           </div>
         )}
       </section>
+
+      {/* próximo torneio — contagem decrescente automática */}
+      <ProximoTorneio />
 
       {/* filtro de região — jogos Tier 1 de várias regiões */}
       {regioesDisponiveis.length > 0 && (

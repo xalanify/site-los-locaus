@@ -4,7 +4,7 @@
 const express = require('express');
 const { getDb } = require('../database');
 const { attachAuth, requireUser } = require('../middleware/auth');
-const { sincronizar } = require('../r6previsoes');
+const { sincronizar, proximoTorneio } = require('../r6previsoes');
 const { syncTop1Previsoes } = require('../previsoestop1');
 
 const router = express.Router();
@@ -138,6 +138,26 @@ router.get('/', attachAuth, async (req, res) => {
       }
     } catch (e) {
       sync = { ok: false, error: e.message };
+    }
+
+    // Corrige jogos que ficaram "ao vivo" (status 2) mas já acabaram há
+    // muito — a Ubisoft às vezes não atualiza o estado. Evita o "1 ao vivo"
+    // eterno no site.
+    try {
+      await db
+        .prepare(
+          `UPDATE r6_matches
+             SET status = 3,
+                 winner = COALESCE(winner, CASE
+                   WHEN score_a > score_b THEN 'a'
+                   WHEN score_b > score_a THEN 'b'
+                   ELSE NULL END),
+                 updated_at = now()
+           WHERE status = 2 AND start_time < now() - interval '6 hours'`,
+        )
+        .run();
+    } catch {
+      /* se falhar, segue */
     }
 
     const [proximos, recentes] = await Promise.all([
@@ -304,6 +324,18 @@ router.post('/resultados-vistos', requireUser, async (req, res) => {
   } catch (error) {
     console.error('Erro resultados vistos:', error.message);
     res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+/* Próximo torneio (contagem decrescente) — automático do calendário oficial */
+router.get('/proximo-torneio', async (req, res) => {
+  try {
+    const t = await proximoTorneio();
+    if (!t) return res.json({ ok: true, torneio: null });
+    res.json({ ok: true, torneio: t });
+  } catch (error) {
+    console.error('Erro proximo-torneio:', error.message);
+    res.status(502).json({ ok: false, error: 'Sem ligação ao calendário da Ubisoft.' });
   }
 });
 
