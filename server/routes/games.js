@@ -662,6 +662,7 @@ router.get('/fortnite', async (req, res) => {
         }
       }),
     );
+    res.setHeader('Cache-Control', 'no-store');
     res.json({ ok: true, jogadores });
   } catch (e) {
     console.error('Erro games/fortnite:', e.message);

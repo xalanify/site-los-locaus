@@ -731,6 +731,12 @@ function FortniteStats() {
                       <p className="text-[10px] font-bold text-gray-500">
                         Nível do passe {dd?.account?.level ?? '—'}
                       </p>
+                      {dd?.stats?.all?.overall?.lastModified && (
+                        <p className="text-[9px] font-semibold text-gray-600">
+                          Atualizado{' '}
+                          {new Date(dd.stats.all.overall.lastModified).toLocaleDateString('pt-PT')}
+                        </p>
+                      )}
                     </div>
                   </div>
                   {s ? (
