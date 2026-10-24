@@ -151,6 +151,13 @@ async function sendRecoveryEmail({ to, username, token, expiresInMin = 60 }) {
       });
       if (!res.ok) {
         const txt = await res.text().catch(() => '');
+        if (res.status === 403 && txt.includes('not verified')) {
+          throw new Error(
+            'O domínio de email não está verificado no Resend. ' +
+              'Vai a resend.com/domains e verifica o teu domínio, ' +
+              'ou configura SMTP_HOST/SMTP_USER/SMTP_PASS no .env para usar outro provedor.',
+          );
+        }
         throw new Error(`Resend ${res.status} — ${txt.slice(0, 160)}`);
       }
       return { ok: true, url: resetUrl };

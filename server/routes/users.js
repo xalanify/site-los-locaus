@@ -410,7 +410,7 @@ router.post('/forgot', async (req, res) => {
       await db
         .prepare('UPDATE pass_recovery SET status = \'requested\', token = NULL, expires_at = NULL, updated_at = now() WHERE username = ?')
         .run(user.username);
-      return res.status(500).json({ error: r.error || 'Não foi possível enviar o email.' });
+      return res.status(500).json({ error: r.error || 'Não foi possível enviar o email. Verifica a configuração de email no servidor (Resend/SMTP).' });
     }
 
     res.json({ ok: true, dev: Boolean(r.dev) });
