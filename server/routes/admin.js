@@ -451,6 +451,26 @@ router.get('/r6/status', requireAdmin, async (req, res) => {
 /* ---------- Rainbow Six: atualização (manual pelo painel) ----------
    O POST arranca a ida ao tracker.gg e responde logo; o painel
    faz polling a /r6/status e mostra a barra + os logs a andar. */
+router.get('/r6/links', requireAdmin, async (req, res) => {
+  try {
+    const lista = require('../data/r6-jogadores.json');
+    const jogadores = (Array.isArray(lista) ? lista : [])
+      .map((x) => {
+        const nick = typeof x === 'string' ? x : x && x.nick;
+        return nick
+          ? {
+              nick,
+              url: `https://r6.tracker.network/profile/pc/${encodeURIComponent(nick)}`,
+            }
+          : null;
+      })
+      .filter(Boolean);
+    res.json({ ok: true, jogadores });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
 router.post('/r6/refresh', requireAdmin, async (req, res) => {
   try {
     const r6 = require('../r6auto');

@@ -250,16 +250,7 @@ if (!IS_VERCEL) {
   });
 }
 
-// R6 — engine Ubisoft (open source SwiftCODA/R6-API): atualiza
-// todos os jogadores de 15 em 15 minutos, sem tracker.gg nem HTML.
-// Na Vercel não corre: as funções são efémeras e os dados já vêm
-// da base de dados (o sync é feito pelo servidor local).
-if (!IS_VERCEL) {
-  try {
-    require('./r6ubi').start();
-  } catch (e) {
-    console.warn('R6 Ubisoft (a ignorar):', e.message);
-  }
-}
+// R6 — modo manual (tracker.gg importado no painel admin).
+// Não há ciclo automático: a Ubisoft/tracker.gg bloqueiam os servidores.
 
 module.exports = app;

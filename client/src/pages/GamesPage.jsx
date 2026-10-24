@@ -26,6 +26,7 @@ import {
   TrendingUp,
   Medal,
   Sparkles,
+  Package,
 } from 'lucide-react'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
@@ -756,6 +757,34 @@ function FortniteStats() {
                       <div>
                         <p className="font-display text-base font-black text-green-300">{s.winRate?.toFixed(1) ?? '—'}%</p>
                         <p className="text-[9px] font-bold uppercase text-gray-500">Win%</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-white">{s.killsPerMatch?.toFixed(2) ?? '—'}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">K/partida</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-white">{fmt(s.matches)}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Partidas</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-white">{fmt(s.minutesPlayed)}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Minutos</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-sky-300">{dd?.stats?.all?.solo?.kd ?? '—'}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">K/D solo</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-violet-300">{dd?.stats?.all?.duo?.kd ?? '—'}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">K/D duo</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-fuchsia-300">{dd?.stats?.all?.squad?.kd ?? '—'}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">K/D squad</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-amber-300">{dd?.battlePass?.progress ?? '—'}%</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Passe</p>
                       </div>
                     </div>
                   ) : (
@@ -1602,6 +1631,9 @@ function Cs2Vivo() {
   const [cs2Nick, setCs2Nick] = useState('')
   const [aLigar, setALigar] = useState(false)
   const [msgLigar, setMsgLigar] = useState(null)
+  const [ordem, setOrdem] = useState('kills')
+  const [inv, setInv] = useState({}) // steamid -> { aCarregar, dados }
+  const [invAberto, setInvAberto] = useState(null)
 
   const load = () => {
     fetch('/api/games/cs2-live')
@@ -1612,7 +1644,26 @@ function Cs2Vivo() {
 
   useEffect(() => {
     load()
+    const iv = setInterval(load, 60000) // atualiza sozinho
+    return () => clearInterval(iv)
   }, [])
+
+  const abrirInventario = async (steamid) => {
+    if (invAberto === steamid) {
+      setInvAberto(null)
+      return
+    }
+    setInvAberto(steamid)
+    if (inv[steamid]?.dados) return
+    setInv((p) => ({ ...p, [steamid]: { aCarregar: true, dados: null } }))
+    try {
+      const r = await fetch('/api/games/cs2-inventario?steam=' + encodeURIComponent(steamid))
+      const d = await r.json().catch(() => ({}))
+      setInv((p) => ({ ...p, [steamid]: { aCarregar: false, dados: d } }))
+    } catch {
+      setInv((p) => ({ ...p, [steamid]: { aCarregar: false, dados: { ok: false, error: 'Sem ligação.' } } }))
+    }
+  }
 
   const ligar = async () => {
     const nick = cs2Nick.trim()
@@ -1667,6 +1718,9 @@ function Cs2Vivo() {
 
   const tudo = vivo.jogadores || []
   const jog = tudo.filter((p) => p.ok)
+  const jogOrdenado = [...jog].sort(
+    (a, b) => (Number(b?.[ordem]) || -1) - (Number(a?.[ordem]) || -1),
+  )
   const priv = tudo.filter((p) => !p.ok)
   if (!tudo.length) return null
 
@@ -1689,10 +1743,28 @@ function Cs2Vivo() {
             CS2 ao vivo <span className="text-gray-500">— via Steam</span>
           </h3>
         </div>
-        <p className="text-[11px] text-gray-500">atualiza sozinho · Steam Web API</p>
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] font-black uppercase tracking-wider text-gray-500">
+            Ordenar
+          </label>
+          <select
+            value={ordem}
+            onChange={(e) => setOrdem(e.target.value)}
+            className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[12px] font-bold text-white outline-none focus:border-violet-400/40"
+          >
+            <option value="kills" className="bg-[#171122]">Kills</option>
+            <option value="kd" className="bg-[#171122]">K/D</option>
+            <option value="hs" className="bg-[#171122]">HS %</option>
+            <option value="precisao" className="bg-[#171122]">Precisão</option>
+            <option value="mvps" className="bg-[#171122]">MVPs</option>
+            <option value="vitorias" className="bg-[#171122]">Vitórias</option>
+            <option value="partidas" className="bg-[#171122]">Partidas</option>
+            <option value="rondas" className="bg-[#171122]">Rondas</option>
+          </select>
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {jog.map((p, i) => (
+        {jogOrdenado.map((p, i) => (
           <motion.div
             key={p.steam}
             initial={{ opacity: 0, y: 10 }}
@@ -1752,6 +1824,55 @@ function Cs2Vivo() {
               <Célula label="Pistola" valor={p.pistola ?? '—'} />
               <Célula label="Mortes" valor={p.deaths ?? '—'} cor="text-gray-300" />
             </div>
+
+            {/* Inventário CS2 — valor estimado */}
+            <button
+              onClick={() => abrirInventario(p.steam)}
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-1.5 text-[11px] font-black uppercase tracking-wider text-gray-300 hover:bg-white/10 hover:text-white"
+            >
+              <Package className="h-3.5 w-3.5" /> Inventário
+            </button>
+            {invAberto === p.steam && (
+              <div className="mt-2 rounded-lg border border-white/10 bg-black/30 p-2 text-[11px]">
+                {(() => {
+                  const d = inv[p.steam]
+                  if (!d || d.aCarregar) return <p className="text-gray-400">A ler o inventário…</p>
+                  if (!d.dados?.ok)
+                    return (
+                      <p className="text-yellow-300">
+                        {d.dados?.privado
+                          ? 'Inventário privado na Steam.'
+                          : d.dados?.error || 'Não deu para ler o inventário.'}
+                      </p>
+                    )
+                  return (
+                    <div className="space-y-1">
+                      <p className="flex justify-between">
+                        <span className="text-gray-400">Itens</span>
+                        <b className="text-white">{d.dados.totalItens}</b>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-gray-400">Valor estimado</span>
+                        <b className="text-emerald-300">
+                          ~{Number(d.dados.valorEstimado || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} €
+                        </b>
+                      </p>
+                      {(d.dados.topItens || []).slice(0, 3).map((it) => (
+                        <p key={it.nome} className="flex justify-between gap-2">
+                          <span className="min-w-0 truncate text-gray-400">{it.qtd}× {it.nome}</span>
+                          <b className="shrink-0 text-gray-200">{Number(it.total).toFixed(2)} €</b>
+                        </p>
+                      ))}
+                      {d.dados.parcial && (
+                        <p className="text-[9px] leading-snug text-gray-600">
+                          Estimativa parcial (só itens com preço de mercado).
+                        </p>
+                      )}
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
           </motion.div>
         ))}
         {priv.map((p) => (

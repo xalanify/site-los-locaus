@@ -310,6 +310,18 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
     }
   }
 
+  /* ---------- Rainbow Six: abrir perfis no tracker.gg ---------- */
+  const [r6Links, setR6Links] = useState(null)
+  const abrirLinksR6 = async () => {
+    try {
+      const res = await fetch('/api/admin/r6/links', { headers: adminHeaders() })
+      const d = await res.json().catch(() => ({}))
+      setR6Links(Array.isArray(d.jogadores) ? d.jogadores : [])
+    } catch {
+      setR6Links([])
+    }
+  }
+
   /* ---------- Rainbow Six: importar JSON guardados (um a um) ----------
      O utilizador abre a página do tracker.gg, guarda o JSON (ou copia),
      e carrega aqui. Enviamos tudo ao servidor, que identifica cada
@@ -1358,6 +1370,39 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   >
                     {r6ImportMsg.texto || r6ImportMsg}
                   </p>
+                )}
+              </div>
+              {/* abrir perfis no tracker.gg — para fazer "Guardar como…" */}
+              <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="mb-1 text-[13px] font-bold text-white">Abrir perfis no tracker.gg</p>
+                <p className="mb-3 text-[12px] leading-relaxed text-gray-400">
+                  Abre os perfis de todos os jogadores, guarda cada página com <b>Guardar como…</b>{' '}
+                  e importa aqui os ficheiros.
+                </p>
+                <button
+                  onClick={abrirLinksR6}
+                  className="rounded-full border border-violet-400/40 bg-violet-500/20 px-5 py-2 text-sm font-black text-violet-200 transition-colors hover:bg-violet-500/30"
+                >
+                  Mostrar links dos perfis
+                </button>
+                {r6Links && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {r6Links.length === 0 ? (
+                      <p className="text-[12px] text-gray-500">Sem jogadores em r6-jogadores.json.</p>
+                    ) : (
+                      r6Links.map((l) => (
+                        <a
+                          key={l.nick}
+                          href={l.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-bold text-gray-200 hover:bg-violet-500/30 hover:text-white"
+                        >
+                          {l.nick}
+                        </a>
+                      ))
+                    )}
+                  </div>
                 )}
               </div>
               {r6Msg && <p className="mt-2 text-[13px] font-bold text-red-400">{r6Msg}</p>}

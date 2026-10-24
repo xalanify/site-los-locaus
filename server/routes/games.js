@@ -338,44 +338,27 @@ router.get('/news', async (req, res) => {
 });
 
 // ============================================================
+// Rainbow Six Siege — MODO MANUAL (tracker.gg)
+// O admin guarda a página do tracker.gg de cada jogador (Guardar como…)
+// e importa no painel. Sem API, sem anti-bot, sem login Ubisoft.
+// Ficheiro: server/data/r6.json
 // ============================================================
-// Rainbow Six Siege — API OFICIAL DA UBISOFT (open source
-// SwiftCODA/R6-API): login Ubisoft → perfis, nível, carreira e
-// rank da temporada. Sem tracker.gg, sem HTML manual.
-// server/data/r6-jogadores.json = ["xalana.", "m4xi01504", ...]
-// ============================================================
-const r6ubi = require('../r6ubi');
-
 router.get('/r6', async (req, res) => {
   try {
-    const ubi = r6ubi.dados();
-    const t = await r6ubi.status();
-    if (ubi?.ok) {
-      return res.json({
-        ...ubi,
-        auto: {
-          fonte: 'ubisoft',
-          ligado: t.credencial,
-          intervaloMin: t.intervaloMin,
-          ultimaTentativa: t.ultimaTentativa,
-          ultimoErro: t.ultimoErro,
-          credencial: t.credencial,
-        },
-      });
-    }
-
-    // Recuo (antes de configurares a conta Ubisoft no .env) — serve
-    // o último dado que existir para a página não ficar vazia.
     const data = tracker.readJson(tracker.R6_FILE);
+    let atualizadoEm = null;
+    try {
+      atualizadoEm = require('fs').statSync(tracker.R6_FILE).mtime.toISOString();
+    } catch {}
     const auto = {
-      fonte: 'ubisoft',
-      ligado: !!t.credencial,
-      credencial: !!t.credencial,
-      motivo: t.credencial ? (t.ultimoErro || 'a-sincronizar') : 'sem-credenciais',
-      ultimoErro: t.ultimoErro || null,
-      ultimaTentativa: t.ultimaTentativa || null,
+      fonte: 'tracker.gg (manual)',
+      ligado: true,
+      modo: 'manual',
+      credencial: false,
+      atualizadoEm,
+      nota: 'Importa a página do tracker.gg de cada jogador no painel admin.',
     };
-    if (!data) return res.json({ configured: false, missing: tracker.missing(tracker.R6_FILE) });
+    if (!data) return res.json({ configured: false, missing: tracker.missing(tracker.R6_FILE), auto });
     return res.json({ ...data, auto });
   } catch (error) {
     console.error('Erro games/r6:', error.message);
@@ -731,19 +714,12 @@ router.get('/diagnostico', (req, res) => {
         membros: cs2Membros.length,
       },
       r6: {
-        ativo: ubiEmail && ubiPass,
-        fonte: 'Ubisoft API (open source, via SwiftCODA/R6-API)',
-        problema: !ubiEmail || !ubiPass
-          ? 'UBI_EMAIL e/ou UBI_PASSWORD não estão definidas no .env / Vercel'
-          : (r6ubi.estado.ultimoErro || null),
-        nota: 'Precisa de uma conta Ubisoft gratuita (sem 2FA) criada em ubisoft.com. Guarda as credenciais no .env.',
+        ativo: true,
+        fonte: 'tracker.gg (manual — import no painel admin)',
+        problema: null,
+        nota: 'Guarda a página do tracker.gg de cada jogador (Guardar como…) e importa no painel admin. Sem API e sem anti-bot.',
         jogadores: r6Jogadores.length,
-        estado: {
-          credencial: r6ubi.estado.credencial,
-          ultimaTentativa: r6ubi.estado.ultimaTentativa,
-          ultimoErro: r6ubi.estado.ultimoErro,
-          falhasSeguidas: r6ubi.estado.falhasSeguidas,
-        },
+        modo: 'manual',
       },
       fortnite: {
         ativo: fnToken,
@@ -762,6 +738,118 @@ router.get('/diagnostico', (req, res) => {
   } catch (error) {
     console.error('Erro games/diagnostico:', error.message);
     res.status(500).json({ error: 'Erro no diagnóstico.' });
+  }
+});
+
+/* ============================================================
+   Inventário CS2 (Steam) — valor estimado (EUR)
+   ============================================================ */
+const INV_CACHE = new Map(); // steamid -> { t, v }
+const PRICE_CACHE = new Map(); // hash -> { t, v }
+
+function parsePreco(txt) {
+  if (!txt) return null;
+  const m = String(txt).replace(/[^\d.,]/g, '');
+  let s = m;
+  if (s.includes(',') && s.includes('.')) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else if (s.includes(',')) {
+    s = s.replace(',', '.');
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function precoItem(hash) {
+  const c = PRICE_CACHE.get(hash);
+  if (c && Date.now() - c.t < 6 * 3600 * 1000) return c.v;
+  try {
+    const r = await fetch(
+      'https://steamcommunity.com/market/priceoverview/?appid=730&currency=3&market_hash_name=' +
+        encodeURIComponent(hash),
+      { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(12000) },
+    );
+    if (!r.ok) {
+      PRICE_CACHE.set(hash, { t: Date.now(), v: null });
+      return null;
+    }
+    const d = await r.json().catch(() => ({}));
+    const v = parsePreco(d.lowest_price) ?? parsePreco(d.median_price);
+    PRICE_CACHE.set(hash, { t: Date.now(), v });
+    return v;
+  } catch {
+    PRICE_CACHE.set(hash, { t: Date.now(), v: null });
+    return null;
+  }
+}
+
+router.get('/cs2-inventario', async (req, res) => {
+  try {
+    const steamid = String(req.query.steam || '').trim();
+    if (!/^7656\d{13}$/.test(steamid)) {
+      return res.status(400).json({ ok: false, error: 'SteamID inválido.' });
+    }
+    const cache = INV_CACHE.get(steamid);
+    if (cache && Date.now() - cache.t < 10 * 60 * 1000) return res.json(cache.v);
+
+    const r = await fetch(
+      `https://steamcommunity.com/inventory/${steamid}/730/2?l=english`,
+      {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36',
+        },
+        signal: AbortSignal.timeout(20000),
+      },
+    );
+    if (r.status === 403) return res.json({ ok: false, privado: true, error: 'Inventário privado na Steam.' });
+    if (!r.ok) return res.status(502).json({ ok: false, error: 'Steam ' + r.status });
+    const j = await r.json().catch(() => ({}));
+    const assets = Array.isArray(j.assets) ? j.assets : [];
+    const descs = Array.isArray(j.descriptions) ? j.descriptions : [];
+    const byId = new Map(descs.map((d) => [`${d.classid}_${d.instanceid}`, d]));
+    const cont = new Map();
+    for (const a of assets) {
+      const d = byId.get(`${a.classid}_${a.instanceid}`);
+      if (!d || !d.market_hash_name) continue;
+      const k = d.market_hash_name;
+      const cur = cont.get(k) || { nome: k, qtd: 0, tipo: d.type || '', marketable: Number(d.marketable) === 1 };
+      cur.qtd += 1;
+      cont.set(k, cur);
+    }
+
+    // preços dos itens negociáveis (até 30 únicos, 4 em paralelo)
+    const lista = [...cont.values()].filter((x) => x.marketable).slice(0, 30);
+    const fila = [...lista];
+    const precos = [];
+    const trabalhadores = Array.from({ length: 4 }, async () => {
+      while (fila.length) {
+        const it = fila.shift();
+        const v = await precoItem(it.nome);
+        if (v != null) precos.push({ ...it, preco: v, total: Number((v * it.qtd).toFixed(2)) });
+      }
+    });
+    await Promise.all(trabalhadores);
+    precos.sort((a, b) => b.total - a.total);
+    const valor = precos.reduce((s, x) => s + x.total, 0);
+
+    const payload = {
+      ok: true,
+      steam: steamid,
+      totalItens: assets.length,
+      unicos: cont.size,
+      avaliados: precos.length,
+      valorEstimado: Number(valor.toFixed(2)),
+      moeda: 'EUR',
+      topItens: precos.slice(0, 8),
+      parcial: cont.size > precos.length,
+    };
+    INV_CACHE.set(steamid, { t: Date.now(), v: payload });
+    res.json(payload);
+  } catch (e) {
+    console.error('Erro cs2-inventario:', e.message);
+    res.status(502).json({ ok: false, error: 'Sem ligação à Steam.' });
   }
 });
 

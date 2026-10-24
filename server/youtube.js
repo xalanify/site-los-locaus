@@ -160,10 +160,17 @@ async function tokenDe(i) {
       s.esgotadoAte = Date.now() + msAteReset();
       s.motivo = 'refresh token inválido — renova as credenciais';
     }
-    throw Object.assign(new Error('Falha a autorizar a publicação (' + motivo + ')'), {
-      codigo: 'token',
-      conta: p.n,
-    });
+    throw Object.assign(
+      new Error(
+        d.error === 'invalid_grant'
+          ? 'A autorização do YouTube expirou ou foi revogada. Renova o refresh token (guia em server/YOUTUBE.md) e atualiza YT_REFRESH_TOKEN_1 nas variáveis da Vercel.'
+          : 'Falha a autorizar a publicação (' + motivo + ')',
+      ),
+      {
+        codigo: 'token',
+        conta: p.n,
+      },
+    );
   }
 
   s.token = d.access_token;

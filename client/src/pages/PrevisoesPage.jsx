@@ -24,6 +24,7 @@ import {
 import AvatarImg from '../components/AvatarImg'
 import { R6_TORNEIOS } from '../data/r6Torneios'
 import { CS2_TORNEIOS } from '../data/cs2Torneios'
+import { FORTNITE_TORNEIOS } from '../data/fortniteTorneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 
@@ -469,6 +470,128 @@ function ProximoTorneio() {
   )
 }
 
+/* ============================================================
+   Fortnite — próximos torneios competitivos (com contagem)
+   ============================================================ */
+const fmtDataHora = (iso) => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('pt-PT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+function Countdown({ inicio }) {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const iv = setInterval(() => setTick((x) => x + 1), 60000)
+    return () => clearInterval(iv)
+  }, [])
+  const ms = new Date(inicio).getTime() - Date.now()
+  if (!Number.isFinite(ms) || ms <= 0) return null
+  const dias = Math.floor(ms / 86400000)
+  const horas = Math.floor((ms % 86400000) / 3600000)
+  const mins = Math.floor((ms % 3600000) / 60000)
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      {[
+        { v: dias, l: 'dias' },
+        { v: horas, l: 'horas' },
+        { v: mins, l: 'min' },
+      ].map((x) => (
+        <div key={x.l} className="rounded-xl border border-white/10 bg-black/30 px-2.5 py-1.5 text-center">
+          <p className="font-display text-lg font-black tabular-nums text-white">{x.v}</p>
+          <p className="text-[8px] font-black uppercase tracking-wider text-gray-500">{x.l}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FortniteTorneiosTab() {
+  const agora = Date.now()
+  const futuros = FORTNITE_TORNEIOS.filter((t) => new Date(t.fim).getTime() > agora).sort(
+    (a, b) => new Date(a.inicio) - new Date(b.inicio),
+  )
+  const prox = futuros[0]
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-b from-fuchsia-600/10 to-[#17102a] p-5 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-fuchsia-500/15 text-fuchsia-300 ring-1 ring-fuchsia-400/30">
+          <Flame className="h-7 w-7" />
+        </span>
+        <h2 className="mt-3 font-display text-xl font-black uppercase text-white">
+          Previsões Fortnite
+        </h2>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-gray-400">
+          Os próximos torneios competitivos de Fortnite. As previsões chegam em breve.
+        </p>
+      </div>
+
+      {prox && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl border border-fuchsia-400/25 bg-gradient-to-r from-fuchsia-500/15 via-[#17102a] to-violet-600/10 p-4 shadow-xl shadow-fuchsia-950/10 sm:p-5"
+        >
+          <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-fuchsia-500/15 blur-3xl" />
+          <div className="relative flex flex-wrap items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-fuchsia-500/15 ring-1 ring-fuchsia-400/30">
+              <Trophy className="h-6 w-6 text-fuchsia-300" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300">
+                Próximo torneio
+              </p>
+              <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">{prox.nome}</h3>
+              <p className="truncate text-[11px] font-semibold text-gray-400">
+                {prox.circuito} · {prox.local}
+              </p>
+              <p className="mt-0.5 text-[11px] font-semibold text-gray-500">
+                {fmtDataHora(prox.inicio)} — {fmtDataHora(prox.fim)}
+              </p>
+            </div>
+            <Countdown inicio={prox.inicio} />
+          </div>
+        </motion.section>
+      )}
+
+      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-400">
+          <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
+        </h2>
+        {futuros.length === 0 ? (
+          <p className="py-6 text-center text-sm text-gray-500">
+            Sem torneios anunciados de momento. Volta mais tarde.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {futuros.map((t) => (
+              <div
+                key={t.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black text-white">{t.nome}</p>
+                  <p className="truncate text-[11px] font-semibold text-gray-400">
+                    {t.circuito} · {t.local}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] font-bold text-fuchsia-300">{fmtDataHora(t.inicio)}</p>
+                  <p className="text-[10px] font-semibold text-gray-500">até {fmtDataHora(t.fim)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-3 text-center text-[10px] font-semibold text-gray-600">
+          Lista editável em <code className="text-fuchsia-400">client/src/data/fortniteTorneios.js</code>.
+        </p>
+      </section>
+    </div>
+  )
+}
+
 export default function PrevisoesPage({ user }) {
   const [matches, setMatches] = useState([])
   const [tab, setTab] = useState('proximos')
@@ -635,8 +758,8 @@ export default function PrevisoesPage({ user }) {
       </div>
       <div className="relative z-10">
 
-      {/* seletor de jogo: Rainbow Six (ativo) vs CS2 (em breve) */}
-      <div className="mt-2 mb-4 grid grid-cols-2 gap-2">
+      {/* seletor de jogo: Rainbow Six · CS2 · Fortnite */}
+      <div className="mt-2 mb-4 grid grid-cols-3 gap-2">
         <button
           onClick={() => setJogo('r6')}
           className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
@@ -660,7 +783,19 @@ export default function PrevisoesPage({ user }) {
             Em breve
           </span>
         </button>
+        <button
+          onClick={() => setJogo('fortnite')}
+          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
+            jogo === 'fortnite'
+              ? 'border-fuchsia-400/40 bg-gradient-to-b from-fuchsia-600/30 to-purple-900/20 text-white'
+              : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
+          }`}
+        >
+          <Flame className="h-4 w-4 shrink-0" /> Fortnite
+        </button>
       </div>
+
+      {jogo === 'fortnite' && <FortniteTorneiosTab />}
 
       {jogo === 'cs2' && (
         <div className="space-y-4">
