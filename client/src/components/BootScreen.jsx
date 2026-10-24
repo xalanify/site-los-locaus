@@ -78,10 +78,7 @@ export default function BootScreen({ visible, onEnter }) {
 
       <div className="relative w-full max-w-sm">
         {/* marca */}
-        <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 text-lg font-black text-white ring-1 ring-violet-500/40 shadow-lg shadow-violet-900/40">
-          L
-        </span>
-        <h1 className="mt-4 text-center font-display text-3xl font-black uppercase tracking-wide text-white">
+        <h1 className="text-center font-display text-3xl font-black uppercase tracking-wide text-white">
           <span className="gradient-text">Locaus</span>
         </h1>
         <p className="mt-1 text-center font-mono text-[10px] uppercase tracking-[0.28em] text-gray-500">

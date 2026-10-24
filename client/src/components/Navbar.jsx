@@ -74,9 +74,6 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
 
           {/* Marca */}
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-violet-500/15 font-display text-sm font-black text-violet-300 ring-1 ring-violet-500/30 sm:h-9 sm:w-9">
-              L
-            </span>
             <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
               Locaus
             </span>

@@ -622,7 +622,7 @@ router.get('/fortnite-player', async (req, res) => {
 /* ============================================================
    Fortnite — jogadores fixos (aparecem logo na página, sem pesquisa)
    ============================================================ */
-const FORTNITE_FIXOS = ['XaG2 B0Y', 'Bruno Iron Man', 'gersondelcarse'];
+const FORTNITE_FIXOS = ['XaG2 B0Y', 'Bruno Iron Man', 'gersondelcarce'];
 
 async function fortniteStats(nome) {
   const token = (process.env.FORTNITE_API_TOKEN || '').trim();
