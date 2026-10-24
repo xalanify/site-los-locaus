@@ -31,11 +31,25 @@ export const BADGES = [
     dark: '#7A2A08',
     anim: 'shine',
   },
+  {
+    id: 'previsao1',
+    label: '1.º NAS PREVISÕES',
+    desc: 'Líder da classificação das previsões',
+    color: '#FFC800',
+    light: '#FFE9A3',
+    dark: '#7A5A00',
+    anim: 'shine',
+  },
 ]
 
 /* Legenda DEV: branco → vermelho com brilho */
 export const devLabelClass =
   'bg-gradient-to-r from-white via-red-100 to-red-500 bg-clip-text text-transparent drop-shadow-[0_0_9px_rgba(255,31,61,.95)]'
+
+/* Nome dourado brilhante — quem está em 1.º nas previsões (badge previsao1) */
+export const nomeDouradoClass =
+  'bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(255,200,0,.55)]'
+export const temPrevisao1 = (badges) => Array.isArray(badges) && badges.includes('previsao1')
 
 /* Distinções dinâmicas de overclock, calculadas a partir da leitura
    REAL do PC (specs.details.avaliacao). Agora são independentes:

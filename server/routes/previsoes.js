@@ -5,6 +5,7 @@ const express = require('express');
 const { getDb } = require('../database');
 const { attachAuth, requireUser } = require('../middleware/auth');
 const { sincronizar } = require('../r6previsoes');
+const { syncTop1Previsoes } = require('../previsoestop1');
 
 const router = express.Router();
 
@@ -237,6 +238,9 @@ router.get('/classificacao', async (req, res) => {
          LIMIT 100`,
       )
       .all();
+    // atualiza a distinção de 1.º lugar em segundo plano (sem atrasar)
+    syncTop1Previsoes().catch(() => {});
+
     res.json({
       users: rows.map((r, i) => ({
         pos: i + 1,

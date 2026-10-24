@@ -7,14 +7,14 @@ const { validateEmail } = require('../emailValidate');
 const router = express.Router();
 
 /* Distinções possíveis (tem de coincidir com o cliente) */
-const VALID_BADGES = ['dev', 'top1'];
+const VALID_BADGES = ['dev', 'top1', 'previsao1'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');
 const { notify } = require('../notify');
 
 /* Rótulos das distinções para as notificações */
-const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)' };
+const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)', previsao1: '1.º nas Previsões' };
 
 const count = async (db, sql) => {
   try {
@@ -601,6 +601,35 @@ router.get('/stats', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Erro admin stats:', error.message);
     res.status(500).json({ error: 'Erro ao carregar estatísticas.' });
+  }
+});
+
+/* ---------- Notificação de teste (para o admin ver o push no telemóvel) ---------- */
+router.post('/teste-notificacao', requireAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    // envia a quem o admin indicar (userId) ou, sem userId, ao próprio admin
+    // (se tiver conta) e, em último caso, ao primeiro utilizador existente.
+    const alvo = Number((req.body && req.body.userId) || req.auth.uid || 0);
+    let uid = alvo;
+    if (!uid) {
+      const u = await db.prepare('SELECT id FROM users ORDER BY id LIMIT 1').get();
+      uid = u ? Number(u.id) : 0;
+    }
+    if (!uid) return res.status(400).json({ ok: false, error: 'Não há utilizadores para testar.' });
+
+    const id = await notify({
+      userId: uid,
+      type: 'teste',
+      entity: 'teste',
+      title: '🔔 Notificação de teste',
+      body: 'Se estás a ver isto, as notificações funcionam!',
+      link: '/notificacoes',
+    });
+    res.json({ ok: Boolean(id), userId: uid, push: require('../notify').pushAtivo() });
+  } catch (error) {
+    console.error('Erro teste-notificacao:', error.message);
+    res.status(500).json({ ok: false, error: 'Não foi possível enviar a notificação de teste.' });
   }
 });
 

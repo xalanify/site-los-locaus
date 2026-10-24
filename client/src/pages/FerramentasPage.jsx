@@ -177,6 +177,8 @@ export default function FerramentasPage() {
   const fimRef = useRef(null)
   const [selecionados, setSelecionados] = useState(new Set())
   const [instalados, setInstalados] = useState(new Set())
+  // filtro: mostrar só os programas já instalados no PC
+  const [soInstalados, setSoInstalados] = useState(false)
   const [aDetectar, setADetectar] = useState(false)
   const [logosFalha, setLogosFalha] = useState(new Set())
   // fila de execução (as selecionadas correm uma de cada vez)
@@ -504,17 +506,19 @@ export default function FerramentasPage() {
      sempre: categoria + subcategoria. */
   const visiveis = useMemo(() => {
     const q = busca.trim().toLowerCase()
+    let lista = ferramentas
+    if (soInstalados) lista = lista.filter((f) => instalados.has(f.id))
     if (q) {
-      return ferramentas.filter((f) =>
+      return lista.filter((f) =>
         [f.nome, f.desc, f.cat, f.sub, f.wingetId]
           .filter(Boolean)
           .some((campo) => String(campo).toLowerCase().includes(q)),
       )
     }
-    return ferramentas.filter(
+    return lista.filter(
       (f) => f.cat === cat && (subCat === 'Todas' || f.sub === subCat),
     )
-  }, [ferramentas, cat, subCat, busca])
+  }, [ferramentas, cat, subCat, busca, soInstalados, instalados])
 
   /* Mostra a categoria em cada cartão quando a pesquisa está ativa
      (assim se sabe onde clicou antes). */
@@ -802,7 +806,7 @@ export default function FerramentasPage() {
         </div>
 
         {/* ---------------- Filtros ---------------- */}
-        <div className="mb-3 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           {cats.map((c) => {
             const Icon = CAT_ICONES[c]
             return (
@@ -820,6 +824,20 @@ export default function FerramentasPage() {
               </button>
             )
           })}
+          {cat === 'Programas' && (
+            <button
+              onClick={() => setSoInstalados((v) => !v)}
+              className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-black uppercase tracking-wide transition-colors ${
+                soInstalados
+                  ? 'bg-emerald-500 text-white'
+                  : 'btn-glass text-gray-400 hover:text-white'
+              }`}
+              title="Mostra só os programas que já tens instalados no PC"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Só instalados
+            </button>
+          )}
         </div>
 
         {/* sub-filtros (só aparecem se a categoria tiver subcategorias) */}

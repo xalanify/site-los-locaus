@@ -42,13 +42,20 @@ const ready = initDatabase()
     console.log(`Contas de utilizador: ${backendInfo()}`);
     // TOP 1 KILL (CS2) automático — líder do ranking ganha a distinção
     const { syncTop1Badge } = require('./top1');
-    return syncTop1Badge();
+    // 1.º nas previsões automático — líder da classificação ganha a distinção
+    const { syncTop1Previsoes } = require('./previsoestop1');
+    return Promise.allSettled([syncTop1Badge(), syncTop1Previsoes()]);
   })
   .then((r) => {
-    if (r) {
+    const cs2 = r && r[0] && r[0].status === 'fulfilled' ? r[0].value : null;
+    if (cs2) {
       console.log(
-        `Top 1 Kill (CS2): ${r.leader} com ${r.kills} kills${r.conta ? ` -> conta "${r.conta}"` : ' -> sem conta correspondente'}`,
+        `Top 1 Kill (CS2): ${cs2.leader} com ${cs2.kills} kills${cs2.conta ? ` -> conta "${cs2.conta}"` : ' -> sem conta correspondente'}`,
       );
+    }
+    const prev = r && r[1] && r[1].status === 'fulfilled' ? r[1].value : null;
+    if (prev && prev.lider) {
+      console.log(`1.º nas previsões: conta id ${prev.lider} com ${prev.acertos} acertos.`);
     }
   })
   .catch((err) => console.error('Erro no arranque:', err.message));

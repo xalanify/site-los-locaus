@@ -529,6 +529,9 @@ function dados() {
 async function status(mais) {
   return {
     ...estado,
+    // verifica as credenciais diretamente (não depende do ciclo local
+    // ter arrancado — na Vercel o start() nunca corre)
+    credencial: Boolean(credenciais()),
     intervaloMin: MIN,
     temporada: temporadaAtual().label,
     ...(mais || {}),

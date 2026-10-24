@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Megaphone, Users, ChevronRight } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import { authHeaders } from '../lib/auth'
-import { BADGES, BadgeGem, distincoesOverclock } from './BadgeGem'
+import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
 import { anunciosVisiveis } from '../lib/anuncios'
 
 /* ============================================================
@@ -60,19 +60,26 @@ export default function RightColumn() {
   const [online, setOnline] = useState([])
 
   useEffect(() => {
+    const carregarOnline = () => {
+      // quem está online (mesma base da página de membros) — atualiza a
+      // cada 30s para ficar em sincronia com a presença (sem refresh).
+      fetch('/api/users/list', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          const l = Array.isArray(d?.users) ? d.users.filter((u) => u.online) : []
+          setOnline(l.slice(0, 8))
+        })
+        .catch(() => {})
+    }
+
     fetch('/api/posts?limit=5', { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : []))
       .then((d) => setAnuncios(anunciosVisiveis(Array.isArray(d) ? d : [])))
       .catch(() => {})
 
-    // quem está online (mesma base da página de membros)
-    fetch('/api/users/list', { headers: authHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const l = Array.isArray(d?.users) ? d.users.filter((u) => u.online) : []
-        setOnline(l.slice(0, 8))
-      })
-      .catch(() => {})
+    carregarOnline()
+    const t = setInterval(carregarOnline, 30000)
+    return () => clearInterval(t)
   }, [])
 
   return (
@@ -131,7 +138,11 @@ export default function RightColumn() {
                         />
                         <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0e0e11] bg-emerald-400" />
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-gray-200">
+                      <span
+                        className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
+                          temPrevisao1(m.badges) ? nomeDouradoClass : 'text-gray-200'
+                        }`}
+                      >
                         {m.display_name || m.username}
                       </span>
                       {/* Distinções: só as gemas (o nome fica no título) */}

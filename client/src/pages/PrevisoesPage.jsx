@@ -25,6 +25,24 @@ import { R6_TORNEIOS } from '../data/r6Torneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 
+/* ícone (bandeira) de cada região — usada no filtro de região */
+const REGIAO_ICONE = {
+  'North America': '🇺🇸',
+  'Europe': '🇪🇺',
+  'Europe Mena': '🇪🇺',
+  'Asia Pacific': '🌏',
+  'South America': '🌎',
+  'China': '🇨🇳',
+  'Brazil': '🇧🇷',
+  'Japan': '🇯🇵',
+  'Korea': '🇰🇷',
+  'Latin America': '🌎',
+  'MENA': '🇸🇦',
+  'APAC': '🌏',
+  'EMEA': '🇪🇺',
+  'Outros': '🌐',
+}
+
 const fmtDia = (iso) => {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
@@ -619,6 +637,7 @@ export default function PrevisoesPage({ user }) {
                   : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
               }`}
             >
+              <span className="mr-1">{REGIAO_ICONE[r] || '🌐'}</span>
               {r}
             </button>
           ))}
@@ -828,6 +847,11 @@ export default function PrevisoesPage({ user }) {
           Fonte: site oficial da Rainbow Six Esports (Ubisoft). Só entram ligas profissionais Tier 1.
           As apostas fecham quando o jogo começa; podes mudar o voto até lá. Quando o resultado sair,
           recebes um aviso nesta página e no sino.
+        </p>
+        <p className="mt-2 flex items-start gap-1.5">
+          <Target className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-400" />
+          Em breve vais poder também fazer previsões de <b className="text-gray-300">CS2</b> — estamos a
+          preparar os jogos profissionais de Counter-Strike.
         </p>
       </div>
 

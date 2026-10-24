@@ -2189,10 +2189,14 @@ if ($continua) {
 if (-not $continua) { Write-Output "=== ${f.nome}: [ok] saiu do PC (verificado) ===" }
 elseif ($removido) { Write-Output "=== ${f.nome}: [!] quase - ficou um resto (reinicia o PC e volta a desinstalar) ===" }
 else { Write-Output "=== ${f.nome}: [!] nao o encontrei - se for portable, a pasta foi procurada em Program Files/AppData/Downloads ===" }
+if ($continua) { $algumContinua = $true }
 `;
   });
 
-  const cmd = blocos.join('\n') + "\nWrite-Output 'Desinstalacao de todos os selecionados concluida.'";
+  const cmd =
+    '$algumContinua = $false\n' +
+    blocos.join('\n') +
+    "\nif ($algumContinua) { Write-Output 'Desinstalacao incompleta: alguns programas continuam instalados (ve os avisos acima).'; exit 1 } else { Write-Output 'Desinstalacao de todos os selecionados concluida.' }";
   return {
     ok: true,
     id: 'desinstalar',

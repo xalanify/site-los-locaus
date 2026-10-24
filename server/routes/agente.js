@@ -70,6 +70,9 @@ function baseDoSite(req) {
 }
 
 function gerarBat(site, token) {
+  // O token não fica em claro no .bat: vai em base64 (o agente decodifica).
+  // Evita que alguém que abra o ficheiro veja/edite o token à vista.
+  const tokenCod = Buffer.from(String(token), 'utf8').toString('base64');
   return [
     '@echo off',
     'setlocal EnableDelayedExpansion',
@@ -84,7 +87,7 @@ function gerarBat(site, token) {
     ')',
     '',
     `set "SITE=${site}"`,
-    `set "TOKEN=${token}"`,
+    `set "TOKEN=${tokenCod}"`,
     'set "PS=%TEMP%\\locaus-agente.ps1"',
     '',
     'cls',

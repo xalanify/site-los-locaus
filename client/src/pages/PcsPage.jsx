@@ -117,7 +117,6 @@ function LeituraReal({ d }) {
             </p>
           ) : null}
           <p className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-gray-400">
-            {d.cpu.nucleos ? <span>{d.cpu.nucleos} núcleos / {d.cpu.logicos} threads</span> : null}
             {d.cpu.socket ? <span>{d.cpu.socket}</span> : null}
             {cpu.tensao_v ? <span>{cpu.tensao_v} V</span> : null}
             {cpu.temperatura_c ? <span>{cpu.temperatura_c} °C</span> : null}
@@ -675,16 +674,9 @@ export default function PcsPage() {
                           <td className="px-4 py-3 text-gray-300">{s.os || '—'}</td>
                           <td className="px-4 py-3 text-gray-300">
                             {av?.cpu?.relogio_mhz ? (
-                              <>
-                                <span className="font-black text-white">
-                                  {fmt(av.cpu.relogio_mhz)} MHz
-                                </span>
-                                {s.cpu_cores ? (
-                                  <span className="text-gray-400"> · {s.cpu_cores} núc.</span>
-                                ) : null}
-                              </>
-                            ) : s.cpu_cores ? (
-                              `${s.cpu_cores} núcleos`
+                              <span className="font-black text-white">
+                                {fmt(av.cpu.relogio_mhz)} MHz
+                              </span>
                             ) : (
                               '—'
                             )}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Loader2, X } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import { BADGES, BadgeGem, distincoesOverclock } from '../components/BadgeGem'
+import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 
 /* ============================================================
@@ -103,7 +103,11 @@ export default function MembrosPage({ onProfile }) {
                         />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold text-white">
+                        <span
+                          className={`block truncate text-sm font-bold ${
+                            temPrevisao1(m.badges) ? nomeDouradoClass : 'text-white'
+                          }`}
+                        >
                           {m.username}
                         </span>
                         <span className={`block text-xs ${m.online ? 'text-emerald-400/90' : 'text-gray-500'}`}>

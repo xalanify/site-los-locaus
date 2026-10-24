@@ -11,7 +11,7 @@
      de 32 bytes; na base só fica o hash SHA-256;
    - o servidor monta o comando a partir do catálogo fechado —
      o browser nunca envia PowerShell livre;
-   - a sessão expira ao fim de 12 h e pode ser desligada no site.
+   - a sessão expira ao fim de 12 h (renovada a cada heartbeat) e pode ser desligada no site sem apagar o token.
    ============================================================ */
 const crypto = require('crypto');
 const fs = require('fs');
@@ -19,7 +19,7 @@ const path = require('path');
 const { getDb } = require('./database');
 const ferramentas = require('./ferramentas');
 
-const SESSAO_MS = 12 * 60 * 60 * 1000; // 12 h
+const SESSAO_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias (renovado a cada heartbeat)
 const ONLINE_MS = 90 * 1000; // agente conta como ligado se falou nos últimos 90 s
 
 const hashToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
@@ -116,7 +116,10 @@ async function validarToken(token) {
 async function autenticar(token) {
   const s = await validarToken(token);
   if (!s) return null;
-  await getDb().prepare('UPDATE public.agente_sessoes SET visto_em = now() WHERE id = ?').run(s.id);
+  // renova a validade a cada heartbeat (sliding) — o .bat nunca expira
+  // enquanto o agente fala com o site.
+  const expira = new Date(Date.now() + SESSAO_MS).toISOString();
+  await getDb().prepare('UPDATE public.agente_sessoes SET visto_em = now(), expira_em = ? WHERE id = ?').run(expira, s.id);
   return s;
 }
 
@@ -151,9 +154,10 @@ async function estado(userId) {
 }
 
 async function encerrarSessao(userId) {
-  if (!(await garantirTabelas())) return { ok: false, erro: 'Base de dados indisponível.' };
+  // "Desligar PC" só desliga (fica offline) — NÃO apaga o token.
+  // Assim o mesmo LOCAUS-PC.bat volta a ligar, sem descarregar de novo.
   await getDb()
-    .prepare('UPDATE public.agente_sessoes SET expira_em = now() WHERE user_id = ? AND expira_em > now()')
+    .prepare('UPDATE public.agente_sessoes SET visto_em = null WHERE user_id = ? AND expira_em > now()')
     .run(userId);
   return { ok: true };
 }

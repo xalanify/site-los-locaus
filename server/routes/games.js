@@ -346,23 +346,23 @@ const r6ubi = require('../r6ubi');
 router.get('/r6', async (req, res) => {
   try {
     const ubi = r6ubi.dados();
+    const t = await r6ubi.status();
     if (ubi?.ok) {
       return res.json({
         ...ubi,
         auto: {
           fonte: 'ubisoft',
-          ligado: r6ubi.estado.credencial,
-          intervaloMin: r6ubi.estado.intervaloMin,
-          ultimaTentativa: r6ubi.estado.ultimaTentativa,
-          ultimoErro: r6ubi.estado.ultimoErro,
-          credencial: r6ubi.estado.credencial,
+          ligado: t.credencial,
+          intervaloMin: t.intervaloMin,
+          ultimaTentativa: t.ultimaTentativa,
+          ultimoErro: t.ultimoErro,
+          credencial: t.credencial,
         },
       });
     }
 
     // Recuo (antes de configurares a conta Ubisoft no .env) — serve
     // o último dado que existir para a página não ficar vazia.
-    const t = await r6ubi.status();
     const data = tracker.readJson(tracker.R6_FILE);
     const auto = {
       fonte: 'ubisoft',
