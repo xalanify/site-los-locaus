@@ -345,11 +345,13 @@ router.get('/news', async (req, res) => {
 // ============================================================
 router.get('/r6', async (req, res) => {
   try {
-    const data = tracker.readJson(tracker.R6_FILE);
-    let atualizadoEm = null;
-    try {
-      atualizadoEm = require('fs').statSync(tracker.R6_FILE).mtime.toISOString();
-    } catch {}
+    const data = await require('../r6store').ler();
+    let atualizadoEm = (data && data.updatedAt) || null;
+    if (!atualizadoEm) {
+      try {
+        atualizadoEm = require('fs').statSync(tracker.R6_FILE).mtime.toISOString();
+      } catch {}
+    }
     const auto = {
       fonte: 'tracker.gg (manual)',
       ligado: true,
@@ -814,7 +816,14 @@ router.get('/cs2-inventario', async (req, res) => {
       const d = byId.get(`${a.classid}_${a.instanceid}`);
       if (!d || !d.market_hash_name) continue;
       const k = d.market_hash_name;
-      const cur = cont.get(k) || { nome: k, qtd: 0, tipo: d.type || '', marketable: Number(d.marketable) === 1 };
+      const cur = cont.get(k) || {
+        nome: k,
+        qtd: 0,
+        tipo: d.type || '',
+        marketable: Number(d.marketable) === 1,
+        icone: d.icon_url || null,
+        raridade: d.tags ? (d.tags.find((t) => t.category === 'Rarity') || {}).internal_name || null : null,
+      };
       cur.qtd += 1;
       cont.set(k, cur);
     }
@@ -842,7 +851,8 @@ router.get('/cs2-inventario', async (req, res) => {
       avaliados: precos.length,
       valorEstimado: Number(valor.toFixed(2)),
       moeda: 'EUR',
-      topItens: precos.slice(0, 8),
+      topItens: precos.slice(0, 24),
+      itens: [...cont.values()].sort((a, b) => b.qtd - a.qtd).slice(0, 80),
       parcial: cont.size > precos.length,
     };
     INV_CACHE.set(steamid, { t: Date.now(), v: payload });

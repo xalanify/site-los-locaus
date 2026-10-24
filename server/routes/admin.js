@@ -502,7 +502,7 @@ router.post(
     const itens = Array.isArray(body) ? body : Array.isArray(body.jsons) ? body.jsons : [body];
     const resultados = [];
     for (const it of itens) {
-      const r = r6.importarJson(it);
+      const r = await r6.importarJson(it);
       resultados.push(r);
     }
     const ok = resultados.filter((r) => r.ok).length;

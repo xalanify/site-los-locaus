@@ -27,6 +27,7 @@ import {
   Medal,
   Sparkles,
   Package,
+  X,
 } from 'lucide-react'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
@@ -1633,7 +1634,7 @@ function Cs2Vivo() {
   const [msgLigar, setMsgLigar] = useState(null)
   const [ordem, setOrdem] = useState('kills')
   const [inv, setInv] = useState({}) // steamid -> { aCarregar, dados }
-  const [invAberto, setInvAberto] = useState(null)
+  const [invModal, setInvModal] = useState(null) // { steam, nome }
 
   const load = () => {
     fetch('/api/games/cs2-live')
@@ -1648,20 +1649,17 @@ function Cs2Vivo() {
     return () => clearInterval(iv)
   }, [])
 
-  const abrirInventario = async (steamid) => {
-    if (invAberto === steamid) {
-      setInvAberto(null)
-      return
-    }
-    setInvAberto(steamid)
+  const abrirInventario = async (p) => {
+    const steamid = p.steam
+    setInvModal({ steam: steamid, nome: p.nick || p.nome })
     if (inv[steamid]?.dados) return
-    setInv((p) => ({ ...p, [steamid]: { aCarregar: true, dados: null } }))
+    setInv((prev) => ({ ...prev, [steamid]: { aCarregar: true, dados: null } }))
     try {
       const r = await fetch('/api/games/cs2-inventario?steam=' + encodeURIComponent(steamid))
       const d = await r.json().catch(() => ({}))
-      setInv((p) => ({ ...p, [steamid]: { aCarregar: false, dados: d } }))
+      setInv((prev) => ({ ...prev, [steamid]: { aCarregar: false, dados: d } }))
     } catch {
-      setInv((p) => ({ ...p, [steamid]: { aCarregar: false, dados: { ok: false, error: 'Sem ligação.' } } }))
+      setInv((prev) => ({ ...prev, [steamid]: { aCarregar: false, dados: { ok: false, error: 'Sem ligação.' } } }))
     }
   }
 
@@ -1825,54 +1823,13 @@ function Cs2Vivo() {
               <Célula label="Mortes" valor={p.deaths ?? '—'} cor="text-gray-300" />
             </div>
 
-            {/* Inventário CS2 — valor estimado */}
+            {/* Inventário CS2 — janela flutuante */}
             <button
-              onClick={() => abrirInventario(p.steam)}
+              onClick={() => abrirInventario(p)}
               className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-1.5 text-[11px] font-black uppercase tracking-wider text-gray-300 hover:bg-white/10 hover:text-white"
             >
               <Package className="h-3.5 w-3.5" /> Inventário
             </button>
-            {invAberto === p.steam && (
-              <div className="mt-2 rounded-lg border border-white/10 bg-black/30 p-2 text-[11px]">
-                {(() => {
-                  const d = inv[p.steam]
-                  if (!d || d.aCarregar) return <p className="text-gray-400">A ler o inventário…</p>
-                  if (!d.dados?.ok)
-                    return (
-                      <p className="text-yellow-300">
-                        {d.dados?.privado
-                          ? 'Inventário privado na Steam.'
-                          : d.dados?.error || 'Não deu para ler o inventário.'}
-                      </p>
-                    )
-                  return (
-                    <div className="space-y-1">
-                      <p className="flex justify-between">
-                        <span className="text-gray-400">Itens</span>
-                        <b className="text-white">{d.dados.totalItens}</b>
-                      </p>
-                      <p className="flex justify-between">
-                        <span className="text-gray-400">Valor estimado</span>
-                        <b className="text-emerald-300">
-                          ~{Number(d.dados.valorEstimado || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} €
-                        </b>
-                      </p>
-                      {(d.dados.topItens || []).slice(0, 3).map((it) => (
-                        <p key={it.nome} className="flex justify-between gap-2">
-                          <span className="min-w-0 truncate text-gray-400">{it.qtd}× {it.nome}</span>
-                          <b className="shrink-0 text-gray-200">{Number(it.total).toFixed(2)} €</b>
-                        </p>
-                      ))}
-                      {d.dados.parcial && (
-                        <p className="text-[9px] leading-snug text-gray-600">
-                          Estimativa parcial (só itens com preço de mercado).
-                        </p>
-                      )}
-                    </div>
-                  )
-                })()}
-              </div>
-            )}
           </motion.div>
         ))}
         {priv.map((p) => (
@@ -1949,6 +1906,103 @@ function Cs2Vivo() {
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {invModal && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
+          onClick={() => setInvModal(null)}
+          role="presentation"
+        >
+          <div
+            className="glass max-h-[85vh] w-full max-w-3xl overflow-hidden rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-gray-500">
+                  Inventário CS2
+                </p>
+                <h3 className="font-display text-lg font-black text-white">{invModal.nome}</h3>
+              </div>
+              <button
+                onClick={() => setInvModal(null)}
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="max-h-[calc(85vh-64px)] overflow-y-auto p-4">
+              {(() => {
+                const d = inv[invModal.steam]
+                if (!d || d.aCarregar)
+                  return <p className="py-10 text-center text-sm text-gray-400">A ler o inventário…</p>
+                if (!d.dados?.ok)
+                  return (
+                    <p className="py-10 text-center text-sm text-yellow-300">
+                      {d.dados?.privado
+                        ? 'Inventário privado na Steam.'
+                        : d.dados?.error || 'Não deu para ler o inventário.'}
+                    </p>
+                  )
+                return (
+                  <div>
+                    <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      <div className="rounded-xl bg-white/5 p-3 text-center">
+                        <p className="text-[10px] font-bold uppercase text-gray-500">Itens</p>
+                        <p className="font-display text-xl font-black text-white">{d.dados.totalItens}</p>
+                      </div>
+                      <div className="rounded-xl bg-white/5 p-3 text-center">
+                        <p className="text-[10px] font-bold uppercase text-gray-500">Únicos</p>
+                        <p className="font-display text-xl font-black text-white">{d.dados.unicos}</p>
+                      </div>
+                      <div className="rounded-xl bg-emerald-500/10 p-3 text-center">
+                        <p className="text-[10px] font-bold uppercase text-emerald-300">
+                          Valor estimado
+                        </p>
+                        <p className="font-display text-xl font-black text-emerald-300">
+                          ~{Number(d.dados.valorEstimado || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} €
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-500">
+                      Itens mais valiosos
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                      {(d.dados.topItens || []).map((it) => (
+                        <div key={it.nome} className="rounded-xl border border-white/10 bg-white/[0.03] p-2">
+                          {it.icone ? (
+                            <img
+                              src={`https://community.cloudflare.steamstatic.com/economy/image/${it.icone}/128fx128f?allowcrossorigin=true`}
+                              alt=""
+                              className="mx-auto h-16 w-16 object-contain"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="mx-auto h-16 w-16 rounded bg-white/5" />
+                          )}
+                          <p className="mt-1 line-clamp-2 text-[10px] font-bold leading-tight text-white">
+                            {it.nome}
+                          </p>
+                          <p className="text-[10px] font-black text-emerald-300">
+                            {Number(it.total).toFixed(2)} €{' '}
+                            <span className="font-semibold text-gray-500">({it.qtd}×)</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    {d.dados.parcial && (
+                      <p className="mt-3 text-[10px] leading-snug text-gray-600">
+                        Estimativa parcial: só entram os itens com preço de mercado na Steam.
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
           </div>
         </div>
       )}

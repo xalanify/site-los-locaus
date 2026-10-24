@@ -17,6 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const { R6_FILE, DATA_DIR } = require('./trackerdata');
 const { buscarJson } = require('./trackerbrowser');
+const r6store = require('./r6store');
 
 const API = 'https://public-api.tracker.gg/v2/r6siege/standard/profile';
 const MIN = Math.max(1, Number(process.env.R6_REFRESH_MIN) || 3);
@@ -317,7 +318,7 @@ async function refreshNow(opcoes = {}) {
   estado.ultimaTentativa = new Date().toISOString();
 
   try {
-    const dados = lerJson();
+    const dados = await r6store.ler();
     if (!dados || !Array.isArray(dados.players) || !dados.players.length) {
       estado.ultimoErro = 'Sem jogadores no r6.json';
       log('Sem jogadores no r6.json.');
@@ -364,7 +365,7 @@ async function refreshNow(opcoes = {}) {
     if (mudou) {
       dados.source = 'auto';
       dados.updatedAt = new Date().toISOString();
-      guardar(dados);
+      await r6store.guardar(dados);
       estado.atualizacoes++;
     }
     estado.ultimoErro = n === 0 ? estado.ultimoErro : null;
@@ -663,7 +664,7 @@ function extrairApi(conteudo) {
   }
 }
 
-function importarJson(conteudo) {
+async function importarJson(conteudo) {
   try {
     const api = extrairApi(conteudo);
     if (!api) {
@@ -674,7 +675,7 @@ function importarJson(conteudo) {
     const handle = String(info.platformUserHandle || d.username || '').trim();
     if (!handle) return { ok: false, erro: 'Ficheiro sem handle do jogador.' };
 
-    const dados = lerJson() || { players: [] };
+    const dados = (await r6store.ler()) || { players: [] };
     if (!Array.isArray(dados.players)) dados.players = [];
 
     const chave = handle.toLowerCase();
@@ -711,7 +712,7 @@ function importarJson(conteudo) {
     if (mudou) {
       dados.source = 'import';
       dados.updatedAt = new Date().toISOString();
-      guardar(dados);
+      await r6store.guardar(dados);
       estado.atualizacoes++;
     }
     return { ok: true, handle: p.handle, novo, mudou };
