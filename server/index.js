@@ -130,7 +130,7 @@ app.use('/api/clips/pub/confirm', express.json({ limit: '6mb' }));
 app.use('/api/agente', express.json({ limit: '2mb' }));
 
 const ORIGENS_PERMITIDAS = new Set(
-  [process.env.SITE_URL, 'https://locaus.vercel.app']
+  [process.env.SITE_URL, 'https://locaus.vercel.app', 'https://locaus.fun', 'https://www.locaus.fun']
     .filter(Boolean)
     .map((o) => String(o).replace(/\/+$/, ''))
 );
