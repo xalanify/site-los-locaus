@@ -1,13 +1,14 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MessageCircle } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import RightColumn from './components/RightColumn'
 import MobileMenu from './components/MobileMenu'
 import BetaBadge from './components/BetaBadge'
 import Hero from './components/Hero'
+import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
 import VideosSection from './components/VideosSection'
 import BarraAnuncios from './components/BarraAnuncios'
@@ -104,8 +105,45 @@ function App() {
       return false
     }
   })
+  // Código "afonso" -> entra apenas no chat geral com a conta
+  // "Afonso Teste" (chave aj-gate-afonso, guarda o token + user).
+  const [chatOnly, setChatOnly] = useState(
+    () => Boolean(localStorage.getItem('aj-gate-afonso')),
+  )
   const location = useLocation()
   const navigate = useNavigate()
+
+  // Sessão da conta "Afonso Teste" (modo chat-only)
+  const afonsoUser = (() => {
+    try {
+      const raw = localStorage.getItem('aj-gate-afonso')
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })()
+  useEffect(() => {
+    if (chatOnly && afonsoUser && afonsoUser.token) {
+      try {
+        localStorage.setItem('userToken', afonsoUser.token)
+        localStorage.setItem('user', JSON.stringify(afonsoUser.user))
+      } catch {
+        /* sem armazenamento: entra na mesma nesta visita */
+      }
+    }
+  }, [chatOnly, afonsoUser])
+
+  // Sair do modo chat-only -> limpa a sessão e volta ao portão
+  const sairChatOnly = () => {
+    try {
+      localStorage.removeItem('aj-gate-afonso')
+      clearUserSession()
+    } catch {
+      /* nada a fazer */
+    }
+    setChatOnly(false)
+    setUser(null)
+  }
 
   // Sessão de utilizador guardada — obrigatória para entrar no site
   useEffect(() => {
@@ -127,8 +165,16 @@ function App() {
   // Presença — sinal online/offline na lista de membros
   useEffect(() => {
     if (!unlocked || !sessionChecked || !user) return
+    // plataforma: telemóvel vs PC (o site mostra "No PC" / "No Telemóvel")
+    const isMobile =
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+      (navigator.maxTouchPoints > 1 && /Mac|Linux/i.test(navigator.userAgent) && window.innerWidth < 1024)
     const ping = () =>
-      fetch('/api/users/presence', { method: 'POST', headers: authHeaders() }).catch(() => {})
+      fetch('/api/users/presence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ plataforma: isMobile ? 'mobile' : 'pc' }),
+      }).catch(() => {})
     ping()
     const t = setInterval(ping, 30000)
     return () => clearInterval(t)
@@ -177,13 +223,49 @@ function App() {
   // Ver o perfil público de um membro — cada um tem página própria
   const openMember = (name) => navigate(`/perfil/${encodeURIComponent(name)}`)
 
+  // Código "afonso" -> chat geral apenas, com a conta "Afonso Teste".
+  // Sem sidebar, sem boot screen: só o chat (sem botão de sair).
+  if (unlocked && chatOnly && afonsoUser) {
+    return (
+      <div className="min-h-screen">
+        <div className="fixed inset-x-0 top-0 z-[120] flex items-center justify-between border-b border-white/10 bg-[#0c0916]/95 px-4 py-2.5 backdrop-blur">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+              <MessageCircle className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-xs font-black text-white">Chat geral</p>
+              <p className="truncate text-[10px] font-semibold text-gray-500">
+                Entraste como <span className="text-violet-300">Afonso Teste</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="pt-[3.25rem]">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[60vh] items-center justify-center">
+                <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
+              </div>
+            }
+          >
+            <ChatPage user={afonsoUser.user} />
+          </Suspense>
+        </div>
+        <Toasts />
+        <Dialogos />
+      </div>
+    )
+  }
+
   // Sem o código certo, o site nem se monta: fica a página "em breve".
   if (!unlocked) {
     return (
       <GatePage
-        onUnlock={() => {
+        onUnlock={(modo) => {
           setEntered(false) // o CMD de entrada toca a seguir
           setUnlocked(true)
+          if (modo && modo.chatOnly) setChatOnly(true)
         }}
       />
     )
@@ -273,6 +355,8 @@ function App() {
                       path="/"
                       element={
                         <>
+                          {/* Contagem regressiva até aos próximos torneios */}
+                          <TorneiosContagem />
                           {/* Anúncios presos no topo — só aparece se houver */}
                           <BarraAnuncios />
                           {/* O canal: foto, nome, subscritores e visualizações */}

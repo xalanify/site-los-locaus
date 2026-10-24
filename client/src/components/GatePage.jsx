@@ -16,7 +16,23 @@ import { Lock, Loader2, X } from 'lucide-react'
    ============================================================ */
 
 const CODIGO = 'xlnadminpass'
+const CODIGO_AFONSO = 'afonso'
 const CHAVE = 'aj-gate-v1'
+const CHAVE_AFONSO = 'aj-gate-afonso'
+
+// Conta "Afonso Teste" (id 67 na base) — criada por server/criar-afonso.js.
+// O token é um JWT a 100 anos, válido para sempre.
+const AFONSO = {
+  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjY3LCJ1c2VybmFtZSI6IkFmb25zbyBUZXN0ZSIsImlhdCI6MTc5MjcwMjg1OCwiZXhwIjo0OTQ4NDYyODU4fQ.ykfqQLunaDm-vWavCHjOCG6v9kqY7WVk-LL1FHTKYcM',
+  user: {
+    id: 67,
+    username: 'Afonso Teste',
+    username_lower: 'afonso teste',
+    avatar_url: null,
+    is_admin: false,
+    recovery: false,
+  },
+}
 
 const FUNDO = '/gta5.gif'
 
@@ -60,13 +76,24 @@ export default function GatePage({ onUnlock }) {
     setAVerificar(true)
     // pequena pausa — parece que está mesmo a verificar
     await new Promise((r) => setTimeout(r, 600))
-    if (limpo === CODIGO) {
+    const entrada = limpo.toLowerCase()
+    if (entrada === CODIGO) {
       try {
         localStorage.setItem(CHAVE, '1')
       } catch {
         /* sem armazenamento: entra na mesma nesta visita */
       }
       onUnlock && onUnlock()
+      return
+    }
+    if (entrada === CODIGO_AFONSO) {
+      // Entra apenas no chat geral, com a conta "Afonso Teste".
+      try {
+        localStorage.setItem(CHAVE_AFONSO, JSON.stringify(AFONSO))
+      } catch {
+        /* sem armazenamento: entra na mesma nesta visita */
+      }
+      onUnlock && onUnlock({ chatOnly: true })
       return
     }
     setAVerificar(false)
@@ -139,18 +166,6 @@ export default function GatePage({ onUnlock }) {
           <div className="flex items-center justify-center" aria-hidden="true">
             <span className="h-7 w-7 animate-spin rounded-full border-[3px] border-violet-500/20 border-t-violet-500" />
           </div>
-
-          <a
-            href="https://www.youtube.com/@AshoweJazer"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
-              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z" />
-            </svg>
-            Ashow e Jazer no YouTube
-          </a>
 
           {/* O pequeno link que abre a janela do código */}
           <div className="mt-7">

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Cpu,
@@ -11,6 +11,7 @@ import {
   Activity,
   Terminal,
   Lock,
+  Download,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
@@ -287,13 +288,12 @@ export default function PcsPage() {
   /* leitura real do PC (PowerShell) */
   const [podeLocal, setPodeLocal] = useState(null) // null = ainda não sabemos
   const [agenteOnline, setAgenteOnline] = useState(false)
+  /* aviso temporário quando a app liga o PC */
+  const [pcLigado, setPcLigado] = useState(false)
   const [lendo, setLendo] = useState(false)
   const [passos, setPassos] = useState([])
   const [lido, setLido] = useState(null) // { passos, spec, details }
   const [erroLeitura, setErroLeitura] = useState(null)
-  /* estado da página */
-  const [comando, setComando] = useState('')
-  const [copiado, setCopiado] = useState(false)
   /* portão: bloqueia a aba até se correr a leitura — só aparece se NÃO tem specs guardadas */
   const [portao, setPortao] = useState(false)
 
@@ -319,14 +319,6 @@ export default function PcsPage() {
     }
   }
 
-  /* comando copiável para correr noutro PC (a Vercel não tem PowerShell) */
-  useEffect(() => {
-    fetch('/api/users/specs/script?como=comando', { headers: authHeaders() })
-      .then((r) => (r.ok ? r.text() : ''))
-      .then((t) => setComando(t.trim()))
-      .catch(() => setComando(''))
-  }, [])
-
   /* carregar specs do servidor quando a página abre */
   const carregar = () => {
     fetch('/api/users/specs', { headers: authHeaders() })
@@ -351,6 +343,7 @@ export default function PcsPage() {
   useEffect(carregar, [])
 
   /* dá para correr o PowerShell no PC onde está o servidor? */
+  const agenteAntes = useRef(false)
   useEffect(() => {
     let vivo = true
     const ver = () => {
@@ -359,7 +352,14 @@ export default function PcsPage() {
         .then((d) => {
           if (!vivo || !d) return
           setPodeLocal(Boolean(d.podeLocal))
-          setAgenteOnline(Boolean(d.agenteOnline))
+          const online = Boolean(d.agenteOnline)
+          setAgenteOnline(online)
+          /* se o .bat acabou de ligar o PC, mostra o aviso */
+          if (online && !agenteAntes.current) {
+            setPcLigado(true)
+            setTimeout(() => setPcLigado(false), 5000)
+          }
+          agenteAntes.current = online
           if (Array.isArray(d.passos) && d.aCorrer) setPassos(d.passos)
         })
         .catch(() => {
@@ -367,25 +367,49 @@ export default function PcsPage() {
         })
     }
     ver()
-    const iv = setInterval(ver, 10000)
+    const iv = setInterval(ver, 2000)
     return () => {
       vivo = false
       clearInterval(iv)
     }
   }, [])
 
-  const copiarComando = async () => {
-    if (!comando) return
+  const podeExecutar = Boolean(podeLocal || agenteOnline)
+
+  /* descarrega o mini-app (LOCAUS-PC.exe) — abre a janela da app já
+     ligada ao site, com estado + botões Ligar/Desligar */
+  const [aLigarApp, setALigarApp] = useState(false)
+  const ligarApp = async () => {
+    if (aLigarApp) return
+    setALigarApp(true)
     try {
-      await navigator.clipboard.writeText(comando)
-      setCopiado(true)
-      setTimeout(() => setCopiado(false), 2200)
+      /* cria (ou reaproveita) a sessão deste utilizador e descarrega a app
+         já atada ao login — a janela abre e fica ligada ao site */
+      const r = await fetch('/api/agente/sessao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ nome: 'PC Windows' }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.token) throw new Error(d.error || d.erro || 'Não deu para criar a sessão.')
+      const a = document.createElement('a')
+      a.href = `/api/agente/baixar-exe?token=${encodeURIComponent(d.token)}`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
     } catch {
-      /* o utilizador pode selecionar à mão a caixa do comando */
+      /* o utilizador pode ir à Ferramentas Windows descarregar */
+    } finally {
+      setALigarApp(false)
     }
   }
 
-  const podeExecutar = Boolean(podeLocal || agenteOnline)
+  /* ao entrar na aba: se o site está na nuvem (sem PowerShell local) e o
+     PC não está ligado via app, mostra o aviso. Some sozinho quando a
+     app liga o PC (agenteOnline vira true). */
+  useEffect(() => {
+    if (podeLocal === false && !agenteOnline) setPortao(true)
+  }, [podeLocal, agenteOnline])
 
   /* corre o script no PC do servidor e mostra o que ele vai fazendo */
   const lerPC = async () => {
@@ -564,6 +588,49 @@ export default function PcsPage() {
     return <Badge tom="ok">Normal</Badge>
   }
 
+  /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
+  /* A página só abre quando a app deste utilizador está ligada ao site
+     (ou quando o servidor corre com PowerShell local). A verificação
+     corre a cada 2s — quando a app liga, a página desbloqueia sozinha. */
+  if (podeLocal !== null && !podeExecutar) {
+    return (
+      <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+        <div className="mx-auto max-w-md">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass rounded-2xl p-6 text-center ring-1 ring-white/10"
+          >
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 ring-1 ring-emerald-500/30">
+              <Lock className="h-7 w-7 text-emerald-400" />
+            </span>
+            <h1 className="mt-4 font-display text-xl font-black uppercase text-white">
+              PCs / Specs
+            </h1>
+            <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
+              Esta página só abre com a app <b className="text-white">LOCAUS-PC</b> ligada
+              ao site. Descarrega, abre e clica em <b className="text-white">Ligar ao
+              site</b> — as specs do teu PC e a página desbloqueiam aqui sozinhos.
+            </p>
+            <button
+              type="button"
+              onClick={ligarApp}
+              disabled={aLigarApp}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
+            >
+              {aLigarApp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarApp ? 'A preparar…' : 'Descarregar a app LOCAUS-PC'}
+            </button>
+            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
+              A app é só tua: liga o teu Windows ao teu login do site. Ninguém vê as specs
+              sem a própria app ligada.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
       <div className="mx-auto max-w-6xl">
@@ -588,11 +655,12 @@ export default function PcsPage() {
                   </span>
                   <div>
                     <h2 className="font-display text-lg font-black uppercase text-white">
-                      Ler as specs deste PC
+                      Ligar o teu PC ao site
                     </h2>
                     <p className="mt-1 text-[13px] leading-relaxed text-gray-400">
-                      Precisamos de correr o PowerShell aqui: é a única forma de ver os GHz
-                      reais, a tensão e a RAM a correr. Toca no botão para entrar.
+                      Para ler as specs e usar as ferramentas, o site precisa de falar com o
+                      teu Windows. Descarrega a <b>app LOCAUS-PC</b> e clica em "Ligar ao site" —
+                      fica ligada em segundo plano e este aviso desaparece sozinho.
                     </p>
                   </div>
                 </div>
@@ -608,14 +676,6 @@ export default function PcsPage() {
                       {lendo ? 'A ler o PC…' : 'Ler o meu PC agora'}
                     </button>
                   )}
-                  {!podeExecutar && podeLocal !== null && (
-                    <button
-                      onClick={() => setPortao(false)}
-                      className="btn-glass rounded-full px-5 py-2.5 text-sm font-bold text-gray-300"
-                    >
-                      Entrar
-                    </button>
-                  )}
                 </div>
 
                 <div className="mt-3">
@@ -626,28 +686,8 @@ export default function PcsPage() {
                   <p className="mt-3 text-[13px] font-bold text-red-400">{erroLeitura}</p>
                 )}
 
-                {!podeExecutar && !lendo && podeLocal !== null && (
-                  <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
-                    <p className="mb-2 text-[12px] leading-relaxed text-gray-400">
-                      Este servidor não tem PowerShell (Vercel). Corre este comando no PC e o
-                      resultado vem para o site:
-                    </p>
-                    {comando ? (
-                      <button
-                        onClick={copiarComando}
-                        className="block w-full overflow-x-auto rounded-lg border border-emerald-500/30 bg-black/60 px-3 py-2 text-left font-mono text-[11px] text-emerald-300 transition-colors hover:border-emerald-500/60"
-                        title="Clicar para copiar"
-                      >
-                        {copiado ? '✓ copiado' : comando}
-                      </button>
-                    ) : (
-                      <p className="text-[12px] text-gray-600">A preparar o comando…</p>
-                    )}
-                  </div>
-                )}
-
-                {/* só depois de falhar (ou de não haver PowerShell) dá para passar */}
-                {(erroLeitura || (!podeExecutar && podeLocal !== null)) && !lendo && (
+                {/* só depois de falhar dá para passar (sem a app não há como ler) */}
+                {erroLeitura && !lendo && (
                   <button
                     onClick={() => setPortao(false)}
                     className="mt-3 w-full text-center text-[11px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-gray-300"
@@ -659,6 +699,17 @@ export default function PcsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* aviso temporário: a app ligou o PC */}
+        {pcLigado && (
+          <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            </span>
+            <span><b>PC ligado</b> — a app LOCAUS-PC está a comunicar com o site. Podes usar tudo.</span>
+          </div>
+        )}
 
         {/* ---------------- Cabeçalho ---------------- */}
         <motion.div
@@ -678,14 +729,6 @@ export default function PcsPage() {
                 As máquinas do grupo com valores lidos no Windows. Clique numa linha para ver tudo.
               </p>
             </div>
-            {!podeExecutar && podeLocal !== null && (
-              <button
-                onClick={() => setPortao(true)}
-                className="flex items-center gap-2 rounded-full btn-glass px-5 py-2.5 text-sm font-bold text-gray-300"
-              >
-                Ler o meu PC (comando manual)
-              </button>
-            )}
           </div>
         </motion.div>
 
@@ -922,26 +965,6 @@ export default function PcsPage() {
           </div>
 
           {erroLeitura && <p className="mt-3 text-sm font-bold text-red-400">{erroLeitura}</p>}
-
-          {!podeExecutar && !lendo && podeLocal !== null && (
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
-              <p className="mb-2 text-[13px] leading-relaxed text-gray-400">
-                Sem PowerShell no servidor. Corre o comando no PC — ele envia o resultado para o
-                site.
-              </p>
-              {comando ? (
-                <button
-                  onClick={copiarComando}
-                  className="group block w-full overflow-x-auto rounded-lg border border-emerald-500/30 bg-black/60 px-3 py-2.5 text-left font-mono text-[11.5px] leading-relaxed text-emerald-300 transition-colors hover:border-emerald-500/60"
-                  title="Clicar para copiar"
-                >
-                  {copiado ? '✓ copiado' : comando}
-                </button>
-              ) : (
-                <p className="text-[12px] text-gray-600">A preparar o comando…</p>
-              )}
-            </div>
-          )}
 
           {lido?.details && (
             <div className="mt-4 border-t border-white/10 pt-4">

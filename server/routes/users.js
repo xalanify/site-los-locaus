@@ -425,12 +425,24 @@ router.post('/reset', async (req, res) => {
 router.post('/presence', requireUser, async (req, res) => {
   try {
     const db = getDb();
-    await db
-      .prepare(
-        `INSERT INTO user_presence (user_id, last_seen) VALUES (?, now())
-         ON CONFLICT (user_id) DO UPDATE SET last_seen = now()`,
-      )
-      .run(req.auth.uid);
+    // plataforma (pc|mobile) — para mostrar "No PC" / "No Telemóvel"
+    const plataforma = String((req.body && req.body.plataforma) || '').toLowerCase();
+    const ok = plataforma === 'pc' || plataforma === 'mobile';
+    if (ok) {
+      await db
+        .prepare(
+          `INSERT INTO user_presence (user_id, last_seen, plataforma) VALUES (?, now(), ?)
+           ON CONFLICT (user_id) DO UPDATE SET last_seen = now(), plataforma = EXCLUDED.plataforma`,
+        )
+        .run(req.auth.uid, plataforma);
+    } else {
+      await db
+        .prepare(
+          `INSERT INTO user_presence (user_id, last_seen) VALUES (?, now())
+           ON CONFLICT (user_id) DO UPDATE SET last_seen = now()`,
+        )
+        .run(req.auth.uid);
+    }
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro presence:', error.message);
@@ -445,7 +457,9 @@ router.get('/list', attachAuth, async (req, res) => {
     const rows = await db
       .prepare(
         `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi,
-                (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online
+                (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
+                CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
+                     THEN p2.plataforma END AS plataforma
          FROM users u
          LEFT JOIN user_profiles p ON p.user_id = u.id
          LEFT JOIN user_presence p2 ON p2.user_id = u.id
@@ -466,6 +480,7 @@ router.get('/list', attachAuth, async (req, res) => {
         mouse: r.mouse || null,
         dpi: r.dpi || null,
         online: Boolean(r.online),
+        plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],
         distincoes: dists[i] || null,
       })),

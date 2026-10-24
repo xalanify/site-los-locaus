@@ -22,6 +22,7 @@ import {
   Camera,
   Code,
   Coffee,
+  Copy,
   Cpu,
   Disc,
   Download,
@@ -405,13 +406,14 @@ export default function FerramentasPage() {
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.token) throw new Error(d.error || d.erro || 'Não deu para criar a sessão.')
+      /* descarrega o LOCAUS-PC.exe já atado ao login deste utilizador —
+         abre a janela da app, que fica ligada e desbloqueia a página */
       const a = document.createElement('a')
-      a.href = `/api/agente/baixar?token=${encodeURIComponent(d.token)}`
-      a.download = 'LOCAUS-PC.bat'
+      a.href = `/api/agente/baixar-exe?token=${encodeURIComponent(d.token)}`
       document.body.appendChild(a)
       a.click()
       a.remove()
-      setAviso('LOCAUS-PC.bat descarregado. Abre-o no PC e aceita o pedido de administrador; o site liga-se sozinho.')
+      setAviso('A app LOCAUS-PC está a descarregar. Abre-a e clica "Ligar ao site" — a página desbloqueia aqui sozinha.')
     } catch (e) {
       setAviso(e.message || 'Não deu para ligar o PC.')
     } finally {
@@ -432,6 +434,8 @@ export default function FerramentasPage() {
   }
 
   /* o site pergunta ao agente se o PC está ligado */
+  const agenteAntes = useRef(false)
+  const [pcLigado, setPcLigado] = useState(false)
   useEffect(() => {
     let vivo = true
     const atualizar = async () => {
@@ -439,6 +443,13 @@ export default function FerramentasPage() {
         const r = await fetch('/api/agente/estado', { headers: authHeaders() })
         const d = await r.json().catch(() => ({}))
         if (!vivo || !r.ok) return
+        const online = Boolean(d.online)
+        /* se o .bat acabou de ligar o PC, mostra o aviso */
+        if (online && !agenteAntes.current) {
+          setPcLigado(true)
+          setTimeout(() => setPcLigado(false), 5000)
+        }
+        agenteAntes.current = online
         setAgente((prev) => ({ ...prev, ...d }))
         if (d.online && !discosPedidosRef.current) {
           discosPedidosRef.current = true
@@ -447,7 +458,7 @@ export default function FerramentasPage() {
       } catch { /* sem rede */ }
     }
     atualizar()
-    const iv = setInterval(atualizar, 10000)
+    const iv = setInterval(atualizar, 2000)
     return () => {
       vivo = false
       clearInterval(iv)
@@ -559,6 +570,29 @@ export default function FerramentasPage() {
     }
   }
 
+  /* Sem .bat: gera um comando PowerShell one-shot que o utilizador copia
+     e cola no PC — cria a sessão, corre a ferramenta e devolve os logs. */
+  const copiarComando = async (id, argOverride, acoes) => {
+    const alvo = ferramentas.find((f) => f.id === id)
+    const arg = argOverride !== undefined ? argOverride : alvo?.disco ? discoSel : idLivre
+    setAviso(null)
+    try {
+      const qs = new URLSearchParams({ id })
+      if (arg) qs.set('arg', arg)
+      if (acoes) qs.set('acoes', JSON.stringify(acoes))
+      const r = await fetch(`/api/agente/comando?${qs.toString()}`, { headers: authHeaders() })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok || !d.ok) {
+        setAviso(d.erro || d.error || 'Não deu para gerar o comando.')
+        return
+      }
+      await navigator.clipboard.writeText(d.comando)
+      setAviso(`Comando copiado! Cola-o no PowerShell do teu PC (executa como Administrador). Nada fica instalado — corre e fecha.`)
+    } catch (e) {
+      setAviso(e.message || 'Não deu para gerar o comando.')
+    }
+  }
+
   /* pára a ferramenta que está a correr no servidor */
   const parar = async () => {
     if (parando || !aCorrer) return
@@ -657,6 +691,50 @@ export default function FerramentasPage() {
   const podeLocal = dados?.podeLocal
   const podeExecutar = Boolean(podeLocal || agente.online)
 
+  /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
+  /* A página só abre quando a app deste utilizador está ligada ao site
+     (ou quando o servidor corre com PowerShell local). A verificação
+     corre a cada 2s — quando a app liga, a página desbloqueia sozinha. */
+  const appVerificada = Boolean(dados)
+  if (appVerificada && !podeExecutar) {
+    return (
+      <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+        <div className="mx-auto max-w-md">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass rounded-2xl p-6 text-center ring-1 ring-white/10"
+          >
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
+              <Lock className="h-7 w-7 text-violet-400" />
+            </span>
+            <h1 className="mt-4 font-display text-xl font-black uppercase text-white">
+              Ferramentas Windows
+            </h1>
+            <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
+              Esta página só abre com a app <b className="text-white">LOCAUS-PC</b> ligada
+              ao site. Descarrega, abre e clica em <b className="text-white">Ligar ao
+              site</b> — a página desbloqueia aqui sozinha.
+            </p>
+            <button
+              type="button"
+              onClick={ligarPc}
+              disabled={aLigarPc}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-violet-500 disabled:opacity-60"
+            >
+              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarPc ? 'A preparar…' : 'Descarregar a app LOCAUS-PC'}
+            </button>
+            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
+              A app é só tua: liga o teu Windows ao teu login do site. Ninguém vê as
+              ferramentas sem a própria app ligada.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
       <div className="mx-auto max-w-6xl">
@@ -673,32 +751,14 @@ export default function FerramentasPage() {
           </p>
         </motion.div>
 
-        {podeLocal === false && !agente.online && (
-          <div className="mb-6 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4 text-[13px] text-violet-100">
-            <div className="flex items-start gap-2.5">
-              <Monitor className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
-              <div className="min-w-0">
-                <p className="font-semibold text-white">Ligar este PC ao site</p>
-                <p className="mt-1 text-violet-100/80">
-                  O site está na nuvem e não tem PowerShell. Descarrega o <b>LOCAUS-PC.bat</b>,
-                  abre-o no PC Windows e aceita o pedido de administrador. Fica ligado em segundo
-                  plano — depois podes mandar executar daqui ou do telemóvel.
-                </p>
-                <button
-                  type="button"
-                  onClick={ligarPc}
-                  disabled={aLigarPc}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {aLigarPc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                  {aLigarPc ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
-                </button>
-                <p className="mt-2 text-[11px] text-violet-200/60">
-                  Se estiveres no telemóvel, descarrega e abre o ficheiro no PC. O site deteta-o
-                  sozinho em poucos segundos.
-                </p>
-              </div>
-            </div>
+        {/* aviso temporário: a app ligou o PC */}
+        {pcLigado && (
+          <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            </span>
+            <span><b>PC ligado</b> — a app LOCAUS-PC está a comunicar com o site. Podes usar as ferramentas.</span>
           </div>
         )}
 

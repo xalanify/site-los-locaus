@@ -17,6 +17,9 @@ const path = require('path');
 const FILES = path.join(__dirname, 'data', 'cs2-steam.json');
 
 function env() {
+  // No Vercel (serverless) o ficheiro .env local nao e lido — a key vem
+  // injetada em process.env. No local, continua a ler de server/.env.
+  if (process.env.STEAM_API_KEY) return String(process.env.STEAM_API_KEY).trim();
   try {
     const linhas = fs
       .readFileSync(path.join(__dirname, '.env'), 'utf8')

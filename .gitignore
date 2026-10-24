@@ -44,3 +44,16 @@ Desktop.ini
 *.tmp
 
 .vercel
+
+crack_hash*.py
+wordlist_*.txt
+bundle.js
+AUDIT.md
+.neurova/
+cs2_pub.json
+previsoes_pub.json
+migrar_chat.cjs
+prev_pub.js
+scripts/dist/build/
+scripts/dist/spec/
+scripts/dist/agente.ps1

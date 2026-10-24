@@ -106,8 +106,14 @@ export default function MembrosPage({ onProfile }) {
                         <span className="block truncate text-sm font-bold text-white">
                           {m.username}
                         </span>
-                        <span className="block text-xs text-gray-500">
-                          {m.online ? 'Online' : 'Offline'}
+                        <span className={`block text-xs ${m.online ? 'text-emerald-400/90' : 'text-gray-500'}`}>
+                          {m.online
+                            ? m.plataforma === 'mobile'
+                              ? 'No Telemóvel'
+                              : m.plataforma === 'pc'
+                                ? 'No PC'
+                                : 'Online'
+                            : 'Offline'}
                         </span>
                       </span>
                       {/* Distinções do membro (estáticas + overclock) */}

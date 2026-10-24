@@ -8,6 +8,36 @@ const { sincronizar } = require('../r6previsoes');
 
 const router = express.Router();
 
+/* Regiões R6 Tier 1 — o calendário oficial da Ubisoft organiza o
+   calendário por regiões. O nome do campeonato traz a região
+   (ex.: "North America League Stage 2" -> "North America"). */
+const REGIOES = {
+  'North America': 'North America',
+  'Europe': 'Europe',
+  'Europe Mena': 'Europe Mena',
+  'Asia Pacific': 'Asia Pacific',
+  'South America': 'South America',
+  'China': 'China',
+  'Brazil': 'Brazil',
+  'Japan': 'Japan',
+  'Korea': 'Korea',
+  'Latin America': 'Latin America',
+  'MENA': 'MENA',
+  'APAC': 'Asia Pacific',
+  'EMEA': 'Europe Mena',
+};
+
+function regiaoDe(nome) {
+  const s = String(nome || '');
+  const lower = s.toLowerCase();
+  // ordenar por comprimento (mais específicos primeiro)
+  const chaves = Object.keys(REGIOES).sort((a, b) => b.length - a.length);
+  for (const k of chaves) {
+    if (lower.includes(k.toLowerCase())) return REGIOES[k];
+  }
+  return 'Outros';
+}
+
 function mapas(v) {
   if (Array.isArray(v)) return v;
   if (typeof v === 'string') {
@@ -34,6 +64,7 @@ function decorar(m, votos, uid) {
     competition: m.competition_name || '',
     competition_logo: m.competition_logo || null,
     championship: m.championship_name || '',
+    region: regiaoDe(m.championship_name || m.competition_name || ''),
     phase: m.phase_name || '',
     step: m.step_name || '',
     format: Number(m.format) || null,

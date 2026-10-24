@@ -81,7 +81,9 @@ function gerarBat(site, token) {
     '  pause',
     '  exit /b 1',
     ')',
+    'echo Agente a arrancar em segundo plano (a janela fecha em instantes).',
     'start "" /b powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%PS%" -Site "%SITE%" -Token "%TOKEN%"',
+    'timeout /t 2 >nul',
     'exit /b',
     '',
   ].join('\r\n');
@@ -143,6 +145,92 @@ router.get('/baixar', async (req, res) => {
   } catch (e) {
     console.error('Agente /baixar:', e);
     res.status(500).type('text/plain').send('Erro ao gerar o ficheiro.');
+  }
+});
+
+// Mini-app .exe (mesmo agente, mas com janela visível + botão Desligar).
+// O user descarrega um LOCAUS-PC.bat que lança o .exe já com o token —
+// assim não há nada para copiar: clica no .bat, abre a janela, fica ligado.
+router.get('/baixar-exe', async (req, res) => {
+  try {
+    const token = String(req.query.token || '');
+    const s = await agente.validarToken(token);
+    if (!s) return res.status(401).type('text/plain').send('Sessao invalida ou expirada. Cria outra no site.');
+    const site = baseDoSite(req);
+    const exe = path.join(__dirname, '..', 'LOCAUS-PC.exe');
+    if (!fs.existsSync(exe)) return res.status(404).type('text/plain').send('O mini-app ainda nao esta disponivel.');
+    const exeBuf = fs.readFileSync(exe);
+    // Atalho: guarda o .exe ao lado e arranca com o token embutido.
+    const bat = [
+      '@echo off',
+      'title LOCAUS PC',
+      'setlocal',
+      'set "EXE=%~dp0LOCAUS-PC.exe"',
+      'if not exist "%EXE%" (',
+      '  echo A descarregar o LOCAUS-PC.exe (12 MB)...',
+      '  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $ProgressPreference=\'SilentlyContinue\'; Invoke-WebRequest -Uri (\'%SITE%/api/agente/exe?token=%TOKEN%\') -UseBasicParsing -OutFile (\'%EXE%\') -ErrorAction Stop } catch { exit 1 }"',
+      '  if errorlevel 1 ( echo Falhou o download do mini-app. Verifica a internet & pause & exit /b 1 )',
+      ')',
+      'start "" "%EXE%" --token=%TOKEN%',
+      'exit /b 0',
+    ].join('\r\n').replace('%SITE%', site).replace('%TOKEN%', token);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', 'attachment; filename="LOCAUS-PC.bat"');
+    res.setHeader('Cache-Control', 'no-store');
+    res.send(Buffer.from(bat, 'ascii'));
+  } catch (e) {
+    console.error('Agente /baixar-exe:', e);
+    res.status(500).type('text/plain').send('Erro ao descarregar o mini-app.');
+  }
+});
+
+// O .exe em si (o atalho acima descarrega-o daqui).
+router.get('/exe', async (req, res) => {
+  try {
+    const token = String(req.query.token || '');
+    const s = await agente.validarToken(token);
+    if (!s) return res.status(401).type('text/plain').send('Sessao invalida ou expirada.');
+    const exe = path.join(__dirname, '..', 'LOCAUS-PC.exe');
+    if (!fs.existsSync(exe)) return res.status(404).type('text/plain').send('O mini-app ainda nao esta disponivel.');
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', 'attachment; filename="LOCAUS-PC.exe"');
+    res.setHeader('Cache-Control', 'no-store');
+    res.send(fs.readFileSync(exe));
+  } catch (e) {
+    console.error('Agente /exe:', e);
+    res.status(500).type('text/plain').send('Erro ao descarregar o mini-app.');
+  }
+});
+
+/* Comando one-shot (sem .bat): o PC cria a sessão, corre a ferramenta
+   e devolve os logs — tudo num único comando PowerShell que o
+   utilizador copia e cola. Nada fica instalado. */
+router.get('/comando', requireUser, async (req, res) => {
+  try {
+    const uid = Number(req.auth.uid);
+    const b = req.body || {};
+    const admin = await eAdmin(req);
+    const p = ferramentas.preparar(String(req.query.id || ''), req.query.arg, admin, req.query.acoes ? JSON.parse(req.query.acoes) : undefined);
+    if (!p.ok) return res.status(400).json({ ok: false, erro: p.erro });
+    const s = await agente.criarSessao(uid, { nome: 'PC Windows' });
+    const site = baseDoSite(req);
+    const payload = JSON.stringify({ tipo: 'tool', id: p.id, arg: p.arg, acoes: req.query.acoes ? JSON.parse(req.query.acoes) : undefined });
+    const ps = [
+      `$ErrorActionPreference='Stop'`,
+      `$s=Invoke-RestMethod -Uri '${site}/api/agente/sessao' -Method Post -Headers @{Authorization="Bearer ${req.headers.authorization}"} -ContentType 'application/json' -Body '${JSON.stringify({ nome: 'PC Windows' })}'`,
+      `$t=$s.token`,
+      `$job=Invoke-RestMethod -Uri '${site}/api/agente/jobs' -Method Post -Headers @{Authorization="Bearer ${req.headers.authorization}"} -ContentType 'application/json' -Body '${payload}'`,
+      `$jid=$job.job.id`,
+      `Write-Output 'A correr: ${p.nome}'`,
+      `for($i=0;$i -lt 60;$i++){ Start-Sleep -Seconds 2; $j=Invoke-RestMethod -Uri '${site}/api/agente/jobs/$jid' -Headers @{Authorization="Bearer ${req.headers.authorization}"}; if($j.job.status -notin @('pendente','a_correr')){ break } }`,
+      `if($j.job.logs){ $j.job.logs | ForEach-Object { Write-Output $_.l } }`,
+      `if($j.job.status -eq 'concluido'){ Write-Output '=== CONCLUIDO ===' } else { Write-Output ('=== ' + $j.job.status + ': ' + $j.job.erro) }`,
+    ].join('; ');
+    const comando = `powershell -NoProfile -ExecutionPolicy Bypass -Command "${ps.replace(/"/g, '`"')}"`;
+    res.json({ ok: true, comando, nome: p.nome, token: s.token });
+  } catch (e) {
+    console.error('Agente /comando:', e);
+    res.status(500).json({ ok: false, erro: e.message });
   }
 });
 

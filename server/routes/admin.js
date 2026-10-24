@@ -366,6 +366,21 @@ router.post('/users/:id/limpar-specs', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------- Limpar o chat geral (botão do painel admin) ----------
+   Apaga TODAS as mensagens e o estado de "a escrever" — o chat
+   volta a estar vazio para toda a gente. */
+router.post('/chat/limpar', requireAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    await db.prepare('DELETE FROM chat_messages').run();
+    await db.prepare('DELETE FROM chat_typing').run().catch(() => {});
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro chat limpar:', error.message);
+    res.status(500).json({ error: 'Erro ao limpar o chat.' });
+  }
+});
+
 /* ---------- Nomes que já aparecem nas estatísticas de cada jogo ----------
    O painel liga um membro a um nome real das estatísticas: o CS2 tem
    os nomes do CS2, o Rainbow os do Rainbow, etc. Cada membro pode ter

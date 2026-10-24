@@ -180,7 +180,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const [r6, setR6] = useState(null)
   const [r6Msg, setR6Msg] = useState('')
 
-  /* Registo de auditoria das ferramentas Windows (só admin) */
+  // Limpar o chat geral (botão do painel)
+  const [chatLimparBusy, setChatLimparBusy] = useState(false)
+  const [chatLimparMsg, setChatLimparMsg] = useState('')
+  const [chatLimparOk, setChatLimparOk] = useState(false)
   const [ferrRuns, setFerrRuns] = useState([])
   const [ferrLoading, setFerrLoading] = useState(false)
   const [ferrErro, setFerrErro] = useState('')
@@ -398,6 +401,39 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       )
     } catch {
       setUsersError('Sem ligação ao servidor.')
+    }
+  }
+
+  /* ---------- Limpar o chat geral (botão do painel) ----------
+     Apaga TODAS as mensagens — confirmado antes, com toast no fim. */
+  const limparChat = async () => {
+    if (chatLimparBusy) return
+    const ok = await confirmar(
+      'Apagar TODAS as mensagens do chat geral? Esta ação não dá para desfazer.',
+      { titulo: 'Limpar chat', okTexto: 'Apagar tudo' }
+    )
+    if (!ok) return
+    setChatLimparBusy(true)
+    setChatLimparMsg('')
+    try {
+      const res = await fetch('/api/admin/chat/limpar', {
+        method: 'POST',
+        headers: adminHeaders(),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setChatLimparOk(false)
+        setChatLimparMsg(d.error || 'Erro ao limpar o chat.')
+        return
+      }
+      setChatLimparOk(true)
+      setChatLimparMsg('Chat limpo — o geral ficou vazio para toda a gente.')
+      toast('Chat geral limpo.', 'ok')
+    } catch {
+      setChatLimparOk(false)
+      setChatLimparMsg('Sem ligação ao servidor.')
+    } finally {
+      setChatLimparBusy(false)
     }
   }
 
@@ -855,6 +891,32 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   {(stats?.total || 0).toLocaleString()}
                 </div>
               </div>
+
+              {/* Ações rápidas */}
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={limparChat}
+                  disabled={chatLimparBusy}
+                  title="Apaga todas as mensagens do chat geral"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-500/15 px-4 py-2.5 text-sm font-bold text-red-300 ring-1 ring-red-500/30 transition-colors hover:bg-red-500/25 hover:text-red-200 disabled:opacity-50"
+                >
+                  {chatLimparBusy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                  Limpar chat
+                </button>
+              </div>
+              {chatLimparMsg && (
+                <p
+                  className={`mt-3 text-center text-xs font-semibold ${
+                    chatLimparOk ? 'text-emerald-300' : 'text-red-300'
+                  }`}
+                >
+                  {chatLimparMsg}
+                </p>
+              )}
 
               <div className="mt-6 text-center text-sm text-gray-400">
                 Os dados são atualizados automaticamente a cada 30 segundos

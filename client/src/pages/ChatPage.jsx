@@ -17,10 +17,24 @@ import {
   Maximize2,
   Users,
   Hash,
+  CornerUpLeft,
+  Pin,
+  Palette,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from '../components/Feedback'
+
+/* Temas do chat — só o admin muda; aplica a todos.
+   Cada tema = cor principal + fundo do chat. */
+const TEMAS = {
+  violeta: { nome: 'Violeta', grad: 'from-violet-600 to-fuchsia-600', cor: 'text-violet-300', borda: 'border-violet-400/40', bg: '#0d0a16', chip: 'bg-violet-500/15 text-violet-300' },
+  azul: { nome: 'Azul', grad: 'from-blue-600 to-cyan-500', cor: 'text-blue-300', borda: 'border-blue-400/40', bg: '#080d1a', chip: 'bg-blue-500/15 text-blue-300' },
+  verde: { nome: 'Verde', grad: 'from-emerald-600 to-green-500', cor: 'text-emerald-300', borda: 'border-emerald-400/40', bg: '#08140d', chip: 'bg-emerald-500/15 text-emerald-300' },
+  rosa: { nome: 'Rosa', grad: 'from-pink-600 to-rose-500', cor: 'text-pink-300', borda: 'border-pink-400/40', bg: '#160a12', chip: 'bg-pink-500/15 text-pink-300' },
+  laranja: { nome: 'Laranja', grad: 'from-orange-600 to-amber-500', cor: 'text-orange-300', borda: 'border-orange-400/40', bg: '#160f08', chip: 'bg-orange-500/15 text-orange-300' },
+}
+const TEMA_PADRAO = 'violeta'
 
 /* Emojis por categoria — o picker do telemóvel é só um botão */
 const EMOJI_CATEGORIAS = [
@@ -166,6 +180,12 @@ export default function ChatPage({ user }) {
   const [novasMensagens, setNovasMensagens] = useState(false)
   const [erro, setErro] = useState('')
   const [onlineCount, setOnlineCount] = useState(0)
+  const [tema, setTema] = useState(TEMA_PADRAO)
+  const [temaAberto, setTemaAberto] = useState(false)
+  const [resposta, setResposta] = useState(null)
+  const [reactAberto, setReactAberto] = useState(null)
+  const [pinned, setPinned] = useState(null)
+  const t = TEMAS[tema] || TEMAS[TEMA_PADRAO]
 
   const listaRef = useRef(null)
   const fimRef = useRef(null)
@@ -206,6 +226,7 @@ export default function ChatPage({ user }) {
         setMessages(d.messages || [])
         setTyping(d.typing || [])
         setHasMore(Boolean(d.has_more))
+        setPinned(d.pinned || null)
         lastIdRef.current = Number(d.last_id) || 0
         setLoading(false)
         setTimeout(() => scrollFundo(false), 30)
@@ -222,9 +243,7 @@ export default function ChatPage({ user }) {
   }, [])
 
   useEffect(() => {
-    let vivo = true
     const tick = async () => {
-      if (!vivo) return
       if (document.hidden || aPollarRef.current) return
       aPollarRef.current = true
       try {
@@ -234,7 +253,13 @@ export default function ChatPage({ user }) {
         })
         if (r.ok) {
           const d = await r.json()
-          if (d.typing) setTyping(d.typing)
+          if (d.typing) {
+            setTyping(d.typing)
+            // se alguém começou a escrever, desce ao fim para ver a bolha
+            if (pertoDoFundoRef.current && d.typing.length) {
+              setTimeout(() => scrollFundo(true), 50)
+            }
+          }
           if (d.messages && d.messages.length) {
             const antes = listaRef.current
             const perto =
@@ -251,10 +276,7 @@ export default function ChatPage({ user }) {
       }
     }
     const t = setInterval(tick, 1800)
-    return () => {
-      vivo = false
-      clearInterval(t)
-    }
+    return () => clearInterval(t)
   }, [])
 
   // Atualiza o número de membros online a cada 30s
@@ -272,6 +294,87 @@ export default function ChatPage({ user }) {
     const t = setInterval(fetchOnline, 30000)
     return () => clearInterval(t)
   }, [])
+
+  // Tema do chat (global; o admin muda, aplica a todos)
+  useEffect(() => {
+    let vivo = true
+    const carregar = async () => {
+      try {
+        const r = await fetch('/api/chat/tema', { headers: authHeaders() })
+        if (r.ok) {
+          const d = await r.json()
+          if (vivo && d.tema && TEMAS[d.tema]) setTema(d.tema)
+        }
+      } catch {}
+    }
+    carregar()
+    const t = setInterval(carregar, 15000)
+    return () => {
+      vivo = false
+      clearInterval(t)
+    }
+  }, [])
+
+  const mudarTema = async (nome) => {
+    setTemaAberto(false)
+    try {
+      const r = await fetch('/api/chat/tema', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tema: nome }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para mudar o tema.')
+      setTema(nome)
+      toast.ok(`Tema "${TEMAS[nome].nome}" aplicado a todos.`)
+    } catch (e) {
+      toast.erro(e.message)
+    }
+  }
+
+  const reagir = async (m, emoji) => {
+    setReactAberto(null)
+    try {
+      const r = await fetch(`/api/chat/${m.id}/react`, {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emoji }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para reagir.')
+      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, reactions: d.reactions } : x)))
+    } catch (e) {
+      toast.erro(e.message)
+    }
+  }
+
+  const fixar = async (m) => {
+    try {
+      const r = await fetch(`/api/chat/${m.id}/pin`, { method: 'POST', headers: authHeaders() })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para fixar.')
+      setPinned(m)
+      toast.ok('Mensagem fixada para todos.')
+    } catch (e) {
+      toast.erro(e.message)
+    }
+  }
+
+  const desfixar = async (id) => {
+    try {
+      const r = await fetch(`/api/chat/${id}/pin`, { method: 'DELETE', headers: authHeaders() })
+      if (!r.ok) throw new Error('Não deu para desfixar.')
+      setPinned(null)
+      toast.ok('Mensagem desfixada.')
+    } catch (e) {
+      toast.erro(e.message)
+    }
+  }
+
+  const iniciarResposta = (m) => {
+    setResposta(m)
+    setTimeout(() => textareaRef.current && textareaRef.current.focus(), 20)
+  }
 
   const onScroll = () => {
     const el = listaRef.current
@@ -319,6 +422,7 @@ export default function ChatPage({ user }) {
     setErro('')
     try {
       const payload = { body }
+      if (resposta) payload.reply_to = resposta.id
       if (pendingMedia) {
         payload.media_url = pendingMedia.url
         payload.media_type = pendingMedia.tipo
@@ -333,6 +437,7 @@ export default function ChatPage({ user }) {
       if (!r.ok) throw new Error((d && d.error) || 'Não deu para enviar.')
       juntar([d])
       setTexto('')
+      setResposta(null)
       setPendingMedia(null)
       setPendingClip(null)
       setEmojiAberto(false)
@@ -437,10 +542,10 @@ export default function ChatPage({ user }) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-2 pb-2 pt-14 sm:pt-16 lg:px-0 lg:pt-0">
-      <div className="flex h-[calc(100dvh-10.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0a16]/90 shadow-2xl shadow-black/40 sm:h-[calc(100dvh-11rem)] lg:h-[calc(100dvh-8.5rem)]">
+      <div className="flex h-[calc(100dvh-10.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40 sm:h-[calc(100dvh-11rem)] lg:h-[calc(100dvh-8.5rem)]" style={{ backgroundColor: t.bg + 'f2' }}>
         {/* cabeçalho */}
-        <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-4 py-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
+        <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.06] to-transparent px-4 py-3">
+          <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${t.grad} text-white shadow-lg`}>
             <MessageCircle className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
@@ -448,21 +553,59 @@ export default function ChatPage({ user }) {
             <p className="truncate text-[11px] font-semibold text-gray-400">
               {typing.length
                 ? `${typing.map((t) => t.username).slice(0, 2).join(', ')}${typing.length > 2 ? ' e mais' : ''} a escrever…`
-                : (
-                  <span>
-                    Toda a comunidade, em tempo real
-                    {onlineCount > 0 ? (
-                      <span className="text-emerald-300"> · {onlineCount} membros online</span>
-                    ) : null}
-                  </span>
-                )}
+                : 'Toda a comunidade, em tempo real'}
             </p>
           </div>
+          {/* tema — só o admin muda */}
+          {user && user.is_admin && (
+            <div className="relative">
+              <button
+                onClick={() => setTemaAberto((v) => !v)}
+                title="Mudar tema (admin)"
+                className={`flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition hover:bg-white/10 ${t.cor}`}
+              >
+                <Palette className="h-4 w-4" />
+              </button>
+              {temaAberto && (
+                <div className="absolute right-0 top-full z-30 mt-1 grid grid-cols-1 gap-1 rounded-xl border border-white/10 bg-[#171122] p-2 shadow-2xl">
+                  <p className="px-1 pb-1 text-[9px] font-black uppercase tracking-wider text-gray-500">Tema do chat (todos)</p>
+                  {Object.entries(TEMAS).map(([k, v]) => (
+                    <button
+                      key={k}
+                      onClick={() => mudarTema(k)}
+                      className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] font-bold transition ${
+                        tema === k ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <span className={`h-4 w-4 rounded-full bg-gradient-to-br ${v.grad}`} />
+                      {v.nome}
+                      {tema === k && <Check className="ml-auto h-3 w-3" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <span className="hidden items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20 sm:flex">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
             Online
           </span>
         </div>
+
+        {/* mensagem fixada (admin) — banner no topo */}
+        {pinned && (
+          <div className={`flex items-center gap-2 border-b px-4 py-2 ${t.borda} bg-white/[0.04]`}>
+            <Pin className={`h-3.5 w-3.5 shrink-0 ${t.cor}`} />
+            <span className={`shrink-0 text-[10px] font-black uppercase tracking-wider ${t.cor}`}>Fixada</span>
+            <span className="shrink-0 text-[11px] font-bold text-gray-300">{pinned.user.username}</span>
+            <span className="min-w-0 flex-1 truncate text-[11px] text-gray-400">{pinned.body || (pinned.media_url ? 'Imagem' : '')}</span>
+            {user && user.is_admin && (
+              <button onClick={() => desfixar(pinned.id)} title="Desfixar" className="shrink-0 rounded p-1 text-gray-500 hover:bg-white/10 hover:text-white">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* mensagens */}
         <div
@@ -518,25 +661,37 @@ export default function ChatPage({ user }) {
                       <span className="h-px flex-1 bg-white/10" />
                     </div>
                   )}
-                  <div className={`group flex items-end gap-2 ${minha ? 'flex-row-reverse' : ''} ${seguida ? 'mt-0.5' : 'mt-3'}`}>
-                    <span className={seguida ? 'w-8 shrink-0' : 'w-8 shrink-0'}>
+                  <div className={`group relative flex items-end gap-2 ${minha ? 'flex-row-reverse' : ''} ${seguida ? 'mt-0.5' : 'mt-3'}`}>
+                    <span className="w-8 shrink-0">
                       {!seguida && (
                         <AvatarImg src={m.user.avatar_url} name={m.user.username} className="h-8 w-8" />
                       )}
                     </span>
                     <div className={`max-w-[82%] sm:max-w-[74%] ${minha ? 'items-end' : 'items-start'} flex flex-col`}>
                       {!seguida && (
-                        <span className={`mb-1 px-1 text-[11px] font-bold ${minha ? 'text-violet-300' : 'text-gray-400'}`}>
+                        <span className={`mb-1 px-1 text-[11px] font-bold ${minha ? t.cor : 'text-gray-400'}`}>
                           {minha ? 'Tu' : m.user.username} · {hora(m.created_at)}
                         </span>
+                      )}
+                      {m.reply && (
+                        <div className={`mb-1 flex items-center gap-1.5 rounded-lg border-l-2 px-2 py-1 text-[11px] ${t.borda} bg-white/[0.04]`}>
+                          <CornerUpLeft className="h-3 w-3 shrink-0 text-gray-500" />
+                          <span className="font-bold text-gray-300">{m.reply.username}</span>
+                          <span className="truncate text-gray-500">{m.reply.body}</span>
+                        </div>
                       )}
                       <div
                         className={`relative rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm ${
                           minha
-                            ? 'rounded-br-md bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white'
-                            : 'rounded-bl-md border border-white/10 bg-white/[0.06] text-gray-100'
-                        }`}
+                            ? `rounded-br-md bg-gradient-to-br ${t.grad} text-white shadow-lg`
+                            : 'rounded-bl-md border border-white/10 bg-white/[0.08] text-gray-100 shadow-lg'
+                        } ${m.pinned ? 'ring-2 ' + t.borda : ''}`}
                       >
+                        {m.pinned && (
+                          <span className={`mb-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider ${minha ? 'text-white/80' : t.cor}`}>
+                            <Pin className="h-3 w-3" /> Fixada
+                          </span>
+                        )}
                         {m.body && <p className="whitespace-pre-wrap break-words">{linkify(m.body)}</p>}
                         {m.media_url && (
                           <button
@@ -558,21 +713,115 @@ export default function ChatPage({ user }) {
                           </span>
                         )}
                       </div>
+                      {/* reações */}
+                      {(m.reactions && m.reactions.length) || reactAberto === m.id ? (
+                        <div className={`mt-1 flex flex-wrap gap-1 ${minha ? 'justify-end' : ''}`}>
+                          {(m.reactions || []).map((g) => (
+                            <button
+                              key={g.emoji}
+                              onClick={() => reagir(m, g.emoji)}
+                              title={g.users.map((u) => u.username).join(', ')}
+                              className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] transition ${
+                                g.mine ? t.borda + ' ' + t.chip : 'border-white/10 bg-white/5 hover:bg-white/10'
+                              }`}
+                            >
+                              <span>{g.emoji}</span>
+                              <span className="font-bold">{g.count}</span>
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => setReactAberto(reactAberto === m.id ? null : m.id)}
+                            title="Reagir"
+                            className={`flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white ${
+                              reactAberto === m.id ? t.borda : ''
+                            }`}
+                          >
+                            <Smile className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
-                    {minha && (
+                    {/* ações (aparecem ao passar o rato) */}
+                    <div className={`mb-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100`}>
                       <button
-                        onClick={() => apagar(m)}
-                        title="Apagar mensagem"
-                        className="mb-1 hidden rounded-lg p-1 text-gray-500 hover:bg-red-500/10 hover:text-red-300 group-hover:block"
+                        onClick={() => iniciarResposta(m)}
+                        title="Responder"
+                        className="rounded-lg p-1 text-gray-500 hover:bg-white/10 hover:text-white"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <CornerUpLeft className="h-3.5 w-3.5" />
                       </button>
+                      <button
+                        onClick={() => setReactAberto(reactAberto === m.id ? null : m.id)}
+                        title="Reagir"
+                        className="rounded-lg p-1 text-gray-500 hover:bg-white/10 hover:text-white"
+                      >
+                        <Smile className="h-3.5 w-3.5" />
+                      </button>
+                      {user && user.is_admin && (
+                        <button
+                          onClick={() => (m.pinned ? desfixar(m.id) : fixar(m))}
+                          title={m.pinned ? 'Desfixar' : 'Fixar para todos (admin)'}
+                          className={`rounded-lg p-1 ${m.pinned ? t.cor : 'text-gray-500 hover:bg-white/10 hover:text-white'}`}
+                        >
+                          <Pin className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {minha && (
+                        <button
+                          onClick={() => apagar(m)}
+                          title="Apagar mensagem"
+                          className="rounded-lg p-1 text-gray-500 hover:bg-red-500/10 hover:text-red-300"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    {/* picker de reações */}
+                    {reactAberto === m.id && (
+                      <div className={`absolute bottom-full z-20 mb-1 flex gap-0.5 rounded-full border border-white/10 bg-[#171122] p-1 shadow-xl ${minha ? 'right-0' : 'left-10'}`}>
+                        {['👍', '❤️', '😂', '😮', '😢', '🔥'].map((e) => (
+                          <button
+                            key={e}
+                            onClick={() => reagir(m, e)}
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-lg transition hover:scale-125 hover:bg-white/10"
+                          >
+                            {e}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
               )
             })}
           <div ref={fimRef} />
+
+          {/* "a escrever" — dentro da conversa, com animação */}
+          {typing.length > 0 && (
+            <div className="flex items-end gap-2 pt-2">
+              <span className="w-8 shrink-0">
+                <AvatarImg
+                  src={typing[0].avatar_url}
+                  name={typing[0].username}
+                  className="h-8 w-8"
+                />
+              </span>
+              <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.06] px-3.5 py-2.5">
+                <span className="flex gap-1">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-400 [animation-delay:-0.36s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-400 [animation-delay:-0.24s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-400 [animation-delay:-0.12s]" />
+                </span>
+                <span className="text-[11px] font-semibold text-gray-400">
+                  {typing
+                    .map((t) => t.username)
+                    .slice(0, 2)
+                    .join(', ')}
+                  {typing.length > 2 ? ' e mais' : ''} a escrever…
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {novasMensagens && (
@@ -633,6 +882,16 @@ export default function ChatPage({ user }) {
 
         {/* compositor */}
         <div className="relative border-t border-white/10 bg-[#0d0a16] p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-3">
+          {resposta && (
+            <div className={`mb-2 flex items-center gap-2 rounded-xl border-l-2 px-3 py-2 ${t.borda} bg-white/[0.04]`}>
+              <CornerUpLeft className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+              <span className="shrink-0 text-[11px] font-bold text-gray-300">Responder a {resposta.user.username}</span>
+              <span className="min-w-0 flex-1 truncate text-[11px] text-gray-500">{resposta.body}</span>
+              <button onClick={() => setResposta(null)} className="shrink-0 rounded p-1 text-gray-500 hover:bg-white/10 hover:text-white">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
           {emojiAberto && (
             <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-white/10 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
               <div className="flex gap-1 overflow-x-auto border-b border-white/10 p-1.5">

@@ -4,6 +4,7 @@ import { Megaphone, Users, ChevronRight } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import { authHeaders } from '../lib/auth'
 import { BADGES, BadgeGem, distincoesOverclock } from './BadgeGem'
+import { anunciosVisiveis } from '../lib/anuncios'
 
 /* ============================================================
    Coluna direita (PC) — só aparece em ecrãs largos. Tem os
@@ -61,7 +62,7 @@ export default function RightColumn() {
   useEffect(() => {
     fetch('/api/posts?limit=5', { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : []))
-      .then((d) => setAnuncios(Array.isArray(d) ? d.slice(0, 5) : []))
+      .then((d) => setAnuncios(anunciosVisiveis(Array.isArray(d) ? d : [])))
       .catch(() => {})
 
     // quem está online (mesma base da página de membros)

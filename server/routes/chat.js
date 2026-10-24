@@ -16,6 +16,38 @@ const router = express.Router();
 const BUCKET = 'chat';
 const MAX_BODY = 2000;
 const MAX_MEDIA_MB = 8;
+
+/* Tabelas novas (reações, respostas, fixação, tema) — criadas uma vez,
+   idempotente. O tema do chat é global (o admin muda, aplica a todos). */
+let chatTabelas = null;
+function garantirChatTabelas() {
+  if (!chatTabelas) {
+    chatTabelas = getDb()
+      .exec(`
+        CREATE TABLE IF NOT EXISTS public.chat_reactions (
+          id bigint generated always as identity primary key,
+          message_id bigint not null references public.chat_messages(id) on delete cascade,
+          user_id bigint not null references public.users(id) on delete cascade,
+          emoji text not null,
+          criado_em timestamptz not null default now(),
+          unique (message_id, user_id, emoji)
+        );
+        CREATE TABLE IF NOT EXISTS public.chat_pins (
+          message_id bigint primary key references public.chat_messages(id) on delete cascade,
+          pinned_by bigint not null references public.users(id),
+          pinned_at timestamptz not null default now()
+        );
+        CREATE TABLE IF NOT EXISTS public.chat_settings (
+          chave text primary key,
+          valor text
+        );
+        ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS reply_to bigint;
+      `)
+      .then(() => true)
+      .catch(() => false);
+  }
+  return chatTabelas;
+}
 const EXT_BY_TYPE = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
@@ -50,7 +82,7 @@ function podeEnviar(uid) {
 
 const SELECT_MSG = `
   SELECT m.id, m.user_id, m.body, m.kind, m.media_url, m.media_type,
-         m.clip_id, m.created_at,
+         m.clip_id, m.created_at, m.reply_to,
          u.username, up.avatar_url,
          c.title AS clip_title, c.thumb AS clip_thumb, c.file AS clip_file,
          c.youtube_id AS clip_youtube, c.visibility AS clip_visibility,
@@ -64,7 +96,52 @@ const SELECT_MSG = `
   WHERE m.deleted_at IS NULL
 `;
 
-function decorar(r) {
+/* Reações agregadas por mensagem: Map<msgId, [{emoji, count, users}]> */
+async function reacoesPorMensagens(db, ids) {
+  if (!ids.length) return new Map();
+  const rows = await db
+    .prepare(
+      `SELECT r.message_id, r.emoji, r.user_id, u.username
+       FROM public.chat_reactions r
+       JOIN users u ON u.id = r.user_id
+       WHERE r.message_id = ANY(?)
+       ORDER BY r.criado_em ASC`,
+    )
+    .all(ids);
+  const out = new Map();
+  for (const r of rows) {
+    const mid = Number(r.message_id);
+    const lista = out.get(mid) || out.set(mid, []).get(mid);
+    let g = lista.find((x) => x.emoji === r.emoji);
+    if (!g) {
+      g = { emoji: r.emoji, count: 0, users: [] };
+      lista.push(g);
+    }
+    g.count++;
+    g.users.push({ id: Number(r.user_id), username: r.username });
+  }
+  return out;
+}
+
+/* Mensagens fixadas (admin) — id -> {pinned_by, pinned_at, username} */
+async function pinsPorMensagens(db, ids) {
+  if (!ids.length) return new Map();
+  const rows = await db
+    .prepare(
+      `SELECT p.message_id, p.pinned_at, u.username
+       FROM public.chat_pins p
+       JOIN users u ON u.id = p.pinned_by
+       WHERE p.message_id = ANY(?)`,
+    )
+    .all(ids);
+  const mapa = new Map();
+  for (const r of rows) {
+    mapa.set(Number(r.message_id), { pinned_at: r.pinned_at, username: r.username });
+  }
+  return mapa;
+}
+
+function decorar(r, reacoes, pin) {
   let clip = null;
   if (r.clip_id && r.clip_title) {
     clip = {
@@ -85,6 +162,9 @@ function decorar(r) {
     media_url: r.media_url || null,
     media_type: r.media_type || null,
     clip,
+    reply_to: r.reply_to ? Number(r.reply_to) : null,
+    reactions: reacoes || [],
+    pinned: pin || null,
     user: {
       id: Number(r.user_id),
       username: r.username || '???',
@@ -145,12 +225,61 @@ router.get('/', requireUser, async (req, res) => {
     }
 
     const mensagens = rows.map(decorar);
+    // enriquece com reações, pins e a mensagem respondida
+    const ids = mensagens.map((m) => m.id);
+    const reacoes = await reacoesPorMensagens(db, ids);
+    const pins = await pinsPorMensagens(db, ids);
+    const idsReply = [...new Set(mensagens.map((m) => m.reply_to).filter(Boolean))];
+    const replies = new Map();
+    if (idsReply.length) {
+      const rRows = await db
+        .prepare(
+          `SELECT m.id, m.body, u.username, up.avatar_url
+           FROM chat_messages m
+           JOIN users u ON u.id = m.user_id
+           LEFT JOIN user_profiles up ON up.user_id = m.user_id
+           WHERE m.id = ANY(?) AND m.deleted_at IS NULL`,
+        )
+        .all(idsReply);
+      for (const r of rRows) {
+        replies.set(Number(r.id), {
+          id: Number(r.id),
+          body: (r.body || '').slice(0, 140),
+          username: r.username || '???',
+          avatar_url: r.avatar_url || null,
+        });
+      }
+    }
+    for (const m of mensagens) {
+      m.reactions = (reacoes.get(m.id) || []).map((g) => ({
+        ...g,
+        mine: g.users.some((u) => u.id === uid),
+      }));
+      m.pinned = pins.get(m.id) || null;
+      if (m.reply_to && replies.get(m.reply_to)) m.reply = replies.get(m.reply_to);
+    }
+    // mensagem fixada (a mais recente) para o banner do topo
+    let pinnedMsg = null;
+    if (ids.length) {
+      const pRow = await db
+        .prepare(
+          `SELECT p.message_id FROM public.chat_pins p
+           WHERE p.message_id = ANY(?)
+           ORDER BY p.pinned_at DESC LIMIT 1`,
+        )
+        .get(ids);
+      if (pRow) {
+        const pm = mensagens.find((m) => m.id === Number(pRow.message_id));
+        if (pm) pinnedMsg = pm;
+      }
+    }
     res.json({
       messages: mensagens,
       has_more: hasMore,
       last_id: mensagens.length ? mensagens[mensagens.length - 1].id : 0,
       first_id: mensagens.length ? mensagens[0].id : 0,
       typing: await typingUsers(db, uid),
+      pinned: pinnedMsg,
       now: new Date().toISOString(),
     });
   } catch (error) {
@@ -159,9 +288,123 @@ router.get('/', requireUser, async (req, res) => {
   }
 });
 
-/* POST /api/chat — texto, imagem/GIF ou clip */
+/* ============================================================
+   REAÇÕES — qualquer membro reage (toggle)
+   POST /api/chat/:id/react  { emoji }
+   ============================================================ */
+router.post('/:id/react', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const id = Number(req.params.id);
+    const emoji = String((req.body && req.body.emoji) || '').trim().slice(0, 8);
+    if (!Number.isFinite(id) || !emoji) return res.status(400).json({ error: 'Reação inválida.' });
+    const msg = await db.prepare('SELECT id FROM chat_messages WHERE id = ? AND deleted_at IS NULL').get(id);
+    if (!msg) return res.status(404).json({ error: 'Mensagem não encontrada.' });
+    const existe = await db
+      .prepare('SELECT id FROM public.chat_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?')
+      .get(id, uid, emoji);
+    if (existe) {
+      await db.prepare('DELETE FROM public.chat_reactions WHERE id = ?').run(existe.id);
+    } else {
+      await db
+        .prepare('INSERT INTO public.chat_reactions (message_id, user_id, emoji) VALUES (?, ?, ?)')
+        .run(id, uid, emoji);
+    }
+    const reacoes = await reacoesPorMensagens(db, [id]);
+    res.json({ ok: true, reactions: (reacoes.get(id) || []).map((g) => ({ ...g, mine: g.users.some((u) => u.id === uid) })) });
+  } catch (error) {
+    console.error('Erro chat react:', error.message);
+    res.status(500).json({ error: 'Não deu para reagir.' });
+  }
+});
+
+/* ============================================================
+   FIXAR / DESFIXAR — só o admin
+   POST /api/chat/:id/pin   (fixa)
+   DELETE /api/chat/:id/pin (desfixa)
+   ============================================================ */
+router.post('/:id/pin', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const id = Number(req.params.id);
+    const u = await db.prepare('SELECT is_admin FROM users WHERE id = ?').get(uid);
+    if (!u || !u.is_admin) return res.status(403).json({ error: 'Só o admin fixa mensagens.' });
+    const msg = await db.prepare('SELECT id FROM chat_messages WHERE id = ? AND deleted_at IS NULL').get(id);
+    if (!msg) return res.status(404).json({ error: 'Mensagem não encontrada.' });
+    await db
+      .prepare(
+        `INSERT INTO public.chat_pins (message_id, pinned_by) VALUES (?, ?)
+         ON CONFLICT (message_id) DO UPDATE SET pinned_by = EXCLUDED.pinned_by, pinned_at = now()`,
+      )
+      .run(id, uid);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro chat pin:', error.message);
+    res.status(500).json({ error: 'Não deu para fixar.' });
+  }
+});
+
+router.delete('/:id/pin', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const id = Number(req.params.id);
+    const u = await db.prepare('SELECT is_admin FROM users WHERE id = ?').get(uid);
+    if (!u || !u.is_admin) return res.status(403).json({ error: 'Só o admin desfixa.' });
+    await db.prepare('DELETE FROM public.chat_pins WHERE message_id = ?').run(id);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Erro chat unpin:', error.message);
+    res.status(500).json({ error: 'Não deu para desfixar.' });
+  }
+});
+
+/* ============================================================
+   TEMA DO CHAT — global; só o admin muda, aplica a todos.
+   GET  /api/chat/tema  -> { tema }
+   POST /api/chat/tema  { tema }  (só admin)
+   ============================================================ */
+router.get('/tema', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const r = await db.prepare("SELECT valor FROM public.chat_settings WHERE chave = 'tema'").get();
+    res.json({ tema: (r && r.valor) || 'violeta' });
+  } catch {
+    res.json({ tema: 'violeta' });
+  }
+});
+
+router.post('/tema', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const u = await db.prepare('SELECT is_admin FROM users WHERE id = ?').get(uid);
+    if (!u || !u.is_admin) return res.status(403).json({ error: 'Só o admin muda o tema.' });
+    const tema = String((req.body && req.body.tema) || 'violeta').slice(0, 20);
+    await db
+      .prepare(
+        `INSERT INTO public.chat_settings (chave, valor) VALUES ('tema', ?)
+         ON CONFLICT (chave) DO UPDATE SET valor = EXCLUDED.valor`,
+      )
+      .run(tema);
+    res.json({ ok: true, tema });
+  } catch (error) {
+    console.error('Erro chat tema:', error.message);
+    res.status(500).json({ error: 'Não deu para mudar o tema.' });
+  }
+});
+
+/* POST /api/chat — texto, imagem/GIF ou clip (com reply_to) */
 router.post('/', requireUser, async (req, res) => {
   try {
+    await garantirChatTabelas();
     const db = getDb();
     const uid = req.auth.uid;
     if (!podeEnviar(uid)) {
@@ -200,15 +443,37 @@ router.post('/', requireUser, async (req, res) => {
     }
 
     const kind = clipId ? 'clip' : mediaUrl ? 'media' : 'text';
+    const replyTo = Number(b.reply_to) || null;
     const r = await db
       .prepare(
-        'INSERT INTO chat_messages (user_id, body, kind, media_url, media_type, clip_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+        'INSERT INTO chat_messages (user_id, body, kind, media_url, media_type, clip_id, reply_to) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
       )
-      .run(uid, body, kind, mediaUrl, mediaType, clipId);
+      .run(uid, body, kind, mediaUrl, mediaType, clipId, replyTo);
 
     await db.prepare('DELETE FROM chat_typing WHERE user_id = ?').run(uid).catch(() => {});
     const row = await db.prepare(SELECT_MSG + ' AND m.id = ?').get(Number(r.lastInsertRowid));
-    res.status(201).json(decorar(row));
+    const msg = decorar(row);
+    if (replyTo) {
+      const rRow = await db
+        .prepare(
+          `SELECT m.id, m.body, u.username, up.avatar_url
+           FROM chat_messages m JOIN users u ON u.id = m.user_id
+           LEFT JOIN user_profiles up ON up.user_id = m.user_id
+           WHERE m.id = ?`,
+        )
+        .get(replyTo);
+      if (rRow) {
+        msg.reply = {
+          id: Number(rRow.id),
+          body: (rRow.body || '').slice(0, 140),
+          username: rRow.username || '???',
+          avatar_url: rRow.avatar_url || null,
+        };
+      }
+    }
+    msg.reactions = [];
+    msg.pinned = null;
+    res.status(201).json(msg);
   } catch (error) {
     console.error('Erro chat POST:', error.message);
     res.status(500).json({ error: 'Não deu para enviar a mensagem.' });

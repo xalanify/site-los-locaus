@@ -2115,6 +2115,19 @@ foreach ($pasta in ($pastas | Select-Object -Unique)) {
     } catch { Write-Output ("  [!] pasta não saiu (a uso): " + $pasta) }
   }
 }
+# 3b) SEM registo: procurar a pasta pelo nome em locais comuns (portable)
+if (-not $removido) {
+  $busca = @($env:ProgramFiles, ($env:ProgramFiles + ' (x86)'), $env:LOCALAPPDATA, $env:APPDATA, $env:USERPROFILE + '\Downloads')
+  foreach ($raiz in $busca) {
+    if (-not (Test-Path $raiz)) { continue }
+    Get-ChildItem -Path $raiz -Directory -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -like "*$nb*" -or $_.Name -like "*$cnome*" } |
+      ForEach-Object {
+        try { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop; Write-Output ("  [portable] pasta removida: " + $_.FullName); $removido = $true }
+        catch { Write-Output ("  [portable] pasta não saiu: " + $_.FullName) }
+      }
+  }
+}
 
 # 4) restos no registo (chaves do fabricante/programa)
 foreach ($rg in @("HKLM:\\SOFTWARE\\$nb", "HKLM:\\SOFTWARE\\WOW6432Node\\$nb", "HKCU:\\Software\\$nb", "HKLM:\\SOFTWARE\\$cnome", "HKCU:\\Software\\$cnome")) {
@@ -2142,7 +2155,7 @@ foreach ($chave in $chaves) {
 if ($lugar -and (Test-Path $lugar)) { $continua = $true }
 if ($removido -and -not $continua) { Write-Output "=== ${f.nome}: [ok] saiu do PC ===" }
 elseif ($removido) { Write-Output "=== ${f.nome}: [!] quase - rebuçados alguns (reinicia e vê ou desinstala nas Definições) ===" }
-else { Write-Output "=== ${f.nome}: [!] nao o encontrei no registo - verifica o nome nas Definições ===" }
+else { Write-Output "=== ${f.nome}: [!] nao o encontrei - se for portable, a pasta foi procurada em Program Files/AppData/Downloads ===" }
 `;
   });
 

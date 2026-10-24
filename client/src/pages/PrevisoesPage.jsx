@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Swords,
   Trophy,
@@ -15,6 +15,10 @@ import {
   ChevronDown,
   Medal,
   ArrowRight,
+  Calendar,
+  MapPin,
+  Crown,
+  Star,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { R6_TORNEIOS } from '../data/r6Torneios'
@@ -75,11 +79,31 @@ function TeamLogo({ team, size = 'h-12 w-12' }) {
   )
 }
 
-function LiveDot() {
+function StatusPill({ match }) {
+  if (match.status === 2) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-red-300 ring-1 ring-red-400/30">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" /> Ao vivo
+      </span>
+    )
+  }
+  if (match.status === 3) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20">
+        <Check className="h-3 w-3" /> Final
+      </span>
+    )
+  }
+  if (match.locked) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-gray-400 ring-1 ring-white/10">
+        <Lock className="h-3 w-3" /> Apostas fechadas
+      </span>
+    )
+  }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-red-300 ring-1 ring-red-400/30">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
-      Ao vivo
+    <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-violet-300 ring-1 ring-violet-400/20">
+      <Target className="h-3 w-3" /> A aceitar votos
     </span>
   )
 }
@@ -142,7 +166,7 @@ function PredictionCard({ match, user, onVote, votando }) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.045] to-white/[0.015] shadow-xl shadow-black/20">
-      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 px-3 py-2.5 sm:px-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-black/15 px-3 py-2.5 sm:px-4">
         {match.competition_logo ? (
           <img src={match.competition_logo} alt="" className="h-6 w-6 rounded object-contain" loading="lazy" />
         ) : (
@@ -157,7 +181,7 @@ function PredictionCard({ match, user, onVote, votando }) {
             BO{match.format}
           </span>
         )}
-        {live ? <LiveDot /> : null}
+        <StatusPill match={match} />
       </div>
 
       <div className="px-3 py-3 sm:px-4">
@@ -165,7 +189,9 @@ function PredictionCard({ match, user, onVote, votando }) {
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400">
             <Clock className="h-3 w-3" /> {fmtDia(match.start_time)} · {fmtHora(match.start_time)}
             {match.status === 1 && faltam(match.start_time) && (
-              <span className="ml-1 text-violet-300">· {faltam(match.start_time)}</span>
+              <span className="ml-1 rounded-full bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-black text-violet-300 ring-1 ring-violet-400/20">
+                {faltam(match.start_time)}
+              </span>
             )}
           </span>
           {acabado && match.winner && (
@@ -247,16 +273,6 @@ function PredictionCard({ match, user, onVote, votando }) {
         )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {match.can_vote && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2 py-1 text-[10px] font-bold text-violet-300 ring-1 ring-violet-400/20">
-              <Target className="h-3 w-3" /> Escolhe quem ganha
-            </span>
-          )}
-          {match.status === 1 && match.locked && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-1 text-[10px] font-bold text-gray-400">
-              <Lock className="h-3 w-3" /> Apostas fechadas
-            </span>
-          )}
           {minhaEscolha && (
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold ring-1 ${
@@ -268,13 +284,8 @@ function PredictionCard({ match, user, onVote, votando }) {
               }`}
             >
               {match.correct === true ? <Check className="h-3 w-3" /> : match.correct === false ? <X className="h-3 w-3" /> : <Target className="h-3 w-3" />}
-              A tua escolha: {minhaEscolha === 'a' ? match.team_a.name : match.team_b.name}
+              {minhaEscolha === 'a' ? match.team_a.name : match.team_b.name}
               {match.correct === true ? ' · acertaste' : match.correct === false ? ' · falhaste' : ''}
-            </span>
-          )}
-          {acabado && escolhaCerta && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300 ring-1 ring-emerald-400/20">
-              <Trophy className="h-3 w-3" /> {escolhaCerta.name}
             </span>
           )}
           <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold text-gray-500">
@@ -293,6 +304,62 @@ function PredictionCard({ match, user, onVote, votando }) {
             <VoterList match={match} user={user} />
           </div>
         )}
+      </div>
+    </article>
+  )
+}
+
+function PalmaresTorneio({ t, destaque }) {
+  const posicoes = [
+    { rotulo: 'Campeão', icon: <Crown className="h-3 w-3 text-amber-300" />, equipa: t.campeao, cor: 'text-amber-300', bg: 'bg-amber-500/[0.08]' },
+    { rotulo: 'Vice', icon: <Medal className="h-3 w-3 text-slate-300" />, equipa: t.vice, cor: 'text-slate-300', bg: 'bg-white/[0.04]' },
+    { rotulo: '3.º', icon: <Medal className="h-3 w-3 text-orange-400" />, equipa: t.terceiro, cor: 'text-orange-300', bg: 'bg-orange-500/[0.06]' },
+  ]
+  return (
+    <article
+      className={`group relative w-80 shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
+        destaque
+          ? 'border-amber-400/30 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] shadow-lg shadow-amber-950/20'
+          : 'border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-violet-400/40 hover:bg-white/[0.05]'
+      }`}
+    >
+      {destaque && (
+        <span className="absolute right-3 top-3 rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+          Mais recente
+        </span>
+      )}
+      <div className="mb-3 flex items-center gap-2.5">
+        <img src={t.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg bg-black/30 p-0.5 object-contain" loading="lazy" />
+        <div className="min-w-0 pr-16">
+          <h3 className="truncate text-sm font-black leading-tight text-white">{t.nome}</h3>
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-gray-400">
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="h-3 w-3" /> {t.dataInicio} — {t.dataFim}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3 w-3" /> {t.local}
+            </span>
+          </p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {posicoes.map((p) => (
+          <div key={p.rotulo} className={`flex items-center gap-2 rounded-lg px-2 py-1 ${p.bg}`}>
+            <span className="w-12 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-500">
+              {p.rotulo}
+            </span>
+            {p.icon}
+            <span className={`min-w-0 flex-1 truncate text-xs font-bold ${p.cor}`}>{p.equipa.nome}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5 text-[10px] font-semibold">
+        <span className="inline-flex min-w-0 items-center gap-1 truncate text-violet-300">
+          <Star className="h-3 w-3 shrink-0" /> MVP: {t.mvp.nome} · {t.mvp.equipa}
+        </span>
+        <span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-black text-white">
+          Final {t.resultadoFinal}
+        </span>
       </div>
     </article>
   )
@@ -332,6 +399,7 @@ function Podium({ users }) {
 export default function PrevisoesPage({ user }) {
   const [matches, setMatches] = useState([])
   const [tab, setTab] = useState('proximos')
+  const [regiao, setRegiao] = useState('Todas')
   const [loading, setLoading] = useState(true)
   const [sync, setSync] = useState(null)
   const [erro, setErro] = useState('')
@@ -460,31 +528,49 @@ export default function PrevisoesPage({ user }) {
   const acertos = resultados.filter((m) => m.correct === true).length
   const falhas = resultados.filter((m) => m.correct === false).length
 
+  /* Regiões presentes nos jogos (para os filtros) — ordem estável */
+  const regioesDisponiveis = useMemo(() => {
+    const l = new Set(matches.map((m) => m.region).filter(Boolean))
+    return Array.from(l).sort((a, b) => a.localeCompare(b, 'pt'))
+  }, [matches])
+
+  const proximosFiltrados = useMemo(
+    () => (regiao === 'Todas' ? proximos : proximos.filter((m) => m.region === regiao)),
+    [proximos, regiao],
+  )
+  const resultadosFiltrados = useMemo(
+    () => (regiao === 'Todas' ? resultados : resultados.filter((m) => m.region === regiao)),
+    [resultados, regiao],
+  )
+
   const meuNome = user && user.id
   const minhaClass = classificacao.find((u) => u.id === Number(meuNome))
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-2 pb-4 pt-14 sm:pt-16 lg:px-0 lg:pt-0">
+    <div className="relative mx-auto w-full max-w-4xl px-2 pb-4 pt-14 sm:pt-16 lg:px-0 lg:pt-0">
+      {/* fundo com a imagem do jogo (a mesma dos Jogos/Estáticas) —
+          escurecida para os cartões continuarem legíveis */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
+          style={{ backgroundImage: 'url(/coastliner6.jpg)' }}
+        />
+        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612]/85 via-[#0a0612]/55 to-[#0a0612]/92" />
+      </div>
+      <div className="relative z-10">
+
       {/* cabeçalho */}
       <section className="relative mb-4 overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/25 via-[#17102a] to-fuchsia-600/10 p-4 shadow-2xl shadow-violet-950/20 sm:p-6">
         <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl" />
         <div className="relative flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-violet-200 ring-1 ring-white/15">
-                <Flame className="h-3 w-3 text-orange-300" /> R6 Tier 1
-              </span>
-              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-300 ring-1 ring-emerald-400/20">
-                Dados oficiais
-              </span>
-            </div>
             <h1 className="font-display text-2xl font-black leading-tight text-white sm:text-3xl">
               Previsões <span className="gradient-text">R6</span>
             </h1>
             <p className="mt-1 max-w-lg text-xs font-semibold leading-relaxed text-gray-300 sm:text-sm">
-              Escolhe o vencedor dos jogos profissionais de Rainbow Six Siege. Vê quem apostou no quê,
-              acompanha a pontuação ao vivo e sobe na classificação.
+              Escolhe o vencedor dos jogos profissionais de Rainbow Six Siege.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -498,49 +584,91 @@ export default function PrevisoesPage({ user }) {
             </div>
           </div>
         </div>
-
-        <div className="relative mt-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white shadow-lg shadow-violet-900/40">
-            <Swords className="h-3.5 w-3.5" /> Rainbow Six Siege
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold text-gray-500">
-            CS2 <span className="text-[8px] uppercase tracking-wider">em breve</span>
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold text-gray-500">
-            Fortnite <span className="text-[8px] uppercase tracking-wider">em breve</span>
-          </span>
-          {aoVivo.length > 0 && (
-            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/20">
+        {aoVivo.length > 0 && (
+          <div className="relative mt-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/20">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" /> {aoVivo.length} ao vivo
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </section>
+
+      {/* filtros de região — os jogos Tier 1 vêm de várias regiões */}
+      {regioesDisponiveis.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-500">
+            <MapPin className="h-3 w-3" /> Região
+          </span>
+          <button
+            onClick={() => setRegiao('Todas')}
+            className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
+              regiao === 'Todas'
+                ? 'bg-violet-500 text-white'
+                : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+            }`}
+          >
+            Todas
+          </button>
+          {regioesDisponiveis.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRegiao(r)}
+              className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
+                regiao === r
+                  ? 'bg-violet-500 text-white'
+                  : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+              }`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* separadores */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
-          {[
-            ['proximos', 'Próximos', proximos.length],
-            ['resultados', 'Resultados', resultados.length],
-            ['classificacao', 'Classificação', classificacao.length || null],
-          ].map(([id, label, n]) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
-                tab === id ? 'bg-violet-500 text-white shadow-lg shadow-violet-900/30' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              {label}
-              {n ? <span className={`rounded-full px-1.5 text-[9px] ${tab === id ? 'bg-white/20' : 'bg-white/10'}`}>{n}</span> : null}
-            </button>
-          ))}
+        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-black/25 p-1 shadow-inner shadow-black/30">
+          {(() => {
+            const icones = {
+              proximos: <Swords className="h-4 w-4 shrink-0" />,
+              resultados: <Trophy className="h-4 w-4 shrink-0" />,
+              classificacao: <Medal className="h-4 w-4 shrink-0" />,
+            }
+            const rotulos = {
+              proximos: 'Próximos',
+              resultados: 'Resultados',
+              classificacao: 'Classificação',
+            }
+            const contagens = {
+              proximos: proximos.length,
+              resultados: resultados.length,
+              classificacao: classificacao.length || null,
+            }
+            return ['proximos', 'resultados', 'classificacao'].map((id) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
+                  tab === id
+                    ? 'bg-gradient-to-b from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-950/50'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                {icones[id]}
+                <span className="truncate">{rotulos[id]}</span>
+                {contagens[id] ? (
+                  <span className={`rounded-full px-1.5 text-[9px] tabular-nums ${tab === id ? 'bg-white/25' : 'bg-white/10'}`}>
+                    {contagens[id]}
+                  </span>
+                ) : null}
+              </button>
+            ))
+          })()}
         </div>
         <button
           onClick={() => recarregarRef.current()}
           title="Atualizar resultados"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/10 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/25 text-gray-400 transition hover:bg-white/10 hover:text-white"
         >
           <RefreshCw className="h-4 w-4" />
         </button>
@@ -559,58 +687,7 @@ export default function PrevisoesPage({ user }) {
         )}
       </div>
 
-      {/* Palmarés R6 — últimos torneios Tier 1 */}
-      <section className="mb-4 overflow-hidden rounded-2xl border border-violet-400/20 bg-gradient-to-b from-violet-600/10 to-[#17102a] p-3 shadow-xl shadow-violet-950/15 sm:p-4">
-        <div className="mb-2 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-400/30">
-            <Trophy className="h-4 w-4 text-violet-300" />
-          </span>
-          <h2 className="font-display text-base font-black text-white">Palmarés R6</h2>
-          <span className="ml-auto rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-violet-300 ring-1 ring-violet-400/20">
-            Últimos torneios
-          </span>
-        </div>
-        <div className="overflow-x-auto">
-          <div className="flex min-w-max gap-3">
-            {R6_TORNEIOS.map((t) => (
-              <div
-                key={t.id}
-                className="w-72 shrink-0 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-violet-400/40 hover:bg-white/[0.05]"
-              >
-                <div className="mb-2 flex items-center gap-2">
-                  <img src={t.logo} alt="" className="h-7 w-7 rounded object-contain" loading="lazy" />
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-black leading-tight text-white">{t.nome}</p>
-                    <p className="text-[10px] font-semibold text-gray-400">
-                      {t.campeonato} · {t.local}
-                    </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-gray-300">
-                  <span>Datas:</span>
-                  <span className="text-white">
-                    {t.dataInicio} — {t.dataFim}
-                  </span>
-                  <span>Camião:</span>
-                  <span className="text-emerald-300">{t.campeao.nome}</span>
-                  <span>Vice:</span>
-                  <span className="text-amber-300">{t.vice.nome}</span>
-                  <span>3.º:</span>
-                  <span className="text-orange-300">{t.terceiro.nome}</span>
-                  <span>MVP:</span>
-                  <span className="text-violet-300">
-                    {t.mvp.nome} ({t.mvp.equipa})
-                  </span>
-                </div>
-                <div className="mt-2 rounded-lg bg-white/5 px-2 py-1 text-center text-[11px] font-black text-white">
-                  Resultado final: {t.resultadoFinal}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      {/* erros */}
       {erro && (
         <div className="mb-3 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">
           {erro}
@@ -623,8 +700,8 @@ export default function PrevisoesPage({ user }) {
         </div>
       ) : tab === 'proximos' ? (
         <div className="space-y-3">
-          {proximos.length ? (
-            proximos.map((m) => (
+          {proximosFiltrados.length ? (
+            proximosFiltrados.map((m) => (
               <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} />
             ))
           ) : (
@@ -632,26 +709,56 @@ export default function PrevisoesPage({ user }) {
               <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-300 ring-1 ring-violet-400/20">
                 <Swords className="h-6 w-6" />
               </span>
-              <h3 className="mt-3 text-base font-black text-white">Sem jogos Tier 1 marcados</h3>
+              <h3 className="mt-3 text-base font-black text-white">
+                {regiao === 'Todas' ? 'Sem jogos Tier 1 marcados' : `Sem jogos em ${regiao}`}
+              </h3>
               <p className="mx-auto mt-1 max-w-md text-xs font-semibold text-gray-400">
-                Quando a Ubisoft anunciar os próximos jogos, eles aparecem aqui automaticamente. Voltamos
-                a verificar a cada minuto.
+                {regiao === 'Todas'
+                  ? 'Quando a Ubisoft anunciar os próximos jogos, eles aparecem aqui automaticamente. Voltamos a verificar a cada minuto.'
+                  : 'Quando houver jogos nesta região, aparecem aqui. Tenta outra região ou "Todas".'}
               </p>
             </div>
           )}
         </div>
       ) : tab === 'resultados' ? (
-        <div className="space-y-3">
-          {resultados.length ? (
-            resultados.map((m) => (
-              <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={false} />
-            ))
-          ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-14 text-center">
-              <Trophy className="mx-auto h-8 w-8 text-gray-600" />
-              <p className="mt-2 text-sm font-bold text-gray-400">Ainda não há resultados recentes.</p>
+        <div className="space-y-4">
+          {/* Palmarés R6 — últimos torneios Tier 1 */}
+          <section className="overflow-hidden rounded-2xl border border-violet-400/20 bg-gradient-to-b from-violet-600/10 to-[#17102a] p-3 shadow-xl shadow-violet-950/15 sm:p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-400/30">
+                <Trophy className="h-4 w-4 text-violet-300" />
+              </span>
+              <h2 className="font-display text-base font-black text-white">Palmarés R6</h2>
+              <span className="ml-auto rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-violet-300 ring-1 ring-violet-400/20">
+                Últimos torneios
+              </span>
             </div>
-          )}
+            <div className="overflow-x-auto pb-1">
+              <div className="flex min-w-max gap-3">
+                {R6_TORNEIOS.map((t, i) => (
+                  <PalmaresTorneio key={t.id} t={t} destaque={i === 0} />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <div>
+            <h2 className="mb-2 flex items-center gap-2 px-1 font-display text-sm font-black uppercase tracking-wider text-gray-400">
+              <Swords className="h-4 w-4 text-violet-400" /> Jogos já jogados
+            </h2>
+            {resultadosFiltrados.length ? (
+              <div className="space-y-3">
+                {resultadosFiltrados.map((m) => (
+                  <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={false} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-14 text-center">
+                <Trophy className="mx-auto h-8 w-8 text-gray-600" />
+                <p className="mt-2 text-sm font-bold text-gray-400">Ainda não há resultados recentes.</p>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div>
@@ -785,6 +892,7 @@ export default function PrevisoesPage({ user }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

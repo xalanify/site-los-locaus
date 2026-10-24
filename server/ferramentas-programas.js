@@ -92,6 +92,8 @@ const PROGRAMAS = [
   ['instalar-itch', 'itch.io', 'Jogos', 'ItchIo.Itch', 'Loja e jogos da itch.io.', 'Swords'],
   ['instalar-heroic', 'Heroic Games Launcher', 'Jogos', 'HeroicGamesLauncher.HeroicGamesLauncher', 'Arranque e Wine para jogos.', 'Gamepad2'],
   ['instalar-roblox', 'Roblox Player', 'Jogos', 'Roblox.Roblox', 'O Roblox no PC.', 'Gamepad2'],
+  ['instalar-unigetui', 'UniGetUI', 'Jogos', 'Marticliment.UniGetUI', 'Instala e atualiza programas por interface livre (winget GUI).', 'Package'],
+  ['instalar-csdemo', 'CS Demo Manager', 'Jogos', 'akiver.cs-demo-manager', 'Replays e estatísticas das demos do CS2.', 'Film'],
 
   /* -------------------------------- Sistema -------------------------------- */
   ['instalar-7zip', '7-Zip', 'Sistema', '7zip.7zip', 'Comprime e extrai ficheiros.', 'Archive'],

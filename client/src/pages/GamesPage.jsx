@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
+import JogadoresTab from './JogadoresTab'
 
 const fmt = (n) => (Number(n) || 0).toLocaleString('pt-PT')
 
@@ -1389,9 +1390,10 @@ function FormLigar({ nick, setNick, onLigar, aLigar, msg }) {
    CS2 — painel AO VIVO via Steam Web API (servidor busca sozinho)
    ============================================================ */
 function BattlefieldPage({ aoMudarJogo }) {
+  const [aba, setAba] = useState('stats')
   return (
     <div className="space-y-5">
-      <BattlefieldStats aoMudarJogo={aoMudarJogo} />
+      {aba === 'stats' ? <BattlefieldStats aoMudarJogo={aoMudarJogo} /> : <JogadoresTab jogo="bf" />}
     </div>
   )
 }

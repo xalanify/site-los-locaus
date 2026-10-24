@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Youtube, ArrowUpRight } from 'lucide-react'
+import { Youtube, ArrowUpRight, Play, Swords } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -76,6 +76,7 @@ export default function Hero() {
                 <ArrowUpRight className="h-3 w-3" />
               </a>
             </div>
+
           </div>
 
           {/* números do canal — o que interessa ver de relance */}

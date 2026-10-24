@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Megaphone, X, ChevronRight } from 'lucide-react'
 import Announcements from './Announcements'
+import { anunciosVisiveis, fecharAnuncio } from '../lib/anuncios'
 
 /* ============================================================
    Barra de anúncios — fica "presa" no topo da página.
@@ -22,17 +23,19 @@ export default function BarraAnuncios() {
   useEffect(() => {
     fetch('/api/posts?limit=8')
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setPosts(Array.isArray(data) ? data : []))
+      .then((data) => setPosts(anunciosVisiveis(Array.isArray(data) ? data : [])))
       .catch(() => setPosts([]))
   }, [])
 
   const fechar = () => {
-    setEscondida(true)
+    // Esconde a barra e marca o anúncio como lido — só volta com um post novo.
     try {
       sessionStorage.setItem('locaus:barra-anuncios', '1')
     } catch {
       /* modo privado */
     }
+    setEscondida(true)
+    if (posts && posts.length > 0) fecharAnuncio(posts[0].id)
   }
 
   if (escondida || !posts || posts.length === 0) return null
