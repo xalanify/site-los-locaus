@@ -280,7 +280,10 @@ router.get('/cs2', (req, res) => {
 // ============================================================
 router.get('/cs2-live', async (req, res) => {
   try {
-    res.json(await cs2live.aoVivo());
+    const data = await cs2live.aoVivo();
+    // atualiza a distinção de Top 1 Kill em segundo plano (sem atrasar)
+    syncTop1Badge().catch(() => {});
+    res.json(data);
   } catch (error) {
     console.error('Erro cs2-live:', error.message);
     res.status(502).json({ ok: false, motivo: 'erro' });

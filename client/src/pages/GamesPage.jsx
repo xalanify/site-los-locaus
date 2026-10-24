@@ -614,10 +614,20 @@ function FortniteStats() {
   const [fixos, setFixos] = useState([])
 
   useEffect(() => {
-    fetch('/api/games/fortnite')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setFixos(Array.isArray(d?.jogadores) ? d.jogadores : []))
-      .catch(() => {})
+    let vivo = true
+    const carregar = () =>
+      fetch('/api/games/fortnite')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (vivo) setFixos(Array.isArray(d?.jogadores) ? d.jogadores : [])
+        })
+        .catch(() => {})
+    carregar()
+    const iv = setInterval(carregar, 60000) // atualiza sozinho a cada minuto
+    return () => {
+      vivo = false
+      clearInterval(iv)
+    }
   }, [])
 
   const search = async (e) => {
@@ -719,7 +729,7 @@ function FortniteStats() {
                         {dd?.account?.name || j.nome}
                       </p>
                       <p className="text-[10px] font-bold text-gray-500">
-                        Nível {dd?.account?.level ?? '—'}
+                        Nível do passe {dd?.account?.level ?? '—'}
                       </p>
                     </div>
                   </div>

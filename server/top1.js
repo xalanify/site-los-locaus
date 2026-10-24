@@ -139,6 +139,11 @@ async function syncTop1Badge() {
       .all()).map((r) => Number(r.user_id));
 
     if (!account) {
+      // O líder não tem conta ligada no site — não deixamos a distinção
+      // presa numa conta que já não é a líder. Remove de todos.
+      try {
+        await db.prepare("DELETE FROM user_badges WHERE badge = 'top1'").run();
+      } catch {}
       return { leader: leader.name, kills: leader.kills, conta: null };
     }
 

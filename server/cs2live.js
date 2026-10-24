@@ -84,65 +84,78 @@ async function normalizar() {
 async function statsSteam(steamid, key) {
   const url =
     `https://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v2/?appid=730&steamid=${steamid}&key=${key}`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
-  try {
-    const r = await fetch(url, { signal: controller.signal });
-    if (!r.ok) throw new Error(`Steam ${r.status}`);
-    const j = await r.json();
-    const kv = j?.playerstats?.stats || [];
-    const mapa = Object.fromEntries(kv.map((s) => [s.name, s.value]));
-    const n = (k) => (Number.isFinite(mapa[k]) ? mapa[k] : null);
-    const kills = n('total_kills');
-    const deaths = n('total_deaths');
-    const tiros = n('total_shots_fired');
-    const certos = n('total_shots_hit');
-    const tempoSegundos = n('total_time_played');
-    const hs = n('total_kills_headshot');
-    return {
-      ok: true,
-      steam: steamid,
-      nome: j?.playerstats?.steamID || steamid,
-      kills,
-      deaths,
-      kd: kills != null && deaths ? Number((kills / deaths).toFixed(2)) : null,
-      mvps: n('total_mvps'),
-      tiros,
-      precisao: tiros && certos != null ? Number(((certos / tiros) * 100).toFixed(1)) : null,
-      hs: hs != null && kills ? Number(((hs / kills) * 100).toFixed(1)) : null,
-      vitorias: n('total_wins'),
-      rondas: n('total_rounds_played'),
-      faca: n('total_kills_knife'),
-      he: n('total_kills_hegrenade'),
-      dano: n('total_damage'),
-      partidas: n('total_matches_played'),
-      vencidas: n('total_matches_won'),
-      pistola: n('total_kills_deagle') != null ? n('total_kills_deagle') : n('total_kills_pistol'),
-      planted: n('total_planted_bombs'),
-      defused: n('total_defused_bombs'),
-      horas: tempoSegundos != null ? Number((tempoSegundos / 3600).toFixed(0)) : null,
-    };
-  } catch (e) {
-    const msg = String((e && e.message) || e);
-    let motivo = 'outro';
-    const m = /Steam (\d+)/.exec(msg);
-    const cod = m ? Number(m[1]) : 0;
-    if (cod === 403) motivo = 'nao-publico';
-    // a Steam os stats de CS2 vêm como 400 vazios; as CONQUISTAS dizem
-    // a verdade por extenso ("Profile is not public") — pergunta-lhe
-    if (cod === 400 || cod === 500) {
-      try {
-        const r2 = await fetch(
-          `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?appid=730&steamid=${steamid}&key=${key}`,
-        );
-        if (r2.status === 403) motivo = 'nao-publico';
-        else if (r2.ok) motivo = 'sem-stats';
-      } catch {}
+
+  // A Steam falha de forma intermitente (400/429/5xx) quando há muitos
+  // pedidos ao mesmo tempo. Tentamos até 3 vezes antes de desistir.
+  let ultimoErro = null;
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const r = await fetch(url, { signal: controller.signal });
+      if (r.ok) {
+        const j = await r.json();
+        const kv = j?.playerstats?.stats || [];
+        const mapa = Object.fromEntries(kv.map((s) => [s.name, s.value]));
+        const n = (k) => (Number.isFinite(mapa[k]) ? mapa[k] : null);
+        const kills = n('total_kills');
+        const deaths = n('total_deaths');
+        const tiros = n('total_shots_fired');
+        const certos = n('total_shots_hit');
+        const tempoSegundos = n('total_time_played');
+        const hs = n('total_kills_headshot');
+        return {
+          ok: true,
+          steam: steamid,
+          nome: j?.playerstats?.steamID || steamid,
+          kills,
+          deaths,
+          kd: kills != null && deaths ? Number((kills / deaths).toFixed(2)) : null,
+          mvps: n('total_mvps'),
+          tiros,
+          precisao: tiros && certos != null ? Number(((certos / tiros) * 100).toFixed(1)) : null,
+          hs: hs != null && kills ? Number(((hs / kills) * 100).toFixed(1)) : null,
+          vitorias: n('total_wins'),
+          rondas: n('total_rounds_played'),
+          faca: n('total_kills_knife'),
+          he: n('total_kills_hegrenade'),
+          dano: n('total_damage'),
+          partidas: n('total_matches_played'),
+          vencidas: n('total_matches_won'),
+          pistola: n('total_kills_deagle') != null ? n('total_kills_deagle') : n('total_kills_pistol'),
+          planted: n('total_planted_bombs'),
+          defused: n('total_defused_bombs'),
+          horas: tempoSegundos != null ? Number((tempoSegundos / 3600).toFixed(0)) : null,
+        };
+      }
+      ultimoErro = `Steam ${r.status}`;
+      // 403 é definitivo (privado). 400/429/5xx podem ser temporários.
+      if (![400, 429, 500, 502, 503].includes(r.status)) break;
+      await new Promise((res) => setTimeout(res, 500 * (tentativa + 1)));
+    } catch (e) {
+      ultimoErro = String((e && e.message) || e);
+      await new Promise((res) => setTimeout(res, 500 * (tentativa + 1)));
+    } finally {
+      clearTimeout(timer);
     }
-    return { ok: false, steam: steamid, erro: msg, motivo };
-  } finally {
-    clearTimeout(timer);
   }
+
+  // Depois das tentativas, o erro de achievements diz se é privado ou não.
+  const msg = String(ultimoErro || '');
+  let motivo = 'outro';
+  const m = /Steam (\d+)/.exec(msg);
+  const cod = m ? Number(m[1]) : 0;
+  if (cod === 403) motivo = 'nao-publico';
+  if (cod === 400 || cod === 429 || cod === 500 || !cod) {
+    try {
+      const r2 = await fetch(
+        `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?appid=730&steamid=${steamid}&key=${key}`,
+      );
+      if (r2.status === 403) motivo = 'nao-publico';
+      else if (r2.ok) motivo = 'sem-stats';
+    } catch {}
+  }
+  return { ok: false, steam: steamid, erro: msg, motivo };
 }
 
 // cache de 3 minutos por steamid
