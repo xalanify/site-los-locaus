@@ -11,7 +11,7 @@ import {
   Check,
   Upload,
 } from 'lucide-react'
-import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
+import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
@@ -309,15 +309,16 @@ export default function ProfilePage({
               {minhas.map((b) => (
                 <span
                   key={b.id}
-                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 ring-1"
+                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 ring-1"
                   style={{
-                    background: `${b.color}18`,
-                    boxShadow: `0 0 14px ${b.color}40`,
-                    ringColor: `${b.color}66`,
+                    background: hexToRgba(b.color, 0.09),
+                    boxShadow: `0 0 14px ${hexToRgba(b.color, 0.25)}`,
+                    // eslint-disable-next-line react/forbid-dom-props
+                    ['--tw-ring-color']: hexToRgba(b.color, 0.4),
                   }}
                 >
-                  <BadgeGem badge={b} size={22} />
-                  <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
+                  <BadgeGem badge={b} size={18} />
+                  <span className="font-display text-[10.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
                     {b.label}
                   </span>
                 </span>

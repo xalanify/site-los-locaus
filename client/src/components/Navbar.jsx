@@ -1,7 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Youtube, Clapperboard, Home, User, MessageCircle, Trophy } from 'lucide-react'
+import { Menu, Clapperboard, Home, User, MessageCircle, Trophy } from 'lucide-react'
 import Sino from './Sino'
-import AvatarImg from './AvatarImg'
 
 /* ============================================================
    Barra de topo (foto que abre o menu lateral + marca) + barra
@@ -63,26 +62,23 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
       {/* ---------------- Barra de topo (só no telemóvel) ---------------- */}
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0813]/88 backdrop-blur-md lg:hidden">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
-          {/* Foto — abre o menu lateral (estilo X) */}
+          {/* Botão de menu — abre o menu lateral (estilo X) */}
           <button
             onClick={onMenu}
             aria-label="Abrir menu"
-            className="shrink-0 rounded-full transition-transform active:scale-95"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 transition-colors hover:bg-white/10 active:scale-95"
           >
-            <AvatarImg
-              src={user?.avatar_url}
-              name={user?.username || '?'}
-              className="h-9 w-9 ring-1 ring-white/20"
-            />
+            <Menu className="h-5 w-5 text-gray-200" />
+            <span className="text-xs font-bold text-gray-200">Menu</span>
           </button>
 
           {/* Marca */}
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/30 sm:h-9 sm:w-9">
-              <Youtube className="h-4 w-4 text-violet-400 sm:h-5 sm:w-5" />
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-violet-500/15 font-display text-sm font-black text-violet-300 ring-1 ring-violet-500/30 sm:h-9 sm:w-9">
+              L
             </span>
             <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
-              Ashow e Jazer<span className="hidden sm:inline"> Site</span>
+              Locaus
             </span>
             <span className="shrink-0 rounded border border-violet-400/40 bg-violet-500/15 px-1 py-0.5 font-display text-[8px] font-black uppercase tracking-wider text-violet-300">
               Beta

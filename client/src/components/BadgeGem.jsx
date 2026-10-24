@@ -120,6 +120,15 @@ const ANIM_CLASS = {
   float: 'gem-anim-float',
 }
 
+/* hex (#RRGGBB) + alpha (0..1) -> rgba(), mais compatível no iOS/Safari */
+export function hexToRgba(hex, alpha = 1) {
+  const h = String(hex || '#000000').replace('#', '')
+  const r = parseInt(h.slice(0, 2), 16) || 0
+  const g = parseInt(h.slice(2, 4), 16) || 0
+  const b = parseInt(h.slice(4, 6), 16) || 0
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 /* A cara de diabo em si (joia facetada + chifres + olhos irados) */
 export function BadgeGem({ badge, size = 56 }) {
   const dev = badge.id === 'dev'
@@ -143,7 +152,7 @@ export function BadgeGem({ badge, size = 56 }) {
         height: size,
         // eslint-disable-next-line react/forbid-dom-props
         ['--gem']: badge.color,
-        filter: `drop-shadow(0 0 ${dev ? 18 : 9}px ${badge.color}BB)`,
+        filter: `drop-shadow(0 0 ${dev ? 18 : 9}px ${hexToRgba(badge.color, 0.73)})`,
       }}
       title={badge.desc}
     >

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Loader2, X } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
+import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 
 /* ============================================================
@@ -132,10 +132,10 @@ export default function MembrosPage({ onProfile }) {
                             title={b.desc || b.label}
                             className="flex items-center justify-center rounded-full p-[3px] ring-1"
                             style={{
-                              background: `${b.color}18`,
-                              boxShadow: `0 0 12px ${b.color}40`,
+                              background: hexToRgba(b.color, 0.09),
+                              boxShadow: `0 0 12px ${hexToRgba(b.color, 0.25)}`,
                               // eslint-disable-next-line react/forbid-dom-props
-                              ['--tw-ring-color']: `${b.color}66`,
+                              ['--tw-ring-color']: hexToRgba(b.color, 0.4),
                             }}
                           >
                             {/* só o ícone — o nome aparece no passar o rato */}

@@ -25,24 +25,6 @@ import { R6_TORNEIOS } from '../data/r6Torneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 
-/* ícone (bandeira) de cada região — usada no filtro de região */
-const REGIAO_ICONE = {
-  'North America': '🇺🇸',
-  'Europe': '🇪🇺',
-  'Europe Mena': '🇪🇺',
-  'Asia Pacific': '🌏',
-  'South America': '🌎',
-  'China': '🇨🇳',
-  'Brazil': '🇧🇷',
-  'Japan': '🇯🇵',
-  'Korea': '🇰🇷',
-  'Latin America': '🌎',
-  'MENA': '🇸🇦',
-  'APAC': '🌏',
-  'EMEA': '🇪🇺',
-  'Outros': '🌐',
-}
-
 const fmtDia = (iso) => {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
@@ -418,6 +400,7 @@ export default function PrevisoesPage({ user }) {
   const [matches, setMatches] = useState([])
   const [tab, setTab] = useState('proximos')
   const [regiao, setRegiao] = useState('Todas')
+  const [jogo, setJogo] = useState('r6') // r6 | cs2
   const [loading, setLoading] = useState(true)
   const [sync, setSync] = useState(null)
   const [erro, setErro] = useState('')
@@ -578,6 +561,57 @@ export default function PrevisoesPage({ user }) {
       </div>
       <div className="relative z-10">
 
+      {/* seletor de jogo: Rainbow Six (ativo) vs CS2 (em breve) */}
+      <div className="mb-4 grid grid-cols-2 gap-2">
+        <button
+          onClick={() => setJogo('r6')}
+          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-black transition-all ${
+            jogo === 'r6'
+              ? 'border-violet-400/40 bg-gradient-to-b from-violet-600/40 to-fuchsia-600/20 text-white shadow-lg shadow-violet-950/30'
+              : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
+          }`}
+        >
+          <Swords className="h-4 w-4 shrink-0" /> Rainbow Six
+        </button>
+        <button
+          onClick={() => setJogo('cs2')}
+          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-sm font-black transition-all ${
+            jogo === 'cs2'
+              ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/30 to-sky-900/20 text-white'
+              : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
+          }`}
+        >
+          <Target className="h-4 w-4 shrink-0" /> CS2
+          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-400">
+            Em breve
+          </span>
+        </button>
+      </div>
+
+      {jogo === 'cs2' && (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-sky-400/20 bg-gradient-to-b from-sky-600/10 to-[#17102a] px-6 py-16 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-300 ring-1 ring-sky-400/30">
+            <Target className="h-8 w-8" />
+          </span>
+          <h2 className="mt-4 font-display text-xl font-black uppercase text-white">
+            Previsões CS2
+          </h2>
+          <p className="mt-2 max-w-sm text-sm text-gray-400">
+            Estamos a preparar as previsões dos jogos profissionais de Counter-Strike.
+            Em breve vais poder escolher os vencedores por aqui.
+          </p>
+          <button
+            onClick={() => setJogo('r6')}
+            className="mt-5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white hover:brightness-110"
+          >
+            Ver Rainbow Six
+          </button>
+        </div>
+      )}
+
+      {jogo === 'r6' && (
+        <>
+
       {/* cabeçalho */}
       <section className="relative mb-4 overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/25 via-[#17102a] to-fuchsia-600/10 p-4 shadow-2xl shadow-violet-950/20 sm:p-6">
         <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
@@ -611,36 +645,24 @@ export default function PrevisoesPage({ user }) {
         )}
       </section>
 
-      {/* filtros de região — os jogos Tier 1 vêm de várias regiões */}
+      {/* filtro de região — jogos Tier 1 de várias regiões */}
       {regioesDisponiveis.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-500">
-            <MapPin className="h-3 w-3" /> Região
-          </span>
-          <button
-            onClick={() => setRegiao('Todas')}
-            className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
-              regiao === 'Todas'
-                ? 'bg-violet-500 text-white'
-                : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
-            }`}
+        <div className="mb-3 flex items-center gap-2">
+          <label className="flex shrink-0 items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
+            <MapPin className="h-3.5 w-3.5 text-violet-400" /> Região
+          </label>
+          <select
+            value={regiao}
+            onChange={(e) => setRegiao(e.target.value)}
+            className="w-full max-w-[240px] rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-violet-400/40"
           >
-            Todas
-          </button>
-          {regioesDisponiveis.map((r) => (
-            <button
-              key={r}
-              onClick={() => setRegiao(r)}
-              className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
-                regiao === r
-                  ? 'bg-violet-500 text-white'
-                  : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
-              }`}
-            >
-              <span className="mr-1">{REGIAO_ICONE[r] || '🌐'}</span>
-              {r}
-            </button>
-          ))}
+            <option value="Todas" className="bg-[#171122]">Todas as regiões</option>
+            {regioesDisponiveis.map((r) => (
+              <option key={r} value={r} className="bg-[#171122]">
+                {r}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
@@ -848,11 +870,6 @@ export default function PrevisoesPage({ user }) {
           As apostas fecham quando o jogo começa; podes mudar o voto até lá. Quando o resultado sair,
           recebes um aviso nesta página e no sino.
         </p>
-        <p className="mt-2 flex items-start gap-1.5">
-          <Target className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-400" />
-          Em breve vais poder também fazer previsões de <b className="text-gray-300">CS2</b> — estamos a
-          preparar os jogos profissionais de Counter-Strike.
-        </p>
       </div>
 
       {/* janela flutuante de resultados */}
@@ -915,6 +932,8 @@ export default function PrevisoesPage({ user }) {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
       </div>
     </div>
