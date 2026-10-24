@@ -36,6 +36,7 @@ const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
+const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
 
 /* /perfil/:username — se o nome da rota é o do utilizador ligado,
    mostra o MESMO perfil cheio da sidebar (bio, editar, distinções…);
@@ -428,7 +429,7 @@ function App() {
                         />
                       }
                     />
-                    <Route path="*" element={<Hero />} />
+                    <Route path="/recuperar" element={<RecuperarPage onAuthed={handleAuthed} />} />
                     </Routes>
                     </motion.div>
                   </AnimatePresence>

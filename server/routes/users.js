@@ -330,12 +330,14 @@ router.put('/me/profile', attachAuth, async (req, res) => {
   }
 });
 
-// ===================== Recuperação de palavra-passe (via admin) =====================
-/* Sem emails por agora: o pedido fica registado, o admin vê-o no
-   painel e ativa o "modo recuperação" da conta. Enquanto esse modo
-   estiver ligado, ao entrar no site aparece o ecrã de criar nova pass. */
+// ===================== Recuperação de palavra-passe (via email) =====================
+// O utilizador escreve o nome, o site envia um link por email (válido 1h).
+// Ao clicar no link abre a página /recuperar?token=... onde define a nova pass.
 
-// POST /api/users/forgot   { username }  -> regista o pedido para o admin
+const crypto = require('crypto');
+const mailer = require('../mailer');
+
+// POST /api/users/forgot   { username }  -> envia email com link de reset
 router.post('/forgot', async (req, res) => {
   try {
     const username = String(req.body.username || '').trim();
@@ -344,79 +346,127 @@ router.post('/forgot', async (req, res) => {
     const user = await store.findByUsername(username);
     if (!user) return res.status(404).json({ error: 'Não existe nenhuma conta com esse nome.' });
 
+    const email = String(user.email || '').trim();
+    if (!email) {
+      return res.status(400).json({
+        error: 'Esta conta não tem email registado. Pede ao admin para ativar a recuperação manualmente.',
+      });
+    }
+
+    // gera token aleatório (32 bytes) e guarda só o hash na base
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresInMin = 60;
+    const expiresAt = new Date(Date.now() + expiresInMin * 60 * 1000).toISOString();
+
     const db = getDb();
     await db
       .prepare(
         `INSERT INTO pass_recovery
-           (user_id, username, email, status, attempts, created_at, updated_at)
-         VALUES (?, ?, ?, 'requested', 0, now(), now())
+           (user_id, username, email, status, token, expires_at, attempts, created_at, updated_at)
+         VALUES (?, ?, ?, 'sent', ?, ?, 0, now(), now())
          ON CONFLICT(username) DO UPDATE SET
-           status = 'requested',
-           token = NULL,
-           expires_at = NULL,
+           status = 'sent',
+           token = EXCLUDED.token,
+           expires_at = EXCLUDED.expires_at,
            attempts = 0,
            updated_at = now()`,
       )
-      .run(user.id, user.username, String(user.email || '').trim());
+      .run(user.id, user.username, email, token, expiresAt);
 
-    res.json({ ok: true });
+    const r = await mailer.sendRecoveryEmail({ to: email, username: user.username, token, expiresInMin });
+    if (!r.ok && !r.dev) {
+      // reverte o token se o email falhou (para o utilizador poder tentar de novo)
+      await db
+        .prepare('UPDATE pass_recovery SET status = \'requested\', token = NULL, expires_at = NULL, updated_at = now() WHERE username = ?')
+        .run(user.username);
+      return res.status(500).json({ error: r.error || 'Não foi possível enviar o email.' });
+    }
+
+    res.json({ ok: true, dev: Boolean(r.dev) });
   } catch (error) {
     console.error('Erro forgot:', error.message);
     res.status(500).json({ error: 'Erro interno' });
   }
 });
 
-// GET /api/users/exists?username=x -> existe a conta? + modo de recuperação
-// (para mostrar "Esqueci a pass" e para saltar direto ao ecrã de nova pass)
-router.get('/exists', async (req, res) => {
+// GET /api/users/reset?token=x -> valida o token e devolve o username
+router.get('/reset', async (req, res) => {
   try {
-    const username = String(req.query.username || '').trim();
-    if (!username) return res.json({ exists: false, recovery: false });
-    const user = await store.findByUsername(username);
-    res.json({ exists: !!user, recovery: !!(user && user.recovery) });
-  } catch {
-    res.json({ exists: false, recovery: false });
+    const token = String(req.query.token || '').trim();
+    if (!token) return res.status(400).json({ error: 'Token em falta.' });
+
+    const db = getDb();
+    const row = await db
+      .prepare(
+        `SELECT pr.*, u.id AS uid, u.username AS uname
+         FROM pass_recovery pr
+         JOIN users u ON u.id = pr.user_id
+         WHERE pr.token = ? AND pr.status IN ('sent', 'active')`,
+      )
+      .get(token);
+    if (!row) return res.status(400).json({ error: 'Token inválido.' });
+    if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+      return res.status(400).json({ error: 'O link expirou. Pede um novo.' });
+    }
+    res.json({ ok: true, username: row.uname });
+  } catch (error) {
+    console.error('Erro reset GET:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
   }
 });
 
-// POST /api/users/reset  { username, new_password }
-// Só funciona com o "modo recuperação" ligado pelo admin.
+// POST /api/users/reset  { token, new_password }  -> define a nova pass
 router.post('/reset', async (req, res) => {
   try {
-    const username = String((req.body && req.body.username) || '').trim();
+    const token = String((req.body && req.body.token) || '').trim();
     const pwdIn = String((req.body && req.body.new_password) || '');
-
-    if (!username) return res.status(400).json({ error: 'Escreve o teu nome.' });
+    if (!token) return res.status(400).json({ error: 'Token em falta.' });
     if (pwdIn.length < 6) {
       return res.status(400).json({ error: 'A nova palavra-passe precisa de pelo menos 6 caracteres.' });
     }
     if (pwdIn.length > 100) return res.status(400).json({ error: 'Palavra-passe demasiado longa.' });
 
-    const user = await store.findByUsername(username);
-    if (!user) return res.status(404).json({ error: 'Conta não encontrada.' });
-    if (!user.recovery) {
-      return res
-        .status(403)
-        .json({ error: 'A recuperação ainda não foi aprovada pelo admin.' });
+    const db = getDb();
+    const row = await db
+      .prepare(
+        `SELECT pr.*, u.id AS uid, u.username AS uname
+         FROM pass_recovery pr
+         JOIN users u ON u.id = pr.user_id
+         WHERE pr.token = ? AND pr.status IN ('sent', 'active')`,
+      )
+      .get(token);
+    if (!row) return res.status(400).json({ error: 'Token inválido.' });
+    if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+      return res.status(400).json({ error: 'O link expirou. Pede um novo.' });
     }
 
     const hash = bcrypt.hashSync(pwdIn, 10);
-    await store.updatePassword(user.id, hash);
+    await store.updatePassword(row.uid, hash);
 
-    const db = getDb();
-    await db.prepare('UPDATE users SET recovery = false WHERE id = ?').run(user.id);
     await db
       .prepare(
-        `UPDATE pass_recovery SET status = 'handled', token = NULL, updated_at = now()
-         WHERE user_id = ? AND status IN ('requested', 'active', 'sent')`,
+        `UPDATE pass_recovery SET status = 'used', token = NULL, updated_at = now()
+         WHERE id = ?`,
       )
-      .run(user.id);
+      .run(row.id);
 
-    const fresh = (await store.findById(user.id)) || { ...user, recovery: false };
+    const fresh = (await store.findById(row.uid)) || { ...row, recovery: false };
     res.json({ token: signUser(fresh), user: await publicUser(fresh) });
   } catch (error) {
-    console.error('Erro reset:', error.message);
+    console.error('Erro reset POST:', error.message);
     res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// GET /api/users/exists?username=x -> existe a conta? (mantido para compatibilidade)
+router.get('/exists', async (req, res) => {
+  try {
+    const username = String(req.query.username || '').trim();
+    if (!username) return res.json({ exists: false, recovery: false });
+    const user = await store.findByUsername(username);
+    res.json({ exists: !!user, recovery: false });
+  } catch {
+    res.json({ exists: false, recovery: false });
   }
 });
 

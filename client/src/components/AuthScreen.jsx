@@ -161,7 +161,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
         setError(d.error || 'Não foi possível registar o pedido.')
         return
       }
-      setSentInfo({ ok: true })
+      setSentInfo({ ok: true, dev: Boolean(d.dev) })
     } catch {
       setError('Sem ligação ao servidor.')
     } finally {
@@ -205,7 +205,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
             <ShieldCheck className="h-6 w-6 text-violet-400" />
           </span>
           <h1 className="gradient-text font-display text-2xl font-black uppercase tracking-wide">
-            Ashow e Jazer
+            Locaus
           </h1>
           <p className="mt-1.5 text-[11px] uppercase tracking-[0.3em] text-gray-500">
             {subtitle}
@@ -221,13 +221,19 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                   <MailCheck className="h-6 w-6 text-violet-400" />
                 </span>
                 <p className="text-sm leading-relaxed text-gray-300">
-                  O teu pedido foi <b className="text-white">enviado ao admin</b>.
+                  Enviámos um <b className="text-white">email de recuperação</b> para a conta
                   <br />
-                  Assim que ele ativar a recuperação da conta
+                  <b className="text-white">{username.trim()}</b>.
                   <br />
-                  <b className="text-white">{username.trim()}</b>, ao entrares no site aparece o
-                  ecrã de criar uma nova palavra-passe.
+                  <br />
+                  Abre o link no email (válido 1 hora) para definir uma nova
+                  palavra-passe. Se não vires o email, verifica o spam.
                 </p>
+                {sentInfo && sentInfo.dev && (
+                  <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] font-bold text-amber-300">
+                    (Modo local: o link foi impresso na consola do servidor.)
+                  </p>
+                )}
 
                 <button
                   type="button"
@@ -246,7 +252,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                 className="space-y-3"
               >
                 <p className="text-xs leading-relaxed text-gray-400">
-                  Escreve o teu nome — o pedido fica registado e o admin aprova-o no painel.
+                  Escreve o teu nome — enviamos um link de recuperação para o email associado à conta.
                 </p>
                 <input
                   value={username}
