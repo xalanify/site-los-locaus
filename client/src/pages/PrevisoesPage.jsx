@@ -517,8 +517,18 @@ const REGIOES_FN = [
   { id: 'ASIA', label: 'Ásia' },
 ]
 
+const MODOS_FN = [
+  { id: 'todos', label: 'Todos' },
+  { id: 'solo', label: 'Solo' },
+  { id: 'duo', label: 'Duo' },
+  { id: 'trio', label: 'Trio' },
+  { id: 'squad', label: 'Squad' },
+  { id: 'outro', label: 'Outros' },
+]
+
 function FortniteTorneiosTab() {
   const [regiao, setRegiao] = useState('EU')
+  const [modo, setModo] = useState('todos')
   const [dados, setDados] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -553,6 +563,7 @@ function FortniteTorneiosTab() {
     return FORTNITE_TORNEIOS.map((t) => ({
       ...t,
       estado: 'upcoming',
+      modo: t.modo || 'outro',
       regiao: null,
       imagem: null,
       link: null,
@@ -561,19 +572,24 @@ function FortniteTorneiosTab() {
       .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))
   }, [remotos, usarRemotos])
 
-  const vivos = futuros.filter((t) => t.estado === 'live')
-  const proximo = futuros.find((t) => t.estado !== 'live') || futuros[0] || null
+  const filtrados = useMemo(
+    () => (modo === 'todos' ? futuros : futuros.filter((t) => (t.modo || 'outro') === modo)),
+    [futuros, modo],
+  )
+
+  const vivos = filtrados.filter((t) => t.estado === 'live')
+  const proximo = filtrados.find((t) => t.estado !== 'live') || filtrados[0] || null
 
   const grupos = useMemo(() => {
     const mapa = new Map()
-    for (const t of futuros) {
+    for (const t of filtrados) {
       if (t.estado === 'live') continue
       const chave = new Date(t.inicio).toDateString()
       if (!mapa.has(chave)) mapa.set(chave, [])
       mapa.get(chave).push(t)
     }
     return [...mapa.entries()]
-  }, [futuros])
+  }, [filtrados])
 
   return (
     <div className="space-y-4">
@@ -603,6 +619,26 @@ function FortniteTorneiosTab() {
             }`}
           >
             {r.label}
+          </button>
+        ))}
+      </div>
+
+      {/* seletor de modo (solo/duo/trio/squad) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <span className="shrink-0 pr-1 text-[10px] font-black uppercase tracking-widest text-gray-600">
+          Modo
+        </span>
+        {MODOS_FN.map((m) => (
+          <button
+            key={m.id}
+            onClick={() => setModo(m.id)}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
+              modo === m.id
+                ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+            }`}
+          >
+            {m.label}
           </button>
         ))}
       </div>
@@ -706,9 +742,10 @@ function FortniteTorneiosTab() {
           <div className="flex items-center justify-center gap-2 py-8 text-sm text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin" /> A carregar torneios…
           </div>
-        ) : futuros.length === 0 ? (
+        ) : filtrados.length === 0 ? (
           <p className="py-6 text-center text-sm text-gray-500">
-            Sem torneios anunciados nesta região. Tenta outra região.
+            Sem torneios {modo !== 'todos' ? `de ${MODOS_FN.find((m) => m.id === modo)?.label}` : ''} nesta
+            região. Tenta outro modo ou outra região.
           </p>
         ) : (
           <div className="space-y-4">

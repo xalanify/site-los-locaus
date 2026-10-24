@@ -20,8 +20,40 @@ const limpar = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 function nomeDoEvento(e) {
   const a = limpar(e.name_line1);
   const b = limpar(e.name_line2);
-  if (!b || b.toLowerCase() === a.toLowerCase()) return a || 'Torneio';
-  return `${a} - ${b}`;
+  let nome = !b || b.toLowerCase() === a.toLowerCase() ? a || 'Torneio' : `${a} - ${b}`;
+
+  // em algumas regiões o nome não diz “Zero Build”; o id diz
+  const id = `${e.id || ''} ${e.displayId || ''}`.toLowerCase();
+  if (/(^|[_-])zb([_-]|$)/.test(id) && !/zero build/i.test(nome)) nome += ' (Zero Build)';
+  return nome;
+}
+
+/* Solo / Duo / Trio / Squad — o nome nem sempre diz, por isso
+   olhamos também para o id, displayId e descrição do evento. */
+function modoDoEvento(e) {
+  const nome = `${e.id || ''} ${e.displayId || ''} ${e.name_line1 || ''} ${e.name_line2 || ''}`.toLowerCase();
+  const desc = String(e.long_description || e.short_description || '').toLowerCase();
+
+  // copas de marca: o nome não diz o modo, mas já sabemos qual é
+  if (/hami\s*kuma/.test(nome)) return /mobile/.test(nome) ? 'solo' : 'trio';
+  if (/inoxtag/.test(nome)) return /mobile/.test(nome) ? 'solo' : 'duo';
+  if (/mobile.*(lan|series)|(lan|series).*mobile/.test(nome)) return 'solo';
+
+  // o nome é a fonte mais fiável
+  if (/\b(solo|solos)\b/.test(nome)) return 'solo';
+  if (/\b(duo|duos)\b/.test(nome)) return 'duo';
+  if (/\b(trio|trios)\b/.test(nome)) return 'trio';
+  if (/\b(squad|squads)\b/.test(nome)) return 'squad';
+
+  // descrição oficial (quando o nome não ajuda)
+  if (/\b(solo|solos)\b/.test(desc)) return 'solo';
+  if (/\bduo up\b|\bduos?\b/.test(desc)) return 'duo';
+  if (/\btrios?\b/.test(desc)) return 'trio';
+  if (/\bsquads?\b/.test(desc)) return 'squad';
+
+  // Arenas = partidas de 8 jogadores (solo)
+  if (/arenas?\b/.test(nome)) return 'solo';
+  return 'outro';
 }
 
 /* escolhe a janela atual ou a próxima que ainda não terminou */
@@ -59,6 +91,7 @@ function normalizar(lista, agora) {
     out.push({
       id: e.id,
       nome,
+      modo: modoDoEvento(e),
       regiao: e.region || null,
       estado: janela.estado,
       inicio: janela.inicio,
