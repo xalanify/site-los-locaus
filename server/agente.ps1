@@ -29,6 +29,12 @@ function Log([string]$msg) {
   } catch {}
 }
 
+# Escreve no console (com cor) e no ficheiro de log.
+function Show([string]$msg, [string]$cor) {
+  try { Write-Host $msg -ForegroundColor $cor } catch { Write-Host $msg }
+  Log $msg
+}
+
 # Evita dois agentes iguais (o mesmo BAT aberto duas vezes).
 $mutexName = 'LocausPC-' + $Token.Substring(0, [Math]::Min(24, $Token.Length))
 try {
@@ -41,6 +47,10 @@ if (-not $mutex.WaitOne(0)) { Log 'agent already running'; exit }
 function PostJson([string]$url, $obj) {
   $body = $obj | ConvertTo-Json -Depth 6 -Compress
   return Invoke-RestMethod -Uri $url -Method Post -Headers $Headers -UserAgent $UA -ContentType 'application/json' -Body $body -TimeoutSec 60
+}
+
+function GetJson([string]$url) {
+  return Invoke-RestMethod -Uri $url -Method Get -Headers $Headers -UserAgent $UA -TimeoutSec 40
 }
 
 function ReadNew([string]$path, [ref]$pos) {
@@ -110,6 +120,7 @@ function RunJob($job) {
       $lote = @($pendentes.ToArray())
       $pendentes.Clear()
       $ultimoEnvio = $agora
+      foreach ($l in $lote) { Show ("  " + $l) 'DarkGray' }
       try {
         $r = PostJson "$Site/api/agente/jobs/$id/logs" @{ logs = $lote }
         if ($r.cancelar) { $cancelado = $true }
@@ -159,6 +170,7 @@ function RunJob($job) {
       }
       try { PostJson "$Site/api/agente/jobs/$id/fim" $fim | Out-Null } catch { Log "job ${id}: final post failed" }
       Log "job $id finished: $status ($codigo)"
+      if ($codigo -eq 0) { Show ("Concluido: " + $job.nome) 'Green' } else { Show ("Erro: " + $job.nome + " (codigo $codigo)") 'Red' }
       $saiu = $true
       break
     }
@@ -178,30 +190,41 @@ function RunJob($job) {
   foreach ($f in @($ps1, $out, $err)) { try { Remove-Item -LiteralPath $f -Force -ErrorAction SilentlyContinue } catch {} }
 }
 
-Log "agent started for $Site"
+Show "A ligar ao site $Site ..." 'Yellow'
 $falhas = 0
+$ligado = $false
 while ($true) {
   try {
-    $r = Invoke-RestMethod -Uri "$Site/api/agente/proximo" -Headers $Headers -UserAgent $UA -TimeoutSec 40
+    # heartbeat explicito: o site ve o PC como "ligado"
+    $hb = PostJson "$Site/api/agente/heartbeat" @{} | Out-Null
+    if (-not $ligado) {
+      $ligado = $true
+      Show ("LIGADO ao site  " + (Get-Date).ToString('HH:mm:ss') + "  (mantem esta janela aberta)") 'Green'
+    }
     $falhas = 0
-    if ($r.encerrar) { Log 'agent asked to stop'; break }
+
+    $r = GetJson "$Site/api/agente/proximo"
+    if ($r.encerrar) { Show 'O site pediu para desligar o agente.' 'Red'; break }
     if ($r.job) {
+      Show ("A executar: " + $r.job.nome) 'Cyan'
       RunJob $r.job
+      Show 'Pronto. A aguardar novos trabalhos...' 'Green'
     } else {
       Start-Sleep -Seconds 5
     }
   } catch {
     $falhas++
+    $ligado = $false
     $msg = $_.Exception.Message
-    if ($msg -match '401|Unauthorized') { Log 'agent token expired'; break }
+    if ($msg -match '401|Unauthorized') { Show 'Sessao expirada. Volta ao site e descarrega o LOCAUS-PC.bat outra vez.' 'Red'; break }
     if ($msg -match '403|Forbidden|challenge|Security Checkpoint') {
-      Log 'agent blocked by the site firewall; waiting 60s'
+      Show 'Bloqueado pelo firewall do site; a tentar de novo em 60s...' 'DarkYellow'
       Start-Sleep -Seconds 60
       continue
     }
-    Log "poll failed ($falhas): $msg"
-    if ($falhas -ge 20) { break }
+    Show ("Sem ligacao ao site (tentativa $falhas): " + $msg) 'DarkYellow'
+    if ($falhas -ge 20) { Show 'Demasiadas falhas. A desligar o agente.' 'Red'; break }
     Start-Sleep -Seconds 3
   }
 }
-Log 'agent stopped'
+Show 'Agente desligado.' 'Gray'

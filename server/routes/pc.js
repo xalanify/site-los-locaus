@@ -76,10 +76,17 @@ async function requireAgente(req, res, next) {
 /* ---------------- geração do .bat ---------------- */
 
 function baseDoSite(req) {
+  const host = String(req.get('host') || '');
+  const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host);
+  // A testar localmente o .bat tem de apontar para o próprio servidor.
+  if (isLocal) {
+    const proto = req.protocol || 'http';
+    return `${proto}://${host}`.replace(/\/+$/, '');
+  }
   if (process.env.SITE_URL) return String(process.env.SITE_URL).replace(/\/+$/, '');
   const proto = req.get('x-forwarded-proto') || req.protocol || 'https';
-  const host = req.get('x-forwarded-host') || req.get('host');
-  return `${proto}://${host}`.replace(/\/+$/, '');
+  const h = req.get('x-forwarded-host') || host;
+  return `${proto}://${h}`.replace(/\/+$/, '');
 }
 
 function gerarBat(site, token) {

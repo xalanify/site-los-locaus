@@ -446,7 +446,11 @@ router.post(
     const j = await agente.obterJob(uid, jobId);
     if (!j) return res.status(404).json({ error: 'Leitura não encontrada.' });
     if (['pendente', 'a_correr'].includes(j.status)) {
-      return res.status(202).json({ ok: false, pendente: true, status: j.status });
+      const passos = (Array.isArray(j.logs) ? j.logs : [])
+        .map((x) => String((x && x.l) || ''))
+        .filter((x) => /^\[passo\]/i.test(x))
+        .map((x) => x.replace(/^\[passo\]\s*/i, ''));
+      return res.status(202).json({ ok: false, pendente: true, status: j.status, passos });
     }
     if (j.status !== 'concluido') {
       return res.status(400).json({ error: j.erro || 'A leitura do PC falhou.' });

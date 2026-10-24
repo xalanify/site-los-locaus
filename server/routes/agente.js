@@ -55,36 +55,61 @@ async function requireAgente(req, res, next) {
 }
 
 function baseDoSite(req) {
+  const host = String(req.get('host') || '');
+  const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host);
+  // A testar localmente o .bat tem de apontar para o próprio servidor
+  // (não para a Vercel) — assim o PC liga-se ao site de testes.
+  if (isLocal) {
+    const proto = req.protocol || 'http';
+    return `${proto}://${host}`.replace(/\/+$/, '');
+  }
   if (process.env.SITE_URL) return String(process.env.SITE_URL).replace(/\/+$/, '');
   const proto = req.get('x-forwarded-proto') || req.protocol || 'https';
-  const host = req.get('x-forwarded-host') || req.get('host');
-  return `${proto}://${host}`.replace(/\/+$/, '');
+  const h = req.get('x-forwarded-host') || host;
+  return `${proto}://${h}`.replace(/\/+$/, '');
 }
 
 function gerarBat(site, token) {
   return [
     '@echo off',
-    'setlocal',
-    'title Locaus PC',
+    'setlocal EnableDelayedExpansion',
+    'title LOCAUS PC - Ligar ao site',
+    'color 0A',
+    '',
+    'REM pede administrador uma vez e relanca-se elevado',
     'net session >nul 2>&1',
     'if not "%errorlevel%"=="0" (',
     '  powershell -NoProfile -Command "Start-Process -FilePath \'%~f0\' -Verb RunAs"',
     '  exit /b',
     ')',
+    '',
     `set "SITE=${site}"`,
     `set "TOKEN=${token}"`,
     'set "PS=%TEMP%\\locaus-agente.ps1"',
+    '',
+    'cls',
+    'echo.',
+    'echo  ================================================',
+    'echo    LOCAUS PC  -  Liga o teu Windows ao site',
+    'echo  ================================================',
+    'echo.',
+    'echo  A descarregar o agente...',
     'powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Invoke-WebRequest -Uri (\'%SITE%/api/agente/script\') -UseBasicParsing -OutFile (\'%PS%\') -ErrorAction Stop } catch { exit 1 }"',
     'if not exist "%PS%" (',
     '  echo.',
-    '  echo Falhou o download do agente. Verifica a ligacao a internet.',
+    '  echo  [ERRO] Nao deu para descarregar o agente.',
+    '  echo  Verifica a ligacao a internet e tenta outra vez.',
     '  pause',
     '  exit /b 1',
     ')',
-    'echo Agente a arrancar em segundo plano (a janela fecha em instantes).',
-    'start "" /b powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%PS%" -Site "%SITE%" -Token "%TOKEN%"',
-    'timeout /t 2 >nul',
-    'exit /b',
+    'echo.',
+    'echo  A ligar ao site... deixa esta janela aberta.',
+    'echo  fecha esta janela para desligar o PC do site.',
+    'echo.',
+    'powershell -NoProfile -ExecutionPolicy Bypass -File "%PS%" -Site "%SITE%" -Token "%TOKEN%"',
+    'echo.',
+    'echo  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.',
+    'pause',
     '',
   ].join('\r\n');
 }

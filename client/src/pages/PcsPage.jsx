@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   Cpu,
   Monitor,
@@ -286,17 +286,13 @@ export default function PcsPage() {
   const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(null) // linha expandida
 
-  /* leitura real do PC (PowerShell) */
-  const [podeLocal, setPodeLocal] = useState(null) // null = ainda não sabemos
+  /* ligação do agente — o PC liga-se ao site via LOCAUS-PC.bat */
   const [agenteOnline, setAgenteOnline] = useState(false)
-  /* aviso temporário quando a app liga o PC */
-  const [pcLigado, setPcLigado] = useState(false)
+  const [agenteVerificado, setAgenteVerificado] = useState(false)
   const [lendo, setLendo] = useState(false)
   const [passos, setPassos] = useState([])
   const [lido, setLido] = useState(null) // { passos, spec, details }
   const [erroLeitura, setErroLeitura] = useState(null)
-  /* portão: bloqueia a aba até se correr a leitura — só aparece se NÃO tem specs guardadas */
-  const [portao, setPortao] = useState(false)
 
   /* Novo: flag se o utilizador já tem specs guardadas (evita correr o script ao entrar) */
   const [temSpecsProprias, setTamSpecsProprias] = useState(false)
@@ -343,28 +339,18 @@ export default function PcsPage() {
 
   useEffect(carregar, [])
 
-  /* dá para correr o PowerShell no PC onde está o servidor? */
-  const agenteAntes = useRef(false)
+  /* o site pergunta ao agente se o PC está ligado */
   useEffect(() => {
     let vivo = true
     const ver = () => {
-      fetch('/api/pc/estado', { headers: authHeaders() })
+      fetch('/api/agente/estado', { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (!vivo || !d) return
-          setPodeLocal(Boolean(d.podeLocal))
-          const online = Boolean(d.online)
-          setAgenteOnline(online)
-          /* se o PC acabou de ligar, mostra o aviso */
-          if (online && !agenteAntes.current) {
-            setPcLigado(true)
-            setTimeout(() => setPcLigado(false), 5000)
-          }
-          agenteAntes.current = online
+          setAgenteOnline(Boolean(d.online))
+          setAgenteVerificado(true)
         })
-        .catch(() => {
-          if (vivo) setPodeLocal((v) => (v == null ? false : v))
-        })
+        .catch(() => {})
     }
     ver()
     const iv = setInterval(ver, 2000)
@@ -374,7 +360,7 @@ export default function PcsPage() {
     }
   }, [])
 
-  const podeExecutar = Boolean(podeLocal || agenteOnline)
+  const podeExecutar = agenteOnline
 
   /* descarrega o LOCAUS-PC.bat (gerado pelo site com o token do user)
      — o user dá duplo clique e o PC liga-se ao site */
@@ -383,7 +369,14 @@ export default function PcsPage() {
     if (aLigarApp) return
     setALigarApp(true)
     try {
-      const r = await fetch('/api/pc/ligar', { headers: authHeaders() })
+      const s = await fetch('/api/agente/sessao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ nome: 'PC Windows' }),
+      })
+      const sd = await s.json().catch(() => ({}))
+      if (!s.ok || !sd.token) throw new Error(sd.error || 'Não deu para criar a ligação.')
+      const r = await fetch(`/api/agente/baixar?token=${encodeURIComponent(sd.token)}`)
       if (!r.ok) throw new Error('Não deu para gerar o ficheiro.')
       const blob = await r.blob()
       const url = URL.createObjectURL(blob)
@@ -401,13 +394,6 @@ export default function PcsPage() {
     }
   }
 
-  /* ao entrar na aba: se o site está na nuvem (sem PowerShell local) e o
-     PC não está ligado via app, mostra o aviso. Some sozinho quando a
-     app liga o PC (agenteOnline vira true). */
-  useEffect(() => {
-    if (podeLocal === false && !agenteOnline) setPortao(true)
-  }, [podeLocal, agenteOnline])
-
   /* corre o script no PC do servidor e mostra o que ele vai fazendo */
   const lerPC = async () => {
     if (lendo) return
@@ -417,56 +403,47 @@ export default function PcsPage() {
     setPassos([])
 
     try {
-      /* cria o job no PC embutido */
-      const r = await fetch('/api/pc/trabalho', {
+      /* cria o trabalho (na nuvem: via agente; local: direto) */
+      const r = await fetch('/api/users/specs/deep', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ tipo: 'specs' }),
+        body: JSON.stringify({}),
       })
       const d = await r.json().catch(() => ({}))
-      if (!r.ok || !d.job) {
-        setErroLeitura(d.erro || d.error || 'Não deu para ler o PC.')
+      /* modo local: a resposta já vem completa */
+      if (r.ok && !d.async) {
+        if (Array.isArray(d.passos) && d.passos.length) setPassos(d.passos)
+        setLido(d)
+        carregar()
+        if (!d.details?.bench) setTimeout(() => correrBench(), 500)
         return
       }
-      const jobId = d.job.id
+      if (!r.ok || !d.jobId) {
+        setErroLeitura(d.error || d.erro || 'Não deu para ler o PC.')
+        return
+      }
+      const jobId = d.jobId
 
-      /* segue o job até terminar */
+      /* segue o trabalho até terminar (o agente executa no PC) */
       const limite = Date.now() + 180000
       while (Date.now() < limite) {
         await new Promise((ok) => setTimeout(ok, 2000))
-        const jr = await fetch(`/api/pc/trabalhos/${jobId}`, { headers: authHeaders() })
-        const jd = await jr.json().catch(() => ({}))
-        if (!jr.ok || !jd.job) {
-          setErroLeitura('Perdi a leitura do PC. Tenta outra vez.')
-          return
-        }
-        const p = (Array.isArray(jd.job.logs) ? jd.job.logs : [])
-          .map((x) => String((x && x.l) || ''))
-          .filter((x) => /^\[passo\]/i.test(x))
-          .map((x) => x.replace(/^\[passo\]\s*/i, ''))
-        if (p.length) setPassos(p)
-
-        const st = jd.job.status
-        if (st === 'pendente' || st === 'a_correr') continue
-        if (st !== 'concluido') {
-          setErroLeitura(jd.job.erro || 'A leitura do PC falhou.')
-          return
-        }
-
-        /* guarda o resultado */
         const fr = await fetch('/api/users/specs/deep/fim', {
           method: 'POST',
-          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobId, resultado: jd.job.resultado }),
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ jobId }),
         })
         const fd = await fr.json().catch(() => ({}))
+        if (fd.pendente) {
+          if (Array.isArray(fd.passos) && fd.passos.length) setPassos(fd.passos)
+          continue
+        }
         if (!fr.ok) {
-          setErroLeitura(fd.error || 'Não deu para guardar a leitura.')
+          setErroLeitura(fd.error || 'A leitura do PC falhou.')
           return
         }
         if (Array.isArray(fd.passos) && fd.passos.length) setPassos(fd.passos)
         setLido(fd)
-        setPortao(false)
         carregar()
         if (!fd.details?.bench) setTimeout(() => correrBench(), 500)
         return
@@ -561,11 +538,11 @@ export default function PcsPage() {
     return <Badge tom="ok">Normal</Badge>
   }
 
-  /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
-  /* A página só abre quando a app deste utilizador está ligada ao site
-     (ou quando o servidor corre com PowerShell local). A verificação
-     corre a cada 2s — quando a app liga, a página desbloqueia sozinha. */
-  if (podeLocal !== null && !podeExecutar) {
+  /* ---- GATE: o LOCAUS-PC.bat é obrigatório ---- */
+  /* A página só abre quando o PC deste utilizador está ligado ao site
+     (via LOCAUS-PC.bat). A verificação corre a cada 2s — quando o .bat
+     liga o PC, a página desbloqueia sozinha. */
+  if (agenteVerificado && !agenteOnline) {
     return (
       <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
         <div className="mx-auto max-w-md">
@@ -581,9 +558,9 @@ export default function PcsPage() {
               PCs / Specs
             </h1>
             <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
-              Esta página precisa de falar com o teu Windows. O site está ligado ao PC
-              onde corre o servidor — clica em <b className="text-white">Ler o meu PC</b>
-              para leres as specs e desbloqueares a página.
+              Para leres as specs, o teu Windows tem de estar ligado ao site.
+              Descarrega o <b className="text-white">LOCAUS-PC.bat</b>, abre-o e deixa a
+              janela aberta — o site deteta a ligação e desbloqueia esta página.
             </p>
             <button
               type="button"
@@ -595,8 +572,8 @@ export default function PcsPage() {
               {aLigarApp ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
-              O servidor corre no teu PC — as specs são lidas diretamente do Windows,
-              sem apps nem ficheiros para descarregar.
+              A ligação é só tua: liga o teu Windows à tua conta do site. Sem abrires o
+              ficheiro, ninguém (nem tu) consegue ler as specs.
             </p>
           </motion.div>
         </div>
@@ -607,83 +584,6 @@ export default function PcsPage() {
   return (
     <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
       <div className="mx-auto max-w-6xl">
-        {/* ---------------- PORTÃO: bloqueia a aba até ler o PC ---------------- */}
-        <AnimatePresence>
-          {portao && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
-            >
-              <motion.div
-                initial={{ scale: 0.94, y: 18 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.96, opacity: 0 }}
-                className="glass w-full max-w-lg rounded-2xl p-5 ring-1 ring-white/10"
-              >
-                <div className="mb-3 flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/15">
-                    <Lock className="h-5 w-5 text-violet-400" />
-                  </span>
-                  <div>
-                    <h2 className="font-display text-lg font-black uppercase text-white">
-                      Ligar o teu PC ao site
-                    </h2>
-                    <p className="mt-1 text-[13px] leading-relaxed text-gray-400">
-                      Para ler as specs e usar as ferramentas, o site fala diretamente com
-                      o teu Windows. Clica em <b className="text-white">Ler o meu PC</b> —
-                      fica ligado em segundo plano e este aviso desaparece sozinho.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {podeExecutar && (
-                    <button
-                      onClick={lerPC}
-                      disabled={lendo}
-                      className="flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
-                    >
-                      <RefreshCcw className={`h-4 w-4 ${lendo ? 'animate-spin' : ''}`} />
-                      {lendo ? 'A ler o PC…' : 'Ler o meu PC agora'}
-                    </button>
-                  )}
-                </div>
-
-                <div className="mt-3">
-                  <TerminalPassos passos={passos} aCorrer={lendo} />
-                </div>
-
-                {erroLeitura && (
-                  <p className="mt-3 text-[13px] font-bold text-red-400">{erroLeitura}</p>
-                )}
-
-                {/* só depois de falhar dá para passar (sem a app não há como ler) */}
-                {erroLeitura && !lendo && (
-                  <button
-                    onClick={() => setPortao(false)}
-                    className="mt-3 w-full text-center text-[11px] font-bold uppercase tracking-wider text-gray-400 transition-colors hover:text-gray-300"
-                  >
-                    Entrar mesmo assim
-                  </button>
-                )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* aviso temporário: a app ligou o PC */}
-        {pcLigado && (
-          <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
-            </span>
-            <span><b>PC ligado</b> — o servidor está a comunicar com o teu Windows. Podes usar tudo.</span>
-          </div>
-        )}
-
         {/* ---------------- Cabeçalho ---------------- */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}

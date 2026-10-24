@@ -314,9 +314,9 @@ export default function FerramentasPage() {
 
   useEffect(carregar, [])
 
-  /* ---------- PC embutido (servidor local executa no próprio PC) ---------- */
+  /* ---------- PC remoto (agente via .bat) ---------- */
   const pedirTrabalho = async (payload) => {
-    const r = await fetch('/api/pc/trabalho', {
+    const r = await fetch('/api/agente/jobs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
@@ -333,7 +333,7 @@ export default function FerramentasPage() {
     setNomeCorrer(job.nome || 'Ferramenta')
     setEstado((prev) => ({
       ...(prev || {}),
-      aCorrer: job.ferramentaId || job.id,
+      aCorrer: job.ferramenta_id || job.id,
       logs: [],
       fim: null,
       erro: null,
@@ -344,16 +344,16 @@ export default function FerramentasPage() {
     }))
     const iv = setInterval(async () => {
       try {
-        const r = await fetch(`/api/pc/trabalhos/${job.id}`, { headers: authHeaders() })
+        const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
         const d = await r.json().catch(() => ({}))
         if (!r.ok || !d.job) return
         const j = d.job
         const aAndar = j.status === 'pendente' || j.status === 'a_correr'
         setEstado((prev) => ({
           ...(prev || {}),
-          aCorrer: aAndar ? (j.ferramentaId || job.id) : null,
+          aCorrer: aAndar ? (j.ferramenta_id || job.id) : null,
           logs: Array.isArray(j.logs) ? j.logs : [],
-          fim: j.fimEm,
+          fim: j.fim_em,
           erro: j.erro || null,
           codigo: j.codigo,
           codigoTexto: j.codigo == null ? null : (j.codigo === 0 ? 'sucesso' : (j.erro || `código ${j.codigo}`)),
@@ -376,7 +376,7 @@ export default function FerramentasPage() {
     const fim = Date.now() + timeoutMs
     while (Date.now() < fim) {
       await new Promise((r) => setTimeout(r, 1200))
-      const r = await fetch(`/api/pc/trabalhos/${job.id}`, { headers: authHeaders() })
+      const r = await fetch(`/api/agente/jobs/${job.id}`, { headers: authHeaders() })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.job) throw new Error('Perdi o trabalho do PC.')
       if (!['pendente', 'a_correr'].includes(d.job.status)) return d.job
@@ -402,7 +402,14 @@ export default function FerramentasPage() {
     setALigarPc(true)
     setAviso(null)
     try {
-      const r = await fetch('/api/pc/ligar', { headers: authHeaders() })
+      const s = await fetch('/api/agente/sessao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ nome: 'PC Windows' }),
+      })
+      const sd = await s.json().catch(() => ({}))
+      if (!s.ok || !sd.token) throw new Error(sd.error || 'Não deu para criar a ligação.')
+      const r = await fetch(`/api/agente/baixar?token=${encodeURIComponent(sd.token)}`)
       if (!r.ok) throw new Error('Não deu para gerar o ficheiro.')
       const blob = await r.blob()
       const url = URL.createObjectURL(blob)
@@ -413,7 +420,7 @@ export default function FerramentasPage() {
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
-      setAviso('LOCAUS-PC.bat descarregado. Abre-o (duplo clique) e o PC liga-se ao site.')
+      setAviso('LOCAUS-PC.bat descarregado. Abre-o (duplo clique) e deixa a janela aberta para o PC ficar ligado ao site.')
     } catch (e) {
       setAviso(e.message || 'Não deu para descarregar o ficheiro.')
     } finally {
@@ -433,23 +440,14 @@ export default function FerramentasPage() {
     }
   }
 
-  /* o site pergunta ao PC embutido se está ligado */
-  const agenteAntes = useRef(false)
-  const [pcLigado, setPcLigado] = useState(false)
+  /* o site pergunta ao agente se o PC está ligado */
   useEffect(() => {
     let vivo = true
     const atualizar = async () => {
       try {
-        const r = await fetch('/api/pc/estado', { headers: authHeaders() })
+        const r = await fetch('/api/agente/estado', { headers: authHeaders() })
         const d = await r.json().catch(() => ({}))
         if (!vivo || !r.ok) return
-        const online = Boolean(d.online)
-        /* se o PC acabou de ligar, mostra o aviso */
-        if (online && !agenteAntes.current) {
-          setPcLigado(true)
-          setTimeout(() => setPcLigado(false), 5000)
-        }
-        agenteAntes.current = online
         setAgente((prev) => ({ ...prev, ...d }))
         if (d.online && !discosPedidosRef.current) {
           discosPedidosRef.current = true
@@ -601,7 +599,7 @@ export default function FerramentasPage() {
     const alvoJob = jobId || agente?.job?.id
     if (dados?.podeLocal === false && alvoJob) {
       try {
-        const r = await fetch(`/api/pc/trabalhos/${alvoJob}/cancelar`, {
+        const r = await fetch(`/api/agente/jobs/${alvoJob}/cancelar`, {
           method: 'POST',
           headers: authHeaders(),
         })
@@ -712,9 +710,9 @@ export default function FerramentasPage() {
               Ferramentas Windows
             </h1>
             <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
-              Esta página precisa de falar com o teu Windows. O site está ligado ao PC
-              onde corre o servidor — clica em <b className="text-white">Ligar PC</b>
-              para desbloqueares as ferramentas.
+              Para usares as ferramentas, o teu Windows tem de estar ligado ao site.
+              Descarrega o <b className="text-white">LOCAUS-PC.bat</b>, abre-o e deixa a
+              janela aberta — o site deteta a ligação e desbloqueia esta página.
             </p>
             <button
               type="button"
@@ -726,8 +724,8 @@ export default function FerramentasPage() {
               {aLigarPc ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
-              A app é só tua: liga o teu Windows ao teu login do site. Ninguém vê as
-              ferramentas sem a própria app ligada.
+              A ligação é só tua: liga o teu Windows à tua conta do site. Sem abrires o
+              ficheiro, ninguém (nem tu) consegue usar as ferramentas.
             </p>
           </motion.div>
         </div>
@@ -751,19 +749,10 @@ export default function FerramentasPage() {
           </p>
         </motion.div>
 
-        {/* aviso: PC ligado ao servidor local */}
-        <div className="mb-4 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-[13px] text-violet-200">
-          <b>Modo local ativo.</b> O servidor corre no teu PC — as ferramentas executam diretamente no Windows.
-        </div>
-
-        {/* aviso temporário: a app ligou o PC */}
-        {pcLigado && (
-          <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
-            </span>
-            <span><b>PC ligado</b> — o servidor está a comunicar com o teu Windows. Podes usar as ferramentas.</span>
+        {/* aviso: PC ligado ao servidor local (só no modo local) */}
+        {podeLocal === true && (
+          <div className="mb-4 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-[13px] text-violet-200">
+            <b>Modo local ativo.</b> O servidor corre no teu PC — as ferramentas executam diretamente no Windows.
           </div>
         )}
 
