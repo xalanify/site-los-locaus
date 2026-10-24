@@ -26,6 +26,7 @@ import {
   BarChart3,
   RefreshCcw,
   ScrollText,
+  Bell,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
@@ -285,6 +286,27 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       fetchR6()
     } catch {
       setR6Msg('Sem ligação ao servidor.')
+    }
+  }
+
+  /* ---------- Notificação de teste (ver o push no telemóvel) ---------- */
+  const [testeNotifMsg, setTesteNotifMsg] = useState(null)
+  const testarNotificacao = async () => {
+    setTesteNotifMsg(null)
+    try {
+      const res = await fetch('/api/admin/teste-notificacao', {
+        method: 'POST',
+        headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const d = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setTesteNotifMsg({ ok: true, texto: `Notificação de teste enviada (utilizador ${d.userId}). Verifica o telemóvel/PC.` })
+      } else {
+        setTesteNotifMsg({ ok: false, texto: d.error || 'Não foi possível enviar a notificação de teste.' })
+      }
+    } catch {
+      setTesteNotifMsg({ ok: false, texto: 'Sem ligação ao servidor.' })
     }
   }
 
@@ -1339,6 +1361,31 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 )}
               </div>
               {r6Msg && <p className="mt-2 text-[13px] font-bold text-red-400">{r6Msg}</p>}
+            </div>
+
+            {/* ---------- Notificações: teste de push ---------- */}
+            <div className="glass mt-4 rounded-xl p-4">
+              <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
+                <Bell className="h-4 w-4 text-amber-400" /> Notificações
+              </h3>
+              <p className="text-[13px] text-gray-400">
+                Envia uma notificação de teste (sino + push no telemóvel) para testares as notificações.
+              </p>
+              <button
+                onClick={testarNotificacao}
+                className="mt-3 rounded-full bg-amber-500 px-5 py-2 text-sm font-black text-black transition-colors hover:bg-amber-400"
+              >
+                Enviar notificação de teste
+              </button>
+              {testeNotifMsg && (
+                <p
+                  className={`mt-2 text-[12px] font-bold ${
+                    testeNotifMsg.ok ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {testeNotifMsg.texto}
+                </p>
+              )}
             </div>
 
             {/* barra de progresso + logs */}
