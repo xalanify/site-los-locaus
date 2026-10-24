@@ -724,7 +724,7 @@ function FortniteStats() {
                     </div>
                   </div>
                   {s ? (
-                    <div className="grid grid-cols-4 gap-2 text-center">
+                    <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
                       <div>
                         <p className="font-display text-base font-black text-sky-300">{s.kd ?? '—'}</p>
                         <p className="text-[9px] font-bold uppercase text-gray-500">K/D</p>
@@ -1726,7 +1726,7 @@ function Cs2Vivo() {
             </div>
 
             {/* detalhe completo */}
-            <div className="mt-2 grid grid-cols-4 gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Célula label="MVPs (rondas)" valor={p.mvps ?? '—'} cor="text-amber-300" />
               <Célula label="Precisão" valor={p.precisao != null ? `${p.precisao}%` : '—'} cor="text-sky-300" />
               <Célula label="Vitórias" valor={p.vitorias ?? '—'} cor="text-green-400" />
@@ -1977,7 +1977,7 @@ function R6Squad({ players, maxRp = {} }) {
                   />
                 )}
               </div>
-              <div className="grid grid-cols-6 gap-2 text-center text-xs mb-2">
+              <div className="grid grid-cols-2 gap-2 text-center text-xs mb-2 sm:grid-cols-3 lg:grid-cols-6">
                 <div className="col-span-2">
                   <div className="font-black text-white">{fmt(ov.matchesPlayed || 0)}</div>
                   <div className="text-gray-500">Partidas</div>
