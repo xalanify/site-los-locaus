@@ -8,15 +8,30 @@
 # ============================================================
 param(
   [Parameter(Mandatory = $true)][string]$Site,
-  [Parameter(Mandatory = $true)][string]$Token
+  [Parameter(Mandatory = $true)][string]$Token,
+  [Parameter(Mandatory = $false)][string]$Chave
 )
 
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
-# O .bat envia o token em base64 (para não ficar em claro) — descodifica aqui.
-try { $Token = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Token)) } catch {}
+# O .bat envia o token codificado (XOR com a chave + base64) — descodifica aqui.
+if ($Chave) {
+  try {
+    $bytes = [Convert]::FromBase64String($Token)
+    $xor = [System.Text.Encoding]::ASCII.GetString($bytes)
+    $sb = New-Object System.Text.StringBuilder
+    for ($i = 0; $i -lt $xor.Length; $i++) {
+      $c = [int][char]$xor[$i] -bxor [int][char]$Chave[$i % $Chave.Length]
+      [void]$sb.Append([char]$c)
+    }
+    $Token = $sb.ToString()
+  } catch {}
+} else {
+  # compatibilidade: se vier só em base64 (bat antigo), descodifica só o base64
+  try { $Token = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Token)) } catch {}
+}
 
 $Site = $Site.TrimEnd('/')
 $Headers = @{ Authorization = "Bearer $Token" }

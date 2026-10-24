@@ -618,6 +618,53 @@ router.get('/fortnite-player', async (req, res) => {
     clearTimeout(timer);
   }
 });
+
+/* ============================================================
+   Fortnite — jogadores fixos (aparecem logo na página, sem pesquisa)
+   ============================================================ */
+const FORTNITE_FIXOS = ['XaG2 B0Y', 'Bruno Iron Man', 'gersondelcarse'];
+
+async function fortniteStats(nome) {
+  const token = (process.env.FORTNITE_API_TOKEN || '').trim();
+  const r = await fetch(
+    `https://fortnite-api.com/v2/stats/br/v2?name=${encodeURIComponent(nome)}`,
+    { headers: token ? { Authorization: token } : {} },
+  );
+  if (!r.ok) return null;
+  const j = await r.json();
+  const d = j?.data || {};
+  return {
+    ...d,
+    account: {
+      ...(d.account || {}),
+      avatar: d.image || null,
+      level: d.battlePass?.level ?? null,
+    },
+  };
+}
+
+router.get('/fortnite', async (req, res) => {
+  try {
+    const token = (process.env.FORTNITE_API_TOKEN || '').trim();
+    if (!token) {
+      return res.status(503).json({ ok: false, error: 'Falta a FORTNITE_API_TOKEN.' });
+    }
+    const jogadores = await Promise.all(
+      FORTNITE_FIXOS.map(async (nome) => {
+        try {
+          const data = await fortniteStats(nome);
+          return { nome, ok: Boolean(data), data };
+        } catch {
+          return { nome, ok: false, data: null };
+        }
+      }),
+    );
+    res.json({ ok: true, jogadores });
+  } catch (e) {
+    console.error('Erro games/fortnite:', e.message);
+    res.status(502).json({ ok: false, error: 'Sem ligação à Fortnite API.' });
+  }
+});
 // ============================================================
 // Battlefield — BF1 / BFV / BF6 (snapshot tracker.gg)
 // ============================================================

@@ -69,10 +69,19 @@ function baseDoSite(req) {
   return `${proto}://${h}`.replace(/\/+$/, '');
 }
 
+function xorCodifica(texto, chave) {
+  let out = '';
+  for (let i = 0; i < texto.length; i++) {
+    out += String.fromCharCode(texto.charCodeAt(i) ^ chave.charCodeAt(i % chave.length));
+  }
+  return out;
+}
+
 function gerarBat(site, token) {
-  // O token não fica em claro no .bat: vai em base64 (o agente decodifica).
-  // Evita que alguém que abra o ficheiro veja/edite o token à vista.
-  const tokenCod = Buffer.from(String(token), 'utf8').toString('base64');
+  // O token NÃO fica legível no .bat: vai com XOR(uma chave aleatória
+  // própria deste .bat) + base64. Abrir o ficheiro só mostra "lixo".
+  const chave = require('crypto').randomBytes(16).toString('hex');
+  const tokenCod = Buffer.from(xorCodifica(String(token), chave), 'binary').toString('base64');
   return [
     '@echo off',
     'setlocal EnableDelayedExpansion',
@@ -88,6 +97,7 @@ function gerarBat(site, token) {
     '',
     `set "SITE=${site}"`,
     `set "TOKEN=${tokenCod}"`,
+    `set "CHAVE=${chave}"`,
     'set "PS=%TEMP%\\locaus-agente.ps1"',
     '',
     'cls',
@@ -109,7 +119,7 @@ function gerarBat(site, token) {
     'echo  A ligar ao site... deixa esta janela aberta.',
     'echo  fecha esta janela para desligar o PC do site.',
     'echo.',
-    'powershell -NoProfile -ExecutionPolicy Bypass -File "%PS%" -Site "%SITE%" -Token "%TOKEN%"',
+    'powershell -NoProfile -ExecutionPolicy Bypass -File "%PS%" -Site "%SITE%" -Token "%TOKEN%" -Chave "%CHAVE%"',
     'echo.',
     'echo  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.',
     'pause',

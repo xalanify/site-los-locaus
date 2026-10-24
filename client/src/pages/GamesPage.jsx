@@ -611,6 +611,14 @@ function FortniteStats() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fixos, setFixos] = useState([])
+
+  useEffect(() => {
+    fetch('/api/games/fortnite')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setFixos(Array.isArray(d?.jogadores) ? d.jogadores : []))
+      .catch(() => {})
+  }, [])
 
   const search = async (e) => {
     e?.preventDefault()
@@ -680,6 +688,69 @@ function FortniteStats() {
           <p className="mt-2 text-center text-sm text-red-400">{error}</p>
         )}
       </form>
+
+      {/* Jogadores do esquadrão (fixos) */}
+      {fixos.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-400">
+            <Users className="h-4 w-4" /> Esquadrão
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {fixos.map((j) => {
+              const dd = j.data
+              const s = dd?.stats?.all?.overall
+              return (
+                <motion.div
+                  key={j.nome}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass rounded-2xl p-4"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    {dd?.account?.avatar ? (
+                      <img src={dd.account.avatar} alt="" className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-violet-500/20 font-black text-violet-300">
+                        {(dd?.account?.name || j.nome).slice(0, 1).toUpperCase()}
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate font-display text-sm font-black text-white">
+                        {dd?.account?.name || j.nome}
+                      </p>
+                      <p className="text-[10px] font-bold text-gray-500">
+                        Nível {dd?.account?.level ?? '—'}
+                      </p>
+                    </div>
+                  </div>
+                  {s ? (
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div>
+                        <p className="font-display text-base font-black text-sky-300">{s.kd ?? '—'}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">K/D</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-violet-300">{fmt(s.kills)}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-yellow-300">{fmt(s.wins)}</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Vitórias</p>
+                      </div>
+                      <div>
+                        <p className="font-display text-base font-black text-green-300">{s.winRate?.toFixed(1) ?? '—'}%</p>
+                        <p className="text-[9px] font-bold uppercase text-gray-500">Win%</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500">Perfil não encontrado ou sem dados.</p>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Results */}
       {d && (
