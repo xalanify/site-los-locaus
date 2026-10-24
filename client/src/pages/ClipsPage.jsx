@@ -1325,7 +1325,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             </div>
             <button
               onClick={openForm}
-              className="flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-600"
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-violet-900/30 transition-all hover:brightness-110 hover:shadow-violet-800/40"
             >
               <Plus className="h-4 w-4" /> Publicar clip
             </button>
