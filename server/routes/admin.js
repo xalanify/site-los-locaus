@@ -625,6 +625,7 @@ router.post('/teste-notificacao', requireAdmin, async (req, res) => {
       title: '🔔 Notificação de teste',
       body: 'Se estás a ver isto, as notificações funcionam!',
       link: '/notificacoes',
+      image: '/icon-512.png',
     });
     res.json({ ok: Boolean(id), userId: uid, push: require('../notify').pushAtivo() });
   } catch (error) {

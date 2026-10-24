@@ -38,6 +38,7 @@ async function notify({
   title,
   body = '',
   link = null,
+  image = null,
 }) {
   if (!userId) return null;
   if (actorId && Number(actorId) === Number(userId)) return null; // não se avisa a si próprio
@@ -49,7 +50,7 @@ async function notify({
          VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       )
       .run(userId, actorId || null, type, entity, entityId, title, body, link);
-    enviarPush({ userId, title, body, link }).catch(() => {});
+    enviarPush({ userId, title, body, link, image }).catch(() => {});
     return Number(r.lastInsertRowid);
   } catch (e) {
     console.error('notify:', e.message);
@@ -58,7 +59,7 @@ async function notify({
 }
 
 /** Envia o mesmo aviso a todos os dispositivos registados. */
-async function enviarPush({ userId, title, body, link }) {
+async function enviarPush({ userId, title, body, link, image = null }) {
   if (!pushPronto) return;
   const db = getDb();
   let subs = [];
@@ -71,7 +72,7 @@ async function enviarPush({ userId, title, body, link }) {
   }
   if (!subs.length) return;
 
-  const payload = JSON.stringify({ title, body, link });
+  const payload = JSON.stringify({ title, body, link, image });
   await Promise.all(
     subs.map(async (s) => {
       try {

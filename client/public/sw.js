@@ -69,18 +69,18 @@ self.addEventListener('fetch', (e) => {
 /* ---------------- Web Push ---------------- */
 
 self.addEventListener('push', (e) => {
-  let dados = { title: 'Ashow e Jazer', body: '', link: '/' };
+  let dados = { title: 'Locaus', body: '', link: '/' };
   try {
     if (e.data) dados = { ...dados, ...e.data.json() };
   } catch {
     if (e.data) dados.body = e.data.text();
   }
   e.waitUntil(
-    self.registration.showNotification(dados.title || 'Ashow e Jazer', {
+    self.registration.showNotification(dados.title || 'Locaus', {
       body: dados.body || '',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      image: '/icon-512.png',
+      image: dados.image || '/icon-512.png',
       tag: 'locaus',
       renotify: false,
       data: { link: dados.link || '/' },

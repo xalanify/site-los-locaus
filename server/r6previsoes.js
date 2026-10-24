@@ -220,7 +220,7 @@ async function upsertJogo(db, j) {
 
 async function resolverPrevisoes(db) {
   const acabados = await db
-    .prepare("SELECT id, team_a, team_b, winner FROM r6_matches WHERE status = 3 AND winner IS NOT NULL")
+    .prepare("SELECT id, team_a, team_b, team_a_logo, team_b_logo, winner FROM r6_matches WHERE status = 3 AND winner IS NOT NULL")
     .all();
   let resolvidas = 0;
   for (const m of acabados) {
@@ -243,6 +243,8 @@ async function resolverPrevisoes(db) {
           title: acertou ? 'Acertaste na previsão!' : 'Desta vez falhaste',
           body: `${m.team_a || 'Equipa A'} vs ${m.team_b || 'Equipa B'}`,
           link: '/previsoes',
+          // a imagem da equipa que ganhou aparece na notificação (telemóvel)
+          image: m.winner === 'a' ? m.team_a_logo : m.winner === 'b' ? m.team_b_logo : null,
         });
       } catch {
         // a notificação não pode impedir o resultado de ficar guardado

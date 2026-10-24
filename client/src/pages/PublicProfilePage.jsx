@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import Estado from '../components/Estado'
-import { BadgeGem, BADGES, devLabelClass, distincoesOverclock } from '../components/BadgeGem'
+import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
@@ -163,7 +163,11 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="truncate font-display text-xl font-black uppercase text-white">
+                <span
+                  className={`truncate font-display text-xl font-black uppercase ${
+                    temPrevisao1(badges) ? nomeDouradoClass : 'text-white'
+                  }`}
+                >
                   {p.username}
                 </span>
                 {temDev && (
