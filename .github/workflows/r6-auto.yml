@@ -1,0 +1,38 @@
+name: Atualizar R6 (Ubisoft)
+
+# Corre a cada 2 horas e atualiza server/data/r6-ubisoft.json com as
+# estatísticas do esquadrão via API oficial da Ubisoft. Depois faz commit
+# + push, o que dispara o redeploy da Vercel automaticamente.
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Atualizar R6 (Ubisoft)
+        env:
+          UBI_EMAIL: ${{ secrets.UBI_EMAIL }}
+          UBI_PASSWORD: ${{ secrets.UBI_PASSWORD }}
+          R6_UBI_MIN: '15'
+        run: node scripts/atualizar-r6.js
+
+      - name: Commit e push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/data/r6-ubisoft.json
+          git commit -m "chore: atualizar estatísticas R6 (automático)" || echo "sem mudanças"
+          git push
