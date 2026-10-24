@@ -263,6 +263,51 @@ function estado() {
   };
 }
 
+/* ---------------- lado do agente (PC remoto via .bat) ----------------
+   O agente PowerShell (pc-agente.ps1) corre no PC do user e fala
+   com estas funções: apanha o próximo trabalho do seu uid, envia
+   logs a andar e o resultado no fim. Os jobs são os mesmos do modo
+   local — a diferença é quem os executa (o PC do user, não o
+   servidor). */
+
+function proximo(uid) {
+  const alvo = [...jobs.values()].find(
+    (j) => j.status === 'pendente' && j.quem === 'agente' && j.uid === uid,
+  );
+  if (!alvo) return { ok: true, job: null, encerrar: false };
+  alvo.status = 'a_correr';
+  alvo.inicioEm = new Date().toISOString();
+  return { ok: true, job: publico(alvo, true), encerrar: false };
+}
+
+function anexarLogs(id, uid, linhas) {
+  const j = jobs.get(Number(id));
+  if (!j || j.uid !== uid) return { ok: false, cancelar: true };
+  anexar(j, linhas);
+  return { ok: true, cancelar: j.cancelar };
+}
+
+function controlo(id, uid) {
+  const j = jobs.get(Number(id));
+  if (!j || j.uid !== uid) return { ok: false, cancelar: false, encerrar: true };
+  return { ok: true, cancelar: Boolean(j.cancelar), encerrar: false };
+}
+
+function finalizar(id, uid, { status, codigo, erro, logs, saida, resultado }) {
+  const j = jobs.get(Number(id));
+  if (!j || j.uid !== uid) return { ok: false, erro: 'Trabalho não encontrado.' };
+  if (['concluido', 'erro', 'cancelado'].includes(j.status)) return { ok: true, resultado: j.resultado };
+  if (Array.isArray(logs) && logs.length) anexar(j, logs);
+  const st = ['concluido', 'erro', 'cancelado'].includes(status) ? status : 'concluido';
+  j.status = st;
+  j.codigo = Number.isFinite(Number(codigo)) ? Number(codigo) : null;
+  j.erro = erro ? String(erro).slice(0, 500) : null;
+  j.fimEm = new Date().toISOString();
+  j.proc = null;
+  j.resultado = resultado || extrairResultado(j.tipo, saida, j.logs);
+  return { ok: true, resultado: j.resultado };
+}
+
 /* limpeza periódica (jobs antigos saem da memória) */
 setInterval(() => {
   const agora = Date.now();
@@ -273,4 +318,4 @@ setInterval(() => {
   }
 }, 60 * 1000).unref();
 
-module.exports = { criarJob, obter, cancelar, estado };
+module.exports = { criarJob, obter, cancelar, estado, proximo, anexarLogs, controlo, finalizar };

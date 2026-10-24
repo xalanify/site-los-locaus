@@ -376,18 +376,24 @@ export default function PcsPage() {
 
   const podeExecutar = Boolean(podeLocal || agenteOnline)
 
-  /* verifica se o PC está ligado (servidor local) */
+  /* descarrega o LOCAUS-PC.bat (gerado pelo site com o token do user)
+     — o user dá duplo clique e o PC liga-se ao site */
   const [aLigarApp, setALigarApp] = useState(false)
   const ligarApp = async () => {
     if (aLigarApp) return
     setALigarApp(true)
     try {
-      const r = await fetch('/api/pc/estado', { headers: authHeaders() })
-      const d = await r.json().catch(() => ({}))
-      if (r.ok && d.online) {
-        setPcLigado(true)
-        setTimeout(() => setPcLigado(false), 5000)
-      }
+      const r = await fetch('/api/pc/ligar', { headers: authHeaders() })
+      if (!r.ok) throw new Error('Não deu para gerar o ficheiro.')
+      const blob = await r.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'LOCAUS-PC.bat'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
     } catch {
       /* sem rede */
     } finally {
@@ -585,8 +591,8 @@ export default function PcsPage() {
               disabled={aLigarApp}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
             >
-              {podeExecutar ? <RefreshCcw className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-              {podeExecutar ? 'Ler o meu PC agora' : 'PC a ligar…'}
+              {aLigarApp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarApp ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
               O servidor corre no teu PC — as specs são lidas diretamente do Windows,

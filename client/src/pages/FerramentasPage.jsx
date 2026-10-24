@@ -395,21 +395,27 @@ export default function FerramentasPage() {
     } catch { /* sem discos: o seletor fica vazio */ }
   }
 
+  /* descarrega o LOCAUS-PC.bat (gerado pelo site com o token do user)
+     — o user dá duplo clique e o PC liga-se ao site */
   const ligarPc = async () => {
     if (aLigarPc) return
     setALigarPc(true)
     setAviso(null)
     try {
-      /* verifica se o PC está ligado (servidor local) */
-      const r = await fetch('/api/pc/estado', { headers: authHeaders() })
-      const d = await r.json().catch(() => ({}))
-      if (r.ok && d.online) {
-        setAviso('PC ligado! O servidor está a comunicar com o teu Windows.')
-      } else {
-        setAviso('O PC está ligado ao servidor local. Podes usar as ferramentas.')
-      }
+      const r = await fetch('/api/pc/ligar', { headers: authHeaders() })
+      if (!r.ok) throw new Error('Não deu para gerar o ficheiro.')
+      const blob = await r.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'LOCAUS-PC.bat'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      setAviso('LOCAUS-PC.bat descarregado. Abre-o (duplo clique) e o PC liga-se ao site.')
     } catch (e) {
-      setAviso(e.message || 'Não deu para verificar o PC.')
+      setAviso(e.message || 'Não deu para descarregar o ficheiro.')
     } finally {
       setALigarPc(false)
     }
@@ -716,8 +722,8 @@ export default function FerramentasPage() {
               disabled={aLigarPc}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-violet-500 disabled:opacity-60"
             >
-              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
-              {aLigarPc ? 'A verificar…' : 'Ligar PC'}
+              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarPc ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
             </button>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
               A app é só tua: liga o teu Windows ao teu login do site. Ninguém vê as
