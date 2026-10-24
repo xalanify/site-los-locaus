@@ -461,6 +461,7 @@ router.get('/r6/links', requireAdmin, async (req, res) => {
           ? {
               nick,
               url: `https://r6.tracker.network/profile/pc/${encodeURIComponent(nick)}`,
+              operadores: `https://r6.tracker.network/profile/pc/${encodeURIComponent(nick)}/operators`,
             }
           : null;
       })

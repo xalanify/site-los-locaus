@@ -1435,15 +1435,27 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                       <p className="text-[12px] text-gray-500">Sem jogadores em r6-jogadores.json.</p>
                     ) : (
                       r6Links.map((l) => (
-                        <a
-                          key={l.nick}
-                          href={l.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-bold text-gray-200 hover:bg-violet-500/30 hover:text-white"
-                        >
+                        <span key={l.nick} className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[12px] font-bold text-gray-200">
                           {l.nick}
-                        </a>
+                          <a
+                            href={l.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full bg-violet-500/30 px-2 py-0.5 text-[10px] text-violet-100 hover:bg-violet-500/50"
+                          >
+                            perfil
+                          </a>
+                          {l.operadores && (
+                            <a
+                              href={l.operadores}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-full bg-sky-500/30 px-2 py-0.5 text-[10px] text-sky-100 hover:bg-sky-500/50"
+                            >
+                              operadores
+                            </a>
+                          )}
+                        </span>
                       ))
                     )}
                   </div>
