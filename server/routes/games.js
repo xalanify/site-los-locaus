@@ -580,7 +580,7 @@ router.get('/fortnite-player', async (req, res) => {
   const token = (process.env.FORTNITE_API_TOKEN || '').trim();
   try {
     const r = await fetch(
-      `https://fortnite-api.com/v2/stats?name=${encodeURIComponent(nome)}`,
+      `https://fortnite-api.com/v2/stats/br/v2?name=${encodeURIComponent(nome)}`,
       {
         signal: controller.signal,
         headers: token ? { Authorization: token } : {},
@@ -590,29 +590,24 @@ router.get('/fortnite-player', async (req, res) => {
       return res.status(503).json({
         error: token
           ? 'O token da Fortnite API não é válido. Confirma o FORTNITE_API_TOKEN no server/.env.'
-          : 'A Fortnite API agora pede um token de acesso gratuito. Configura FORTNITE_API_TOKEN no server/.env (pede-se no Discord da fortnite-api.com).',
+          : 'A Fortnite API pede um token de acesso gratuito. Configura FORTNITE_API_TOKEN no server/.env (obtém-se em dash.fortnite-api.com, após entrar no Discord discord.gg/fortniteapi).',
       });
     }
     if (r.status === 404) return res.status(404).json({ error: `Não encontramos "${nome}".` });
     if (!r.ok) throw new Error(`fortnite-api ${r.status}`);
     const j = await r.json();
     const d = j?.data || {};
-    const gl = d.stats?.all || {};
+    // Endpoint atual (/v2/stats/br/v2): data.stats.all.{overall,solo,duo,squad}.
+    // Ajustamos account.avatar/level (vêm noutros campos) para o frontend.
     const payload = {
       ok: true,
-      nome: d.account?.name || nome,
-      nivelPasse: d.battlePass?.level ?? null,
-      geral: {
-        vitórias: gl.overall?.wins ?? gl.solos?.wins ?? null,
-        kills: gl.overall?.kills ?? gl.solos?.kills ?? null,
-        kd: gl.overall?.kd ?? gl.solos?.kd ?? null,
-        partidas: gl.overall?.matches ?? gl.solos?.matches ?? null,
-        maxKillsNum: gl.overall?.top1 ?? gl.solos?.top1 ?? null,
-      },
-      modos: {
-        solos: gl.solos || null,
-        duplas: gl.duos || null,
-        esquadrões: gl.squads || null,
+      data: {
+        ...d,
+        account: {
+          ...(d.account || {}),
+          avatar: d.image || null,
+          level: d.battlePass?.level ?? null,
+        },
       },
     };
     BF_LIVE_CACHE.set(chave, { t: Date.now(), v: payload });

@@ -650,8 +650,6 @@ function FortniteStats() {
 
   const d = data?.data
   const stats = d?.stats?.all?.overall
-  const br = d?.stats?.br?.overall
-  const zero = d?.stats?.zero_build?.overall
 
   return (
     <div className="space-y-5">
@@ -706,63 +704,20 @@ function FortniteStats() {
             </div>
           </motion.div>
 
-          {(stats || br || zero) && (
+          {stats && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {stats && (
-                <>
-                  <Card label="Vitórias" valor={fmt(stats.wins)} icon={Trophy} cor="text-yellow-300" />
-                  <Card label="Partidas" valor={fmt(stats.matches)} icon={Gamepad2} />
-                  <Card label="K/D" valor={stats.kd?.toFixed(2) ?? '—'} icon={Target} cor="text-sky-300" />
-                  <Card label="Win %" valor={`${stats.winRate?.toFixed(1) ?? '—'}%`} icon={TrendingUp} cor="text-green-300" />
-                  <Card label="Kills" valor={fmt(stats.kills)} icon={Crosshair} cor="text-violet-300" />
-                  <Card label="Top 10" valor={fmt(stats.top10)} icon={Medal} cor="text-amber-300" />
-                  <Card label="K/partida" valor={stats.kpg?.toFixed(2) ?? '—'} icon={Sparkles} cor="text-purple-300" />
-                  <Card label="Minutos jogados" valor={fmt(stats.minutesPlayed)} icon={Clock} />
-                </>
-              )}
+              <Card label="Vitórias" valor={fmt(stats.wins)} icon={Trophy} cor="text-yellow-300" />
+              <Card label="Partidas" valor={fmt(stats.matches)} icon={Gamepad2} />
+              <Card label="K/D" valor={stats.kd?.toFixed(2) ?? '—'} icon={Target} cor="text-sky-300" />
+              <Card label="Win %" valor={`${stats.winRate?.toFixed(1) ?? '—'}%`} icon={TrendingUp} cor="text-green-300" />
+              <Card label="Kills" valor={fmt(stats.kills)} icon={Crosshair} cor="text-violet-300" />
+              <Card label="Top 10" valor={fmt(stats.top10)} icon={Medal} cor="text-amber-300" />
+              <Card label="K/partida" valor={stats.killsPerMatch?.toFixed(2) ?? '—'} icon={Sparkles} cor="text-purple-300" />
+              <Card label="Minutos jogados" valor={fmt(stats.minutesPlayed)} icon={Clock} />
             </div>
           )}
 
-          {(br || zero) && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {br && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-2xl p-4 border border-emerald-500/30"
-                >
-                  <h4 className="mb-3 flex items-center gap-2 text-sm font-black text-emerald-300">
-                    <Target className="h-4 w-4" /> Battle Royale
-                  </h4>
-                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
-                    <div><p className="font-black text-white">{fmt(br.wins)}</p><p className="text-[10px] text-gray-500">Vitórias</p></div>
-                    <div><p className="font-black text-sky-300">{br.kd?.toFixed(2) ?? '—'}</p><p className="text-[10px] text-gray-500">K/D</p></div>
-                    <div><p className="font-black text-violet-300">{fmt(br.kills)}</p><p className="text-[10px] text-gray-500">Kills</p></div>
-                    <div><p className="font-black text-green-300">{br.winRate?.toFixed(1) ?? '—'}%</p><p className="text-[10px] text-gray-500">Win%</p></div>
-                  </div>
-                </motion.div>
-              )}
-              {zero && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-2xl p-4 border border-purple-500/30"
-                >
-                  <h4 className="mb-3 flex items-center gap-2 text-sm font-black text-purple-300">
-                    <Sparkles className="h-4 w-4" /> Zero Build
-                  </h4>
-                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
-                    <div><p className="font-black text-white">{fmt(zero.wins)}</p><p className="text-[10px] text-gray-500">Vitórias</p></div>
-                    <div><p className="font-black text-sky-300">{zero.kd?.toFixed(2) ?? '—'}</p><p className="text-[10px] text-gray-500">K/D</p></div>
-                    <div><p className="font-black text-violet-300">{fmt(zero.kills)}</p><p className="text-[10px] text-gray-500">Kills</p></div>
-                    <div><p className="font-black text-green-300">{zero.winRate?.toFixed(1) ?? '—'}%</p><p className="text-[10px] text-gray-500">Win%</p></div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          )}
-
-          {!stats && !br && !zero && (
+          {!stats && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
