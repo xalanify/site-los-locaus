@@ -2051,7 +2051,7 @@ $removido = $false
 
 # 1) winget direto (não abre janelas: silencioso, força e purga)
 try {
-  $r = winget uninstall --id "${f.wingetId}" -e --silent --force --purge --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
+  $r = & $wingetExe uninstall --id "${f.wingetId}" -e --silent --force --purge --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
   if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] desinstalado pelo winget'; $removido = $true }
   else { Write-Output ("  winget nao saqueou (" + $LASTEXITCODE + ") - a limpar direto, estilo Revo.") }
 } catch { Write-Output ("  winget falhou: " + $_.Exception.Message) }
@@ -2194,6 +2194,9 @@ if ($continua) { $algumContinua = $true }
   });
 
   const cmd =
+    "# resolve o winget (pode nao estar no PATH quando o agente corre elevado)\n" +
+    "$wingetExe = (Get-Command winget.exe -ErrorAction SilentlyContinue).Source\n" +
+    "if (-not $wingetExe) { $wingetExe = Join-Path $env:LOCALAPPDATA 'Microsoft\\WindowsApps\\winget.exe' }\n" +
     '$algumContinua = $false\n' +
     blocos.join('\n') +
     "\nif ($algumContinua) { Write-Output 'Desinstalacao incompleta: alguns programas continuam instalados (ve os avisos acima).'; exit 1 } else { Write-Output 'Desinstalacao de todos os selecionados concluida.' }";
