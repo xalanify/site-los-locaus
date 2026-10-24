@@ -47,7 +47,11 @@ export default function InstalarApp() {
   const prompt = window.__ajInstallPrompt || null
 
   const instalar = async () => {
-    if (prompt) {
+    const ua = navigator.userAgent || ''
+    const brave = /Brave/i.test(ua) || (typeof navigator.brave !== 'undefined')
+    // No Brave o prompt nativo pode disparar mas falhar por causa dos Shields.
+    // Por isso, no Brave mostramos sempre as instruções manuais.
+    if (prompt && !brave) {
       try {
         await prompt.prompt()
         const escolha = await prompt.userChoice
@@ -55,10 +59,10 @@ export default function InstalarApp() {
       } catch {}
       return
     }
-    // Sem prompt nativo: iPhone -> instruções da Apple; outros -> menu do browser
-    const ua = navigator.userAgent || ''
     const ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)
-    setAjuda(ios ? 'ios' : 'manual')
+    if (brave) setAjuda('brave')
+    else if (ios) setAjuda('ios')
+    else setAjuda('manual')
   }
 
   const fechar = () => {
@@ -118,6 +122,17 @@ export default function InstalarApp() {
             <span>
               No iPhone: toca em <b className="text-white">Partilhar</b> e depois em{' '}
               <b className="text-white">Adicionar ao Ecrã Principal</b>.
+            </span>
+          </div>
+        )}
+
+        {ajuda === 'brave' && (
+          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-black/30 p-3 text-xs leading-relaxed text-gray-300">
+            <Share className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
+            <span>
+              No Brave a instalação nativa pode falhar por causa dos Shields. Toca no ícone do{' '}
+              <b className="text-white">leão</b> (Shields) na barra de endereço, desativa os Shields
+              para este site, e depois usa o menu (⋮) → <b className="text-white">Instalar aplicação</b>.
             </span>
           </div>
         )}
