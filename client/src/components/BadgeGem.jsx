@@ -320,7 +320,11 @@ export function BadgeGem({ badge, size = 56 }) {
             fontWeight="900"
             letterSpacing="-1"
             fill={r6 ? '#FF4D63' : '#FFFFFF'}
-            filter={r6 ? `drop-shadow(0 0 3px #FF1F3D)` : `drop-shadow(0 0 3px rgba(255,255,255,.65))`}
+            style={{
+              filter: r6
+                ? 'drop-shadow(0 0 3px #FF1F3D)'
+                : 'drop-shadow(0 0 3px rgba(255,255,255,.65))',
+            }}
           >
             {r6 ? 'R6' : 'CS2'}
           </text>
