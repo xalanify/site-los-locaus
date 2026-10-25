@@ -304,17 +304,8 @@ export function BadgeGem({ badge, size = 56 }) {
         {/* olhos de diabo (top1 / obsidian / fortnite) */}
         {!ic && !semChifres && (
           <g filter={olhoGlow ? `url(#og-${uid})` : undefined}>
-            {obsidian ? (
-              <>
-                <polygon points="22,47 51,60 47,71 24,60" fill={olhoFill} />
-                <polygon points="78,47 49,60 53,71 76,60" fill={olhoFill} />
-              </>
-            ) : (
-              <>
-                <polygon points="26,50 48,60 46,67 28,60" fill={olhoFill} />
-                <polygon points="74,50 52,60 54,67 72,60" fill={olhoFill} />
-              </>
-            )}
+            <polygon points="26,50 48,60 46,67 28,60" fill={olhoFill} />
+            <polygon points="74,50 52,60 54,67 72,60" fill={olhoFill} />
           </g>
         )}
 
