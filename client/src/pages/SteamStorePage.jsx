@@ -424,7 +424,7 @@ export default function SteamStorePage() {
           <button
             key={t.id}
             onClick={() => setAba(t.id)}
-            className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
+            className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2.5 text-[10px] font-black uppercase tracking-wider transition-colors sm:gap-2 sm:px-3 sm:text-[11px] ${
               aba === t.id
                 ? 'border-violet-400/40 bg-violet-500/20 text-white'
                 : 'border-white/10 bg-[#120d20]/80 text-gray-400 hover:text-white'
