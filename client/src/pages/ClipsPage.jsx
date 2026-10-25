@@ -23,6 +23,7 @@ import Estado from '../components/Estado'
 import { BADGES, BadgeGem } from '../components/BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { authHeaders, mmss, parseTime } from '../lib/auth'
+import PageShell from '../components/PageShell'
 
 const TABS = [
   { id: 'todos', label: 'Todos' },
@@ -1304,8 +1305,8 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       : ''
 
   return (
-    <section className="min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row">
+    <PageShell>
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* ---------------- Conteúdo ---------------- */}
         <div className="min-w-0 flex-1">
           {/* Cabeçalho */}
@@ -1313,7 +1314,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             <div>
               <h1
                 className="font-black gradient-text"
-                style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
+                style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
               >
                 Clips e Publicações
               </h1>
@@ -1850,6 +1851,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           onProfile={onProfile}
         />
       )}
-    </section>
+    </PageShell>
   )
 }

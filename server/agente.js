@@ -20,7 +20,7 @@ const { getDb } = require('./database');
 const ferramentas = require('./ferramentas');
 
 const SESSAO_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias (renovado a cada heartbeat)
-const ONLINE_MS = 90 * 1000; // agente conta como ligado se falou nos últimos 90 s
+const ONLINE_MS = 30 * 1000; // agente conta como ligado se falou nos últimos 30 s
 
 const hashToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
 
@@ -38,8 +38,10 @@ async function garantirTabelas() {
         plataforma text,
         criado_em  timestamptz not null default now(),
         visto_em   timestamptz,
-        expira_em  timestamptz not null
+        expira_em  timestamptz not null,
+        encerrar   boolean not null default false
       );
+      ALTER TABLE public.agente_sessoes ADD COLUMN IF NOT EXISTS encerrar boolean NOT NULL DEFAULT false;
       CREATE INDEX IF NOT EXISTS agente_sessoes_user_idx ON public.agente_sessoes (user_id, criado_em DESC);
 
       CREATE TABLE IF NOT EXISTS public.agente_jobs (
@@ -79,8 +81,11 @@ async function criarSessao(userId, { nome, versao, plataforma } = {}) {
   if (!(await garantirTabelas())) throw new Error('Base de dados indisponível.');
   const db = getDb();
   // uma sessão ativa por utilizador: a anterior deixa de receber trabalhos
+  // e o agente antigo recebe ordem para sair
   await db
-    .prepare('UPDATE public.agente_sessoes SET expira_em = now() WHERE user_id = ? AND expira_em > now()')
+    .prepare(
+      'UPDATE public.agente_sessoes SET encerrar = true, expira_em = now() WHERE user_id = ? AND expira_em > now()',
+    )
     .run(userId);
 
   const token = crypto.randomBytes(32).toString('hex');
@@ -116,6 +121,9 @@ async function validarToken(token) {
 async function autenticar(token) {
   const s = await validarToken(token);
   if (!s) return null;
+  // Sessão mandada desligar: não renova nem conta como online. O agente
+  // ainda recebe "encerrar" no /proximo e fecha-se sozinho.
+  if (s.encerrar) return s;
   // renova a validade a cada heartbeat (sliding) — o .bat nunca expira
   // enquanto o agente fala com o site.
   const expira = new Date(Date.now() + SESSAO_MS).toISOString();
@@ -131,7 +139,7 @@ async function estado(userId) {
     .get(userId);
   if (!s) return { ok: true, online: false, sessao: null };
   const visto = s.visto_em ? new Date(s.visto_em).getTime() : 0;
-  const online = Date.now() - visto < ONLINE_MS;
+  const online = !s.encerrar && Date.now() - visto < ONLINE_MS;
   const job = await db
     .prepare(
       "SELECT id, tipo, ferramenta_id, nome, status, logs, resultado, erro, codigo, criado_em, inicio_em, fim_em FROM public.agente_jobs WHERE sessao_id = ? AND status IN ('pendente','a_correr') ORDER BY id DESC LIMIT 1",
@@ -154,10 +162,13 @@ async function estado(userId) {
 }
 
 async function encerrarSessao(userId) {
-  // "Desligar PC" só desliga (fica offline) — NÃO apaga o token.
-  // Assim o mesmo LOCAUS-PC.bat volta a ligar, sem descarregar de novo.
+  // "Desligar PC" desliga já e manda o agente sair. O token fica guardado,
+  // mas só volta a ligar quando o utilizador abrir o LOCAUS-PC.bat de novo
+  // (que cria uma sessão nova).
   await getDb()
-    .prepare('UPDATE public.agente_sessoes SET visto_em = null WHERE user_id = ? AND expira_em > now()')
+    .prepare(
+      'UPDATE public.agente_sessoes SET encerrar = true, visto_em = null WHERE user_id = ? AND expira_em > now()',
+    )
     .run(userId);
   return { ok: true };
 }
@@ -269,6 +280,7 @@ async function criarJob(userId, payload, soAdmin) {
 async function proximo(sessao) {
   if (!(await garantirTabelas())) return { ok: false, erro: 'Base de dados indisponível.' };
   const db = getDb();
+  if (sessao && sessao.encerrar) return { ok: true, job: null, encerrar: true };
   const r = await db
     .prepare(
       `UPDATE public.agente_jobs SET status = 'a_correr', inicio_em = now()

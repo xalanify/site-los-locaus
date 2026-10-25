@@ -15,6 +15,9 @@ import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass,
 import ClipCard from '../components/ClipCard'
 import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
+import PageShell from '../components/PageShell'
+import UserBanner from '../components/UserBanner'
+import { BANNERS, FUNDOS, bannerDe, classeFundo } from '../data/temasPerfil'
 
 /* ============================================================
    Perfil da conta — abre ao clicar no ícone de Conta.
@@ -43,7 +46,13 @@ export default function ProfilePage({
 }) {
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(false)
-  const [form, setForm] = useState({ game_nick: '', mouse: '', dpi: '' })
+  const [form, setForm] = useState({
+    game_nick: '',
+    mouse: '',
+    dpi: '',
+    banner_id: 'aurora',
+    background_id: '',
+  })
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
   const [removeAvatar, setRemoveAvatar] = useState(false)
@@ -104,7 +113,13 @@ export default function ProfilePage({
 
   const abrirEditar = () => {
     // game_nick mantém-se guardado (liga o TOP 1 KILL ao CS2) — invisível no perfil
-    setForm({ game_nick: me.game_nick || '', mouse: me.mouse || '', dpi: me.dpi || '' })
+    setForm({
+      game_nick: me.game_nick || '',
+      mouse: me.mouse || '',
+      dpi: me.dpi || '',
+      banner_id: me.banner_id || 'aurora',
+      background_id: me.background_id || '',
+    })
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     setAvatarPreview('')
@@ -171,6 +186,8 @@ export default function ProfilePage({
         game_nick: form.game_nick,
         mouse: form.mouse,
         dpi: form.dpi,
+        banner_id: form.banner_id,
+        background_id: form.background_id,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -203,18 +220,18 @@ export default function ProfilePage({
     'w-full rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15'
 
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
+  const tema = bannerDe(me.banner_id)
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:pt-28 sm:px-6">
-      <div className="mx-auto max-w-3xl">
+    <PageShell background={classeFundo(me.background_id)}>
         {/* ---------------- Saudação ---------------- */}
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 font-display font-black"
-          style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
+          className="mb-6 font-black gradient-text"
+          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
         >
-          Bem-vindo, <span className="text-violet-400">{me.username}</span>
+          Bem-vindo
         </motion.h1>
 
         {/* ---------------- Cartão da conta ---------------- */}
@@ -222,9 +239,13 @@ export default function ProfilePage({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="glass relative mb-8 overflow-hidden rounded-3xl border border-violet-500/40 p-5 sm:p-6"
-          style={{ boxShadow: '0 0 40px rgba(139,92,246,.15)' }}
+          className="glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6"
+          style={{
+            borderColor: `${tema.cor}66`,
+            boxShadow: `0 0 40px ${tema.cor}22, inset 0 0 0 1px ${tema.cor}18`,
+          }}
         >
+          <UserBanner bannerId={me.banner_id} className="absolute inset-x-0 top-0 h-1.5" />
           {/* letra fantasma ao fundo */}
           <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
             {me.username}
@@ -329,7 +350,7 @@ export default function ProfilePage({
           {/* editar foto (ficheiro) */}
           {edit && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-              <div className="glass w-full max-w-lg space-y-4 rounded-3xl border border-violet-500/30 p-6 shadow-2xl">
+              <div className="glass max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-violet-500/30 p-6 shadow-2xl">
               <p className="text-xs text-gray-400">
                 Escolhe uma foto tua — o site guarda o ficheiro e fica associado à tua conta.
               </p>
@@ -448,6 +469,68 @@ export default function ProfilePage({
                 </div>
               </div>
 
+              {/* Banner animado do perfil */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400">Banner do perfil</label>
+                <p className="mb-2 text-[11px] text-gray-500">
+                  O mesmo tema aparece no teu cartão em Membros e Membros online.
+                </p>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                  {BANNERS.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, banner_id: b.id }))}
+                      className={`rounded-xl border p-1.5 text-left transition-colors ${
+                        form.banner_id === b.id
+                          ? 'border-white/60 bg-white/10'
+                          : 'border-white/10 bg-black/20 hover:border-white/30'
+                      }`}
+                    >
+                      <span className={`perfil-banner perfil-banner-${b.id} block h-7 w-full rounded-md`} />
+                      <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
+                        {b.nome}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fundo da página do perfil */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400">Fundo da página</label>
+                <p className="mb-2 text-[11px] text-gray-500">
+                  Muda o ambiente quando alguém abre o teu perfil.
+                </p>
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                  {FUNDOS.map((f) => (
+                    <button
+                      key={f.id || 'padrao'}
+                      type="button"
+                      title={f.nome}
+                      onClick={() => setForm((f2) => ({ ...f2, background_id: f.id }))}
+                      className={`rounded-xl border p-1 transition-colors ${
+                        form.background_id === f.id
+                          ? 'border-white/60 bg-white/10'
+                          : 'border-white/10 bg-black/20 hover:border-white/30'
+                      }`}
+                    >
+                      <span
+                        className="block h-7 w-full rounded-md"
+                        style={{
+                          background: f.id
+                            ? `linear-gradient(135deg, ${f.cor}, #0b0716 70%)`
+                            : 'linear-gradient(135deg, #1b1230, #0b0716)',
+                        }}
+                      />
+                      <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
+                        {f.nome}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {err && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
                   {err}
@@ -551,7 +634,6 @@ export default function ProfilePage({
             Terminar sessão
           </button>
         </div>
-      </div>
-    </section>
+    </PageShell>
   )
 }

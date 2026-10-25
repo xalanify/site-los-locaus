@@ -27,6 +27,7 @@ import { CS2_TORNEIOS } from '../data/cs2Torneios'
 import { FORTNITE_TORNEIOS } from '../data/fortniteTorneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
+import PageShell from '../components/PageShell'
 
 const fmtDia = (iso) => {
   const d = new Date(iso)
@@ -970,7 +971,7 @@ export default function PrevisoesPage({ user }) {
   const minhaClass = classificacao.find((u) => u.id === Number(meuNome))
 
   return (
-    <div className="relative mx-auto w-full max-w-4xl px-2 pb-4 pt-14 sm:pt-16 lg:px-0 lg:pt-0">
+    <PageShell className="relative">
       {/* fundo com a imagem do jogo (a mesma dos Jogos/Estáticas) —
           escurecida para os cartões continuarem legíveis */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -982,6 +983,17 @@ export default function PrevisoesPage({ user }) {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612]/85 via-[#0a0612]/55 to-[#0a0612]/92" />
       </div>
       <div className="relative z-10">
+      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <h1
+          className="font-black gradient-text"
+          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
+        >
+          Previsões
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-gray-400">
+          Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade.
+        </p>
+      </motion.div>
 
       {/* seletor de jogo: Rainbow Six · CS2 · Fortnite */}
       <div className="mt-2 mb-4 grid grid-cols-3 gap-2">
@@ -990,7 +1002,7 @@ export default function PrevisoesPage({ user }) {
           className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
             jogo === 'r6'
               ? 'border-violet-400/40 bg-gradient-to-b from-violet-600/40 to-fuchsia-600/20 text-white shadow-lg shadow-violet-950/30'
-              : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
+              : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
           }`}
         >
           <Swords className="h-4 w-4 shrink-0" /> Rainbow Six
@@ -1000,7 +1012,7 @@ export default function PrevisoesPage({ user }) {
           className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
             jogo === 'cs2'
               ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/30 to-sky-900/20 text-white'
-              : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
+              : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
           }`}
         >
           <Target className="h-4 w-4 shrink-0" /> CS2
@@ -1013,7 +1025,7 @@ export default function PrevisoesPage({ user }) {
           className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
             jogo === 'fortnite'
               ? 'border-fuchsia-400/40 bg-gradient-to-b from-fuchsia-600/30 to-purple-900/20 text-white'
-              : 'border-white/10 bg-black/25 text-gray-400 hover:bg-white/5 hover:text-white'
+              : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
           }`}
         >
           <Flame className="h-4 w-4 shrink-0" /> Fortnite
@@ -1435,6 +1447,6 @@ export default function PrevisoesPage({ user }) {
         </>
       )}
       </div>
-    </div>
+    </PageShell>
   )
 }

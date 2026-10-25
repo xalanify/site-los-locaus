@@ -13,6 +13,7 @@ const router = express.Router();
 const RESERVED = new Set(['me', 'admin', 'login', 'register', 'novo', 'publicacoes', 'perfil']);
 const USER_RE = /^[\p{L}\p{N}_. -]{3,20}$/u;
 const NICK_RE = /^[\p{L}\p{N}_. -]{1,24}$/u;
+const TEMA_RE = /^[a-z0-9_-]{1,32}$/;
 
 /* ---------- fotos de perfil ----------
    O utilizador escolhe uma imagem; o servidor sobe-a para o
@@ -39,7 +40,7 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, name_color, name_effect
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -48,9 +49,22 @@ const profileOf = async (userId) => {
       game_nick: (row && row.game_nick) || null,
       mouse: (row && row.mouse) || null,
       dpi: (row && row.dpi) || null,
+      banner_id: (row && row.banner_id) || null,
+      background_id: (row && row.background_id) || null,
+      name_color: (row && row.name_color) || null,
+      name_effect: (row && row.name_effect) || null,
     };
   } catch {
-    return { avatar_url: null, game_nick: null, mouse: null, dpi: null };
+    return {
+      avatar_url: null,
+      game_nick: null,
+      mouse: null,
+      dpi: null,
+      banner_id: null,
+      background_id: null,
+      name_color: null,
+      name_effect: null,
+    };
   }
 };
 
@@ -264,7 +278,9 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasAvatar = Object.prototype.hasOwnProperty.call(body, 'avatar_url');
     const hasMouse = Object.prototype.hasOwnProperty.call(body, 'mouse');
     const hasDpi = Object.prototype.hasOwnProperty.call(body, 'dpi');
-    if (!hasNick && !hasAvatar && !hasMouse && !hasDpi) {
+    const hasBanner = Object.prototype.hasOwnProperty.call(body, 'banner_id');
+    const hasBackground = Object.prototype.hasOwnProperty.call(body, 'background_id');
+    if (!hasNick && !hasAvatar && !hasMouse && !hasDpi && !hasBanner && !hasBackground) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
 
@@ -319,6 +335,28 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       await db
         .prepare('UPDATE user_profiles SET dpi = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
         .run(safe, uid);
+    }
+
+    const guardarTema = async (campo, valor) => {
+      const id = String(valor || '').trim();
+      if (id && !TEMA_RE.test(id)) {
+        return res.status(400).json({ error: 'Tema inválido.' });
+      }
+      await db
+        .prepare(
+          `UPDATE user_profiles SET ${campo} = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?`,
+        )
+        .run(id || null, uid);
+      return null;
+    };
+
+    if (hasBanner) {
+      const erro = await guardarTema('banner_id', body.banner_id);
+      if (erro) return erro;
+    }
+    if (hasBackground) {
+      const erro = await guardarTema('background_id', body.background_id);
+      if (erro) return erro;
     }
 
     const user = await store.findById(uid);
@@ -537,7 +575,7 @@ router.get('/list', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi,
+        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
@@ -560,6 +598,8 @@ router.get('/list', attachAuth, async (req, res) => {
         avatar_url: r.avatar_url || null,
         mouse: r.mouse || null,
         dpi: r.dpi || null,
+        banner_id: r.banner_id || null,
+        background_id: r.background_id || null,
         online: Boolean(r.online),
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],

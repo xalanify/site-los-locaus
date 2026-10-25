@@ -794,17 +794,77 @@ function parsePreco(txt) {
    itens). A Steam limita muito o priceoverview (429), por isso esta
    tabela é a fonte principal e a Steam fica só como recurso. */
 const SKINPORT_TTL = 6 * 3600 * 1000;
-const skinport = { t: 0, mapa: null, aCarregar: null };
+const skinport = { t: 0, mapa: null, aCarregar: null, origem: null, atualizadoEm: null };
+
+/* Guarda a tabela de preços na base de dados. Na Vercel cada pedido
+   pode cair numa instância nova; sem isto, um falhanço da Skinport
+   deixava o inventário sem valores. */
+let tabelaPrecosOk = null;
+async function garantirTabelaPrecos() {
+  if (tabelaPrecosOk !== null) return tabelaPrecosOk;
+  try {
+    await require('../database').getDb().exec(
+      `CREATE TABLE IF NOT EXISTS public.cs2_precos (
+         id integer primary key,
+         data jsonb not null,
+         updated_at timestamptz not null default now()
+       )`,
+    );
+    tabelaPrecosOk = true;
+  } catch (e) {
+    console.warn('cs2_precos (tabela):', e.message);
+    tabelaPrecosOk = false;
+  }
+  return tabelaPrecosOk;
+}
+
+async function lerPrecosDb() {
+  if (!(await garantirTabelaPrecos())) return new Map();
+  try {
+    const row = await require('../database')
+      .getDb()
+      .prepare('SELECT data, updated_at FROM public.cs2_precos WHERE id = 1')
+      .get();
+    if (!row || !row.data) return new Map();
+    const obj = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+    skinport.atualizadoEm = row.updated_at || null;
+    return new Map(Object.entries(obj || {}));
+  } catch (e) {
+    console.warn('cs2_precos ler:', e.message);
+    return new Map();
+  }
+}
+
+async function guardarPrecosDb(mapa) {
+  if (!(await garantirTabelaPrecos()) || !mapa || !mapa.size) return;
+  try {
+    await require('../database')
+      .getDb()
+      .prepare(
+        `INSERT INTO public.cs2_precos (id, data, updated_at) VALUES (1, ?::jsonb, now())
+         ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+      )
+      .run(JSON.stringify(Object.fromEntries(mapa)));
+    skinport.atualizadoEm = new Date().toISOString();
+  } catch (e) {
+    console.warn('cs2_precos guardar:', e.message);
+  }
+}
 
 async function tabelaSkinport() {
   if (skinport.mapa && Date.now() - skinport.t < SKINPORT_TTL) return skinport.mapa;
   if (skinport.aCarregar) return skinport.aCarregar;
   skinport.aCarregar = (async () => {
-    for (let tentativa = 0; tentativa < 2; tentativa++) {
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
       try {
         const r = await fetch('https://api.skinport.com/v1/items?app_id=730&currency=EUR', {
-          headers: { 'User-Agent': 'SiteLosLocaus/1.0', Accept: 'application/json' },
-          signal: AbortSignal.timeout(20000),
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SiteLosLocaus/1.0',
+            Accept: 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'br, gzip, deflate',
+          },
+          signal: AbortSignal.timeout(30000),
         });
         if (!r.ok) throw new Error('skinport ' + r.status);
         const lista = await r.json();
@@ -815,13 +875,24 @@ async function tabelaSkinport() {
           const v = Number(it.min_price ?? it.suggested_price ?? it.median_price);
           if (Number.isFinite(v) && v > 0) mapa.set(nome, v);
         }
+        if (!mapa.size) throw new Error('skinport sem itens');
         skinport.mapa = mapa;
         skinport.t = Date.now();
+        skinport.origem = 'live';
+        await guardarPrecosDb(mapa);
         return mapa;
       } catch (e) {
         console.warn(`Skinport preços (tentativa ${tentativa + 1}):`, e.message);
-        if (tentativa === 0) await new Promise((ok) => setTimeout(ok, 400));
+        if (tentativa < 2) await new Promise((ok) => setTimeout(ok, 500 + tentativa * 500));
       }
+    }
+    // Skinport falhou: usa a última tabela boa guardada na BD
+    const dbMap = await lerPrecosDb();
+    if (dbMap.size) {
+      skinport.mapa = dbMap;
+      skinport.t = Date.now();
+      skinport.origem = 'db';
+      return dbMap;
     }
     return skinport.mapa || new Map();
   })().finally(() => {
@@ -931,6 +1002,8 @@ router.get('/cs2-inventario', async (req, res) => {
       valorEstimado: Number(valor.toFixed(2)),
       moeda: 'EUR',
       fonte: 'Skinport (mercado)',
+      precosAtualizadosEm: skinport.atualizadoEm || null,
+      fontePrecos: skinport.origem || null,
       topItens: precos.slice(0, 24),
       itens,
       itensListados: itens.length,

@@ -640,19 +640,34 @@ button[class~='bg-violet-500']:active {
    sidebar da esquerda e da coluna da direita, que ficam
    translúcidas para a foto se ver nos cantos.
    ============================================================ */
-/* Painéis fixos (sidebar + coluna direita): degradé violeta-escuro
-   para continuarem o roxo do centro em vez de barras pretas.*/
-.painel-fixo {
-  background: rgba(8, 5, 16, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* ---------- Moldura comum das páginas ---------- */
+.page-shell {
+  min-height: 100vh;
+  padding: 6.5rem 1rem 6rem;
+}
+.page-container {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+}
+@media (min-width: 640px) {
+  .page-shell {
+    padding: 7.5rem 1.5rem 6rem;
+  }
 }
 
-/* nos jogos: translúcidos para a foto do ecrã inteiro passar nos
-   cantos (a imagem fica FIXA atrás de tudo) */
+/* Painéis fixos (sidebar + coluna direita): fundo quase sólido
+   para os menus serem legíveis; a foto do jogo fica só como detalhe. */
+.painel-fixo {
+  background: rgba(8, 5, 16, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* nos jogos: continua legível, mas deixa passar um pouco da foto */
 body.in-jogo .painel-fixo {
-  background: rgba(8, 5, 16, 0.6) !important;
-  backdrop-filter: blur(2px);
+  background: rgba(8, 5, 16, 0.86) !important;
+  backdrop-filter: blur(6px);
 }
 
 /* ---------- Temática de cores por jogo (GamesPage) ---------- */
@@ -674,3 +689,125 @@ body::before {
   pointer-events: none;
 }
 body.in-jogo::before { display: none; }
+
+/* ============================================================
+   Temas de perfil — banners animados + fundos de página
+   ============================================================ */
+.perfil-banner {
+  --b1: #4c1d95;
+  --b2: #06b6d4;
+  --b3: #ec4899;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, var(--b1), var(--b2), var(--b3), var(--b1));
+  background-size: 300% 300%;
+  animation: bannerPan 9s ease infinite;
+}
+.perfil-banner.absolute { position: absolute !important; }
+.perfil-banner::before {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 90deg, transparent 0 38%, rgba(255,255,255,.28) 45%, transparent 52% 100%);
+  animation: bannerSweep 7s linear infinite;
+  opacity: .55;
+  pointer-events: none;
+}
+.perfil-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 3px);
+  opacity: .28;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.perfil-banner-aurora { --b1:#4c1d95; --b2:#06b6d4; --b3:#ec4899; }
+.perfil-banner-neon { --b1:#7c3aed; --b2:#ff2d95; --b3:#00e5ff; }
+.perfil-banner-fogo { --b1:#7f1d1d; --b2:#f97316; --b3:#facc15; }
+.perfil-banner-gelo { --b1:#0c4a6e; --b2:#38bdf8; --b3:#c7d2fe; }
+.perfil-banner-galaxia { --b1:#1e1b4b; --b2:#7c3aed; --b3:#db2777; }
+.perfil-banner-glitch { --b1:#083344; --b2:#22d3ee; --b3:#f0abfc; }
+.perfil-banner-ouro { --b1:#78350f; --b2:#f59e0b; --b3:#fde68a; }
+.perfil-banner-cyber { --b1:#052e16; --b2:#22c55e; --b3:#0ea5e9; }
+.perfil-banner-holo { --b1:#f472b6; --b2:#60a5fa; --b3:#a78bfa; }
+
+@keyframes bannerPan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes bannerSweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* fundos de página do perfil */
+.perfil-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: 220% 220%;
+  animation: fundoPan 22s ease infinite;
+}
+.perfil-fundo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6,4,12,.45), rgba(6,4,12,.88));
+}
+.perfil-fundo-aurora {
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(139,92,246,.55), transparent 48%),
+    radial-gradient(ellipse at 82% 22%, rgba(6,182,212,.35), transparent 46%),
+    radial-gradient(ellipse at 55% 90%, rgba(236,72,153,.3), transparent 50%),
+    linear-gradient(160deg, #090514, #0f0a22 55%, #07040f);
+}
+.perfil-fundo-neon {
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(255,45,149,.4), transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(0,229,255,.3), transparent 45%),
+    radial-gradient(ellipse at 50% 95%, rgba(124,58,237,.4), transparent 55%),
+    linear-gradient(180deg, #07040f, #0d0620);
+}
+.perfil-fundo-fogo {
+  background-image:
+    radial-gradient(ellipse at 20% 85%, rgba(249,115,22,.4), transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(239,68,68,.3), transparent 48%),
+    linear-gradient(180deg, #0b0507, #1a0a08 60%, #080304);
+}
+.perfil-fundo-gelo {
+  background-image:
+    radial-gradient(ellipse at 18% 15%, rgba(56,189,248,.38), transparent 48%),
+    radial-gradient(ellipse at 82% 78%, rgba(129,140,248,.3), transparent 50%),
+    linear-gradient(180deg, #040a12, #071627 60%, #03070d);
+}
+.perfil-fundo-galaxia {
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 38% 62%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 72% 28%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 84% 74%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 56% 86%, #fff 50%, transparent 51%),
+    radial-gradient(ellipse at 70% 20%, rgba(168,85,247,.45), transparent 50%),
+    radial-gradient(ellipse at 20% 80%, rgba(219,39,119,.3), transparent 50%),
+    linear-gradient(180deg, #04030b, #0b0620 60%, #03020a);
+  background-size: 300px 300px, 420px 420px, 500px 500px, 380px 380px, 460px 460px, 120% 120%, 120% 120%, 100% 100%;
+}
+.perfil-fundo-cyber {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(34,197,94,.07) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(0deg, rgba(34,197,94,.05) 0 1px, transparent 1px 46px),
+    radial-gradient(ellipse at 50% 10%, rgba(34,197,94,.25), transparent 55%),
+    linear-gradient(180deg, #030806, #06140c 60%, #020504);
+}
+.perfil-fundo-ouro {
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(245,158,11,.3), transparent 48%),
+    radial-gradient(ellipse at 82% 82%, rgba(253,230,138,.18), transparent 50%),
+    linear-gradient(180deg, #0b0803, #171004 60%, #070502);
+}
+@keyframes fundoPan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}

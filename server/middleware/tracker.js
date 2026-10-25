@@ -4,6 +4,7 @@ const { getDb } = require('../database');
    simultâneos fazem INSERT + UPDATEs que se cruzam e o Postgres
    aborta com "deadlock detected" (visitas perdidas + erros no log). */
 let fila = Promise.resolve();
+let ultimaLimpeza = 0;
 
 /** Não atrasa o pedido: corre em paralelo e só regista erros. */
 function trackVisitor(req, res, next) {
@@ -18,19 +19,23 @@ function trackVisitor(req, res, next) {
       // Registar visita
       await db.prepare('INSERT INTO visitors (ip, user_agent) VALUES (?, ?)').run(ip, userAgent);
 
-      // Marcar visitantes como offline se não visitaram nos últimos 5 minutos
-      await db
-        .prepare(
-          `UPDATE visitors SET is_online = 0
-           WHERE visited_at < now() - interval '5 minutes'`
-        )
-        .run();
+      // Limpeza pesada no máximo 1x por minuto (evita locks/deadlocks
+      // quando há muitos pedidos em paralelo ou várias instâncias).
+      if (Date.now() - ultimaLimpeza > 60_000) {
+        ultimaLimpeza = Date.now();
+        await db
+          .prepare(
+            `UPDATE visitors SET is_online = 0
+             WHERE is_online = 1 AND visited_at < now() - interval '5 minutes'`,
+          )
+          .run();
+      }
 
-      // Marcar este visitante como online (a registada há instantes)
+      // Marcar este visitante como online (o registado há instantes)
       await db
         .prepare(
           `UPDATE visitors SET is_online = 1
-           WHERE id = (SELECT MAX(id) FROM visitors WHERE ip = ?)`
+           WHERE id = (SELECT MAX(id) FROM visitors WHERE ip = ?)`,
         )
         .run(ip);
     })

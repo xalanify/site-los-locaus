@@ -4,6 +4,8 @@ import { Search, Loader2, X } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
+import PageShell from '../components/PageShell'
+import UserBanner from '../components/UserBanner'
 
 /* ============================================================
    Página de membros — lista toda a comunidade com o estado
@@ -29,8 +31,7 @@ export default function MembrosPage({ onProfile }) {
   const online = membros.filter((m) => m.online).length
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28 lg:px-8">
-      <div className="mx-auto max-w-2xl">
+    <PageShell>
         {/* Cabeçalho — mesmo padrão das outras páginas (título em gradiente) */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -85,15 +86,19 @@ export default function MembrosPage({ onProfile }) {
             )}
           </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="grid gap-2 lg:grid-cols-2">
             {filtrados.map((m) => {
               return (
                 <li key={m.id}>
                   <button
                     onClick={() => onProfile?.(m.username)}
-                    className="glass w-full overflow-hidden rounded-2xl text-left transition-colors hover:bg-white/5"
+                    className="glass relative w-full overflow-hidden rounded-2xl text-left transition-colors hover:bg-white/5"
                   >
-                    <span className="flex w-full items-center gap-3 px-4 py-3">
+                    <UserBanner
+                      bannerId={m.banner_id}
+                      className="absolute inset-x-0 top-0 h-1.5"
+                    />
+                    <span className="flex w-full items-center gap-3 px-4 pb-3 pt-4">
                       <span className="relative shrink-0">
                         <AvatarImg name={m.username} src={m.avatar_url} className="h-11 w-11" />
                         <span
@@ -150,7 +155,6 @@ export default function MembrosPage({ onProfile }) {
             })}
           </ul>
         )}
-      </div>
-    </section>
+    </PageShell>
   )
 }

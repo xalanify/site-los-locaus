@@ -14,6 +14,9 @@ import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass,
 import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
+import PageShell from '../components/PageShell'
+import UserBanner from '../components/UserBanner'
+import { bannerDe, classeFundo } from '../data/temasPerfil'
 
 /* ============================================================
    Perfil público com página própria — /perfil/:username
@@ -82,6 +85,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   }
 
   const p = data.profile || {}
+  const tema = bannerDe(p.banner_id)
   const clips = data.clips || []
   const souEu =
     p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
@@ -105,19 +109,16 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   /* margem de casal: 0/1 clip público da até aparecer cheio */
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:pt-28 sm:px-6">
-      <div className="mx-auto max-w-3xl">
+    <PageShell background={classeFundo(p.background_id)}>
         {/* ---------------- Saudação (igual ao perfil normal) ---------------- */}
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 font-display font-black"
-          style={{ fontSize: 'clamp(1.7rem, 6vw, 2.6rem)' }}
+          className="mb-6 font-black gradient-text"
+          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
         >
           {souEu ? (
-            <>
-              Bem-vindo, <span className="text-violet-400">{p.username}</span>
-            </>
+            <>Bem-vindo</>
           ) : (
             <>
               Perfil de <span className="text-violet-400">{p.username}</span>
@@ -130,9 +131,13 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="glass relative mb-8 overflow-hidden rounded-3xl border border-violet-500/40 p-5 sm:p-6"
-          style={{ boxShadow: '0 0 40px rgba(139,92,246,.15)' }}
+          className="glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6"
+          style={{
+            borderColor: `${tema.cor}66`,
+            boxShadow: `0 0 40px ${tema.cor}22, inset 0 0 0 1px ${tema.cor}18`,
+          }}
         >
+          <UserBanner bannerId={p.banner_id} className="absolute inset-x-0 top-0 h-1.5" />
           {/* letra fantasma ao fundo */}
           <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
             {p.username}
@@ -292,7 +297,6 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             </Link>
           </div>
         )}
-      </div>
-    </section>
+    </PageShell>
   )
 }

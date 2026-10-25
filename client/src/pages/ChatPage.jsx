@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
+import PageShell from '../components/PageShell'
 import { confirmar, toast } from '../components/Feedback'
 
 /* Temas do chat — só o admin muda; aplica a todos.
@@ -543,8 +544,15 @@ export default function ChatPage({ user }) {
   let diaAnterior = ''
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-2 pb-2 pt-14 sm:pt-16 lg:px-0 lg:pt-0">
-      <div className="flex h-[calc(100dvh-10.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40 sm:h-[calc(100dvh-11rem)] lg:h-[calc(100dvh-8.5rem)]" style={{ backgroundColor: t.bg + 'f2' }}>
+    <PageShell className="!pb-6">
+      <div className="mx-auto w-full max-w-4xl">
+      <h1
+        className="mb-4 font-black gradient-text"
+        style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
+      >
+        Chat
+      </h1>
+      <div className="flex h-[calc(100dvh-16rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40 sm:h-[calc(100dvh-17rem)]" style={{ backgroundColor: t.bg + 'f2' }}>
         {/* cabeçalho */}
         <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.06] to-transparent px-4 py-3">
           <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${t.grad} text-white shadow-lg`}>
@@ -1075,6 +1083,7 @@ export default function ChatPage({ user }) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </PageShell>
   )
 }

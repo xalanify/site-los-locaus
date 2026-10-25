@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Trophy, Users, Loader2 } from 'lucide-react'
 import { BADGES, BadgeGem, OVERCLOCK_BADGES } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
+import PageShell from '../components/PageShell'
 
 /* ============================================================
    Página Distinções
@@ -86,8 +87,7 @@ export default function UpdatesPage() {
   )
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
-      <div className="mx-auto max-w-5xl">
+    <PageShell>
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -117,7 +117,6 @@ export default function UpdatesPage() {
           'Ganhas conforme as specs reais: CPU acima do de fábrica, memórias com overclock e/ou XMP ligado.',
           OVERCLOCK_BADGES,
         )}
-      </div>
-    </section>
+    </PageShell>
   )
 }

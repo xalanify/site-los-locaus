@@ -21,6 +21,7 @@ const PASSOS = [
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS thumb text',
   // Experimentação: banner do perfil + cor/efeito do nome
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS background_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_effect text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS mouse text',
@@ -152,8 +153,10 @@ const PASSOS = [
      plataforma text,
      criado_em  timestamptz not null default now(),
      visto_em   timestamptz,
-     expira_em  timestamptz not null
+     expira_em  timestamptz not null,
+     encerrar   boolean not null default false
    )`,
+  'ALTER TABLE public.agente_sessoes ADD COLUMN IF NOT EXISTS encerrar boolean NOT NULL DEFAULT false',
   'CREATE INDEX IF NOT EXISTS agente_sessoes_user_idx ON public.agente_sessoes (user_id, criado_em DESC)',
   `CREATE TABLE IF NOT EXISTS public.agente_jobs (
      id            bigint generated always as identity primary key,

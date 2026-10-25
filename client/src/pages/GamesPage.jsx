@@ -2487,7 +2487,11 @@ function Cs2Vivo() {
                           Valor estimado
                         </p>
                         <p className="font-display text-xl font-black text-emerald-300">
-                          ~{Number(d.dados.valorEstimado || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} €
+                          {Number(d.dados.avaliados) > 0
+                            ? `~${Number(d.dados.valorEstimado || 0).toLocaleString('pt-PT', {
+                                minimumFractionDigits: 2,
+                              })} €`
+                            : '—'}
                         </p>
                       </div>
                     </div>
@@ -2495,8 +2499,9 @@ function Cs2Vivo() {
                       <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-400/25 bg-amber-500/[0.07] px-3 py-2.5">
                         <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                         <p className="text-[11px] leading-snug text-amber-100/90">
-                          Nenhum item deste inventário tem preço de mercado (itens não negociáveis
-                          ou sem cotação). O inventário completo aparece em baixo, com as imagens.
+                          {Number(d.dados.semPreco) > 0
+                            ? 'Os preços de mercado estão temporariamente indisponíveis. O inventário completo aparece em baixo, com as imagens.'
+                            : 'Nenhum item deste inventário é negociável na Steam, por isso não há valor de mercado. O inventário completo aparece em baixo.'}
                         </p>
                       </div>
                     )}
@@ -2595,6 +2600,9 @@ function Cs2Vivo() {
                         Estimativa de mercado: {d.dados.avaliados} de{' '}
                         {Number(d.dados.avaliados) + Number(d.dados.semPreco || 0)} itens negociáveis
                         com cotação ({d.dados.fonte || 'Skinport'}).
+                        {d.dados.precosAtualizadosEm
+                          ? ` Atualizado a ${new Date(d.dados.precosAtualizadosEm).toLocaleString('pt-PT')}.`
+                          : ''}
                       </p>
                     )}
                   </div>
@@ -3444,7 +3452,7 @@ export default function GamesPage() {
         >
           <h1
             className="mb-3 font-black gradient-text"
-            style={{ fontSize: 'clamp(1.9rem, 7vw, 3.2rem)' }}
+            style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
           >
             Jogos
           </h1>
