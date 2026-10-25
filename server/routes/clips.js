@@ -1045,7 +1045,7 @@ router.get('/:id/download-remoto', attachAuth, async (req, res) => {
     const yt = acharYtDlp();
     if (!yt) {
       return res.status(503).json({
-        error: 'A cópia para telemóvel ainda está a ser preparada. Tenta novamente daqui a pouco.',
+        error: 'O download de vídeos está disponível apenas no PC (com o yt-dlp instalado).',
       });
     }
 

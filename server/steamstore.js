@@ -180,12 +180,16 @@ async function procurar({ q, genero, maxpreco, ordenar }) {
   if (genero && GENEROS[genero]) params.category1 = String(GENEROS[genero]);
 
   let jogos = await pesquisa(params);
-  const limite = (Number(maxpreco) || 0) / 100;
-  if (limite > 0) {
-    jogos = jogos.filter((j) => {
-      const v = j.preco && j.preco.valor;
-      return j.preco && (j.preco.gratis || (v != null && v <= limite));
-    });
+  if (String(maxpreco) === '0') {
+    jogos = jogos.filter((j) => !j.preco || j.preco.gratis);
+  } else {
+    const limite = (Number(maxpreco) || 0) / 100;
+    if (limite > 0) {
+      jogos = jogos.filter((j) => {
+        const v = j.preco && j.preco.valor;
+        return j.preco && (j.preco.gratis || (v != null && v <= limite));
+      });
+    }
   }
   const dados = { ok: true, atualizadoEm: new Date().toISOString(), jogos };
   guardar(chave, dados);
