@@ -136,7 +136,12 @@ function ClipPreview({ clip, onOpen }) {
   if (!clip) return null
   return (
     <button
-      onClick={() => onOpen(clip)}
+      type="button"
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onOpen(clip)
+      }}
       className="group mt-2 flex w-full max-w-sm items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/30 p-2 text-left transition-colors hover:border-violet-400/40"
     >
       <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-violet-500/20">

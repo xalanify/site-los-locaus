@@ -30,7 +30,6 @@ const PcsPage = lazy(() => import('./pages/PcsPage'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
-const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
@@ -40,8 +39,26 @@ const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
 
 /* /perfil/:username — perfil público. O próprio user também vê o
    perfil público; para editar vai a /perfil/editar. */
-function RotaPerfil({ user, onRequestAuth, onProfile }) {
-  return <PublicProfilePage user={user} onRequestAuth={onRequestAuth} onProfile={onProfile} />
+function RotaPerfil({
+  user,
+  onRequestAuth,
+  onProfile,
+  onUserUpdate,
+  isAdmin,
+  onPanelClick,
+  onLogout,
+}) {
+  return (
+    <PublicProfilePage
+      user={user}
+      onRequestAuth={onRequestAuth}
+      onProfile={onProfile}
+      onUserUpdate={onUserUpdate}
+      isAdmin={isAdmin}
+      onPanelClick={onPanelClick}
+      onLogout={onLogout}
+    />
+  )
 }
 
 function App() {
@@ -287,19 +304,14 @@ function App() {
                     <Route
                       path="/perfil/editar"
                       element={
-                        <ProfilePage
-                          user={user}
-                          isAdmin={isAdmin}
-                          onLogout={handleUserLogout}
-                          onPanelClick={() => setShowAdminPanel(true)}
-                          onAuthClick={() => setShowAuth(true)}
-                          onUserUpdate={setUser}
-                          onProfile={openMember}
+                        <Navigate
+                          to={`/perfil/${encodeURIComponent(user?.username || '')}`}
+                          replace
                         />
                       }
                     />
-                    {/* Perfil público — todos os membros (incluindo o próprio)
-                        veem esta página; editar fica em /perfil/editar */}
+                    {/* Perfil público — todos os membros (incluindo o próprio).
+                        O editar abre a janela diretamente nesta página. */}
                     <Route
                       path="/perfil/:username"
                       element={

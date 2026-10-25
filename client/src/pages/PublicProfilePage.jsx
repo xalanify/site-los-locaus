@@ -1,15 +1,19 @@
 ﻿import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Clapperboard,
   Camera,
   Loader2,
   UserRoundX,
+  LayoutDashboard,
+  LogOut,
+  Sparkles,
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import Estado from '../components/Estado'
+import ProfilePage from './ProfilePage'
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
@@ -34,12 +38,21 @@ import { classesCard, classesNome } from '../data/nomeEfeitos'
    Só muda: é a página de OUTRO membro (ou fallback se o nome
    da rota não bater com o utilizador ligado).
    ============================================================ */
-export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
+export default function PublicProfilePage({
+  user,
+  onRequestAuth,
+  onProfile,
+  onUserUpdate,
+  isAdmin,
+  onPanelClick,
+  onLogout,
+}) {
   const { username } = useParams()
   const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [erro, setErro] = useState('')
   const [carregado, setCarregado] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const [ordemClips, setOrdemClips] = useState('recentes')
   const [jogoClips, setJogoClips] = useState('')
   const [posts, setPosts] = useState([])
@@ -286,14 +299,14 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                 }}
               />
               {souEu && (
-                <Link
-                  to="/perfil/editar"
-                  state={{ abrirEditar: true }}
+                <button
+                  type="button"
+                  onClick={() => setEditOpen(true)}
                   title="Editar foto e perfil"
                   className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
                 >
                   <Camera className="h-3 w-3" />
-                </Link>
+                </button>
               )}
             </div>
             <div className="min-w-0">
@@ -470,18 +483,62 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           )}
         </div>
 
-        {/* ---------------- Ação (só se a página for tua) ---------------- */}
+        {/* ---------------- Ações (só se a página for tua) ---------------- */}
         {souEu && (
           <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              to="/perfil/editar"
-              state={{ abrirEditar: true }}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={onPanelClick}
+                className="flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all hover:bg-violet-400 glow-violet"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Painel Admin
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
               className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Camera className="h-4 w-4" />
               Editar perfil
-            </Link>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
+              className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Sparkles className="h-4 w-4" />
+              Novidades
+            </button>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="flex items-center gap-2 rounded-xl border border-red-500/40 px-5 py-3 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/15"
+            >
+              <LogOut className="h-4 w-4" />
+              Terminar sessão
+            </button>
           </div>
+        )}
+        {souEu && editOpen && (
+          <ProfilePage
+            standaloneEdit
+            user={user}
+            isAdmin={isAdmin}
+            onLogout={onLogout}
+            onPanelClick={onPanelClick}
+            onAuthClick={onRequestAuth}
+            onProfile={onProfile}
+            onUserUpdate={(d) => {
+              setData((prev) =>
+                prev ? { ...prev, profile: { ...prev.profile, ...d } } : prev,
+              )
+              if (onUserUpdate) onUserUpdate(d)
+            }}
+            onCloseEdit={() => setEditOpen(false)}
+          />
         )}
         <ProfileMusic
           musicaId={p.musica_id}

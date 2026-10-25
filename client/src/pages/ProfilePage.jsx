@@ -76,10 +76,12 @@ export default function ProfilePage({
   onAuthClick,
   onUserUpdate,
   onProfile,
+  standaloneEdit = false,
+  onCloseEdit,
 }) {
   const location = useLocation()
   const [me, setMe] = useState(user)
-  const [edit, setEdit] = useState(false)
+  const [edit, setEdit] = useState(Boolean(standaloneEdit))
   const [previewTema, setPreviewTema] = useState(null)
   const [musicaQ, setMusicaQ] = useState('')
   const [musicaResultados, setMusicaResultados] = useState([])
@@ -144,6 +146,11 @@ export default function ProfilePage({
     setEdit(true)
   }, [location.state, me])
 
+  /* Modo "janela sobre o perfil público": ao fechar, avisa o pai */
+  useEffect(() => {
+    if (standaloneEdit && !edit) onCloseEdit?.()
+  }, [standaloneEdit, edit, onCloseEdit])
+
   const fundoAtual = fundoDe(me?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
   const dinamico = me?.dynamic_colors !== false && temFundo
@@ -166,6 +173,7 @@ export default function ProfilePage({
   const accentRgb = coresExtra?.rgb || fundoAtual.rgb
 
   useEffect(() => {
+    if (standaloneEdit) return
     const root = document.documentElement
     document.body.classList.toggle('profile-bg', temFundo)
     if (!dinamico) {
@@ -210,6 +218,7 @@ export default function ProfilePage({
   const fonteId = edit ? form.fonte_perfil : me?.fonte_perfil
   const fonte = fonteDe(fonteId)
   useEffect(() => {
+    if (standaloneEdit) return
     const body = document.body
     if (!fonte.familia) {
       body.classList.remove('profile-fonte')
@@ -254,6 +263,10 @@ export default function ProfilePage({
   }
 
   const fecharEditar = () => {
+    if (standaloneEdit) {
+      onCloseEdit?.()
+      return
+    }
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     setAvatarPreview('')
     setAvatarFile(null)
@@ -367,7 +380,7 @@ export default function ProfilePage({
       setAvatarPreview('')
       setRemoveAvatar(false)
       setEdit(false)
-      if (location.state?.abrirEditar && onProfile) onProfile(d2.username)
+      if (!standaloneEdit && location.state?.abrirEditar && onProfile) onProfile(d2.username)
     } catch {
       setErr('Sem ligação ao servidor.')
     } finally {
@@ -412,119 +425,8 @@ export default function ProfilePage({
     })
   }, [clipsMostrados, myPosts, filtroFeed])
 
-  return (
-    <PageShell background={estiloFundo(fundoAtual)}>
-        {/* ---------------- Saudação ---------------- */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 font-black gradient-text"
-          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-        >
-          Editar perfil
-        </motion.h1>
+  const modalEdicao = edit ? (
 
-        {/* ---------------- Cartão da conta ---------------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(me.name_effect)}`}
-          style={{
-            borderColor: `${corBorda}66`,
-            boxShadow: `0 0 40px ${corBorda}22, inset 0 0 0 1px ${corBorda}18`,
-          }}
-        >
-          <ProfileBanner bannerId={me.banner_id} />
-          {/* letra fantasma ao fundo */}
-          <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
-            {me.username}
-          </span>
-
-          <div className="relative flex items-center gap-4">
-            {/* foto de perfil com botão de editar */}
-            <div className="relative shrink-0">
-              <img
-                src={avatarSrc}
-                alt={me.username}
-                className="h-16 w-16 rounded-full object-cover"
-                style={{ boxShadow: `0 0 0 2px ${corBorda}99, 0 0 26px ${corBorda}66` }}
-                onError={(e) => {
-                  if (e.currentTarget.dataset.fb) return
-                  e.currentTarget.dataset.fb = '1'
-                  e.currentTarget.src = svgAvatar(me.username, '#8B5CF6')
-                }}
-              />
-              <button
-                onClick={abrirEditar}
-                title="Editar foto e perfil"
-                className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
-              >
-                <Camera className="h-3 w-3" />
-              </button>
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={`truncate font-display text-xl font-black uppercase ${
-                    nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
-                  }`}
-                >
-                  {me.username}
-                </span>
-              </div>
-              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
-                <span>Membro desde {criado}</span>
-                <span
-                  className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
-                  title="ID da conta"
-                >
-                  ID {me.display_id ?? me.id}
-                </span>
-              </p>
-              {me.mouse && (
-                <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">Mouse</span>
-                  {(() => {
-                    const m = (searchMice(me.mouse) || []).find(
-                      (x) => `${x.brand} ${x.model}` === me.mouse,
-                    )
-                    return m && m.logo ? (
-                      <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
-                    ) : null
-                  })()}
-                  <span className="font-bold">{me.mouse}</span>
-                  {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* distinções obtidas (DEV fica só ao lado do nome) */}
-          {minhas.length > 0 && (
-            <div className="relative mt-4 flex flex-wrap items-center gap-2.5">
-              {minhas.map((b) => (
-                <span
-                  key={b.id}
-                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 ring-1"
-                  style={{
-                    background: hexToRgba(b.color, 0.09),
-                    boxShadow: `0 0 14px ${hexToRgba(b.color, 0.25)}`,
-                    // eslint-disable-next-line react/forbid-dom-props
-                    ['--tw-ring-color']: hexToRgba(b.color, 0.4),
-                  }}
-                >
-                  <BadgeGem badge={b} size={18} />
-                  <span className="font-display text-[10.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
-                    {b.label}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* editar foto (ficheiro) */}
-          {edit && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
               <div className="glass max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-violet-500/30 p-6 shadow-2xl">
               <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
@@ -1048,7 +950,124 @@ export default function ProfilePage({
               </div>
             </div>
             </div>
+
+  ) : null
+
+  if (standaloneEdit) return modalEdicao
+
+  return (
+    <PageShell background={estiloFundo(fundoAtual)}>
+        {/* ---------------- Saudação ---------------- */}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 font-black gradient-text"
+          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
+        >
+          Editar perfil
+        </motion.h1>
+
+        {/* ---------------- Cartão da conta ---------------- */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(me.name_effect)}`}
+          style={{
+            borderColor: `${corBorda}66`,
+            boxShadow: `0 0 40px ${corBorda}22, inset 0 0 0 1px ${corBorda}18`,
+          }}
+        >
+          <ProfileBanner bannerId={me.banner_id} />
+          {/* letra fantasma ao fundo */}
+          <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
+            {me.username}
+          </span>
+
+          <div className="relative flex items-center gap-4">
+            {/* foto de perfil com botão de editar */}
+            <div className="relative shrink-0">
+              <img
+                src={avatarSrc}
+                alt={me.username}
+                className="h-16 w-16 rounded-full object-cover"
+                style={{ boxShadow: `0 0 0 2px ${corBorda}99, 0 0 26px ${corBorda}66` }}
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fb) return
+                  e.currentTarget.dataset.fb = '1'
+                  e.currentTarget.src = svgAvatar(me.username, '#8B5CF6')
+                }}
+              />
+              <button
+                onClick={abrirEditar}
+                title="Editar foto e perfil"
+                className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
+              >
+                <Camera className="h-3 w-3" />
+              </button>
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`truncate font-display text-xl font-black uppercase ${
+                    nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
+                  }`}
+                >
+                  {me.username}
+                </span>
+              </div>
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
+                <span>Membro desde {criado}</span>
+                <span
+                  className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
+                  title="ID da conta"
+                >
+                  ID {me.display_id ?? me.id}
+                </span>
+              </p>
+              {me.mouse && (
+                <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">Mouse</span>
+                  {(() => {
+                    const m = (searchMice(me.mouse) || []).find(
+                      (x) => `${x.brand} ${x.model}` === me.mouse,
+                    )
+                    return m && m.logo ? (
+                      <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
+                    ) : null
+                  })()}
+                  <span className="font-bold">{me.mouse}</span>
+                  {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* distinções obtidas (DEV fica só ao lado do nome) */}
+          {minhas.length > 0 && (
+            <div className="relative mt-4 flex flex-wrap items-center gap-2.5">
+              {minhas.map((b) => (
+                <span
+                  key={b.id}
+                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 ring-1"
+                  style={{
+                    background: hexToRgba(b.color, 0.09),
+                    boxShadow: `0 0 14px ${hexToRgba(b.color, 0.25)}`,
+                    // eslint-disable-next-line react/forbid-dom-props
+                    ['--tw-ring-color']: hexToRgba(b.color, 0.4),
+                  }}
+                >
+                  <BadgeGem badge={b} size={18} />
+                  <span className="font-display text-[10.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
+                    {b.label}
+                  </span>
+                </span>
+              ))}
+            </div>
           )}
+
+          {/* editar foto (ficheiro) */}
+          {modalEdicao}
         </motion.div>
 
         {/* ---------------- Feed: clips + mensagens ---------------- */}
