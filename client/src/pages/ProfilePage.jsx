@@ -66,6 +66,7 @@ export default function ProfilePage({
   const [musicaQ, setMusicaQ] = useState('')
   const [musicaResultados, setMusicaResultados] = useState([])
   const [musicaLoading, setMusicaLoading] = useState(false)
+  const [musicaAlterada, setMusicaAlterada] = useState(false)
   const [coresExtra, setCoresExtra] = useState(null)
   const [form, setForm] = useState({
     game_nick: '',
@@ -248,6 +249,7 @@ export default function ProfilePage({
     setAvatarPreview('')
     setRemoveAvatar(false)
     setErr('')
+    setMusicaAlterada(false)
     setEdit(true)
   }
 
@@ -342,6 +344,7 @@ export default function ProfilePage({
           : {}),
         borda_cor: form.borda_cor,
         fonte_perfil: form.fonte_perfil,
+        musica_alterada: musicaAlterada,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -849,9 +852,10 @@ export default function ProfilePage({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
+                      setMusicaAlterada(true)
                       setForm((f) => ({ ...f, musica_id: '', musica_url: '', musica_nome: '' }))
-                    }
+                    }}
                     className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
                       !form.musica_id && !form.musica_url
                         ? 'border-white/60 bg-white/15 text-white'
@@ -864,14 +868,15 @@ export default function ProfilePage({
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() =>
+                      onClick={() => {
+                        setMusicaAlterada(true)
                         setForm((f) => ({
                           ...f,
                           musica_id: m.id,
                           musica_url: '',
                           musica_nome: '',
                         }))
-                      }
+                      }}
                       className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
                         form.musica_id === m.id
                           ? 'border-white/60 bg-white/15 text-white'

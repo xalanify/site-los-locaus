@@ -336,6 +336,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasNameEffect = Object.prototype.hasOwnProperty.call(body, 'name_effect');
     const hasBorda = Object.prototype.hasOwnProperty.call(body, 'borda_cor');
     const hasFonte = Object.prototype.hasOwnProperty.call(body, 'fonte_perfil');
+    const musicaAlterada = Boolean(body.musica_alterada);
     if (
       !hasNick &&
       !hasAvatar &&
@@ -433,6 +434,19 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     if (hasMusic) {
       const erro = await guardarTema('musica_id', body.musica_id);
       if (erro) return erro;
+      // user normal escolheu uma música da lista (ou "sem música"):
+      // limpa a música do YouTube que o admin possa ter posto
+      if (musicaAlterada) {
+        const conta = await store.findById(uid);
+        const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+        if (!souAdmin) {
+          await db
+            .prepare(
+              'UPDATE user_profiles SET musica_url = NULL, musica_nome = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(uid);
+        }
+      }
     }
     if (hasMusicUrl || hasMusicNome) {
       const conta = await store.findById(uid);
