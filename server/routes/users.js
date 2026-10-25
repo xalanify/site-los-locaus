@@ -14,6 +14,7 @@ const RESERVED = new Set(['me', 'admin', 'login', 'register', 'novo', 'publicaco
 const USER_RE = /^[\p{L}\p{N}_. -]{3,20}$/u;
 const NICK_RE = /^[\p{L}\p{N}_. -]{1,24}$/u;
 const TEMA_RE = /^[a-z0-9_-]{1,32}$/;
+const COR_RE = /^#[0-9a-fA-F]{6}$/;
 
 /* ---------- fotos de perfil ----------
    O utilizador escolhe uma imagem; o servidor sobe-a para o
@@ -40,7 +41,7 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, name_color, name_effect
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, accent_color, name_color, name_effect
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -51,6 +52,8 @@ const profileOf = async (userId) => {
       dpi: (row && row.dpi) || null,
       banner_id: (row && row.banner_id) || null,
       background_id: (row && row.background_id) || null,
+      musica_id: (row && row.musica_id) || null,
+      accent_color: (row && row.accent_color) || null,
       name_color: (row && row.name_color) || null,
       name_effect: (row && row.name_effect) || null,
     };
@@ -62,6 +65,8 @@ const profileOf = async (userId) => {
       dpi: null,
       banner_id: null,
       background_id: null,
+      musica_id: null,
+      accent_color: null,
       name_color: null,
       name_effect: null,
     };
@@ -280,7 +285,18 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasDpi = Object.prototype.hasOwnProperty.call(body, 'dpi');
     const hasBanner = Object.prototype.hasOwnProperty.call(body, 'banner_id');
     const hasBackground = Object.prototype.hasOwnProperty.call(body, 'background_id');
-    if (!hasNick && !hasAvatar && !hasMouse && !hasDpi && !hasBanner && !hasBackground) {
+    const hasMusic = Object.prototype.hasOwnProperty.call(body, 'musica_id');
+    const hasAccent = Object.prototype.hasOwnProperty.call(body, 'accent_color');
+    if (
+      !hasNick &&
+      !hasAvatar &&
+      !hasMouse &&
+      !hasDpi &&
+      !hasBanner &&
+      !hasBackground &&
+      !hasMusic &&
+      !hasAccent
+    ) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
 
@@ -357,6 +373,21 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     if (hasBackground) {
       const erro = await guardarTema('background_id', body.background_id);
       if (erro) return erro;
+    }
+    if (hasMusic) {
+      const erro = await guardarTema('musica_id', body.musica_id);
+      if (erro) return erro;
+    }
+    if (hasAccent) {
+      const cor = String(body.accent_color || '').trim();
+      if (cor && !COR_RE.test(cor)) {
+        return res.status(400).json({ error: 'Cor de destaque inválida.' });
+      }
+      await db
+        .prepare(
+          'UPDATE user_profiles SET accent_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(cor || null, uid);
     }
 
     const user = await store.findById(uid);
@@ -575,7 +606,7 @@ router.get('/list', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id,
+        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.accent_color,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
@@ -600,6 +631,8 @@ router.get('/list', attachAuth, async (req, res) => {
         dpi: r.dpi || null,
         banner_id: r.banner_id || null,
         background_id: r.background_id || null,
+        musica_id: r.musica_id || null,
+        accent_color: r.accent_color || null,
         online: Boolean(r.online),
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],

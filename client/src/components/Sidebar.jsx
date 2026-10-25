@@ -82,11 +82,11 @@ export default function Sidebar({ user = null, isAdmin = false }) {
                 onClick={link.action}
                 className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
                   link.active
-                    ? 'bg-violet-500/15 text-white'
+                    ? 'nav-ativo text-white'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'text-violet-400' : ''}`} />
+                <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'nav-ativo-icon' : ''}`} />
                 <span className="text-[15px] font-bold">{link.name}</span>
                 {link.badge && (
                   <span className="ml-auto rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
@@ -105,7 +105,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
           onClick={() => navigate('/perfil')}
           className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
             isProfile
-              ? 'bg-violet-500/15 text-white'
+              ? 'nav-ativo text-white'
               : 'text-gray-400 hover:bg-white/5 hover:text-white'
           }`}
         >

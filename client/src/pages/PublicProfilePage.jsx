@@ -15,8 +15,9 @@ import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
-import UserBanner from '../components/UserBanner'
-import { bannerDe, classeFundo } from '../data/temasPerfil'
+import ProfileBanner from '../components/ProfileBanner'
+import ProfileMusic from '../components/ProfileMusic'
+import { bannerDe, estiloFundo, fundoDe, hexParaRgb } from '../data/temasPerfil'
 
 /* ============================================================
    Perfil público com página própria — /perfil/:username
@@ -54,6 +55,25 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
       vivo = false
     }
   }, [username])
+
+  const fundoAtual = fundoDe(data?.profile?.background_id)
+  const corPerfil = data?.profile?.accent_color || ''
+  const accent = corPerfil || fundoAtual.cor
+  const accent2 = corPerfil || fundoAtual.cor2
+  const accentRgb = corPerfil ? hexParaRgb(corPerfil) : fundoAtual.rgb
+  useEffect(() => {
+    const root = document.documentElement
+    document.body.classList.add('profile-theme')
+    root.style.setProperty('--perfil-accent', accent)
+    root.style.setProperty('--perfil-accent-2', accent2)
+    root.style.setProperty('--perfil-accent-rgb', accentRgb)
+    return () => {
+      document.body.classList.remove('profile-theme')
+      root.style.removeProperty('--perfil-accent')
+      root.style.removeProperty('--perfil-accent-2')
+      root.style.removeProperty('--perfil-accent-rgb')
+    }
+  }, [accent, accent2, accentRgb])
 
   if (!carregado) {
     return (
@@ -109,7 +129,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   /* margem de casal: 0/1 clip público da até aparecer cheio */
 
   return (
-    <PageShell background={classeFundo(p.background_id)}>
+    <PageShell background={estiloFundo(fundoAtual)}>
         {/* ---------------- Saudação (igual ao perfil normal) ---------------- */}
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
@@ -137,7 +157,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             boxShadow: `0 0 40px ${tema.cor}22, inset 0 0 0 1px ${tema.cor}18`,
           }}
         >
-          <UserBanner bannerId={p.banner_id} className="absolute inset-x-0 top-0 h-1.5" />
+          <ProfileBanner bannerId={p.banner_id} />
           {/* letra fantasma ao fundo */}
           <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
             {p.username}
@@ -297,6 +317,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             </Link>
           </div>
         )}
+        <ProfileMusic musicaId={p.musica_id} />
     </PageShell>
   )
 }

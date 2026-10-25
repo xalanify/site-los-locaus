@@ -22,6 +22,8 @@ const PASSOS = [
   // Experimentação: banner do perfil + cor/efeito do nome
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS background_id text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_id text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS accent_color text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_effect text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS mouse text',

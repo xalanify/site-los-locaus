@@ -1,7 +1,14 @@
-import { classeBanner } from '../data/temasPerfil'
+import { bannerDe } from '../data/temasPerfil'
 
-/* Faixa animada do tema do perfil. Usada no cartão do perfil e nos
-   cartões de membro (Membros / Membros online). */
-export default function UserBanner({ bannerId, className = 'h-2 w-full rounded-full' }) {
-  return <span className={`${classeBanner(bannerId)} ${className}`} aria-hidden="true" />
+/* Faixa animada (GIF) do tema do perfil — usada em cartões pequenos
+   como a lista "Membros online". */
+export default function UserBanner({ bannerId, className = 'h-2 w-full' }) {
+  const b = bannerDe(bannerId)
+  return (
+    <span
+      className={`${className} bg-cover bg-center`}
+      style={{ backgroundImage: `url(${b.ficheiro})` }}
+      aria-hidden="true"
+    />
+  )
 }

@@ -16,8 +16,19 @@ import ClipCard from '../components/ClipCard'
 import { searchMice } from '../data/mice'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
-import UserBanner from '../components/UserBanner'
-import { BANNERS, FUNDOS, bannerDe, classeFundo } from '../data/temasPerfil'
+import ProfileBanner from '../components/ProfileBanner'
+import ProfileMusic from '../components/ProfileMusic'
+import {
+  BANNERS,
+  FUNDOS,
+  MUSICAS,
+  CORES_ACENTO,
+  bannerDe,
+  estiloFundo,
+  fundoDe,
+  hexParaRgb,
+  musicaDe,
+} from '../data/temasPerfil'
 
 /* ============================================================
    Perfil da conta — abre ao clicar no ícone de Conta.
@@ -50,8 +61,10 @@ export default function ProfilePage({
     game_nick: '',
     mouse: '',
     dpi: '',
-    banner_id: 'aurora',
+    banner_id: 'g01',
     background_id: '',
+    musica_id: '',
+    accent_color: '',
   })
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
@@ -92,6 +105,24 @@ export default function ProfilePage({
     }
   }, [])
 
+  const fundoAtual = fundoDe(me?.background_id)
+  const accent = me?.accent_color || fundoAtual.cor
+  const accent2 = me?.accent_color || fundoAtual.cor2
+  const accentRgb = me?.accent_color ? hexParaRgb(me.accent_color) : fundoAtual.rgb
+  useEffect(() => {
+    const root = document.documentElement
+    document.body.classList.add('profile-theme')
+    root.style.setProperty('--perfil-accent', accent)
+    root.style.setProperty('--perfil-accent-2', accent2)
+    root.style.setProperty('--perfil-accent-rgb', accentRgb)
+    return () => {
+      document.body.classList.remove('profile-theme')
+      root.style.removeProperty('--perfil-accent')
+      root.style.removeProperty('--perfil-accent-2')
+      root.style.removeProperty('--perfil-accent-rgb')
+    }
+  }, [accent, accent2, accentRgb])
+
   if (!me) return null
 
   const d = new Date(me.created_at)
@@ -117,8 +148,10 @@ export default function ProfilePage({
       game_nick: me.game_nick || '',
       mouse: me.mouse || '',
       dpi: me.dpi || '',
-      banner_id: me.banner_id || 'aurora',
+      banner_id: me.banner_id || 'g01',
       background_id: me.background_id || '',
+      musica_id: me.musica_id || '',
+      accent_color: me.accent_color || '',
     })
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
@@ -188,6 +221,8 @@ export default function ProfilePage({
         dpi: form.dpi,
         banner_id: form.banner_id,
         background_id: form.background_id,
+        musica_id: form.musica_id,
+        accent_color: form.accent_color,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -223,7 +258,7 @@ export default function ProfilePage({
   const tema = bannerDe(me.banner_id)
 
   return (
-    <PageShell background={classeFundo(me.background_id)}>
+    <PageShell background={estiloFundo(fundoAtual)}>
         {/* ---------------- Saudação ---------------- */}
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
@@ -245,7 +280,7 @@ export default function ProfilePage({
             boxShadow: `0 0 40px ${tema.cor}22, inset 0 0 0 1px ${tema.cor}18`,
           }}
         >
-          <UserBanner bannerId={me.banner_id} className="absolute inset-x-0 top-0 h-1.5" />
+          <ProfileBanner bannerId={me.banner_id} />
           {/* letra fantasma ao fundo */}
           <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
             {me.username}
@@ -351,6 +386,7 @@ export default function ProfilePage({
           {edit && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
               <div className="glass max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-violet-500/30 p-6 shadow-2xl">
+              <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
               <p className="text-xs text-gray-400">
                 Escolhe uma foto tua — o site guarda o ficheiro e fica associado à tua conta.
               </p>
@@ -487,7 +523,10 @@ export default function ProfilePage({
                           : 'border-white/10 bg-black/20 hover:border-white/30'
                       }`}
                     >
-                      <span className={`perfil-banner perfil-banner-${b.id} block h-7 w-full rounded-md`} />
+                      <span
+                        className="block h-12 w-full rounded-md bg-cover bg-center"
+                        style={{ backgroundImage: `url(${b.ficheiro})` }}
+                      />
                       <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
                         {b.nome}
                       </span>
@@ -516,12 +555,12 @@ export default function ProfilePage({
                       }`}
                     >
                       <span
-                        className="block h-7 w-full rounded-md"
-                        style={{
-                          background: f.id
-                            ? `linear-gradient(135deg, ${f.cor}, #0b0716 70%)`
-                            : 'linear-gradient(135deg, #1b1230, #0b0716)',
-                        }}
+                        className="block h-9 w-full rounded-md bg-cover bg-center"
+                        style={
+                          f.imagem
+                            ? { backgroundImage: `url(${f.imagem})` }
+                            : { background: 'linear-gradient(135deg, #1b1230, #0b0716)' }
+                        }
                       />
                       <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
                         {f.nome}
@@ -529,6 +568,82 @@ export default function ProfilePage({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Cor de destaque (sidebars, títulos e detalhes) */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400">Cor de destaque</label>
+                <p className="mb-2 text-[11px] text-gray-500">
+                  Automática segue o fundo escolhido. Podes forçar outra cor.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {CORES_ACENTO.map((c) => {
+                    const ativo = (form.accent_color || '') === c.cor
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        title={c.nome}
+                        onClick={() => setForm((f) => ({ ...f, accent_color: c.cor }))}
+                        className={`grid h-8 w-8 place-items-center rounded-full border-2 transition-transform ${
+                          ativo ? 'scale-110 border-white' : 'border-white/20 hover:scale-105'
+                        }`}
+                        style={{
+                          background: c.cor || 'linear-gradient(135deg,#8b5cf6,#22d3ee)',
+                        }}
+                      >
+                        {ativo && <Check className="h-3.5 w-3.5 text-white" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Música do perfil */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400">Música do perfil</label>
+                <p className="mb-2 text-[11px] text-gray-500">
+                  Toca baixinho quando alguém abre o teu perfil. Podes pausar ou ajustar o volume.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, musica_id: '' }))}
+                    className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
+                      !form.musica_id
+                        ? 'border-white/60 bg-white/15 text-white'
+                        : 'border-white/10 bg-black/20 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Sem música
+                  </button>
+                  {MUSICAS.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, musica_id: m.id }))}
+                      className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
+                        form.musica_id === m.id
+                          ? 'border-white/60 bg-white/15 text-white'
+                          : 'border-white/10 bg-black/20 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {m.nome}
+                    </button>
+                  ))}
+                </div>
+                {form.musica_id && musicaDe(form.musica_id) && (
+                  <audio
+                    key={form.musica_id}
+                    src={musicaDe(form.musica_id).ficheiro}
+                    controls
+                    preload="none"
+                    className="mt-2 h-8 w-full"
+                    ref={(el) => {
+                      if (el) el.volume = 0.25
+                    }}
+                  />
+                )}
               </div>
 
               {err && (
@@ -634,6 +749,7 @@ export default function ProfilePage({
             Terminar sessão
           </button>
         </div>
+        <ProfileMusic musicaId={me.musica_id} />
     </PageShell>
   )
 }

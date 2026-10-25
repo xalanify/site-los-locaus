@@ -5,7 +5,7 @@ import AvatarImg from '../components/AvatarImg'
 import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import PageShell from '../components/PageShell'
-import UserBanner from '../components/UserBanner'
+import ProfileBanner from '../components/ProfileBanner'
 
 /* ============================================================
    Página de membros — lista toda a comunidade com o estado
@@ -94,11 +94,11 @@ export default function MembrosPage({ onProfile }) {
                     onClick={() => onProfile?.(m.username)}
                     className="glass relative w-full overflow-hidden rounded-2xl text-left transition-colors hover:bg-white/5"
                   >
-                    <UserBanner
+                    <ProfileBanner
                       bannerId={m.banner_id}
-                      className="absolute inset-x-0 top-0 h-1.5"
+                      overlay="from-black/80 via-black/55 to-black/85"
                     />
-                    <span className="flex w-full items-center gap-3 px-4 pb-3 pt-4">
+                    <span className="relative z-10 flex w-full items-center gap-3 px-4 py-3">
                       <span className="relative shrink-0">
                         <AvatarImg name={m.username} src={m.avatar_url} className="h-11 w-11" />
                         <span

@@ -741,6 +741,39 @@ body.in-jogo::before { display: none; }
   to { transform: rotate(360deg); }
 }
 
+/* Cores dinâmicas do perfil: só enquanto a página de perfil está aberta */
+.nav-ativo {
+  background: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.16);
+}
+.nav-ativo-icon {
+  color: rgb(var(--perfil-accent-rgb, 139 92 246));
+}
+body.profile-theme .painel-fixo {
+  background:
+    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.28), rgba(8, 5, 16, 0.78) 45%, rgba(8, 5, 16, 0.84));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.22);
+}
+body.profile-theme .gradient-text {
+  background-image: linear-gradient(
+    135deg,
+    var(--perfil-accent, #8b5cf6),
+    var(--perfil-accent-2, #22d3ee)
+  );
+}
+body.profile-theme .nav-ativo {
+  background: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.22);
+  box-shadow: 0 0 18px rgb(var(--perfil-accent-rgb, 139 92 246) / 0.2);
+}
+body.profile-theme .nav-ativo-icon {
+  color: var(--perfil-accent, #8b5cf6);
+}
+body.profile-theme .painel-fixo .text-violet-400,
+body.profile-theme .painel-fixo .text-violet-300 {
+  color: var(--perfil-accent, #8b5cf6) !important;
+}
+
 /* fundos de página do perfil */
 .perfil-fundo {
   position: fixed;
