@@ -6,6 +6,7 @@ const { getDb } = require('../database');
 const { attachAuth, requireUser } = require('../middleware/auth');
 const { sincronizar, proximoTorneio } = require('../r6previsoes');
 const { syncTop1Previsoes } = require('../previsoestop1');
+const cs2 = require('../cs2previsoes');
 
 const router = express.Router();
 
@@ -336,6 +337,266 @@ router.get('/proximo-torneio', async (req, res) => {
   } catch (error) {
     console.error('Erro proximo-torneio:', error.message);
     res.status(502).json({ ok: false, error: 'Sem ligação ao calendário da Ubisoft.' });
+  }
+});
+
+/* ============================================================
+   CS2 — jogos ao vivo + previsões (bo3.gg)
+   ============================================================ */
+function decorarCs2(m, votos, uid) {
+  const agora = Date.now();
+  const inicio = new Date(m.start_time).getTime();
+  const status = Number(m.status) || 1;
+  const a = votos.filter((v) => v.pick === 'a');
+  const b = votos.filter((v) => v.pick === 'b');
+  const meu = uid ? votos.find((v) => Number(v.user_id) === uid) || null : null;
+  return {
+    id: Number(m.id),
+    external_id: Number(m.external_id) || null,
+    competition: m.competition || '',
+    competition_logo: m.competition_logo || null,
+    region: 'CS2',
+    start_time: m.start_time,
+    status,
+    score_a: Number(m.score_a) || 0,
+    score_b: Number(m.score_b) || 0,
+    winner: m.winner || null,
+    stream_url: m.stream_url || null,
+    team_a: { name: m.team_a || '', logo: m.team_a_logo || null },
+    team_b: { name: m.team_b || '', logo: m.team_b_logo || null },
+    can_vote: status === 1 && m.team_a && m.team_b && agora < inicio,
+    locked: status !== 1 || agora >= inicio,
+    pick: meu ? meu.pick : null,
+    correct: meu && meu.correct !== null ? Boolean(meu.correct) : null,
+    counts: { a: a.length, b: b.length, total: votos.length },
+    voters: {
+      a: a.map((v) => ({
+        id: Number(v.user_id),
+        username: v.username,
+        avatar_url: v.avatar_url || null,
+        correct: v.correct === null ? null : Boolean(v.correct),
+      })),
+      b: b.map((v) => ({
+        id: Number(v.user_id),
+        username: v.username,
+        avatar_url: v.avatar_url || null,
+        correct: v.correct === null ? null : Boolean(v.correct),
+      })),
+    },
+  };
+}
+
+async function votosCs2(db, ids) {
+  const porJogo = new Map();
+  if (!ids.length) return porJogo;
+  const rows = await db
+    .prepare(
+      `SELECT p.match_id, p.user_id, p.pick, p.correct, u.username, up.avatar_url
+         FROM cs2_predictions p
+         JOIN users u ON u.id = p.user_id
+         LEFT JOIN user_profiles up ON up.user_id = p.user_id
+        WHERE p.match_id = ANY(?::bigint[])
+        ORDER BY u.username ASC`,
+    )
+    .all(ids);
+  for (const r of rows) {
+    const k = Number(r.match_id);
+    if (!porJogo.has(k)) porJogo.set(k, []);
+    porJogo.get(k).push(r);
+  }
+  return porJogo;
+}
+
+router.get('/cs2', attachAuth, async (req, res) => {
+  try {
+    const db = getDb();
+    const uid = req.auth && req.auth.uid ? Number(req.auth.uid) : null;
+    const sync = await cs2.sincronizar({ forcar: String(req.query.sync || '') === '1' });
+    const [proximos, recentes] = await Promise.all([
+      db
+        .prepare(
+          `SELECT * FROM cs2_matches
+            WHERE status IN (1, 2) AND start_time > now() - interval '12 hours'
+            ORDER BY start_time ASC LIMIT 24`,
+        )
+        .all(),
+      db
+        .prepare(
+          `SELECT * FROM cs2_matches
+            WHERE status = 3 AND start_time > now() - interval '35 days'
+            ORDER BY start_time DESC LIMIT 35`,
+        )
+        .all(),
+    ]);
+    const todos = [...proximos, ...recentes.filter((r) => !proximos.some((p) => p.id === r.id))];
+    const votos = await votosCs2(
+      db,
+      todos.map((m) => Number(m.id)),
+    );
+    res.json({
+      matches: todos.map((m) => decorarCs2(m, votos.get(Number(m.id)) || [], uid)),
+      sync,
+      now: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error('Erro CS2 previsões GET:', e.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+router.post('/cs2/:id/voto', requireUser, async (req, res) => {
+  try {
+    const db = getDb();
+    const uid = req.auth.uid;
+    const id = Number(req.params.id);
+    const pick = String((req.body && req.body.pick) || '').toLowerCase();
+    if (!['a', 'b'].includes(pick)) return res.status(400).json({ error: 'Escolhe uma equipa.' });
+    const m = await db.prepare('SELECT * FROM cs2_matches WHERE id = ?').get(id);
+    if (!m) return res.status(404).json({ error: 'Jogo não encontrado.' });
+    if (Number(m.status) !== 1) return res.status(409).json({ error: 'As apostas já fecharam.' });
+    if (!m.team_a || !m.team_b) {
+      return res.status(409).json({ error: 'Ainda não se sabe quem joga.' });
+    }
+    if (Date.now() >= new Date(m.start_time).getTime()) {
+      return res.status(409).json({ error: 'O jogo já começou — apostas fechadas.' });
+    }
+    await db
+      .prepare(
+        `INSERT INTO cs2_predictions (match_id, user_id, pick, updated_at)
+         VALUES (?, ?, ?, now())
+         ON CONFLICT (match_id, user_id) DO UPDATE SET pick = EXCLUDED.pick, updated_at = now()`,
+      )
+      .run(id, uid, pick);
+    const rows = await db
+      .prepare(
+        `SELECT p.user_id, p.pick, p.correct, u.username, up.avatar_url
+           FROM cs2_predictions p JOIN users u ON u.id = p.user_id
+           LEFT JOIN user_profiles up ON up.user_id = p.user_id
+          WHERE p.match_id = ? ORDER BY u.username ASC`,
+      )
+      .all(id);
+    res.json({
+      ok: true,
+      pick,
+      counts: {
+        a: rows.filter((v) => v.pick === 'a').length,
+        b: rows.filter((v) => v.pick === 'b').length,
+        total: rows.length,
+      },
+    });
+  } catch (e) {
+    console.error('Erro CS2 voto:', e.message);
+    res.status(500).json({ error: 'Não deu para guardar o voto.' });
+  }
+});
+
+router.get('/cs2/classificacao', async (req, res) => {
+  try {
+    const db = getDb();
+    const rows = await db
+      .prepare(
+        `SELECT u.id, u.username, up.avatar_url,
+                count(*)::int AS total,
+                count(*) FILTER (WHERE p.correct IS TRUE)::int AS acertos,
+                count(*) FILTER (WHERE p.correct IS FALSE)::int AS falhas
+           FROM cs2_predictions p
+           JOIN users u ON u.id = p.user_id
+           LEFT JOIN user_profiles up ON up.user_id = p.user_id
+          GROUP BY u.id, u.username, up.avatar_url
+          HAVING count(*) > 0
+          ORDER BY acertos DESC, total DESC, u.username ASC
+          LIMIT 100`,
+      )
+      .all();
+    res.json({
+      users: rows.map((r, i) => ({
+        pos: i + 1,
+        id: Number(r.id),
+        username: r.username,
+        avatar_url: r.avatar_url || null,
+        total: Number(r.total) || 0,
+        acertos: Number(r.acertos) || 0,
+        falhas: Number(r.falhas) || 0,
+      })),
+    });
+    syncTop1Previsoes().catch(() => {});
+  } catch (e) {
+    console.error('Erro classificação CS2:', e.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+router.get('/classificacao-total', async (req, res) => {
+  try {
+    const db = getDb();
+    const rows = await db
+      .prepare(
+        `WITH juntas AS (
+           SELECT user_id, correct, 'r6' AS jogo FROM r6_predictions
+           UNION ALL
+           SELECT user_id, correct, 'cs2' AS jogo FROM cs2_predictions
+         )
+         SELECT u.id, u.username, up.avatar_url,
+                count(*)::int AS total,
+                count(*) FILTER (WHERE j.correct IS TRUE)::int AS acertos,
+                count(*) FILTER (WHERE j.correct IS FALSE)::int AS falhas,
+                count(*) FILTER (WHERE j.jogo = 'r6' AND j.correct IS TRUE)::int AS r6,
+                count(*) FILTER (WHERE j.jogo = 'cs2' AND j.correct IS TRUE)::int AS cs2
+           FROM juntas j
+           JOIN users u ON u.id = j.user_id
+           LEFT JOIN user_profiles up ON up.user_id = u.id
+          GROUP BY u.id, u.username, up.avatar_url
+          HAVING count(*) > 0
+          ORDER BY acertos DESC, total DESC, u.username ASC
+          LIMIT 100`,
+      )
+      .all();
+    syncTop1Previsoes().catch(() => {});
+    res.json({
+      users: rows.map((r, i) => ({
+        pos: i + 1,
+        id: Number(r.id),
+        username: r.username,
+        avatar_url: r.avatar_url || null,
+        total: Number(r.total) || 0,
+        acertos: Number(r.acertos) || 0,
+        falhas: Number(r.falhas) || 0,
+        r6: Number(r.r6) || 0,
+        cs2: Number(r.cs2) || 0,
+      })),
+    });
+  } catch (e) {
+    console.error('Erro classificação total:', e.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+router.get('/cs2/proximo', async (req, res) => {
+  try {
+    const db = getDb();
+    const row = await db
+      .prepare(
+        `SELECT * FROM cs2_matches
+          WHERE status = 1 AND start_time > now()
+          ORDER BY start_time ASC LIMIT 1`,
+      )
+      .get();
+    if (!row) return res.json({ ok: true, jogo: null });
+    res.json({
+      ok: true,
+      jogo: {
+        id: Number(row.id),
+        competition: row.competition || 'CS2',
+        competition_logo: row.competition_logo || null,
+        team_a: { name: row.team_a || '', logo: row.team_a_logo || null },
+        team_b: { name: row.team_b || '', logo: row.team_b_logo || null },
+        start_time: row.start_time,
+        stream_url: row.stream_url || null,
+      },
+    });
+  } catch (e) {
+    console.error('Erro próximo CS2:', e.message);
+    res.status(500).json({ ok: false, error: 'Erro interno' });
   }
 });
 

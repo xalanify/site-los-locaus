@@ -397,7 +397,16 @@ export default function SteamStorePage() {
       .catch(() => vivo && setEmBreve({ loading: false, jogos: [], erro: 'Sem ligação.' }))
     fetch('/api/games/steam/top')
       .then((r) => r.json())
-      .then((d) => vivo && setTop({ loading: false, jogos: d?.jogos || [], erro: d?.error || '' }))
+      .then(
+        (d) =>
+          vivo &&
+          setTop({
+            loading: false,
+            jogos: d?.jogos || [],
+            erro: d?.error || '',
+            aoVivo: Boolean(d?.aoVivo),
+          }),
+      )
       .catch(() => vivo && setTop({ loading: false, jogos: [], erro: 'Sem ligação.' }))
     fetch('/api/games/steam/mais-comprados')
       .then((r) => r.json())
@@ -406,6 +415,20 @@ export default function SteamStorePage() {
     return () => {
       vivo = false
     }
+  }, [])
+
+  /* Top 10 ao vivo: atualiza os jogadores a jogar a cada 60s */
+  useEffect(() => {
+    const t = setInterval(() => {
+      fetch('/api/games/steam/top')
+        .then((r) => r.json())
+        .then((d) => {
+          if (!d || !Array.isArray(d.jogos)) return
+          setTop((prev) => ({ ...prev, jogos: d.jogos, aoVivo: Boolean(d.aoVivo) }))
+        })
+        .catch(() => {})
+    }, 60000)
+    return () => clearInterval(t)
   }, [])
 
   const procurar = async (e, page = 1) => {
@@ -546,11 +569,17 @@ export default function SteamStorePage() {
 
       {aba === 'top' && (
         <section className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Flame className="h-4 w-4 text-orange-400" />
-            <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
-              Top 10 mais jogados agora na Steam
-            </h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Flame className="h-4 w-4 shrink-0 text-orange-400" />
+              <h2 className="min-w-0 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+                Top 10 mais jogados agora na Steam
+              </h2>
+            </div>
+            <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/25">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              Ao vivo
+            </span>
           </div>
           {top.loading ? (
             <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">

@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar'
 import RightColumn from './components/RightColumn'
 import MobileMenu from './components/MobileMenu'
 import Hero from './components/Hero'
+import BetaBadge from './components/BetaBadge'
 import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
 import VideosSection from './components/VideosSection'
@@ -170,6 +171,7 @@ function App() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="origin-center"
           >
+            <BetaBadge />
             {/* Etiqueta BETA — em todos os ecrãs */}
             {/* A verificar sessão guardada */}
             {!sessionChecked && (

@@ -137,7 +137,7 @@ const FOCO =
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
-const CACHE_MS = 10 * 60 * 1000;
+const CACHE_MS = 5 * 60 * 1000;
 let cache = { t: 0, dados: null };
 const TRAD_CACHE = new Map();
 
@@ -308,7 +308,7 @@ async function carregar() {
     }
   }
   noticias.sort(
-    (a, b) => (a.prioridade || 0) - (b.prioridade || 0) || new Date(b.data) - new Date(a.data),
+    (a, b) => new Date(b.data) - new Date(a.data) || (a.prioridade || 0) - (b.prioridade || 0),
   );
   const selecionadas = noticias.slice(0, 60);
   await traduzirNoticias(selecionadas);

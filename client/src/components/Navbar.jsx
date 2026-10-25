@@ -77,8 +77,10 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
             <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
               Locaus
             </span>
-            <span className="shrink-0 rounded border border-violet-400/40 bg-violet-500/15 px-1 py-0.5 font-display text-[8px] font-black uppercase tracking-wider text-violet-300">
+            <span className="shrink-0 rounded border border-violet-400/40 bg-violet-500/15 px-1 py-0.5 text-center font-display text-[7px] font-black uppercase leading-[1.05] tracking-wider text-violet-300">
               Beta
+              <br />
+              <span className="text-[6px] tracking-normal text-gray-400">em desenvolvimento</span>
             </span>
           </Link>
 

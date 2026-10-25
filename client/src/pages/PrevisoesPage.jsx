@@ -314,28 +314,35 @@ function PredictionCard({ match, user, onVote, votando }) {
 
 function PalmaresTorneio({ t, destaque }) {
   const posicoes = [
-    { rotulo: 'Campeão', icon: <Crown className="h-3 w-3 text-amber-300" />, equipa: t.campeao, cor: 'text-amber-300', bg: 'bg-amber-500/[0.08]' },
-    { rotulo: 'Vice', icon: <Medal className="h-3 w-3 text-slate-300" />, equipa: t.vice, cor: 'text-slate-300', bg: 'bg-white/[0.04]' },
-    { rotulo: '3.º', icon: <Medal className="h-3 w-3 text-orange-400" />, equipa: t.terceiro, cor: 'text-orange-300', bg: 'bg-orange-500/[0.06]' },
+    { rotulo: 'Campeão', icon: <Crown className="h-3 w-3 text-amber-300" />, equipa: t.campeao, cor: 'text-amber-200', bg: 'bg-gradient-to-r from-amber-500/20 to-amber-500/5 ring-1 ring-amber-400/25' },
+    { rotulo: 'Vice', icon: <Medal className="h-3 w-3 text-slate-300" />, equipa: t.vice, cor: 'text-slate-200', bg: 'bg-white/[0.05] ring-1 ring-white/10' },
+    { rotulo: '3.º', icon: <Medal className="h-3 w-3 text-orange-400" />, equipa: t.terceiro, cor: 'text-orange-200', bg: 'bg-orange-500/[0.08] ring-1 ring-orange-400/20' },
   ]
   return (
     <article
-      className={`group relative w-80 shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
+      className={`group relative w-[19rem] shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
         destaque
-          ? 'border-amber-400/30 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] shadow-lg shadow-amber-950/20'
-          : 'border-white/10 bg-[#120d20]/80 hover:-translate-y-0.5 hover:border-violet-400/40 hover:bg-white/[0.05]'
+          ? 'border-amber-400/40 bg-gradient-to-b from-amber-500/[0.16] via-violet-500/[0.06] to-white/[0.02] shadow-xl shadow-amber-950/25'
+          : 'border-white/10 bg-gradient-to-b from-white/[0.05] to-[#120d20]/90 hover:-translate-y-0.5 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-950/20'
       }`}
     >
+      <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-violet-500/10 blur-2xl" />
       {destaque && (
-        <span className="absolute right-3 top-3 rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+        <span className="absolute right-3 top-3 rounded-full bg-amber-400/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-200 ring-1 ring-amber-400/40">
           Mais recente
         </span>
       )}
-      <div className="mb-3 flex items-center gap-2.5">
-        <img src={t.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg bg-black/30 p-0.5 object-contain" loading="lazy" />
-        <div className="min-w-0 pr-16">
-          <h3 className="truncate text-sm font-black leading-tight text-white">{t.nome}</h3>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-gray-400">
+      <div className="relative mb-3 flex items-center gap-2.5">
+        <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black/40 p-1">
+          {t.logo ? (
+            <img src={t.logo} alt="" className="h-full w-full object-contain" loading="lazy" />
+          ) : (
+            <Trophy className="h-5 w-5 text-violet-300" />
+          )}
+        </span>
+        <div className="min-w-0 pr-14">
+          <h3 className="line-clamp-2 text-sm font-black leading-tight text-white">{t.nome}</h3>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-gray-400">
             <span className="inline-flex items-center gap-1">
               <Calendar className="h-3 w-3" /> {t.dataInicio} — {t.dataFim}
             </span>
@@ -345,23 +352,28 @@ function PalmaresTorneio({ t, destaque }) {
           </p>
         </div>
       </div>
-      <div className="space-y-1.5">
+      <div className="relative space-y-1.5">
         {posicoes.map((p) => (
-          <div key={p.rotulo} className={`flex items-center gap-2 rounded-lg px-2 py-1 ${p.bg}`}>
-            <span className="w-12 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-500">
+          <div key={p.rotulo} className={`flex items-center gap-2 rounded-xl px-2 py-1.5 ${p.bg}`}>
+            <span className="w-12 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-400">
               {p.rotulo}
             </span>
             {p.icon}
-            <span className={`min-w-0 flex-1 truncate text-xs font-bold ${p.cor}`}>{p.equipa.nome}</span>
+            {p.equipa && typeof p.equipa === 'object' && p.equipa.logo ? (
+              <img src={p.equipa.logo} alt="" className="h-5 w-5 shrink-0 rounded object-contain" loading="lazy" />
+            ) : null}
+            <span className={`min-w-0 flex-1 truncate text-xs font-black ${p.cor}`}>
+              {typeof p.equipa === 'string' ? p.equipa : p.equipa?.nome || '—'}
+            </span>
           </div>
         ))}
       </div>
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5 text-[10px] font-semibold">
-        <span className="inline-flex min-w-0 items-center gap-1 truncate text-violet-300">
-          <Star className="h-3 w-3 shrink-0" /> MVP: {t.mvp.nome} · {t.mvp.equipa}
+      <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] font-semibold">
+        <span className="inline-flex min-w-0 items-center gap-1 truncate text-violet-200">
+          <Star className="h-3 w-3 shrink-0 text-amber-300" /> MVP: {t.mvp?.nome || '—'} · {t.mvp?.equipa || ''}
         </span>
-        <span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-black text-white">
-          Final {t.resultadoFinal}
+        <span className="shrink-0 rounded-lg bg-white/10 px-2 py-1 text-[11px] font-black text-white ring-1 ring-white/10">
+          Final {t.resultadoFinal || '—'}
         </span>
       </div>
     </article>
@@ -840,6 +852,169 @@ function FortniteTorneiosTab() {
   )
 }
 
+function CS2PrevisoesTab({ user }) {
+  const [dados, setDados] = useState({ loading: true, matches: [], erro: '' })
+  const [prox, setProx] = useState(null)
+  const [votando, setVotando] = useState(0)
+
+  const carregar = async () => {
+    try {
+      const r = await fetch('/api/previsoes/cs2', { headers: authHeaders() })
+      const d = await r.json().catch(() => null)
+      setDados({
+        loading: false,
+        matches: (d && d.matches) || [],
+        erro: r.ok ? '' : (d && d.error) || 'Sem ligação aos jogos CS2.',
+      })
+    } catch {
+      setDados((x) => ({ ...x, loading: false, erro: 'Sem ligação aos jogos CS2.' }))
+    }
+  }
+
+  useEffect(() => {
+    let vivo = true
+    carregar()
+    fetch('/api/previsoes/cs2/proximo')
+      .then((r) => r.json())
+      .then((d) => vivo && setProx(d && d.jogo ? d.jogo : null))
+      .catch(() => {})
+    const t = setInterval(() => vivo && carregar(), 30000)
+    return () => {
+      vivo = false
+      clearInterval(t)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const votar = async (m, pick) => {
+    if (!user) {
+      toast.erro('Inicia sessão para votar.')
+      return
+    }
+    if (!m.can_vote || votando) return
+    setVotando(m.id)
+    try {
+      const r = await fetch(`/api/previsoes/cs2/${m.id}/voto`, {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pick }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para votar.')
+      setDados((prev) => ({
+        ...prev,
+        matches: prev.matches.map((x) =>
+          x.id === m.id
+            ? { ...x, pick, counts: { ...x.counts, ...(d.counts || {}) } }
+            : x,
+        ),
+      }))
+      toast.ok('Voto guardado.')
+    } catch (e) {
+      toast.erro(e.message || 'Não deu para votar.')
+    } finally {
+      setVotando(0)
+    }
+  }
+
+  const proximos = dados.matches.filter((m) => m.status === 1 || m.status === 2)
+  const resultados = dados.matches.filter(
+    (m) => m.status === 3 && ((m.counts && m.counts.total) || 0) > 0,
+  )
+
+  return (
+    <div className="space-y-4">
+      {prox && (
+        <section className="overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-violet-600/10 to-[#0f0a1a] p-4 shadow-xl shadow-sky-950/20">
+          <div className="flex flex-wrap items-center gap-2">
+            {prox.competition_logo ? (
+              <img src={prox.competition_logo} alt="" className="h-9 w-9 rounded-lg object-contain" loading="lazy" />
+            ) : (
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-sky-500/15 text-sky-300">
+                <Target className="h-5 w-5" />
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">
+                Próximo torneio CS2
+              </p>
+              <h3 className="truncate text-sm font-black text-white">
+                {prox.competition || 'CS2'}
+              </h3>
+            </div>
+            <Countdown inicio={prox.start_time} />
+          </div>
+          <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <div className="flex min-w-0 items-center justify-end gap-2 text-right">
+              <span className="truncate text-xs font-black text-white">{prox.team_a?.name || 'A definir'}</span>
+              {prox.team_a?.logo && <img src={prox.team_a.logo} alt="" className="h-7 w-7 object-contain" />}
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gray-500">vs</span>
+            <div className="flex min-w-0 items-center gap-2">
+              {prox.team_b?.logo && <img src={prox.team_b.logo} alt="" className="h-7 w-7 object-contain" />}
+              <span className="truncate text-xs font-black text-white">{prox.team_b?.name || 'A definir'}</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+          <Target className="h-4 w-4 text-sky-300" /> Próximos jogos CS2
+          <span className="ml-auto rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20">
+            Ao vivo
+          </span>
+        </h2>
+        {dados.loading ? (
+          <div className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[#0f0a1a]/80 py-12 text-sm text-gray-400">
+            <Loader2 className="h-4 w-4 animate-spin" /> A carregar jogos CS2…
+          </div>
+        ) : dados.erro ? (
+          <p className="rounded-2xl border border-amber-400/20 bg-amber-500/10 px-3 py-3 text-sm text-amber-200">
+            {dados.erro}
+          </p>
+        ) : proximos.length === 0 ? (
+          <p className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-10 text-center text-sm text-gray-500">
+            Sem jogos CS2 marcados neste momento. Atualizamos automaticamente.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {proximos.map((m) => (
+              <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {resultados.length > 0 && (
+        <section>
+          <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+            <Trophy className="h-4 w-4 text-amber-300" /> Resultados CS2
+          </h2>
+          <div className="space-y-3">
+            {resultados.slice(0, 8).map((m) => (
+              <PredictionCard key={m.id} match={m} user={user} onVote={() => {}} votando={false} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+          <Star className="h-4 w-4 text-amber-300" /> Últimos vencedores CS2
+        </h2>
+        <div className="overflow-x-auto pb-1">
+          <div className="flex min-w-max gap-3">
+            {CS2_TORNEIOS.map((t, i) => (
+              <PalmaresTorneio key={t.id} t={t} destaque={i === 0} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export default function PrevisoesPage({ user }) {
   const [matches, setMatches] = useState([])
   const [tab, setTab] = useState('proximos')
@@ -851,6 +1026,12 @@ export default function PrevisoesPage({ user }) {
   const [votando, setVotando] = useState(0)
   const [classificacao, setClassificacao] = useState([])
   const [classLoading, setClassLoading] = useState(false)
+  const [classificacaoAberta, setClassificacaoAberta] = useState(false)
+  const [classTipo, setClassTipo] = useState('total')
+  const [classTotal, setClassTotal] = useState([])
+  const [classR6, setClassR6] = useState([])
+  const [classCs2, setClassCs2] = useState([])
+  const [classModalLoading, setClassModalLoading] = useState(false)
   const [resultadosNovos, setResultadosNovos] = useState([])
   const [modalResultados, setModalResultados] = useState(false)
   const [, setTick] = useState(0)
@@ -920,20 +1101,43 @@ export default function PrevisoesPage({ user }) {
   }, [])
 
   useEffect(() => {
-    if (tab !== 'classificacao') return
+    if (!classificacaoAberta) return
     let vivo = true
-    setClassLoading(true)
-    fetch('/api/previsoes/classificacao', { headers: authHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (vivo && d) setClassificacao(d.users || [])
+    setClassModalLoading(true)
+    Promise.all([
+      fetch('/api/previsoes/classificacao-total', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetch('/api/previsoes/classificacao', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetch('/api/previsoes/cs2/classificacao', { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ])
+      .then(([t, r6, cs2]) => {
+        if (!vivo) return
+        setClassTotal((t && t.users) || [])
+        setClassR6((r6 && r6.users) || [])
+        setClassCs2((cs2 && cs2.users) || [])
+        setClassificacao((r6 && r6.users) || [])
       })
-      .catch(() => {})
-      .finally(() => vivo && setClassLoading(false))
+      .finally(() => vivo && setClassModalLoading(false))
     return () => {
       vivo = false
     }
-  }, [tab, matches.length])
+  }, [classificacaoAberta, matches.length])
+
+  useEffect(() => {
+    let vivo = true
+    fetch('/api/previsoes/classificacao-total', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => vivo && d && setClassificacao(d.users || []))
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [matches.length])
 
   const votar = async (m, pick) => {
     if (!m.can_vote || votando) return
@@ -969,7 +1173,9 @@ export default function PrevisoesPage({ user }) {
 
   const recente = (m) => Date.now() - new Date(m.start_time).getTime() < 6 * 3600 * 1000
   const proximos = matches.filter((m) => m.status === 1 || (m.status === 2 && recente(m)))
-  const resultados = matches.filter((m) => m.status === 3)
+  const resultados = matches.filter(
+    (m) => m.status === 3 && ((m.counts && m.counts.total) || 0) > 0,
+  )
   const aoVivo = proximos.filter((m) => m.status === 2)
   const acertos = resultados.filter((m) => m.correct === true).length
   const falhas = resultados.filter((m) => m.correct === false).length
@@ -1021,7 +1227,7 @@ export default function PrevisoesPage({ user }) {
       <div className="mt-2 mb-4 grid grid-cols-3 gap-2">
         <button
           onClick={() => setJogo('r6')}
-          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
+          className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-black transition-all sm:text-xs ${
             jogo === 'r6'
               ? 'border-violet-400/40 bg-gradient-to-b from-violet-600/40 to-fuchsia-600/20 text-white shadow-lg shadow-violet-950/30'
               : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
@@ -1031,20 +1237,20 @@ export default function PrevisoesPage({ user }) {
         </button>
         <button
           onClick={() => setJogo('cs2')}
-          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
+          className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-black transition-all sm:text-xs ${
             jogo === 'cs2'
               ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/30 to-sky-900/20 text-white'
               : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
           }`}
         >
           <Target className="h-4 w-4 shrink-0" /> CS2
-          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-400">
-            Em breve
+          <span className="rounded-full bg-emerald-500/15 px-1 py-0.5 text-[7px] font-black uppercase tracking-wider text-emerald-300 sm:px-1.5 sm:text-[9px]">
+            Ao vivo
           </span>
         </button>
         <button
           onClick={() => setJogo('fortnite')}
-          className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${
+          className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-black transition-all sm:text-xs ${
             jogo === 'fortnite'
               ? 'border-fuchsia-400/40 bg-gradient-to-b from-fuchsia-600/30 to-purple-900/20 text-white'
               : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
@@ -1056,88 +1262,7 @@ export default function PrevisoesPage({ user }) {
 
       {jogo === 'fortnite' && <FortniteTorneiosTab />}
 
-      {jogo === 'cs2' && (
-        <div className="space-y-4">
-          <div className="rounded-3xl border border-sky-400/20 bg-gradient-to-b from-sky-600/10 to-[#17102a] p-5 text-center">
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-300 ring-1 ring-sky-400/30">
-              <Target className="h-7 w-7" />
-            </span>
-            <h2 className="mt-3 font-display text-xl font-black uppercase text-white">
-              Previsões CS2
-            </h2>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-gray-400">
-              Em breve vais poder prever os jogos profissionais de Counter-Strike.
-              Enquanto isso, vê o palmarés dos últimos grandes torneios.
-            </p>
-          </div>
-
-          <section className="overflow-hidden rounded-2xl border border-sky-400/20 bg-gradient-to-b from-sky-600/10 to-[#17102a] p-3 shadow-xl shadow-sky-950/15 sm:p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/15 ring-1 ring-sky-400/30">
-                <Trophy className="h-4 w-4 text-sky-300" />
-              </span>
-              <h2 className="font-display text-base font-black text-white">Palmarés CS2</h2>
-              <span className="ml-auto rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-sky-300 ring-1 ring-sky-400/20">
-                Últimos majors
-              </span>
-            </div>
-            <div className="overflow-x-auto pb-1">
-              <div className="flex min-w-max gap-3">
-                {CS2_TORNEIOS.map((t, i) => (
-                  <article
-                    key={t.id}
-                    className={`group relative w-80 shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
-                      i === 0
-                        ? 'border-amber-400/30 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] shadow-lg shadow-amber-950/20'
-                        : 'border-white/10 bg-[#120d20]/80 hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-white/[0.05]'
-                    }`}
-                  >
-                    {i === 0 && (
-                      <span className="absolute right-3 top-3 rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
-                        Mais recente
-                      </span>
-                    )}
-                    <div className="mb-3">
-                      <h3 className="truncate pr-16 text-sm font-black leading-tight text-white">{t.nome}</h3>
-                      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-gray-400">
-                        <span className="inline-flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {t.dataInicio} — {t.dataFim}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {t.local}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 rounded-lg bg-amber-500/[0.08] px-2 py-1">
-                        <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-500">Campeão</span>
-                        <Crown className="h-3 w-3 text-amber-300" />
-                        <span className="min-w-0 flex-1 truncate text-xs font-bold text-amber-300">{t.campeao}</span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-lg bg-white/[0.04] px-2 py-1">
-                        <span className="w-14 shrink-0 text-[9px] font-black uppercase tracking-wider text-gray-500">Vice</span>
-                        <Medal className="h-3 w-3 text-slate-300" />
-                        <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-300">{t.vice}</span>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-2.5 text-[10px] font-semibold">
-                      <span className="inline-flex min-w-0 items-center gap-1 truncate text-sky-300">
-                        <Star className="h-3 w-3 shrink-0" /> MVP: {t.mvp.nome} · {t.mvp.equipa}
-                      </span>
-                      <span className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-[11px] font-black text-white">
-                        Final {t.resultadoFinal}
-                      </span>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-            <p className="mt-2 text-center text-[10px] font-semibold text-gray-500">
-              Podes atualizar esta lista em <code className="text-sky-400">client/src/data/cs2Torneios.js</code>.
-            </p>
-          </section>
-        </div>
-      )}
+      {jogo === 'cs2' && <CS2PrevisoesTab user={user} />}
 
       {jogo === 'r6' && (
         <>
@@ -1218,7 +1343,7 @@ export default function PrevisoesPage({ user }) {
               resultados: resultados.length,
               classificacao: classificacao.length || null,
             }
-            return ['proximos', 'resultados', 'classificacao'].map((id) => (
+            return ['proximos', 'resultados'].map((id) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -1293,6 +1418,15 @@ export default function PrevisoesPage({ user }) {
               </p>
             </div>
           )}
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setClassificacaoAberta(true)}
+              className="flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-violet-200 transition-colors hover:bg-violet-500/20"
+            >
+              <Medal className="h-4 w-4" /> Ver classificação
+            </button>
+          </div>
         </div>
       ) : tab === 'resultados' ? (
         <div className="space-y-4">
@@ -1302,7 +1436,7 @@ export default function PrevisoesPage({ user }) {
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-400/30">
                 <Trophy className="h-4 w-4 text-violet-300" />
               </span>
-              <h2 className="font-display text-base font-black text-white">Palmarés R6</h2>
+              <h2 className="font-display text-base font-black text-white">Últimos vencedores</h2>
               <span className="ml-auto rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-violet-300 ring-1 ring-violet-400/20">
                 Últimos torneios
               </span>
@@ -1404,6 +1538,120 @@ export default function PrevisoesPage({ user }) {
           recebes um aviso nesta página e no sino.
         </p>
       </div>
+
+      {/* classificação total / R6 / CS2 */}
+      {classificacaoAberta && (
+        <div
+          className="fixed inset-0 z-[75] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
+          onClick={() => setClassificacaoAberta(false)}
+        >
+          <div
+            className="w-full max-w-lg overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
+              <div>
+                <h2 className="font-display text-lg font-black text-white">Classificação</h2>
+                <p className="text-[11px] font-semibold text-gray-500">
+                  Acertos das previsões da comunidade
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setClassificacaoAberta(false)}
+                className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex gap-1.5 border-b border-white/10 px-3 py-2">
+              {[
+                { id: 'total', label: 'Total' },
+                { id: 'r6', label: 'R6' },
+                { id: 'cs2', label: 'CS2' },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setClassTipo(t.id)}
+                  className={`rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${
+                    classTipo === t.id
+                      ? 'bg-violet-500 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="max-h-[55dvh] overflow-y-auto p-3">
+              {classModalLoading ? (
+                <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
+                  <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
+                </div>
+              ) : (
+                (() => {
+                  const lista =
+                    classTipo === 'total' ? classTotal : classTipo === 'r6' ? classR6 : classCs2
+                  if (!lista.length) {
+                    return (
+                      <p className="py-10 text-center text-sm text-gray-500">
+                        Ainda não há acertos nesta classificação.
+                      </p>
+                    )
+                  }
+                  return (
+                    <div className="space-y-1.5">
+                      {lista.map((u) => (
+                        <div
+                          key={u.id}
+                          className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2 ${
+                            u.pos === 1
+                              ? 'border-amber-400/30 bg-amber-500/[0.07]'
+                              : 'border-white/5 bg-white/[0.025]'
+                          }`}
+                        >
+                          <span
+                            className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-black ${
+                              u.pos === 1
+                                ? 'bg-amber-400 text-black'
+                                : u.pos === 2
+                                  ? 'bg-slate-300 text-black'
+                                  : u.pos === 3
+                                    ? 'bg-orange-400 text-black'
+                                    : 'bg-white/10 text-gray-300'
+                            }`}
+                          >
+                            {u.pos}
+                          </span>
+                          <AvatarImg src={u.avatar_url} name={u.username} className="h-7 w-7" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-black text-white">{u.username}</p>
+                            <p className="text-[10px] font-semibold text-gray-500">
+                              {classTipo === 'total'
+                                ? `R6 ${u.r6 || 0} · CS2 ${u.cs2 || 0}`
+                                : `${u.total || 0} jogos`}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-right">
+                            <span className="block text-sm font-black text-emerald-300">{u.acertos}</span>
+                            <span className="block text-[8px] font-black uppercase tracking-wider text-gray-500">
+                              acertos
+                            </span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* janela flutuante de resultados */}
       {modalResultados && resultadosNovos.length > 0 && (

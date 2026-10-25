@@ -33,21 +33,51 @@ export const BADGES = [
   },
   {
     id: 'previsao1',
-    label: '1.º NAS PREVISÕES',
-    desc: 'Líder da classificação das previsões',
-    color: '#FFC800',
-    light: '#FFE9A3',
-    dark: '#7A5A00',
+    label: '1.º NA CLASSIFICAÇÃO TOTAL',
+    desc: 'Líder da classificação total (R6 + CS2)',
+    color: '#000000',
+    light: '#2A2A33',
+    dark: '#000000',
+    glow: '#8B5CF6',
+    labelColor: '#F3F4F6',
     anim: 'shine',
+    arte: 'obsidian',
+  },
+  {
+    id: 'r6-top1',
+    label: '1.º NA CLASSIFICAÇÃO R6',
+    desc: 'Líder da classificação de Rainbow Six',
+    color: '#FF1F3D',
+    light: '#FF8A9C',
+    dark: '#6E0014',
+    glow: '#FF1F3D',
+    labelColor: '#FF4D63',
+    anim: 'pulse',
+    arte: 'r6',
+  },
+  {
+    id: 'cs2-top1',
+    label: '1.º NA CLASSIFICAÇÃO CS2',
+    desc: 'Líder da classificação de CS2',
+    color: '#FFFFFF',
+    light: '#FFFFFF',
+    dark: '#9CA3AF',
+    glow: '#FFFFFF',
+    labelColor: '#FFFFFF',
+    anim: 'shine',
+    arte: 'cs2',
   },
   {
     id: 'fortnite-rank1',
     label: 'RANK MAIS ALTO FORTNITE',
     desc: 'Melhor rank atual do Fortnite entre os membros ligados',
-    color: '#22D3EE',
-    light: '#A5F3FC',
-    dark: '#0E4F5A',
+    color: '#A855F7',
+    light: '#D8B4FE',
+    dark: '#4C1D95',
+    glow: '#A855F7',
+    labelColor: '#C084FC',
     anim: 'float',
+    arte: 'fortnite',
   },
 ]
 
@@ -145,13 +175,26 @@ export function BadgeGem({ badge, size = 56 }) {
   const uid = badge.id
   const anim = ANIM_CLASS[badge.anim] || ''
   const ic = badge.ic // 'cpu' | 'ram' | 'both' (distinções de overclock)
+  const arte = badge.arte || (top1 ? 'top1' : 'gem')
+  const semChifres = arte === 'r6' || arte === 'cs2'
+  const obsidian = arte === 'obsidian'
+  const fortnite = arte === 'fortnite'
+  const cs2 = arte === 'cs2'
+  const r6 = arte === 'r6'
 
   // Paleta da gema: top1 é preta com olhos laranja; as outras usam a cor da distinção
-  const gemLight = top1 ? '#3A3A44' : badge.light
-  const gemColor = top1 ? '#111116' : badge.color
-  const gemDark = top1 ? '#000000' : badge.dark
-  const olhoFill = top1 ? '#FF8A1A' : '#08080e'
-  const olhoGlow = top1 ? '#FF6B00' : null
+  const gemLight = cs2 ? '#4B5563' : obsidian ? '#2A2A33' : top1 ? '#3A3A44' : badge.light
+  const gemColor = cs2 ? '#111827' : obsidian ? '#0B0B10' : top1 ? '#111116' : badge.color
+  const gemDark = cs2 ? '#000000' : obsidian ? '#000000' : top1 ? '#000000' : badge.dark
+  const olhoFill = obsidian
+    ? `url(#ob-${uid})`
+    : fortnite
+      ? '#FFFFFF'
+      : top1
+        ? '#FF8A1A'
+        : '#08080e'
+  const olhoGlow = obsidian ? '#8B5CF6' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : null
+  const glow = badge.glow || badge.color
 
   return (
     <div
@@ -161,7 +204,7 @@ export function BadgeGem({ badge, size = 56 }) {
         height: size,
         // eslint-disable-next-line react/forbid-dom-props
         ['--gem']: badge.color,
-        filter: `drop-shadow(0 0 ${dev ? 18 : 9}px ${hexToRgba(badge.color, 0.73)})`,
+        filter: `drop-shadow(0 0 ${dev ? 18 : 9}px ${hexToRgba(glow, 0.73)})`,
       }}
       title={badge.desc}
     >
@@ -182,7 +225,17 @@ export function BadgeGem({ badge, size = 56 }) {
           <clipPath id={`fc-${uid}`}>
             <circle cx="50" cy="58" r="30" />
           </clipPath>
-          {/* brilho dos olhos (só top1) */}
+          {obsidian && (
+            <linearGradient id={`ob-${uid}`} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#E9D5FF">
+                <animate attributeName="stop-color" values="#E9D5FF;#67E8F9;#C084FC;#E9D5FF" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stopColor="#7C3AED">
+                <animate attributeName="stop-color" values="#7C3AED;#A855F7;#22D3EE;#7C3AED" dur="4s" repeatCount="indefinite" />
+              </stop>
+            </linearGradient>
+          )}
+          {/* brilho dos olhos (top1 / obsidian / fortnite) */}
           {olhoGlow && (
             <filter id={`og-${uid}`} x="-80%" y="-80%" width="260%" height="260%">
               <feGaussianBlur stdDeviation="2.4" result="b" />
@@ -195,20 +248,20 @@ export function BadgeGem({ badge, size = 56 }) {
           )}
         </defs>
 
-        {/* chifres (só as caras de diabo) */}
-        {!ic && (
+        {/* chifres (só as caras de diabo; R6/CS2 são letras) */}
+        {!ic && !semChifres && (
           <>
             <path
               d="M42,29 Q32,20 24,6 Q20,22 30,36 Z"
               fill={`url(#fh-${uid})`}
-              stroke={top1 ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
+              stroke={top1 || obsidian ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
               strokeWidth="1.5"
               strokeLinejoin="round"
             />
             <path
               d="M58,29 Q68,20 76,6 Q80,22 70,36 Z"
               fill={`url(#fh-${uid})`}
-              stroke={top1 ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
+              stroke={top1 || obsidian ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
               strokeWidth="1.5"
               strokeLinejoin="round"
             />
@@ -220,12 +273,12 @@ export function BadgeGem({ badge, size = 56 }) {
 
         {/* facetas do cristal (recortadas à volta) */}
         <g clipPath={`url(#fc-${uid})`}>
-          <polygon points="22,46 50,34 42,64" fill="#fff" opacity={top1 ? '0.07' : '0.16'} />
-          <polygon points="50,34 80,50 60,66" fill="#000" opacity={top1 ? '0.30' : '0.14'} />
-          <polygon points="20,58 42,64 34,86" fill="#fff" opacity={top1 ? '0.05' : '0.10'} />
-          <polygon points="42,64 60,66 54,88" fill="#000" opacity={top1 ? '0.35' : '0.20'} />
-          <polygon points="60,66 82,60 70,86" fill="#fff" opacity={top1 ? '0.06' : '0.12'} />
-          <polygon points="32,78 72,80 50,96" fill="#000" opacity={top1 ? '0.40' : '0.24'} />
+          <polygon points="22,46 50,34 42,64" fill="#fff" opacity={top1 || obsidian ? '0.07' : '0.16'} />
+          <polygon points="50,34 80,50 60,66" fill="#000" opacity={top1 || obsidian ? '0.30' : '0.14'} />
+          <polygon points="20,58 42,64 34,86" fill="#fff" opacity={top1 || obsidian ? '0.05' : '0.10'} />
+          <polygon points="42,64 60,66 54,88" fill="#000" opacity={top1 || obsidian ? '0.35' : '0.20'} />
+          <polygon points="60,66 82,60 70,86" fill="#fff" opacity={top1 || obsidian ? '0.06' : '0.12'} />
+          <polygon points="32,78 72,80 50,96" fill="#000" opacity={top1 || obsidian ? '0.40' : '0.24'} />
           {/* brilho do vidro */}
           <ellipse
             cx="36"
@@ -233,7 +286,7 @@ export function BadgeGem({ badge, size = 56 }) {
             rx="13"
             ry="8"
             fill="#fff"
-            opacity={top1 ? '0.10' : '0.25'}
+            opacity={top1 || obsidian ? '0.10' : '0.25'}
             transform="rotate(-22 36 44)"
           />
         </g>
@@ -244,16 +297,33 @@ export function BadgeGem({ badge, size = 56 }) {
           cy="58"
           r="30"
           fill="none"
-          stroke={top1 ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.55)'}
+          stroke={top1 || obsidian ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.55)'}
           strokeWidth="2.5"
         />
 
-        {/* olhos de diabo (só as caras de diabo) */}
-        {!ic && (
+        {/* olhos de diabo (top1 / obsidian / fortnite) */}
+        {!ic && !semChifres && (
           <g filter={olhoGlow ? `url(#og-${uid})` : undefined}>
             <polygon points="26,50 48,60 46,67 28,60" fill={olhoFill} />
             <polygon points="74,50 52,60 54,67 72,60" fill={olhoFill} />
           </g>
+        )}
+
+        {/* letras R6 / CS2 no centro */}
+        {(r6 || cs2) && (
+          <text
+            x="50"
+            y="69"
+            textAnchor="middle"
+            fontFamily="Archivo, Inter, sans-serif"
+            fontSize="30"
+            fontWeight="900"
+            letterSpacing="-1"
+            fill={r6 ? '#FF4D63' : '#FFFFFF'}
+            filter={r6 ? `drop-shadow(0 0 3px #FF1F3D)` : `drop-shadow(0 0 3px rgba(255,255,255,.65))`}
+          >
+            {r6 ? 'R6' : 'CS2'}
+          </text>
         )}
       </svg>
 
@@ -315,7 +385,14 @@ export function BadgeTile({ badge, size = 54 }) {
         className={`font-display text-[11px] font-black uppercase leading-tight tracking-wider ${
           dev ? devLabelClass : ''
         }`}
-        style={dev ? undefined : { color: badge.color, textShadow: `0 0 10px ${badge.color}90` }}
+        style={
+          dev
+            ? undefined
+            : {
+                color: badge.labelColor || badge.color,
+                textShadow: `0 0 10px ${hexToRgba(badge.labelColor || badge.color, 0.7)}`,
+              }
+        }
       >
         {badge.label}
       </span>

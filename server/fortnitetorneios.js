@@ -96,7 +96,7 @@ function normalizar(lista, agora) {
       estado: janela.estado,
       inicio: janela.inicio,
       fim: janela.fim,
-      imagem: e.tileImage || e.poster || e.posterBack || null,
+      imagem: e.tileImage || e.poster || e.posterBack || '/fortnite.jpg',
       descricao: limpar(e.short_description || e.long_description || ''),
       link: `https://uefn.fnjpnews.com/tournaments/${encodeURIComponent(e.id)}?region=${encodeURIComponent(e.region || 'EU')}`,
       janela: janela.id,

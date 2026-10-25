@@ -187,7 +187,7 @@ export const MUSICAS = [
   },
   {
     id: 'm07',
-    nome: 'GTA 4 Theme',
+    nome: 'GTA 4 Theme Novo',
     ficheiro: '/perfil/musicas/07.mp3',
   },
   {

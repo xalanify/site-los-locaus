@@ -355,12 +355,12 @@ export default function PublicProfilePage({
                   className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 ring-1"
                   style={{
                     background: `${b.color}18`,
-                    boxShadow: `0 0 14px ${b.color}40`,
-                    ringColor: `${b.color}66`,
+                    boxShadow: `0 0 14px ${b.glow || b.color}40`,
+                    ringColor: `${b.glow || b.color}66`,
                   }}
                 >
                   <BadgeGem badge={b} size={22} />
-                  <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.color }}>
+                  <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.labelColor || b.color }}>
                     {b.label}
                   </span>
                 </span>

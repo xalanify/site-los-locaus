@@ -159,6 +159,37 @@ const PASSOS = [
      primary key (match_id, user_id)
    )`,
   'CREATE INDEX IF NOT EXISTS r6_predictions_user_idx ON public.r6_predictions (user_id, created_at DESC)',
+  // CS2 — jogos e previsões (fonte bo3.gg)
+  `CREATE TABLE IF NOT EXISTS public.cs2_matches (
+     id           bigint generated always as identity primary key,
+     external_id  bigint unique,
+     slug         text,
+     competition  text,
+     competition_logo text,
+     team_a       text,
+     team_a_logo  text,
+     team_b       text,
+     team_b_logo  text,
+     start_time   timestamptz,
+     status       integer not null default 1,
+     score_a      integer not null default 0,
+     score_b      integer not null default 0,
+     winner       text,
+     stream_url   text,
+     updated_at   timestamptz not null default now()
+   )`,
+  'CREATE INDEX IF NOT EXISTS cs2_matches_start_idx ON public.cs2_matches (start_time)',
+  'CREATE INDEX IF NOT EXISTS cs2_matches_status_idx ON public.cs2_matches (status, start_time)',
+  `CREATE TABLE IF NOT EXISTS public.cs2_predictions (
+     match_id   bigint not null references public.cs2_matches(id) on delete cascade,
+     user_id    bigint not null references public.users(id) on delete cascade,
+     pick       text not null check (pick in ('a', 'b')),
+     correct    boolean,
+     seen_at    timestamptz,
+     updated_at timestamptz not null default now(),
+     primary key (match_id, user_id)
+   )`,
+  'CREATE INDEX IF NOT EXISTS cs2_predictions_user_idx ON public.cs2_predictions (user_id)',
   `CREATE TABLE IF NOT EXISTS public.r6_sync (
      id         integer primary key,
      last_sync  timestamptz,

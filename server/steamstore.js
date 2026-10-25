@@ -167,50 +167,53 @@ async function emBreve() {
   return dados;
 }
 
-/* ---------- mais jogados (SteamSpy) ---------- */
+/* ---------- mais jogados (Steam ao vivo) ---------- */
 async function maisJogados() {
   const chave = 'top';
   const hit = ler(chave);
   if (hit) return hit;
 
-  const r = await fetch('https://steamspy.com/api.php?request=top100in2weeks', {
+  const r = await fetch('https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/', {
     headers: { 'User-Agent': UA },
-    timeout: 20000,
+    timeout: 15000,
   });
-  if (!r.ok) throw new Error('steamspy ' + r.status);
-  const lista = await r.json();
-  const base = Object.values(lista || {})
-    .map((g) => ({
-      appid: Number(g.appid),
-      nome: g.name,
-      ccu: Number(g.ccu) || 0,
-      precoSpy: Number(g.price) || 0,
-    }))
-    .filter((g) => g.appid && g.nome)
-    .sort((a, b) => b.ccu - a.ccu)
-    .slice(0, 10);
+  if (!r.ok) throw new Error('steam charts ' + r.status);
+  const j = await r.json();
+  const ranks = ((j && j.response && j.response.ranks) || []).slice(0, 10);
 
-  // Ficha real na Steam: nome, preço e imagem corretos (o SteamSpy
-  // às vezes tem nomes/preços desatualizados).
   const jogos = await Promise.all(
-    base.map(async (g) => {
-      const d = await infoApp(g.appid);
-      let nome = (d && d.name) || g.nome;
+    ranks.map(async (item) => {
+      const appid = Number(item.appid);
+      let ccu = 0;
+      try {
+        const rc = await fetch(
+          `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appid}`,
+          { headers: { 'User-Agent': UA }, timeout: 10000 },
+        );
+        const jc = await rc.json();
+        ccu = Number(jc && jc.response && jc.response.player_count) || 0;
+      } catch {
+        ccu = 0;
+      }
+      if (!ccu) ccu = Number(item.peak_in_game) || 0;
+
+      const d = await infoApp(appid);
+      let nome = (d && d.name) || `App ${appid}`;
       let imagem =
         (d && d.header_image) ||
-        `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/header.jpg`;
+        `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
       let preco = precoApp(d);
       let desconto = (preco && preco.desconto) || 0;
 
       // GTA V Legacy não é grátis: vem incluído no GTA V Enhanced.
-      if (g.appid === 271590) {
+      if (appid === 271590) {
         nome = 'Grand Theft Auto V Legacy';
         preco = { texto: 'Incluído no GTA V Enhanced', original: null, desconto: 0, gratis: false };
         desconto = 0;
       }
       // Call of Duty HQ (Warzone + MW) — mostrar só "Call of Duty"
       // com a imagem do MW4, como o utilizador pediu.
-      if (g.appid === 1938090) {
+      if (appid === 1938090) {
         nome = 'Call of Duty';
         const mw4 = await infoApp(4435490);
         if (mw4 && mw4.header_image) imagem = mw4.header_image;
@@ -219,19 +222,26 @@ async function maisJogados() {
       }
 
       return {
-        appid: g.appid,
+        appid,
         nome,
-        ccu: g.ccu,
-        preco: (preco && preco.texto) || (g.precoSpy > 0 ? precoDeCentavos(g.precoSpy) : 'Ver na Steam'),
+        ccu,
+        pico: Number(item.peak_in_game) || 0,
+        rank: Number(item.rank) || null,
+        preco: (preco && preco.texto) || 'Ver na Steam',
         desconto,
         imagem,
-        url: `https://store.steampowered.com/app/${g.appid}`,
+        url: `https://store.steampowered.com/app/${appid}`,
       };
     }),
   );
 
-  const dados = { ok: true, atualizadoEm: new Date().toISOString(), jogos };
-  guardar(chave, dados);
+  const dados = {
+    ok: true,
+    aoVivo: true,
+    atualizadoEm: new Date().toISOString(),
+    jogos,
+  };
+  guardar(chave, dados, 2 * 60 * 1000);
   return dados;
 }
 

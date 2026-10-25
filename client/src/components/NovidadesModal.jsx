@@ -104,7 +104,7 @@ export default function NovidadesModal({ user }) {
                 <button
                   type="button"
                   onClick={naoMostrar}
-                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-gray-400 hover:bg-white/10 hover:text-white"
+                  className="hidden rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-gray-400 hover:bg-white/10 hover:text-white sm:inline-flex"
                 >
                   Não mostrar novamente
                 </button>
