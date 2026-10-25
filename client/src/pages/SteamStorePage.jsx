@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
+import { GTA_VI, RUMORES, CANCELADOS } from '../data/jogosRumores'
 
 const GENEROS = [
   { id: '', nome: 'Todos' },
@@ -85,8 +86,15 @@ function CartaoJogo({ jogo, onClick, destaque = false }) {
           <span className="truncate text-[11px] font-semibold text-gray-500">
             {jogo.lancamento || 'Data a anunciar'}
           </span>
-          <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-black text-emerald-300">
-            {jogo.preco?.texto || 'Em breve'}
+          <span className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+            {jogo.preco?.desconto > 0 && (
+              <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[9px] font-black text-red-300">
+                Promoção -{jogo.preco.desconto}%
+              </span>
+            )}
+            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-black text-emerald-300">
+              {jogo.preco?.texto || (jogo.emBreve ? 'Em breve' : jogo.lancamento ? 'Sem preço' : 'Em breve')}
+            </span>
           </span>
         </div>
       </div>
@@ -96,6 +104,7 @@ function CartaoJogo({ jogo, onClick, destaque = false }) {
 
 function FichaJogo({ appid, onClose }) {
   const [estado, setEstado] = useState({ loading: true, jogo: null, erro: '' })
+  const [zoom, setZoom] = useState(null)
 
   useEffect(() => {
     if (!appid) return
@@ -117,6 +126,7 @@ function FichaJogo({ appid, onClose }) {
   const j = estado.jogo
 
   return (
+    <>
     <div
       className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md sm:p-6"
       onClick={onClose}
@@ -175,11 +185,16 @@ function FichaJogo({ appid, onClose }) {
                 <Tag className="h-4 w-4 text-emerald-300" />
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-wider text-emerald-300">Preço na Steam</p>
-                  <p className="font-display text-lg font-black text-white">
+                  <p className="flex flex-wrap items-center gap-2 font-display text-lg font-black text-white">
                     {j.preco?.texto}
                     {j.preco?.original && j.preco.desconto > 0 && (
-                      <span className="ml-2 text-xs font-semibold text-gray-500 line-through">
+                      <span className="text-xs font-semibold text-gray-500 line-through">
                         {j.preco.original}
+                      </span>
+                    )}
+                    {j.preco?.desconto > 0 && (
+                      <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-black text-red-300">
+                        Promoção -{j.preco.desconto}%
                       </span>
                     )}
                   </p>
@@ -199,7 +214,20 @@ function FichaJogo({ appid, onClose }) {
               {j.imagens?.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {j.imagens.map((img) => (
-                    <img key={img} src={img} alt="" className="aspect-video w-full rounded-xl object-cover" loading="lazy" />
+                    <button
+                      key={img}
+                      type="button"
+                      onClick={() => setZoom(img)}
+                      className="overflow-hidden rounded-xl focus:outline-none"
+                      title="Ampliar imagem"
+                    >
+                      <img
+                        src={img}
+                        alt=""
+                        className="aspect-video w-full cursor-zoom-in object-cover transition-transform hover:scale-[1.03]"
+                        loading="lazy"
+                      />
+                    </button>
                   ))}
                 </div>
               )}
@@ -236,13 +264,105 @@ function FichaJogo({ appid, onClose }) {
         </div>
       </motion.div>
     </div>
+    {zoom && (
+      <div
+        className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-3 sm:p-6"
+        onClick={() => setZoom(null)}
+        role="presentation"
+      >
+        <button
+          type="button"
+          onClick={() => setZoom(null)}
+          className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          aria-label="Fechar imagem"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <img
+          src={zoom}
+          alt=""
+          className="max-h-[92vh] max-w-[96vw] rounded-xl object-contain"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )}
+    </>
+  )
+}
+
+function CartaoEditorial({ item, onClick, destaque = false }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(item)}
+      className={`relative overflow-hidden rounded-2xl border border-white/10 p-4 text-left transition-transform hover:-translate-y-0.5 ${
+        destaque ? 'sm:col-span-2' : ''
+      }`}
+      style={{
+        background: `linear-gradient(135deg, ${item.cor}44, #0b0716 70%)`,
+      }}
+    >
+      <span
+        className="pointer-events-none absolute -right-2 -top-4 font-display text-7xl font-black opacity-20"
+        style={{ color: item.cor }}
+      >
+        {destaque ? 'VI' : item.nome.slice(0, 1)}
+      </span>
+      <span className="relative block text-[9px] font-black uppercase tracking-widest" style={{ color: item.cor }}>
+        {item.estado}
+      </span>
+      <span className="relative mt-1 block font-display text-lg font-black text-white">{item.nome}</span>
+      <span className="relative mt-1 block text-[11px] leading-snug text-gray-400">
+        {item.lancamento || item.descricao.slice(0, 100) + '…'}
+      </span>
+    </button>
+  )
+}
+
+function FichaEditorial({ item, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-[95] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
+      onClick={onClose}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-[#0b0716]/97 p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: item.cor }}>
+              {item.estado}
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-black text-white">{item.nome}</h2>
+          </div>
+          <button onClick={onClose} className="rounded-full bg-white/10 p-2 text-gray-300 hover:text-white" aria-label="Fechar">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <p className="text-sm leading-relaxed text-gray-300">{item.descricao}</p>
+          {item.lancamento && (
+            <p className="mt-3 text-[12px] font-bold text-white">Lançamento: {item.lancamento}</p>
+          )}
+          {item.pc && <p className="mt-1 text-[12px] font-semibold text-amber-300">{item.pc}</p>}
+          {item.aviso && <p className="mt-2 text-[10px] text-gray-500">{item.aviso}</p>}
+        </div>
+      </motion.div>
+    </div>
   )
 }
 
 export default function SteamStorePage() {
   const [aba, setAba] = useState('embreve')
+  const [subEmBreve, setSubEmBreve] = useState('steam')
+  const [editorial, setEditorial] = useState(null)
   const [emBreve, setEmBreve] = useState({ loading: true, jogos: [], erro: '' })
   const [top, setTop] = useState({ loading: true, jogos: [], erro: '' })
+  const [maisComprados, setMaisComprados] = useState({ loading: true, jogos: [] })
   const [pesquisa, setPesquisa] = useState({ loading: false, jogos: [], erro: '' })
   const [q, setQ] = useState('')
   const [genero, setGenero] = useState('')
@@ -260,6 +380,10 @@ export default function SteamStorePage() {
       .then((r) => r.json())
       .then((d) => vivo && setTop({ loading: false, jogos: d?.jogos || [], erro: d?.error || '' }))
       .catch(() => vivo && setTop({ loading: false, jogos: [], erro: 'Sem ligação.' }))
+    fetch('/api/games/steam/mais-comprados')
+      .then((r) => r.json())
+      .then((d) => vivo && setMaisComprados({ loading: false, jogos: d?.jogos || [] }))
+      .catch(() => vivo && setMaisComprados({ loading: false, jogos: [] }))
     return () => {
       vivo = false
     }
@@ -313,22 +437,68 @@ export default function SteamStorePage() {
 
       {aba === 'embreve' && (
         <section className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-400" />
-            <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
-              Lançamentos futuros na Steam
-            </h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-violet-400" />
+              <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
+                Em breve
+              </h2>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto">
+              {[
+                { id: 'steam', label: 'Steam' },
+                { id: 'rumores', label: 'Rumores' },
+                { id: 'cancelados', label: 'Cancelados / fechados' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSubEmBreve(s.id)}
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${
+                    subEmBreve === s.id
+                      ? 'bg-violet-500 text-white'
+                      : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
-          {emBreve.loading ? (
-            <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
-              <Loader2 className="h-4 w-4 animate-spin" /> A carregar lançamentos…
-            </p>
-          ) : emBreve.erro ? (
-            <p className="py-6 text-center text-sm text-yellow-300">{emBreve.erro}</p>
-          ) : (
+
+          {subEmBreve === 'steam' && (
+            <>
+              <div className="mb-3 grid gap-3 sm:grid-cols-2">
+                <CartaoEditorial item={GTA_VI} onClick={setEditorial} destaque />
+              </div>
+              {emBreve.loading ? (
+                <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
+                  <Loader2 className="h-4 w-4 animate-spin" /> A carregar lançamentos…
+                </p>
+              ) : emBreve.erro ? (
+                <p className="py-6 text-center text-sm text-yellow-300">{emBreve.erro}</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {emBreve.jogos.map((j) => (
+                    <CartaoJogo key={j.appid} jogo={j} onClick={abrir} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {subEmBreve === 'rumores' && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {emBreve.jogos.map((j) => (
-                <CartaoJogo key={j.appid} jogo={j} onClick={abrir} />
+              <CartaoEditorial item={GTA_VI} onClick={setEditorial} destaque />
+              {RUMORES.map((r) => (
+                <CartaoEditorial key={r.id} item={r} onClick={setEditorial} />
+              ))}
+            </div>
+          )}
+
+          {subEmBreve === 'cancelados' && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {CANCELADOS.map((r) => (
+                <CartaoEditorial key={r.id} item={r} onClick={setEditorial} />
               ))}
             </div>
           )}
@@ -366,9 +536,26 @@ export default function SteamStorePage() {
                     <span className="block text-[11px] font-semibold text-gray-500">
                       {fmtNum(j.ccu)} jogadores agora
                     </span>
+                    <span className="mt-1 flex flex-wrap items-center gap-1 sm:hidden">
+                      {j.desconto > 0 && (
+                        <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[8px] font-black text-red-300">
+                          -{j.desconto}%
+                        </span>
+                      )}
+                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black text-emerald-300">
+                        {j.preco}
+                      </span>
+                    </span>
                   </span>
-                  <span className="shrink-0 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black text-emerald-300">
-                    {j.preco}
+                  <span className="hidden shrink-0 items-center gap-1 sm:flex">
+                    {j.desconto > 0 && (
+                      <span className="rounded-full bg-red-500/15 px-2 py-1 text-[9px] font-black text-red-300">
+                        Promoção -{j.desconto}%
+                      </span>
+                    )}
+                    <span className="max-w-[180px] truncate rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black text-emerald-300">
+                      {j.preco}
+                    </span>
                   </span>
                   <ChevronRight className="h-4 w-4 shrink-0 text-gray-600" />
                 </button>
@@ -433,6 +620,19 @@ export default function SteamStorePage() {
             </div>
           </form>
 
+          {!q.trim() && pesquisa.jogos.length === 0 && maisComprados.jogos.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-gray-500">
+                <TrendingUp className="h-3.5 w-3.5 text-violet-400" /> Mais comprados agora na Steam
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {maisComprados.jogos.map((j) => (
+                  <CartaoJogo key={j.appid} jogo={j} onClick={abrir} />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-4">
             {pesquisa.loading ? (
               <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
@@ -441,9 +641,11 @@ export default function SteamStorePage() {
             ) : pesquisa.erro ? (
               <p className="py-6 text-center text-sm text-yellow-300">{pesquisa.erro}</p>
             ) : pesquisa.jogos.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-500">
-                Escreve o nome de um jogo e clica em Procurar.
-              </p>
+              q.trim() ? (
+                <p className="py-8 text-center text-sm text-gray-500">
+                  Sem resultados para “{q.trim()}”.
+                </p>
+              ) : null
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {pesquisa.jogos.map((j) => (
@@ -461,6 +663,7 @@ export default function SteamStorePage() {
 
       <AnimatePresence>
         {ficha && <FichaJogo appid={ficha} onClose={() => setFicha(null)} />}
+        {editorial && <FichaEditorial item={editorial} onClose={() => setEditorial(null)} />}
       </AnimatePresence>
     </PageShell>
   )

@@ -42,7 +42,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'Membros', icon: Users, path: '/membros' },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' },
-    { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam' },
+    { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam', badge: 'Novo' },
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
     { name: 'Conta', icon: User, path: '/perfil' },
   ]
@@ -124,6 +124,11 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
                       className={`h-5 w-5 shrink-0 ${ativo ? 'text-violet-400' : 'text-gray-500'}`}
                     />
                     <span className="text-[15px] font-bold">{it.name}</span>
+                    {it.badge && (
+                      <span className="ml-auto rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+                        {it.badge}
+                      </span>
+                    )}
                   </button>
                 )
               })}

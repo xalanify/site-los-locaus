@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Clapperboard,
@@ -9,10 +9,13 @@ import {
   Loader2,
   Check,
   Upload,
+  ZoomIn,
+  X,
 } from 'lucide-react'
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import { searchMice } from '../data/mice'
+import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
@@ -55,6 +58,7 @@ export default function ProfilePage({
 }) {
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(false)
+  const [previewTema, setPreviewTema] = useState(null)
   const [form, setForm] = useState({
     game_nick: '',
     mouse: '',
@@ -72,6 +76,8 @@ export default function ProfilePage({
   const [saving, setSaving] = useState(false)
   const [mouseSug, setMouseSug] = useState([])
   const [myClips, setMyClips] = useState([]) // publicações desta conta
+  const [ordemClips, setOrdemClips] = useState('recentes')
+  const [jogoClips, setJogoClips] = useState('')
   const [err, setErr] = useState('')
   const fileRef = useRef(null)
 
@@ -289,6 +295,16 @@ export default function ProfilePage({
   const tema = bannerDe(me.banner_id)
   const corCard = dinamico ? fundoAtual.cor : tema.cor
   const nomeCls = classesNome(me.name_color, me.name_effect)
+  const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
+  const clipsMostrados = useMemo(() => {
+    let lista = [...myClips]
+    if (jogoClips) lista = lista.filter((c) => c.game === jogoClips)
+    if (ordemClips === 'views') lista.sort((a, b) => (b.views || 0) - (a.views || 0))
+    else if (ordemClips === 'titulo') lista.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'pt'))
+    else if (ordemClips === 'jogo') lista.sort((a, b) => gameLabel(a.game).localeCompare(gameLabel(b.game), 'pt'))
+    else lista.sort((a, b) => Number(b.id) - Number(a.id))
+    return lista
+  }, [myClips, jogoClips, ordemClips])
 
   return (
     <PageShell background={estiloFundo(fundoAtual)}>
@@ -326,7 +342,7 @@ export default function ProfilePage({
                 src={avatarSrc}
                 alt={me.username}
                 className="h-16 w-16 rounded-full object-cover ring-2 ring-violet-500/60"
-                style={{ boxShadow: '0 0 26px rgba(139,92,246,.45)' }}
+                style={{ boxShadow: `0 0 26px ${corCard}66` }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
                   e.currentTarget.dataset.fb = '1'
@@ -547,7 +563,7 @@ export default function ProfilePage({
                       key={b.id}
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, banner_id: b.id }))}
-                      className={`rounded-xl border p-1.5 text-left transition-colors ${
+                      className={`relative rounded-xl border p-1.5 text-left transition-colors ${
                         form.banner_id === b.id
                           ? 'border-white/60 bg-white/10'
                           : 'border-white/10 bg-black/20 hover:border-white/30'
@@ -557,6 +573,24 @@ export default function ProfilePage({
                         className="block h-12 w-full rounded-md bg-cover bg-center"
                         style={{ backgroundImage: `url(${b.ficheiro})` }}
                       />
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPreviewTema(b.ficheiro)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.stopPropagation()
+                            setPreviewTema(b.ficheiro)
+                          }
+                        }}
+                        className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white hover:bg-black"
+                        title="Ver imagem"
+                      >
+                        <ZoomIn className="h-3.5 w-3.5" />
+                      </span>
                       <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
                         {b.nome}
                       </span>
@@ -578,7 +612,7 @@ export default function ProfilePage({
                       type="button"
                       title={f.nome}
                       onClick={() => setForm((f2) => ({ ...f2, background_id: f.id }))}
-                      className={`rounded-xl border p-1 transition-colors ${
+                      className={`relative rounded-xl border p-1 transition-colors ${
                         form.background_id === f.id
                           ? 'border-white/60 bg-white/10'
                           : 'border-white/10 bg-black/20 hover:border-white/30'
@@ -592,6 +626,26 @@ export default function ProfilePage({
                             : { background: 'linear-gradient(135deg, #1b1230, #0b0716)' }
                         }
                       />
+                      {f.imagem && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPreviewTema(f.imagem)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.stopPropagation()
+                              setPreviewTema(f.imagem)
+                            }
+                          }}
+                          className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-white hover:bg-black"
+                          title="Ver imagem"
+                        >
+                          <ZoomIn className="h-3 w-3" />
+                        </span>
+                      )}
                       <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
                         {f.nome}
                       </span>
@@ -756,13 +810,42 @@ export default function ProfilePage({
         {/* ---------------- Os meus clips ---------------- */}
         <div className="mb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-2xl font-black uppercase sm:text-3xl">
+            <h2
+              className="font-display text-2xl font-black uppercase sm:text-3xl"
+              style={{ color: 'var(--perfil-accent, #fff)' }}
+            >
               Os meus clips
             </h2>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
-              {myClips.length}
+              {clipsMostrados.length}
             </span>
           </div>
+          {myClips.length > 0 && (
+            <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <select
+                value={jogoClips}
+                onChange={(e) => setJogoClips(e.target.value)}
+                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+              >
+                <option value="">Todos os jogos</option>
+                {jogosClips.map((g) => (
+                  <option key={g} value={g}>
+                    {gameLabel(g)}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={ordemClips}
+                onChange={(e) => setOrdemClips(e.target.value)}
+                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+              >
+                <option value="recentes">Mais recentes</option>
+                <option value="views">Mais vistos</option>
+                <option value="titulo">Título (A-Z)</option>
+                <option value="jogo">Jogo (A-Z)</option>
+              </select>
+            </div>
+          )}
 
           {myClips.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
@@ -776,7 +859,7 @@ export default function ProfilePage({
             </div>
           ) : (
             <div className="space-y-6">
-              {myClips.map((c) => (
+              {clipsMostrados.map((c) => (
                 <ClipCard
                   key={c.id}
                   clip={c}
@@ -827,7 +910,29 @@ export default function ProfilePage({
             Terminar sessão
           </button>
         </div>
-        <ProfileMusic musicaId={me.musica_id} />
+        {!edit && <ProfileMusic musicaId={me.musica_id} />}
+        {previewTema && (
+          <div
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-3 sm:p-6"
+            onClick={() => setPreviewTema(null)}
+            role="presentation"
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewTema(null)}
+              className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+              aria-label="Fechar imagem"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={previewTema}
+              alt=""
+              className="max-h-[92vh] max-w-[96vw] rounded-2xl object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
     </PageShell>
   )
 }

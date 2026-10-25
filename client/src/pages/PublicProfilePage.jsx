@@ -12,6 +12,7 @@ import Estado from '../components/Estado'
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
+import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
@@ -36,6 +37,8 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const [data, setData] = useState(null)
   const [erro, setErro] = useState('')
   const [carregado, setCarregado] = useState(false)
+  const [ordemClips, setOrdemClips] = useState('recentes')
+  const [jogoClips, setJogoClips] = useState('')
 
   useEffect(() => {
     let vivo = true
@@ -134,6 +137,15 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const corCard = dinamico ? fundoAtual.cor : tema.cor
   const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
+  const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
+  let clipsMostrados = [...clips]
+  if (jogoClips) clipsMostrados = clipsMostrados.filter((c) => c.game === jogoClips)
+  if (ordemClips === 'views') clipsMostrados.sort((a, b) => (b.views || 0) - (a.views || 0))
+  else if (ordemClips === 'titulo')
+    clipsMostrados.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'pt'))
+  else if (ordemClips === 'jogo')
+    clipsMostrados.sort((a, b) => gameLabel(a.game).localeCompare(gameLabel(b.game), 'pt'))
+  else clipsMostrados.sort((a, b) => Number(b.id) - Number(a.id))
   const souEu =
     p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
 
@@ -196,7 +208,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                 src={avatarSrc}
                 alt={p.username}
                 className="h-16 w-16 rounded-full object-cover ring-2 ring-violet-500/60"
-                style={{ boxShadow: '0 0 26px rgba(139,92,246,.45)' }}
+                style={{ boxShadow: `0 0 26px ${corCard}66` }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
                   e.currentTarget.dataset.fb = '1'
@@ -287,13 +299,42 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
         {/* ---------------- Clips do membro (mesma ordem/estilo) ---------------- */}
         <div className="mb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-2xl font-black uppercase sm:text-3xl">
+            <h2
+              className="font-display text-2xl font-black uppercase sm:text-3xl"
+              style={{ color: 'var(--perfil-accent, #fff)' }}
+            >
               {souEu ? 'Os meus clips' : `Clips de ${p.username}`}
             </h2>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
-              {clips.length}
+              {clipsMostrados.length}
             </span>
           </div>
+          {clips.length > 0 && (
+            <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <select
+                value={jogoClips}
+                onChange={(e) => setJogoClips(e.target.value)}
+                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+              >
+                <option value="">Todos os jogos</option>
+                {jogosClips.map((g) => (
+                  <option key={g} value={g}>
+                    {gameLabel(g)}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={ordemClips}
+                onChange={(e) => setOrdemClips(e.target.value)}
+                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+              >
+                <option value="recentes">Mais recentes</option>
+                <option value="views">Mais vistos</option>
+                <option value="titulo">Título (A-Z)</option>
+                <option value="jogo">Jogo (A-Z)</option>
+              </select>
+            </div>
+          )}
 
           {clips.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
@@ -307,7 +348,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             </div>
           ) : (
             <div className="space-y-6">
-              {clips.map((c) => (
+              {clipsMostrados.map((c) => (
                 <ClipCard
                   key={c.id}
                   clip={c}

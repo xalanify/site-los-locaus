@@ -56,6 +56,44 @@ function precoDeCentavos(cents) {
   return `€ ${(n / 100).toFixed(2).replace('.', ',')}`;
 }
 
+function precoApp(d) {
+  if (!d) return null;
+  if (d.price_overview) {
+    return {
+      texto: d.price_overview.final_formatted,
+      original: d.price_overview.initial_formatted || null,
+      desconto: Number(d.price_overview.discount_percent) || 0,
+      gratis: false,
+    };
+  }
+  if (d.is_free) return { texto: 'Grátis', original: null, desconto: 0, gratis: true };
+  if (d.release_date && d.release_date.coming_soon) {
+    return { texto: 'Em breve', original: null, desconto: 0, gratis: false };
+  }
+  return { texto: 'Sem preço na Steam', original: null, desconto: 0, gratis: false };
+}
+
+async function infoApp(appid) {
+  const id = Number(appid);
+  if (!id) return null;
+  const chave = `app:${id}`;
+  const hit = ler(chave);
+  if (hit) return hit;
+  try {
+    const r = await fetch(
+      `https://store.steampowered.com/api/appdetails?appids=${id}&cc=${CC}&l=${L}`,
+      { headers: { 'User-Agent': UA }, timeout: 20000 },
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    const d = j && j[id] && j[id].success ? j[id].data : null;
+    if (d) guardar(chave, d, TTL_JOGO);
+    return d;
+  } catch {
+    return null;
+  }
+}
+
 /* ---------- pesquisa HTML da Steam ---------- */
 function parseResultados(html) {
   const out = [];
@@ -70,16 +108,27 @@ function parseResultados(html) {
     const lancamento = limpar(
       (bloco.match(/search_released[^>]*>([\s\S]*?)<\/div>/) || [])[1],
     );
-    const precoTxt = limpar(
-      (bloco.match(/class="search_price[^"]*"[^>]*>([\s\S]*?)<\/div>/) || [])[1],
+    const desconto = Number((bloco.match(/data-discount="(\d+)"/) || [])[1]) || 0;
+    const precoFinal = limpar(
+      (bloco.match(/discount_final_price[^>]*>([^<]+)/) || [])[1],
     );
+    const precoOriginal = limpar(
+      (bloco.match(/discount_original_price[^>]*>([^<]+)/) || [])[1],
+    );
+    const precoTxt = limpar(
+      (bloco.match(/class="search_price(?!_)[^"]*"[^>]*>([\s\S]*?)<\/div>/) || [])[1],
+    );
+    let preco = normalizarPreco(precoFinal || precoTxt);
+    if (preco && desconto > 0) {
+      preco = { ...preco, original: precoOriginal || preco.original || null, desconto };
+    }
     out.push({
       appid,
       nome,
       imagem,
       imagemFallback: capsule,
       lancamento: lancamento || null,
-      preco: normalizarPreco(precoTxt),
+      preco,
       url: `https://store.steampowered.com/app/${appid}`,
     });
   }
@@ -109,7 +158,10 @@ async function emBreve() {
   const chave = 'em-breve';
   const hit = ler(chave);
   if (hit) return hit;
-  const jogos = await pesquisa({ filter: 'popularcomingsoon' });
+  const jogos = (await pesquisa({ filter: 'popularcomingsoon' })).map((j) => ({
+    ...j,
+    emBreve: true,
+  }));
   const dados = { ok: true, atualizadoEm: new Date().toISOString(), jogos };
   guardar(chave, dados);
   return dados;
@@ -127,19 +179,94 @@ async function maisJogados() {
   });
   if (!r.ok) throw new Error('steamspy ' + r.status);
   const lista = await r.json();
-  const jogos = Object.values(lista || {})
+  const base = Object.values(lista || {})
     .map((g) => ({
       appid: Number(g.appid),
       nome: g.name,
       ccu: Number(g.ccu) || 0,
-      preco: Number(g.price) > 0 ? precoDeCentavos(g.price) : 'Grátis',
-      imagem: `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/header.jpg`,
-      url: `https://store.steampowered.com/app/${g.appid}`,
+      precoSpy: Number(g.price) || 0,
     }))
     .filter((g) => g.appid && g.nome)
     .sort((a, b) => b.ccu - a.ccu)
     .slice(0, 10);
 
+  // Ficha real na Steam: nome, preço e imagem corretos (o SteamSpy
+  // às vezes tem nomes/preços desatualizados).
+  const jogos = await Promise.all(
+    base.map(async (g) => {
+      const d = await infoApp(g.appid);
+      let nome = (d && d.name) || g.nome;
+      let imagem =
+        (d && d.header_image) ||
+        `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/header.jpg`;
+      let preco = precoApp(d);
+      let desconto = (preco && preco.desconto) || 0;
+
+      // GTA V Legacy não é grátis: vem incluído no GTA V Enhanced.
+      if (g.appid === 271590) {
+        nome = 'Grand Theft Auto V Legacy';
+        preco = { texto: 'Incluído no GTA V Enhanced', original: null, desconto: 0, gratis: false };
+        desconto = 0;
+      }
+      // Call of Duty HQ (Warzone + MW) — mostrar só "Call of Duty"
+      // com a imagem do MW4, como o utilizador pediu.
+      if (g.appid === 1938090) {
+        nome = 'Call of Duty';
+        const mw4 = await infoApp(4435490);
+        if (mw4 && mw4.header_image) imagem = mw4.header_image;
+        preco = { texto: 'Grátis', original: null, desconto: 0, gratis: true };
+        desconto = 0;
+      }
+
+      return {
+        appid: g.appid,
+        nome,
+        ccu: g.ccu,
+        preco: (preco && preco.texto) || (g.precoSpy > 0 ? precoDeCentavos(g.precoSpy) : 'Ver na Steam'),
+        desconto,
+        imagem,
+        url: `https://store.steampowered.com/app/${g.appid}`,
+      };
+    }),
+  );
+
+  const dados = { ok: true, atualizadoEm: new Date().toISOString(), jogos };
+  guardar(chave, dados);
+  return dados;
+}
+
+/* ---------- mais comprados (top sellers da Steam) ---------- */
+async function maisComprados() {
+  const chave = 'mais-comprados';
+  const hit = ler(chave);
+  if (hit) return hit;
+  const r = await fetch(
+    `https://store.steampowered.com/api/featuredcategories?cc=${CC}&l=${L}`,
+    { headers: { 'User-Agent': UA }, timeout: 20000 },
+  );
+  if (!r.ok) throw new Error('steam featured ' + r.status);
+  const j = await r.json();
+  const itens = (j && j.top_sellers && j.top_sellers.items) || [];
+  const jogos = itens.slice(0, 12).map((g) => ({
+    appid: Number(g.id),
+    nome: g.name,
+    imagem: g.header_image || g.large_capsule_image || null,
+    lancamento: null,
+    preco: {
+      texto:
+        Number(g.final_price) > 0
+          ? `€ ${(Number(g.final_price) / 100).toFixed(2).replace('.', ',')}`
+          : 'Grátis',
+      original:
+        Number(g.original_price) > 0
+          ? `€ ${(Number(g.original_price) / 100).toFixed(2).replace('.', ',')}`
+          : null,
+      desconto: Number(g.discount_percent) || 0,
+      gratis: Number(g.final_price) === 0,
+      valor: Number(g.final_price) > 0 ? Number(g.final_price) / 100 : 0,
+    },
+    url: `https://store.steampowered.com/app/${g.id}`,
+  }));
   const dados = { ok: true, atualizadoEm: new Date().toISOString(), jogos };
   guardar(chave, dados);
   return dados;
@@ -197,10 +324,10 @@ async function procurar({ q, genero, maxpreco, ordenar }) {
 }
 
 /* ---------- ficha do jogo ---------- */
-function linksDaLoja(nome) {
+function linksDaLoja(nome, appid) {
   const q = encodeURIComponent(nome);
   return [
-    { nome: 'Steam', tipo: 'Loja oficial', url: `https://store.steampowered.com/search/?term=${q}` },
+    { nome: 'Steam', tipo: 'Loja oficial', url: `https://store.steampowered.com/app/${appid}` },
     { nome: 'Epic Games', tipo: 'Loja oficial', url: `https://store.epicgames.com/pt-PT/search?q=${q}` },
     { nome: 'GOG', tipo: 'Loja oficial', url: `https://www.gog.com/en/games?query=${q}` },
     { nome: 'Microsoft Store', tipo: 'Chave / loja', url: `https://www.microsoft.com/pt-pt/search?q=${q}` },
@@ -228,16 +355,14 @@ async function jogo(appid) {
   const d = j && j[id] && j[id].success ? j[id].data : null;
   if (!d) throw new Error('Jogo não encontrado');
 
-  const preco = d.price_overview
-    ? {
-        texto: d.price_overview.final_formatted,
-        original: d.price_overview.initial_formatted || null,
-        desconto: Number(d.price_overview.discount_percent) || 0,
-        gratis: false,
-      }
-    : d.is_free
-      ? { texto: 'Grátis', original: null, desconto: 0, gratis: true }
-      : { texto: 'Em breve / sem preço', original: null, desconto: 0, gratis: false };
+  let preco = precoApp(d) || { texto: 'Sem preço na Steam', original: null, desconto: 0, gratis: false };
+  if (id === 271590) {
+    preco = { texto: 'Incluído no GTA V Enhanced', original: null, desconto: 0, gratis: false };
+  }
+  if (id === 1938090) {
+    preco = { texto: 'Grátis', original: null, desconto: 0, gratis: true };
+    d.name = 'Call of Duty';
+  }
 
   const dados = {
     ok: true,
@@ -255,11 +380,19 @@ async function jogo(appid) {
       emBreve: Boolean(d.release_date && d.release_date.coming_soon),
       preco,
       url: `https://store.steampowered.com/app/${id}`,
-      links: linksDaLoja(d.name),
+      links: preco.gratis
+        ? [
+            {
+              nome: 'Steam',
+              tipo: 'Loja oficial',
+              url: `https://store.steampowered.com/app/${id}`,
+            },
+          ]
+        : linksDaLoja(d.name, id),
     },
   };
   guardar(chave, dados, TTL_JOGO);
   return dados;
 }
 
-module.exports = { emBreve, maisJogados, procurar, jogo };
+module.exports = { emBreve, maisJogados, maisComprados, procurar, jogo };

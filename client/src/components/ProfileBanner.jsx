@@ -2,7 +2,7 @@ import { bannerDe } from '../data/temasPerfil'
 
 /* Fundo animado (GIF) do cartão de perfil. Fica sempre atrás do
    conteúdo, com um véu escuro para os textos continuarem legíveis. */
-export default function ProfileBanner({ bannerId, overlay = 'from-black/75 via-black/50 to-black/85' }) {
+export default function ProfileBanner({ bannerId, overlay = 'from-black/80 via-black/60 to-black/90' }) {
   const b = bannerDe(bannerId)
   return (
     <span className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">

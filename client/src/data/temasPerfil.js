@@ -1,8 +1,8 @@
-/* ============================================================
-   Temas de perfil — banners (GIF), fundos e músicas
+﻿/* ============================================================
+   Temas de perfil â€” banners (GIF), fundos e mÃºsicas
    ------------------------------------------------------------
    Os ficheiros vivem em client/public/perfil/.
-   O id é guardado em user_profiles.banner_id / background_id /
+   O id Ã© guardado em user_profiles.banner_id / background_id /
    musica_id.
    ============================================================ */
 
@@ -23,20 +23,20 @@ const CORES_BANNER = [
   '#2dd4bf',
 ]
 
-export const BANNERS = Array.from({ length: 12 }, (_, i) => {
+export const BANNERS = Array.from({ length: 17 }, (_, i) => {
   const n = dois(i + 1)
   return {
     id: `g${n}`,
     nome: `Banner ${n}`,
-    ficheiro: `/perfil/cardbanner/${n}.gif`,
-    cor: CORES_BANNER[i] || '#a855f7',
+    ficheiro: `/perfil/cardbanner/${n}.webp`,
+    cor: CORES_BANNER[i % CORES_BANNER.length] || '#a855f7',
   }
 })
 
 export const FUNDOS = [
   {
     id: '',
-    nome: 'Padrão',
+    nome: 'PadrÃ£o',
     cor: '#8b5cf6',
     cor2: '#22d3ee',
     rgb: '139 92 246',
@@ -48,32 +48,104 @@ export const FUNDOS = [
     cor: '#a3e635',
     cor2: '#facc15',
     rgb: '163 230 53',
-    imagem: '/perfil/fundos/01.png',
+    imagem: '/perfil/fundos/01.jpg',
   },
   {
     id: 'f02',
-    nome: 'Operação',
+    nome: 'OperaÃ§Ã£o',
     cor: '#cbd5e1',
     cor2: '#94a3b8',
     rgb: '203 213 225',
-    imagem: '/perfil/fundos/02.webp',
+    imagem: '/perfil/fundos/02.jpg',
   },
   {
     id: 'f03',
-    nome: 'Espaço',
+    nome: 'EspaÃ§o',
     cor: '#38bdf8',
     cor2: '#818cf8',
     rgb: '56 189 248',
     imagem: '/perfil/fundos/03.jpg',
   },
+  {
+    id: 'f04',
+    nome: 'Black Ops',
+    cor: '#f97316',
+    cor2: '#facc15',
+    rgb: '249 115 22',
+    imagem: '/perfil/fundos/04.jpg',
+  },
+  {
+    id: 'f05',
+    nome: 'Black Ops II',
+    cor: '#38bdf8',
+    cor2: '#f97316',
+    rgb: '56 189 248',
+    imagem: '/perfil/fundos/05.jpg',
+  },
+  {
+    id: 'f06',
+    nome: 'World at War',
+    cor: '#a3e635',
+    cor2: '#d97706',
+    rgb: '163 230 53',
+    imagem: '/perfil/fundos/06.jpg',
+  },
+  {
+    id: 'f07',
+    nome: 'GTA V â€” Los Santos',
+    cor: '#f472b6',
+    cor2: '#f59e0b',
+    rgb: '244 114 182',
+    imagem: '/perfil/fundos/07.jpg',
+  },
+  {
+    id: 'f08',
+    nome: 'GTA V â€” Pier',
+    cor: '#38bdf8',
+    cor2: '#fb923c',
+    rgb: '56 189 248',
+    imagem: '/perfil/fundos/08.jpg',
+  },
+  {
+    id: 'f09',
+    nome: 'Red Dead 1',
+    cor: '#ef4444',
+    cor2: '#f59e0b',
+    rgb: '239 68 68',
+    imagem: '/perfil/fundos/09.jpg',
+  },
+  {
+    id: 'f10',
+    nome: 'Red Dead 2',
+    cor: '#f97316',
+    cor2: '#fbbf24',
+    rgb: '249 115 22',
+    imagem: '/perfil/fundos/10.jpg',
+  },
+  {
+    id: 'f11',
+    nome: 'EspaÃ§o 01',
+    cor: '#818cf8',
+    cor2: '#22d3ee',
+    rgb: '129 140 248',
+    imagem: '/perfil/fundos/11.jpg',
+  },
+  {
+    id: 'f12',
+    nome: 'EspaÃ§o 02',
+    cor: '#c084fc',
+    cor2: '#38bdf8',
+    rgb: '192 132 252',
+    imagem: '/perfil/fundos/12.jpg',
+  },
 ]
 
 export const CORES_ACENTO = [
-  { id: 'auto', nome: 'Automática', cor: '' },
+  { id: 'auto', nome: 'AutomÃ¡tica', cor: '' },
   { id: 'violeta', nome: 'Violeta', cor: '#8b5cf6' },
   { id: 'azul', nome: 'Azul', cor: '#38bdf8' },
   { id: 'verde', nome: 'Verde', cor: '#22c55e' },
-  { id: 'ambar', nome: 'Âmbar', cor: '#f59e0b' },
+  { id: 'ambar', nome: 'Ã‚mbar', cor: '#f59e0b' },
   { id: 'vermelho', nome: 'Vermelho', cor: '#ef4444' },
   { id: 'rosa', nome: 'Rosa', cor: '#ec4899' },
   { id: 'ciano', nome: 'Ciano', cor: '#22d3ee' },
@@ -89,6 +161,51 @@ export const MUSICAS = [
     id: 'm02',
     nome: 'BO1 Theme',
     ficheiro: '/perfil/musicas/02.mp3',
+  },
+  {
+    id: 'm03',
+    nome: 'BO3 Damned',
+    ficheiro: '/perfil/musicas/03.mp3',
+  },
+  {
+    id: 'm04',
+    nome: 'COD 4 Theme',
+    ficheiro: '/perfil/musicas/04.mp3',
+  },
+  {
+    id: 'm05',
+    nome: 'COD WaW 2008',
+    ficheiro: '/perfil/musicas/05.mp3',
+  },
+  {
+    id: 'm06',
+    nome: 'COD WWII 2017',
+    ficheiro: '/perfil/musicas/06.mp3',
+  },
+  {
+    id: 'm07',
+    nome: 'GTA 4 Theme',
+    ficheiro: '/perfil/musicas/07.mp3',
+  },
+  {
+    id: 'm08',
+    nome: 'GTA 5 Menu Pausa',
+    ficheiro: '/perfil/musicas/08.mp3',
+  },
+  {
+    id: 'm09',
+    nome: 'GTA 5 Theme',
+    ficheiro: '/perfil/musicas/09.mp3',
+  },
+  {
+    id: 'm10',
+    nome: 'GTA Liberty City',
+    ficheiro: '/perfil/musicas/10.mp3',
+  },
+  {
+    id: 'm11',
+    nome: 'MW2 Music',
+    ficheiro: '/perfil/musicas/11.mp3',
   },
 ]
 

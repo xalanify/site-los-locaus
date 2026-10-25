@@ -811,7 +811,15 @@ function FortniteTorneiosTab() {
           >
             FNJPNews
           </a>{' '}
-          · atualiza sozinho
+          · nomes oficiais em inglês · atualiza sozinho ·{' '}
+          <a
+            href="https://fortnitetracker.com/events"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-fuchsia-400 underline-offset-2 hover:underline"
+          >
+            ver também no Fortnite Tracker
+          </a>
         </p>
       </section>
     </div>

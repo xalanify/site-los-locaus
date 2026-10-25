@@ -57,7 +57,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
-    { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos },
+    { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos, badge: 'Novo' },
     { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
     { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
   ]

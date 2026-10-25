@@ -704,6 +704,16 @@ router.get('/steam/top', async (req, res) => {
   }
 });
 
+router.get('/steam/mais-comprados', async (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(await require('../steamstore').maisComprados());
+  } catch (e) {
+    console.error('Erro steam/mais-comprados:', e.message);
+    res.status(502).json({ ok: false, error: 'Não foi possível ler os mais comprados.', jogos: [] });
+  }
+});
+
 router.get('/steam/procurar', async (req, res) => {
   try {
     const dados = await require('../steamstore').procurar({
