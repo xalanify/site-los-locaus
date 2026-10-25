@@ -14,6 +14,7 @@ import {
   X,
   MessageCircle,
   Swords,
+  ShoppingBag,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AvatarImg from './AvatarImg'
@@ -41,6 +42,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'Membros', icon: Users, path: '/membros' },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' },
+    { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam' },
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
     { name: 'Conta', icon: User, path: '/perfil' },
   ]

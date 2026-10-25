@@ -682,6 +682,56 @@ router.get('/fortnite/torneios', async (req, res) => {
 });
 
 // ============================================================
+// Steam Store — catálogo de jogos (legal)
+// ============================================================
+router.get('/steam/em-breve', async (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(await require('../steamstore').emBreve());
+  } catch (e) {
+    console.error('Erro steam/em-breve:', e.message);
+    res.status(502).json({ ok: false, error: 'Não foi possível ler os lançamentos da Steam.', jogos: [] });
+  }
+});
+
+router.get('/steam/top', async (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(await require('../steamstore').maisJogados());
+  } catch (e) {
+    console.error('Erro steam/top:', e.message);
+    res.status(502).json({ ok: false, error: 'Não foi possível ler os mais jogados.', jogos: [] });
+  }
+});
+
+router.get('/steam/procurar', async (req, res) => {
+  try {
+    const dados = await require('../steamstore').procurar({
+      q: req.query.q,
+      genero: req.query.genero,
+      maxpreco: req.query.maxpreco,
+      ordenar: req.query.ordenar,
+    });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(dados);
+  } catch (e) {
+    console.error('Erro steam/procurar:', e.message);
+    res.status(502).json({ ok: false, error: 'Não foi possível procurar na Steam.', jogos: [] });
+  }
+});
+
+router.get('/steam/jogo/:appid', async (req, res) => {
+  try {
+    const dados = await require('../steamstore').jogo(req.params.appid);
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(dados);
+  } catch (e) {
+    console.error('Erro steam/jogo:', e.message);
+    res.status(404).json({ ok: false, error: 'Jogo não encontrado na Steam.' });
+  }
+});
+
+// ============================================================
 // Battlefield — BF1 / BFV / BF6 (snapshot tracker.gg)
 // ============================================================
 router.get('/bf', (req, res) => {

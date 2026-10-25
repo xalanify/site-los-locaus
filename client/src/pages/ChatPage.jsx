@@ -1075,7 +1075,16 @@ export default function ChatPage({ user }) {
                   allowFullScreen
                 />
               ) : clipAberto.url ? (
-                <video src={clipAberto.url} controls autoPlay playsInline className="max-h-[75dvh] w-full" />
+                <video
+                  src={clipAberto.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  onLoadedMetadata={(e) => {
+                    e.currentTarget.volume = 0.25
+                  }}
+                  className="max-h-[75dvh] w-full"
+                />
               ) : (
                 <p className="p-8 text-center text-sm text-gray-400">Este clip não está disponível.</p>
               )}

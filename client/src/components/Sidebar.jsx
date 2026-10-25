@@ -13,6 +13,7 @@ import {
   Sparkles,
   MessageCircle,
   Swords,
+  ShoppingBag,
 } from 'lucide-react'
 
 /* ============================================================
@@ -41,6 +42,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isProfile = location.pathname === '/perfil'
   const isMembers = location.pathname === '/membros'
   const isGames = location.pathname === '/jogos'
+  const isLojaJogos = location.pathname === '/jogos-steam'
   const isPcs = location.pathname === '/pcs'
   const isFerramentas = location.pathname === '/ferramentas'
   const isChat = location.pathname === '/chat'
@@ -55,6 +57,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
+    { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos },
     { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
     { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
   ]

@@ -15,6 +15,19 @@ const USER_RE = /^[\p{L}\p{N}_. -]{3,20}$/u;
 const NICK_RE = /^[\p{L}\p{N}_. -]{1,24}$/u;
 const TEMA_RE = /^[a-z0-9_-]{1,32}$/;
 const COR_RE = /^#[0-9a-fA-F]{6}$/;
+const CORES_NOME = new Set([
+  '',
+  'gold',
+  'diamond',
+  'damascus',
+  'interstellar',
+  'rainbow',
+  'red',
+  'green',
+  'pink',
+  'cyan',
+]);
+const EFEITOS_NOME = new Set(['', 'glow', 'blink', 'pulse', 'shimmer']);
 
 /* ---------- fotos de perfil ----------
    O utilizador escolhe uma imagem; o servidor sobe-a para o
@@ -41,7 +54,7 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, accent_color, name_color, name_effect
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, dynamic_colors, accent_color, name_color, name_effect
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -53,6 +66,7 @@ const profileOf = async (userId) => {
       banner_id: (row && row.banner_id) || null,
       background_id: (row && row.background_id) || null,
       musica_id: (row && row.musica_id) || null,
+      dynamic_colors: row && row.dynamic_colors != null ? Boolean(row.dynamic_colors) : true,
       accent_color: (row && row.accent_color) || null,
       name_color: (row && row.name_color) || null,
       name_effect: (row && row.name_effect) || null,
@@ -66,6 +80,7 @@ const profileOf = async (userId) => {
       banner_id: null,
       background_id: null,
       musica_id: null,
+      dynamic_colors: true,
       accent_color: null,
       name_color: null,
       name_effect: null,
@@ -287,6 +302,9 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasBackground = Object.prototype.hasOwnProperty.call(body, 'background_id');
     const hasMusic = Object.prototype.hasOwnProperty.call(body, 'musica_id');
     const hasAccent = Object.prototype.hasOwnProperty.call(body, 'accent_color');
+    const hasDynamic = Object.prototype.hasOwnProperty.call(body, 'dynamic_colors');
+    const hasNameColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
+    const hasNameEffect = Object.prototype.hasOwnProperty.call(body, 'name_effect');
     if (
       !hasNick &&
       !hasAvatar &&
@@ -295,7 +313,10 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       !hasBanner &&
       !hasBackground &&
       !hasMusic &&
-      !hasAccent
+      !hasAccent &&
+      !hasDynamic &&
+      !hasNameColor &&
+      !hasNameEffect
     ) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
@@ -388,6 +409,43 @@ router.put('/me/profile', attachAuth, async (req, res) => {
           'UPDATE user_profiles SET accent_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
         )
         .run(cor || null, uid);
+    }
+    if (hasDynamic) {
+      await db
+        .prepare(
+          'UPDATE user_profiles SET dynamic_colors = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(Boolean(body.dynamic_colors), uid);
+    }
+
+    if (hasNameColor || hasNameEffect) {
+      const conta = await store.findById(uid);
+      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+      if (!souAdmin) {
+        return res.status(403).json({ error: 'Os efeitos de nome são exclusivos do admin.' });
+      }
+      if (hasNameColor) {
+        const cor = String(body.name_color || '').trim();
+        if (!CORES_NOME.has(cor)) {
+          return res.status(400).json({ error: 'Cor de nome inválida.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET name_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(cor || null, uid);
+      }
+      if (hasNameEffect) {
+        const efeito = String(body.name_effect || '').trim();
+        if (!EFEITOS_NOME.has(efeito)) {
+          return res.status(400).json({ error: 'Efeito de nome inválido.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET name_effect = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(efeito || null, uid);
+      }
     }
 
     const user = await store.findById(uid);
@@ -606,7 +664,7 @@ router.get('/list', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.accent_color,
+        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
@@ -632,7 +690,10 @@ router.get('/list', attachAuth, async (req, res) => {
         banner_id: r.banner_id || null,
         background_id: r.background_id || null,
         musica_id: r.musica_id || null,
+        dynamic_colors: r.dynamic_colors != null ? Boolean(r.dynamic_colors) : true,
         accent_color: r.accent_color || null,
+        name_color: r.name_color || null,
+        name_effect: r.name_effect || null,
         online: Boolean(r.online),
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],

@@ -102,7 +102,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   const [pronto, setPronto] = useState(false)
   const [tocando, setTocando] = useState(false)
   const [mudo, setMudo] = useState(false)
-  const [volume, setVolume] = useState(100)
+  const [volume, setVolume] = useState(25)
   const [tempo, setTempo] = useState(0)
   const [vqPedida, setVqPedida] = useState(qualGravada)
   const tempoRef = useRef(0)
@@ -195,7 +195,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 setTocando(true)
                 qualidadeFeita.current = false
                 try {
-                  e.target.setVolume(100)
+                  e.target.setVolume(volume)
                   e.target.unMute && e.target.unMute()
                   setDur(e.target.getDuration() || 0)
                 } catch {}
@@ -927,6 +927,7 @@ export default function ClipCard({
   onProfile,
   onUpdate,
   onDelete,
+  transparent = false,
 }) {
   const [c, setC] = useState(clip)
   const [showComments, setShowComments] = useState(false)
@@ -1021,6 +1022,13 @@ export default function ClipCard({
   const [baixando, setBaixando] = useState(false)
   const download = async () => {
     if (!user) return onRequestAuth && onRequestAuth()
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(
+      (typeof navigator !== 'undefined' && navigator.userAgent) || '',
+    )
+    if (isMobile) {
+      toast.info('O download de vídeos ainda não está disponível no telemóvel. Usa um PC.')
+      return
+    }
     if (busy || baixando) return
     setBusy(true)
     setBaixando(true)
@@ -1313,7 +1321,13 @@ export default function ClipCard({
   )
 
   return (
-    <div className="glass overflow-hidden rounded-2xl">
+    <div
+      className={`clip-card overflow-hidden rounded-2xl border ${
+        transparent
+          ? 'border-white/10 bg-white/[0.035] backdrop-blur-[3px]'
+          : 'glass border-transparent'
+      }`}
+    >
       {/* Autor + jogo + data */}
       <div className="flex flex-wrap items-center gap-3 px-4 pt-4">
         <button
@@ -1442,7 +1456,10 @@ export default function ClipCard({
             controls
             preload="metadata"
             playsInline
-            onLoadedMetadata={onMeta}
+            onLoadedMetadata={(e) => {
+              e.currentTarget.volume = 0.25
+              onMeta(e)
+            }}
             onTimeUpdate={onTime}
             /* só um clip a tocar de cada vez (menos CPU e banda) */
             onPlay={() => {

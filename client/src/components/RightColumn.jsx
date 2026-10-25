@@ -5,6 +5,7 @@ import AvatarImg from './AvatarImg'
 import UserBanner from './UserBanner'
 import { authHeaders } from '../lib/auth'
 import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
+import { classesNome } from '../data/nomeEfeitos'
 import { anunciosVisiveis } from '../lib/anuncios'
 
 /* ============================================================
@@ -145,7 +146,8 @@ export default function RightColumn() {
                       </span>
                       <span
                         className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
-                          temPrevisao1(m.badges) ? nomeDouradoClass : 'text-gray-200'
+                          classesNome(m.name_color, m.name_effect) ||
+                          (temPrevisao1(m.badges) ? nomeDouradoClass : 'text-gray-200')
                         }`}
                       >
                         {m.display_name || m.username}

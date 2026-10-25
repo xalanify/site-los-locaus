@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Calendar,
   Clapperboard,
   LogOut,
   LayoutDashboard,
@@ -22,13 +21,12 @@ import {
   BANNERS,
   FUNDOS,
   MUSICAS,
-  CORES_ACENTO,
   bannerDe,
   estiloFundo,
   fundoDe,
-  hexParaRgb,
   musicaDe,
 } from '../data/temasPerfil'
+import { CORES_NOME, EFEITOS_NOME, classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
    Perfil da conta — abre ao clicar no ícone de Conta.
@@ -64,7 +62,9 @@ export default function ProfilePage({
     banner_id: 'g01',
     background_id: '',
     musica_id: '',
-    accent_color: '',
+    dynamic_colors: true,
+    name_color: '',
+    name_effect: '',
   })
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
@@ -106,22 +106,48 @@ export default function ProfilePage({
   }, [])
 
   const fundoAtual = fundoDe(me?.background_id)
-  const accent = me?.accent_color || fundoAtual.cor
-  const accent2 = me?.accent_color || fundoAtual.cor2
-  const accentRgb = me?.accent_color ? hexParaRgb(me.accent_color) : fundoAtual.rgb
+  const temFundo = Boolean(fundoAtual.imagem)
+  const dinamico = me?.dynamic_colors !== false && temFundo
   useEffect(() => {
     const root = document.documentElement
-    document.body.classList.add('profile-theme')
-    root.style.setProperty('--perfil-accent', accent)
-    root.style.setProperty('--perfil-accent-2', accent2)
-    root.style.setProperty('--perfil-accent-rgb', accentRgb)
-    return () => {
+    document.body.classList.toggle('profile-bg', temFundo)
+    if (!dinamico) {
       document.body.classList.remove('profile-theme')
       root.style.removeProperty('--perfil-accent')
       root.style.removeProperty('--perfil-accent-2')
       root.style.removeProperty('--perfil-accent-rgb')
+      root.style.removeProperty('--aj-300')
+      root.style.removeProperty('--aj-400')
+      root.style.removeProperty('--aj-500')
+      root.style.removeProperty('--aj-600')
+      root.style.removeProperty('--aj-700')
+      root.style.removeProperty('--aj-line')
+      return () => document.body.classList.remove('profile-bg')
     }
-  }, [accent, accent2, accentRgb])
+    document.body.classList.add('profile-theme')
+    root.style.setProperty('--perfil-accent', fundoAtual.cor)
+    root.style.setProperty('--perfil-accent-2', fundoAtual.cor2)
+    root.style.setProperty('--perfil-accent-rgb', fundoAtual.rgb)
+    root.style.setProperty('--aj-300', fundoAtual.rgb)
+    root.style.setProperty('--aj-400', fundoAtual.rgb)
+    root.style.setProperty('--aj-500', fundoAtual.rgb)
+    root.style.setProperty('--aj-600', fundoAtual.rgb)
+    root.style.setProperty('--aj-700', fundoAtual.rgb)
+    root.style.setProperty('--aj-line', `rgba(${fundoAtual.rgb.split(' ').join(', ')}, 0.22)`)
+    return () => {
+      document.body.classList.remove('profile-theme')
+      document.body.classList.remove('profile-bg')
+      root.style.removeProperty('--perfil-accent')
+      root.style.removeProperty('--perfil-accent-2')
+      root.style.removeProperty('--perfil-accent-rgb')
+      root.style.removeProperty('--aj-300')
+      root.style.removeProperty('--aj-400')
+      root.style.removeProperty('--aj-500')
+      root.style.removeProperty('--aj-600')
+      root.style.removeProperty('--aj-700')
+      root.style.removeProperty('--aj-line')
+    }
+  }, [temFundo, dinamico, fundoAtual.id, fundoAtual.cor, fundoAtual.cor2, fundoAtual.rgb])
 
   if (!me) return null
 
@@ -151,7 +177,9 @@ export default function ProfilePage({
       banner_id: me.banner_id || 'g01',
       background_id: me.background_id || '',
       musica_id: me.musica_id || '',
-      accent_color: me.accent_color || '',
+      dynamic_colors: me.dynamic_colors !== false,
+      name_color: me.name_color || '',
+      name_effect: me.name_effect || '',
     })
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
@@ -222,7 +250,10 @@ export default function ProfilePage({
         banner_id: form.banner_id,
         background_id: form.background_id,
         musica_id: form.musica_id,
-        accent_color: form.accent_color,
+        dynamic_colors: form.dynamic_colors,
+        ...(isAdmin || me.is_admin
+          ? { name_color: form.name_color, name_effect: form.name_effect }
+          : {}),
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -256,6 +287,8 @@ export default function ProfilePage({
 
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
+  const corCard = dinamico ? fundoAtual.cor : tema.cor
+  const nomeCls = classesNome(me.name_color, me.name_effect)
 
   return (
     <PageShell background={estiloFundo(fundoAtual)}>
@@ -274,10 +307,10 @@ export default function ProfilePage({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6"
+          className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(me.name_effect)}`}
           style={{
-            borderColor: `${tema.cor}66`,
-            boxShadow: `0 0 40px ${tema.cor}22, inset 0 0 0 1px ${tema.cor}18`,
+            borderColor: `${corCard}66`,
+            boxShadow: `0 0 40px ${corCard}22, inset 0 0 0 1px ${corCard}18`,
           }}
         >
           <ProfileBanner bannerId={me.banner_id} />
@@ -312,7 +345,7 @@ export default function ProfilePage({
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={`truncate font-display text-xl font-black uppercase ${
-                    temPrevisao1(badges) ? nomeDouradoClass : 'text-white'
+                    nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
                   }`}
                 >
                   {me.username}
@@ -330,10 +363,7 @@ export default function ProfilePage({
                 )}
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
-                  Membro desde {criado}
-                </span>
+                <span>Membro desde {criado}</span>
                 <span
                   className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
                   title="ID da conta"
@@ -570,33 +600,29 @@ export default function ProfilePage({
                 </div>
               </div>
 
-              {/* Cor de destaque (sidebars, títulos e detalhes) */}
-              <div>
-                <label className="block text-xs font-bold text-gray-400">Cor de destaque</label>
-                <p className="mb-2 text-[11px] text-gray-500">
-                  Automática segue o fundo escolhido. Podes forçar outra cor.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {CORES_ACENTO.map((c) => {
-                    const ativo = (form.accent_color || '') === c.cor
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        title={c.nome}
-                        onClick={() => setForm((f) => ({ ...f, accent_color: c.cor }))}
-                        className={`grid h-8 w-8 place-items-center rounded-full border-2 transition-transform ${
-                          ativo ? 'scale-110 border-white' : 'border-white/20 hover:scale-105'
-                        }`}
-                        style={{
-                          background: c.cor || 'linear-gradient(135deg,#8b5cf6,#22d3ee)',
-                        }}
-                      >
-                        {ativo && <Check className="h-3.5 w-3.5 text-white" />}
-                      </button>
-                    )
-                  })}
+              {/* Cores dinâmicas do perfil */}
+              <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-black/20 px-3 py-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-gray-300">Cores dinâmicas do perfil</p>
+                  <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
+                    O site adapta os títulos, sidebars, cartões e bordas às cores do fundo que escolheres.
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.dynamic_colors}
+                  onClick={() => setForm((f) => ({ ...f, dynamic_colors: !f.dynamic_colors }))}
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                    form.dynamic_colors ? 'bg-violet-500' : 'bg-white/15'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      form.dynamic_colors ? 'translate-x-5' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
               </div>
 
               {/* Música do perfil */}
@@ -640,11 +666,62 @@ export default function ProfilePage({
                     preload="none"
                     className="mt-2 h-8 w-full"
                     ref={(el) => {
-                      if (el) el.volume = 0.25
+                      if (el) el.volume = 0.12
                     }}
                   />
                 )}
               </div>
+
+              {(isAdmin || me.is_admin) && (
+                <div className="rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-amber-300">
+                    Efeitos de nome (admin)
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-gray-500">
+                    Só tu vês estas opções. Aplica-se ao teu nome e ao cartão do perfil.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {CORES_NOME.map((c) => (
+                      <button
+                        key={c.id || 'normal'}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, name_color: c.id }))}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
+                          form.name_color === c.id
+                            ? 'border-white/60 bg-white/15'
+                            : 'border-white/10 bg-black/20'
+                        }`}
+                      >
+                        <span className={classesNome(c.id, '')}>{c.nome}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {EFEITOS_NOME.map((e) => (
+                      <button
+                        key={e.id || 'none'}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, name_effect: e.id }))}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
+                          form.name_effect === e.id
+                            ? 'border-white/60 bg-white/15'
+                            : 'border-white/10 bg-black/20'
+                        }`}
+                      >
+                        {e.nome}
+                      </button>
+                    ))}
+                  </div>
+                  <p
+                    className={`mt-2 truncate font-display text-lg font-black uppercase ${classesNome(
+                      form.name_color,
+                      form.name_effect,
+                    )}`}
+                  >
+                    Pré-visualização do nome
+                  </p>
+                </div>
+              )}
 
               {err && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
@@ -710,6 +787,7 @@ export default function ProfilePage({
                     setMyClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
                   }
                   onDelete={(id) => setMyClips((prev) => prev.filter((x) => x.id !== id))}
+                  transparent
                 />
               ))}
             </div>

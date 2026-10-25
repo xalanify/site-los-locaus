@@ -748,11 +748,16 @@ body.in-jogo::before { display: none; }
 .nav-ativo-icon {
   color: rgb(var(--perfil-accent-rgb, 139 92 246));
 }
+body.profile-bg .painel-fixo {
+  background: rgba(8, 5, 16, 0.46);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
 body.profile-theme .painel-fixo {
   background:
-    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.28), rgba(8, 5, 16, 0.78) 45%, rgba(8, 5, 16, 0.84));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.18), rgba(8, 5, 16, 0.5) 45%, rgba(8, 5, 16, 0.62));
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.22);
 }
 body.profile-theme .gradient-text {
@@ -772,6 +777,19 @@ body.profile-theme .nav-ativo-icon {
 body.profile-theme .painel-fixo .text-violet-400,
 body.profile-theme .painel-fixo .text-violet-300 {
   color: var(--perfil-accent, #8b5cf6) !important;
+}
+body.profile-theme .glass {
+  background:
+    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.12), rgb(var(--perfil-accent-rgb, 139 92 246) / 0.02) 55%),
+    rgba(10, 7, 20, 0.72);
+  border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.2);
+}
+body.profile-theme .clip-card {
+  border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.22);
+  background-color: rgba(8, 5, 16, 0.18);
+}
+body.profile-theme .clip-card:hover {
+  border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.45);
 }
 
 /* fundos de página do perfil */
@@ -843,4 +861,80 @@ body.profile-theme .painel-fixo .text-violet-300 {
 @keyframes fundoPan {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+/* ============================================================
+   Efeitos de nome e cartão (apenas admin)
+   ============================================================ */
+.nome-cor-gold,
+.nome-cor-diamond,
+.nome-cor-damascus,
+.nome-cor-interstellar,
+.nome-cor-rainbow {
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: nomePan 5s linear infinite;
+}
+.nome-cor-gold { background-image: linear-gradient(120deg,#fde68a,#f59e0b,#b45309,#fde68a); }
+.nome-cor-diamond { background-image: linear-gradient(120deg,#e0f2fe,#67e8f9,#38bdf8,#f8fafc,#67e8f9); }
+.nome-cor-damascus { background-image: linear-gradient(120deg,#1e3a8a,#6366f1,#0ea5e9,#312e81,#818cf8); }
+.nome-cor-interstellar { background-image: linear-gradient(120deg,#020617,#312e81,#6d28d9,#0ea5e9,#020617); }
+.nome-cor-rainbow { background-image: linear-gradient(90deg,#ff004c,#ff8a00,#ffee00,#00ff85,#00c2ff,#8a2be2,#ff004c); }
+.nome-cor-red { color: #f87171; }
+.nome-cor-green { color: #4ade80; }
+.nome-cor-pink { color: #f472b6; }
+.nome-cor-cyan { color: #22d3ee; }
+
+.nome-efeito-glow { filter: drop-shadow(0 0 7px rgba(255,255,255,.55)); }
+.nome-efeito-pulse { animation: nomePulse 2.2s ease-in-out infinite; }
+.nome-efeito-shimmer { animation: nomePan 2.4s linear infinite; background-size: 220% auto; }
+.nome-efeito-blink {
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: currentColor !important;
+  animation: nomeBlink 0.9s steps(1) infinite !important;
+}
+@keyframes nomePan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes nomeBlink {
+  0%, 49% { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,.65); }
+  50%, 100% { color: #000000; text-shadow: none; }
+}
+@keyframes nomePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .72; transform: scale(1.02); }
+}
+
+.card-efeito-glow {
+  box-shadow: 0 0 28px rgb(var(--perfil-accent-rgb, 139 92 246) / .45), inset 0 0 0 1px rgb(var(--perfil-accent-rgb, 139 92 246) / .25);
+}
+.card-efeito-pulse { animation: cardPulse 2.6s ease-in-out infinite; }
+.card-efeito-blink { animation: cardBlink 1.8s steps(1) infinite; }
+.card-efeito-shimmer { position: relative; }
+.card-efeito-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.18) 45%, transparent 60%);
+  background-size: 220% 100%;
+  animation: cardShimmer 3s linear infinite;
+}
+@keyframes cardPulse {
+  0%, 100% { box-shadow: 0 0 16px rgb(var(--perfil-accent-rgb, 139 92 246) / .25); }
+  50% { box-shadow: 0 0 38px rgb(var(--perfil-accent-rgb, 139 92 246) / .6); }
+}
+@keyframes cardBlink {
+  0%, 49% { box-shadow: 0 0 0 1px rgba(255,255,255,.5), 0 0 30px rgba(255,255,255,.3); }
+  50%, 100% { box-shadow: 0 0 0 1px rgba(0,0,0,.7), none; }
+}
+@keyframes cardShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -60% 0; }
 }

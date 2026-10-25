@@ -494,20 +494,10 @@ router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
     if (!uid) return res.status(401).json({ error: 'Inicia sessão para continuares' });
 
     const meta = metaFromQuery(b);
-    // Cópia MP4 para transferência no telemóvel (upload direto do browser)
-    let downloadFile = '';
-    const pedidoDownload = String(b.downloadFile || '');
-    if (/^downloads\/[a-f0-9]{32}\.mp4$/.test(pedidoDownload)) {
-      try {
-        const r = await fetch(storage.publicUrl(BUCKET, pedidoDownload), {
-          method: 'HEAD',
-          signal: AbortSignal.timeout(5000),
-        });
-        if (r.ok) downloadFile = pedidoDownload;
-      } catch {
-        // sem problema: o clip publica na mesma
-      }
-    }
+    // Já não guardamos uma cópia MP4 completa no Supabase (ocupava
+    // imenso espaço). O download é feito no PC via yt-dlp; no
+    // telemóvel o site avisa que ainda não está disponível.
+    const downloadFile = '';
     // Capa NOSSA: um frame do vídeo que o browser guardou antes de subir
     const capa = await guardarCapa(videoId, b.thumb);
     const result = await db

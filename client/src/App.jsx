@@ -26,6 +26,7 @@ import { enviarSpecs } from './lib/specs'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
+const SteamStorePage = lazy(() => import('./pages/SteamStorePage'))
 const PcsPage = lazy(() => import('./pages/PcsPage'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
@@ -371,6 +372,7 @@ function App() {
                     />
                     {/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
+                    <Route path="/jogos-steam" element={<SteamStorePage />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     {/* PCs dos membros: dashboard de specs — aberto a todos */}

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  Calendar,
   Clapperboard,
   Camera,
   Loader2,
@@ -17,7 +16,8 @@ import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
 import ProfileMusic from '../components/ProfileMusic'
-import { bannerDe, estiloFundo, fundoDe, hexParaRgb } from '../data/temasPerfil'
+import { bannerDe, estiloFundo, fundoDe } from '../data/temasPerfil'
+import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
    Perfil público com página própria — /perfil/:username
@@ -57,23 +57,48 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   }, [username])
 
   const fundoAtual = fundoDe(data?.profile?.background_id)
-  const corPerfil = data?.profile?.accent_color || ''
-  const accent = corPerfil || fundoAtual.cor
-  const accent2 = corPerfil || fundoAtual.cor2
-  const accentRgb = corPerfil ? hexParaRgb(corPerfil) : fundoAtual.rgb
+  const temFundo = Boolean(fundoAtual.imagem)
+  const dinamico = data?.profile?.dynamic_colors !== false && temFundo
   useEffect(() => {
     const root = document.documentElement
-    document.body.classList.add('profile-theme')
-    root.style.setProperty('--perfil-accent', accent)
-    root.style.setProperty('--perfil-accent-2', accent2)
-    root.style.setProperty('--perfil-accent-rgb', accentRgb)
-    return () => {
+    document.body.classList.toggle('profile-bg', temFundo)
+    if (!dinamico) {
       document.body.classList.remove('profile-theme')
       root.style.removeProperty('--perfil-accent')
       root.style.removeProperty('--perfil-accent-2')
       root.style.removeProperty('--perfil-accent-rgb')
+      root.style.removeProperty('--aj-300')
+      root.style.removeProperty('--aj-400')
+      root.style.removeProperty('--aj-500')
+      root.style.removeProperty('--aj-600')
+      root.style.removeProperty('--aj-700')
+      root.style.removeProperty('--aj-line')
+      return () => document.body.classList.remove('profile-bg')
     }
-  }, [accent, accent2, accentRgb])
+    document.body.classList.add('profile-theme')
+    root.style.setProperty('--perfil-accent', fundoAtual.cor)
+    root.style.setProperty('--perfil-accent-2', fundoAtual.cor2)
+    root.style.setProperty('--perfil-accent-rgb', fundoAtual.rgb)
+    root.style.setProperty('--aj-300', fundoAtual.rgb)
+    root.style.setProperty('--aj-400', fundoAtual.rgb)
+    root.style.setProperty('--aj-500', fundoAtual.rgb)
+    root.style.setProperty('--aj-600', fundoAtual.rgb)
+    root.style.setProperty('--aj-700', fundoAtual.rgb)
+    root.style.setProperty('--aj-line', `rgba(${fundoAtual.rgb.split(' ').join(', ')}, 0.22)`)
+    return () => {
+      document.body.classList.remove('profile-theme')
+      document.body.classList.remove('profile-bg')
+      root.style.removeProperty('--perfil-accent')
+      root.style.removeProperty('--perfil-accent-2')
+      root.style.removeProperty('--perfil-accent-rgb')
+      root.style.removeProperty('--aj-300')
+      root.style.removeProperty('--aj-400')
+      root.style.removeProperty('--aj-500')
+      root.style.removeProperty('--aj-600')
+      root.style.removeProperty('--aj-700')
+      root.style.removeProperty('--aj-line')
+    }
+  }, [dinamico, fundoAtual.id, fundoAtual.cor, fundoAtual.cor2, fundoAtual.rgb])
 
   if (!carregado) {
     return (
@@ -106,6 +131,8 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
 
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
+  const corCard = dinamico ? fundoAtual.cor : tema.cor
+  const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
   const souEu =
     p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
@@ -151,10 +178,10 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6"
+          className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(p.name_effect)}`}
           style={{
-            borderColor: `${tema.cor}66`,
-            boxShadow: `0 0 40px ${tema.cor}22, inset 0 0 0 1px ${tema.cor}18`,
+            borderColor: `${corCard}66`,
+            boxShadow: `0 0 40px ${corCard}22, inset 0 0 0 1px ${corCard}18`,
           }}
         >
           <ProfileBanner bannerId={p.banner_id} />
@@ -190,7 +217,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={`truncate font-display text-xl font-black uppercase ${
-                    temPrevisao1(badges) ? nomeDouradoClass : 'text-white'
+                    nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
                   }`}
                 >
                   {p.username}
@@ -208,10 +235,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                 )}
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
-                  Membro desde {criado}
-                </span>
+                <span>Membro desde {criado}</span>
                 <span
                   className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
                   title="ID da conta"
@@ -299,6 +323,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                   onDelete={(id) =>
                     setData((prev) => ({ ...prev, clips: prev.clips.filter((x) => x.id !== id) }))
                   }
+                  transparent
                 />
               ))}
             </div>

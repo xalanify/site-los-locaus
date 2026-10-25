@@ -704,53 +704,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         return true
       }
 
-      // 3.5) cópia MP4 no Supabase para o botão "Transferir" funcionar
-      //      no telemóvel (sem yt-dlp no servidor). Se falhar, o clip
-      //      publica na mesma — só fica sem cópia.
-      let downloadFile = ''
-      if (file && !canceladoRef.current) {
-        try {
-          setEnvio((s) => ({ ...s, fase: 'copia' }))
-          const r = await fetch('/api/clips/download-url', {
-            method: 'POST',
-            headers: authHeaders(),
-          })
-          if (r.ok) {
-            const d = await r.json().catch(() => null)
-            if (d && d.uploadUrl) {
-              const ok = await new Promise((resolve) => {
-                const x = new XMLHttpRequest()
-                xhrRef.current = x
-                x.open('PUT', d.uploadUrl)
-                x.setRequestHeader('Content-Type', 'video/mp4')
-                x.setRequestHeader('x-upsert', 'false')
-                x.upload.onprogress = (e) => {
-                  if (e.lengthComputable) {
-                    setProgress(91 + Math.round((e.loaded / e.total) * 4))
-                    setEnvio((s) => ({ ...s, total: e.total, enviado: e.loaded }))
-                  }
-                }
-                x.onload = () => {
-                  xhrRef.current = null
-                  resolve(x.status >= 200 && x.status < 300)
-                }
-                x.onerror = () => {
-                  xhrRef.current = null
-                  resolve(false)
-                }
-                x.onabort = () => {
-                  xhrRef.current = null
-                  resolve(false)
-                }
-                x.send(file)
-              })
-              if (ok && !canceladoRef.current) downloadFile = d.path
-            }
-          }
-        } catch {
-          // sem cópia: o clip continua a publicar
-        }
-      }
       if (canceladoRef.current) return true
 
       // 4) confere e guarda na BD do utilizador
@@ -769,7 +722,6 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             start: qs.get('start'),
             end: qs.get('end'),
             thumb, // capa nossa (frame do vídeo) — sem ela o site mostra o fundo por omissão
-            downloadFile,
           }),
         })
 
@@ -1452,7 +1404,10 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       src={preview}
                       controls={!trimming}
                       preload="metadata"
-                      onLoadedMetadata={onPreviewMeta}
+                      onLoadedMetadata={(e) => {
+                        e.currentTarget.volume = 0.25
+                        onPreviewMeta(e)
+                      }}
                       onTimeUpdate={onTimeUpdate}
                       className="max-h-72 w-full rounded-xl bg-black"
                     />

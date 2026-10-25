@@ -9,7 +9,7 @@ export default function ProfileMusic({ musicaId }) {
   const musica = musicaDe(musicaId)
   const audioRef = useRef(null)
   const [aTocar, setATocar] = useState(false)
-  const [volume, setVolume] = useState(0.25)
+  const [volume, setVolume] = useState(0.12)
   const [bloqueado, setBloqueado] = useState(false)
 
   useEffect(() => {

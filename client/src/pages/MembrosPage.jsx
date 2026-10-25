@@ -6,6 +6,7 @@ import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, 
 import { authHeaders } from '../lib/auth'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
+import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
    Página de membros — lista toda a comunidade com o estado
@@ -92,7 +93,7 @@ export default function MembrosPage({ onProfile }) {
                 <li key={m.id}>
                   <button
                     onClick={() => onProfile?.(m.username)}
-                    className="glass relative w-full overflow-hidden rounded-2xl text-left transition-colors hover:bg-white/5"
+                    className={`glass relative w-full overflow-hidden rounded-2xl text-left transition-colors hover:bg-white/5 ${classesCard(m.name_effect)}`}
                   >
                     <ProfileBanner
                       bannerId={m.banner_id}
@@ -110,7 +111,8 @@ export default function MembrosPage({ onProfile }) {
                       <span className="min-w-0 flex-1">
                         <span
                           className={`block truncate text-sm font-bold ${
-                            temPrevisao1(m.badges) ? nomeDouradoClass : 'text-white'
+                            classesNome(m.name_color, m.name_effect) ||
+                            (temPrevisao1(m.badges) ? nomeDouradoClass : 'text-white')
                           }`}
                         >
                           {m.username}
