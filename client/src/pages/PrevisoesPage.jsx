@@ -1594,6 +1594,8 @@ export default function PrevisoesPage({ user }) {
           recebes um aviso nesta página e no sino.
         </p>
       </div>
+        </>
+      )}
 
       {/* classificação total / R6 / CS2 */}
       {classificacaoAberta && (
@@ -1769,8 +1771,6 @@ export default function PrevisoesPage({ user }) {
             </div>
           </div>
         </div>
-      )}
-        </>
       )}
       </div>
     </PageShell>

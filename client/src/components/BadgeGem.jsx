@@ -187,13 +187,13 @@ export function BadgeGem({ badge, size = 56 }) {
   const gemColor = cs2 ? '#111827' : obsidian ? '#0B0B10' : top1 ? '#111116' : badge.color
   const gemDark = cs2 ? '#000000' : obsidian ? '#000000' : top1 ? '#000000' : badge.dark
   const olhoFill = obsidian
-    ? `url(#ob-${uid})`
+    ? '#D8B4FE'
     : fortnite
       ? '#FFFFFF'
       : top1
         ? '#FF8A1A'
         : '#08080e'
-  const olhoGlow = obsidian ? '#8B5CF6' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : null
+  const olhoGlow = obsidian ? '#A855F7' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : null
   const glow = badge.glow || badge.color
 
   return (
@@ -304,8 +304,17 @@ export function BadgeGem({ badge, size = 56 }) {
         {/* olhos de diabo (top1 / obsidian / fortnite) */}
         {!ic && !semChifres && (
           <g filter={olhoGlow ? `url(#og-${uid})` : undefined}>
-            <polygon points="26,50 48,60 46,67 28,60" fill={olhoFill} />
-            <polygon points="74,50 52,60 54,67 72,60" fill={olhoFill} />
+            {obsidian ? (
+              <>
+                <polygon points="22,47 51,60 47,71 24,60" fill={olhoFill} />
+                <polygon points="78,47 49,60 53,71 76,60" fill={olhoFill} />
+              </>
+            ) : (
+              <>
+                <polygon points="26,50 48,60 46,67 28,60" fill={olhoFill} />
+                <polygon points="74,50 52,60 54,67 72,60" fill={olhoFill} />
+              </>
+            )}
           </g>
         )}
 
