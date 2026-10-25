@@ -22,7 +22,7 @@ async function json(url) {
 }
 
 function statusNum(s) {
-  if (s === 'live') return 2;
+  if (s === 'live' || s === 'current') return 2;
   if (s === 'finished' || s === 'defwin') return 3;
   return 1;
 }
@@ -65,15 +65,19 @@ async function sincronizar({ forcar = false } = {}) {
       }
       const agora = Date.now();
       const brutos = [...mapa.values()]
-        .filter((m) => m && m.team1_id && m.team2_id)
-        .filter((m) => ['upcoming', 'live', 'finished', 'defwin'].includes(m.status))
+        .filter((m) => m && ['s', 'a'].includes(String(m.tier || '').toLowerCase()))
+        .filter((m) => ['upcoming', 'live', 'finished', 'defwin', 'current'].includes(m.status))
+        .filter((m) => {
+          if (m.team1_id && m.team2_id) return true;
+          // torneios futuros Tier 1 ainda sem equipas definidas
+          return m.status === 'upcoming';
+        })
         .filter((m) => {
           if (m.status !== 'defwin') return true;
-          // defwin no futuro não é um jogo normal para prever
           const t = new Date(m.start_date).getTime();
           return Number.isFinite(t) && t <= agora + 60 * 60 * 1000;
         })
-        .slice(0, 24);
+        .slice(0, 30);
 
       const detalhes = [];
       for (let i = 0; i < brutos.length; i += 6) {
@@ -94,8 +98,8 @@ async function sincronizar({ forcar = false } = {}) {
           .prepare(
             `INSERT INTO cs2_matches
                (external_id, slug, competition, competition_logo, team_a, team_a_logo, team_b, team_b_logo,
-                start_time, status, score_a, score_b, winner, stream_url, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+                start_time, status, score_a, score_b, winner, stream_url, tier, tier_rank, region, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
              ON CONFLICT (external_id) DO UPDATE SET
                slug = EXCLUDED.slug,
                competition = EXCLUDED.competition,
@@ -110,6 +114,9 @@ async function sincronizar({ forcar = false } = {}) {
                score_b = EXCLUDED.score_b,
                winner = EXCLUDED.winner,
                stream_url = EXCLUDED.stream_url,
+               tier = EXCLUDED.tier,
+               tier_rank = EXCLUDED.tier_rank,
+               region = EXCLUDED.region,
                updated_at = now()`,
           )
           .run(
@@ -127,6 +134,9 @@ async function sincronizar({ forcar = false } = {}) {
             Number(d.team2_score) || 0,
             vencedor(d),
             stream,
+            d.tier || null,
+            Number(d.tier_rank) || null,
+            (torneio.region && torneio.region.name) || 'Global',
           );
       }
 

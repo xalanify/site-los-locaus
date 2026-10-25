@@ -27,7 +27,9 @@ import {
   BANNERS,
   FUNDOS,
   MUSICAS,
+  CORES_BORDA,
   bannerDe,
+  corBordaDe,
   estiloFundo,
   fundoDe,
   musicaDe,
@@ -393,12 +395,7 @@ export default function ProfilePage({
 
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
-  const corBorda =
-    (edit ? form.borda_cor : me.borda_cor) === 'branco'
-      ? '#ffffff'
-      : (edit ? form.borda_cor : me.borda_cor) === 'preto'
-        ? '#000000'
-        : tema.cor
+  const corBorda = corBordaDe(edit ? form.borda_cor : me.borda_cor, tema.cor)
   const nomeCls = classesNome(me.name_color, me.name_effect)
   const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
   const clipsMostrados = useMemo(() => {
@@ -427,12 +424,24 @@ export default function ProfilePage({
 
   const modalEdicao = edit ? (
 
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-              <div className="glass max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-violet-500/30 p-6 shadow-2xl">
-              <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
-              <p className="text-xs text-gray-400">
-                Escolhe uma foto tua — o site guarda o ficheiro e fica associado à tua conta.
-              </p>
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
+              <div className="glass max-h-[92dvh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-violet-500/30 p-4 shadow-2xl sm:p-6">
+              <div className="sticky -top-4 z-20 -mx-4 -mt-4 mb-2 flex items-start justify-between gap-3 border-b border-white/10 bg-[#140f22]/95 px-4 py-3 backdrop-blur sm:-top-6 sm:-mx-6 sm:-mt-6 sm:px-6">
+                <div>
+                  <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
+                  <p className="text-xs text-gray-400">
+                    Foto, banners, fundos, música e estilo do teu perfil.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={fecharEditar}
+                  className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                  aria-label="Fechar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
 
               {/* escolher ficheiro */}
               <div className="flex flex-wrap items-center gap-3">
@@ -658,11 +667,7 @@ export default function ProfilePage({
                   A linha do banner, o brilho do cartão e o anel da foto.
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {[
-                    { id: 'banner', nome: 'Cor do banner' },
-                    { id: 'branco', nome: 'Branco' },
-                    { id: 'preto', nome: 'Preto' },
-                  ].map((b) => (
+                  {CORES_BORDA.map((b) => (
                     <button
                       key={b.id}
                       type="button"
@@ -675,14 +680,7 @@ export default function ProfilePage({
                     >
                       <span
                         className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full align-middle ring-1 ring-white/30"
-                        style={{
-                          background:
-                            b.id === 'branco'
-                              ? '#fff'
-                              : b.id === 'preto'
-                                ? '#000'
-                                : tema.cor,
-                        }}
+                        style={{ background: b.cor || tema.cor }}
                       />
                       {b.nome}
                     </button>
@@ -928,7 +926,7 @@ export default function ProfilePage({
                   {err}
                 </p>
               )}
-              <div className="flex justify-end gap-2">
+              <div className="sticky -bottom-4 z-20 -mx-4 -mb-4 mt-4 flex justify-end gap-2 border-t border-white/10 bg-[#140f22]/95 px-4 py-3 backdrop-blur sm:-bottom-6 sm:-mx-6 sm:-mb-6 sm:px-6">
                 <button
                   onClick={fecharEditar}
                   className="rounded-xl border border-white/15 px-4 py-2 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10"
@@ -1057,7 +1055,7 @@ export default function ProfilePage({
                     ['--tw-ring-color']: hexToRgba(b.glow || b.color, 0.4),
                   }}
                 >
-                  <BadgeGem badge={b} size={18} />
+                  <BadgeGem badge={b} size={24} />
                   <span className="font-display text-[10.5px] font-black uppercase tracking-wider" style={{ color: b.labelColor || b.color }}>
                     {b.label}
                   </span>

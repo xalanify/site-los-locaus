@@ -40,7 +40,7 @@ export const R6_TORNEIOS = [
   {
     id: 'slc-major-2026',
     nome: 'BLAST R6 Major — Salt Lake City 2026',
-    logo: 'https://static-esports.ubisoft.com/esports-platform/r6s/competition/0fb77e36-a2d9-42dd-b6c6-fbb7a6126e23.png',
+    logo: 'https://files.bo3.gg/uploads/tournament/5511/image/webp-a33c7fe7cd783830f955153b4b3e4178.webp',
     campeonato: 'BLAST R6 Major',
     dataInicio: '2026-05-08',
     dataFim: '2026-05-17',

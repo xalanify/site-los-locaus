@@ -429,18 +429,19 @@ async function namesForGame(game) {
     return uniq((d?.players || []).flatMap((p) => [p.handle, p.key]));
   }
   if (game === 'fortnite') {
+    const nomes = [];
     try {
-      const snap = await require('../fortnitestore').ler();
-      const nomes = Object.values((snap && snap.jogadores) || {})
-        .map((j) => j && j.nome)
-        .filter(Boolean);
-      if (nomes.length) return uniq(nomes);
+      nomes.push(...require('../fortniteauto').links().map((l) => l.nome));
     } catch {}
     try {
-      return uniq(require('../fortniteauto').links().map((l) => l.nome));
-    } catch {
-      return [];
-    }
+      const snap = await require('../fortnitestore').ler();
+      nomes.push(
+        ...Object.values((snap && snap.jogadores) || {})
+          .map((j) => j && j.nome)
+          .filter(Boolean),
+      );
+    } catch {}
+    return uniq(nomes.filter(Boolean));
   }
   if (tracker.BF_FILES[game]) {
     const d = tracker.readJson(tracker.BF_FILES[game]);

@@ -22,7 +22,7 @@ import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
 import ProfileMusic from '../components/ProfileMusic'
-import { bannerDe, estiloFundo, fundoDe } from '../data/temasPerfil'
+import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
 import { fonteDe } from '../data/fontesPerfil'
 import { extrairCores } from '../lib/coresFundo'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
@@ -203,8 +203,7 @@ export default function PublicProfilePage({
 
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
-  const corBorda =
-    p.borda_cor === 'branco' ? '#ffffff' : p.borda_cor === 'preto' ? '#000000' : tema.cor
+  const corBorda = corBordaDe(p.borda_cor, tema.cor)
   const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
   const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
@@ -359,7 +358,7 @@ export default function PublicProfilePage({
                     ringColor: `${b.glow || b.color}66`,
                   }}
                 >
-                  <BadgeGem badge={b} size={22} />
+                  <BadgeGem badge={b} size={28} />
                   <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.labelColor || b.color }}>
                     {b.label}
                   </span>

@@ -154,6 +154,25 @@ export const CORES_ACENTO = [
   { id: 'ciano', nome: 'Ciano', cor: '#22d3ee' },
 ]
 
+export const CORES_BORDA = [
+  { id: 'banner', nome: 'Cor do banner', cor: '' },
+  { id: 'branco', nome: 'Branco', cor: '#ffffff' },
+  { id: 'preto', nome: 'Preto', cor: '#000000' },
+  { id: 'violeta', nome: 'Violeta', cor: '#8b5cf6' },
+  { id: 'azul', nome: 'Azul', cor: '#38bdf8' },
+  { id: 'verde', nome: 'Verde', cor: '#22c55e' },
+  { id: 'ambar', nome: 'Âmbar', cor: '#f59e0b' },
+  { id: 'rosa', nome: 'Rosa', cor: '#ec4899' },
+  { id: 'ciano', nome: 'Ciano', cor: '#22d3ee' },
+  { id: 'vermelho', nome: 'Vermelho', cor: '#ef4444' },
+  { id: 'roxo', nome: 'Roxo', cor: '#a855f7' },
+]
+
+export const corBordaDe = (id, bannerCor) => {
+  const c = CORES_BORDA.find((x) => x.id === id)
+  return (c && c.cor) || bannerCor
+}
+
 export const MUSICAS = [
   {
     id: 'm01',

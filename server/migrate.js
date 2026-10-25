@@ -180,6 +180,9 @@ const PASSOS = [
    )`,
   'CREATE INDEX IF NOT EXISTS cs2_matches_start_idx ON public.cs2_matches (start_time)',
   'CREATE INDEX IF NOT EXISTS cs2_matches_status_idx ON public.cs2_matches (status, start_time)',
+  'ALTER TABLE public.cs2_matches ADD COLUMN IF NOT EXISTS tier text',
+  'ALTER TABLE public.cs2_matches ADD COLUMN IF NOT EXISTS tier_rank integer',
+  'ALTER TABLE public.cs2_matches ADD COLUMN IF NOT EXISTS region text',
   `CREATE TABLE IF NOT EXISTS public.cs2_predictions (
      match_id   bigint not null references public.cs2_matches(id) on delete cascade,
      user_id    bigint not null references public.users(id) on delete cascade,

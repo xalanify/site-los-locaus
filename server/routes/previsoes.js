@@ -355,7 +355,9 @@ function decorarCs2(m, votos, uid) {
     external_id: Number(m.external_id) || null,
     competition: m.competition || '',
     competition_logo: m.competition_logo || null,
-    region: 'CS2',
+    region: m.region || 'Global',
+    tier: m.tier || null,
+    tier_rank: Number(m.tier_rank) || null,
     start_time: m.start_time,
     status,
     score_a: Number(m.score_a) || 0,
@@ -416,14 +418,15 @@ router.get('/cs2', attachAuth, async (req, res) => {
       db
         .prepare(
           `SELECT * FROM cs2_matches
-            WHERE status IN (1, 2) AND start_time > now() - interval '12 hours'
+            WHERE status IN (1, 2) AND tier IN ('s', 'a')
+              AND start_time > now() - interval '12 hours'
             ORDER BY start_time ASC LIMIT 24`,
         )
         .all(),
       db
         .prepare(
           `SELECT * FROM cs2_matches
-            WHERE status = 3 AND start_time > now() - interval '35 days'
+            WHERE status = 3 AND tier IN ('s', 'a') AND start_time > now() - interval '35 days'
             ORDER BY start_time DESC LIMIT 35`,
         )
         .all(),
@@ -577,7 +580,7 @@ router.get('/cs2/proximo', async (req, res) => {
     const row = await db
       .prepare(
         `SELECT * FROM cs2_matches
-          WHERE status = 1 AND start_time > now()
+          WHERE status = 1 AND tier IN ('s', 'a') AND start_time > now()
           ORDER BY start_time ASC LIMIT 1`,
       )
       .get();

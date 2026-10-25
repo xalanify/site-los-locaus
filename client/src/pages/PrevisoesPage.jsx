@@ -184,6 +184,11 @@ function PredictionCard({ match, user, onVote, votando }) {
             BO{match.format}
           </span>
         )}
+        {(match.tier === 's' || match.tier === 'a') && (
+          <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20">
+            Tier 1
+          </span>
+        )}
         <StatusPill match={match} />
       </div>
 
@@ -317,7 +322,7 @@ function PalmaresTorneio({ t, destaque }) {
     { rotulo: 'Campeão', icon: <Crown className="h-3 w-3 text-amber-300" />, equipa: t.campeao, cor: 'text-amber-200', bg: 'bg-gradient-to-r from-amber-500/20 to-amber-500/5 ring-1 ring-amber-400/25' },
     { rotulo: 'Vice', icon: <Medal className="h-3 w-3 text-slate-300" />, equipa: t.vice, cor: 'text-slate-200', bg: 'bg-white/[0.05] ring-1 ring-white/10' },
     { rotulo: '3.º', icon: <Medal className="h-3 w-3 text-orange-400" />, equipa: t.terceiro, cor: 'text-orange-200', bg: 'bg-orange-500/[0.08] ring-1 ring-orange-400/20' },
-  ]
+  ].filter((p) => p.equipa)
   return (
     <article
       className={`group relative w-[19rem] shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
@@ -344,7 +349,7 @@ function PalmaresTorneio({ t, destaque }) {
           <h3 className="line-clamp-2 text-sm font-black leading-tight text-white">{t.nome}</h3>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-semibold text-gray-400">
             <span className="inline-flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> {t.dataInicio} — {t.dataFim}
+              <Calendar className="h-3 w-3" /> {t.dataFim ? `${t.dataInicio} — ${t.dataFim}` : t.dataInicio}
             </span>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3 w-3" /> {t.local}
@@ -370,11 +375,14 @@ function PalmaresTorneio({ t, destaque }) {
       </div>
       <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] font-semibold">
         <span className="inline-flex min-w-0 items-center gap-1 truncate text-violet-200">
-          <Star className="h-3 w-3 shrink-0 text-amber-300" /> MVP: {t.mvp?.nome || '—'} · {t.mvp?.equipa || ''}
+          <Star className="h-3 w-3 shrink-0 text-amber-300" />
+          {t.mvp?.nome ? `MVP: ${t.mvp.nome} · ${t.mvp.equipa || ''}` : 'Torneio Tier 1'}
         </span>
-        <span className="shrink-0 rounded-lg bg-white/10 px-2 py-1 text-[11px] font-black text-white ring-1 ring-white/10">
-          Final {t.resultadoFinal || '—'}
-        </span>
+        {t.resultadoFinal && t.resultadoFinal !== '—' ? (
+          <span className="shrink-0 rounded-lg bg-white/10 px-2 py-1 text-[11px] font-black text-white ring-1 ring-white/10">
+            Final {t.resultadoFinal}
+          </span>
+        ) : null}
       </div>
     </article>
   )
@@ -856,6 +864,8 @@ function CS2PrevisoesTab({ user }) {
   const [dados, setDados] = useState({ loading: true, matches: [], erro: '' })
   const [prox, setProx] = useState(null)
   const [votando, setVotando] = useState(0)
+  const [abaCs2, setAbaCs2] = useState('proximos')
+  const [regiaoCs2, setRegiaoCs2] = useState('Todas')
 
   const carregar = async () => {
     try {
@@ -917,9 +927,16 @@ function CS2PrevisoesTab({ user }) {
     }
   }
 
-  const proximos = dados.matches.filter((m) => m.status === 1 || m.status === 2)
-  const resultados = dados.matches.filter(
-    (m) => m.status === 3 && ((m.counts && m.counts.total) || 0) > 0,
+  const regioesCs2 = [...new Set(dados.matches.map((m) => m.region).filter(Boolean))].sort()
+  const filtrarRegiao = (lista) =>
+    regiaoCs2 === 'Todas' ? lista : lista.filter((m) => m.region === regiaoCs2)
+  const proximos = filtrarRegiao(
+    dados.matches.filter((m) => m.status === 1 || m.status === 2),
+  )
+  const resultados = filtrarRegiao(
+    dados.matches.filter(
+      (m) => m.status === 3 && ((m.counts && m.counts.total) || 0) > 0,
+    ),
   )
 
   return (
@@ -958,6 +975,41 @@ function CS2PrevisoesTab({ user }) {
         </section>
       )}
 
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={regiaoCs2}
+          onChange={(e) => setRegiaoCs2(e.target.value)}
+          className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-xs font-semibold text-white outline-none sm:max-w-[220px]"
+        >
+          <option value="Todas" className="bg-[#171122]">Todas as regiões</option>
+          {regioesCs2.map((r) => (
+            <option key={r} value={r} className="bg-[#171122]">
+              {r}
+            </option>
+          ))}
+        </select>
+        <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-[#120d20]/90 p-1">
+          {[
+            { id: 'proximos', label: 'Próximos' },
+            { id: 'resultados', label: 'Resultados' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setAbaCs2(t.id)}
+              className={`rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${
+                abaCs2 === t.id
+                  ? 'bg-sky-500 text-white'
+                  : 'text-gray-400 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {abaCs2 === 'proximos' ? (
       <section>
         <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
           <Target className="h-4 w-4 text-sky-300" /> Próximos jogos CS2
@@ -985,7 +1037,8 @@ function CS2PrevisoesTab({ user }) {
           </div>
         )}
       </section>
-
+      ) : (
+        <>
       {resultados.length > 0 && (
         <section>
           <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
@@ -1011,6 +1064,8 @@ function CS2PrevisoesTab({ user }) {
           </div>
         </div>
       </section>
+        </>
+      )}
     </div>
   )
 }
@@ -1260,6 +1315,16 @@ export default function PrevisoesPage({ user }) {
         </button>
       </div>
 
+      <div className="mb-4 flex justify-center">
+        <button
+          type="button"
+          onClick={() => setClassificacaoAberta(true)}
+          className="flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-violet-200 transition-colors hover:bg-violet-500/20"
+        >
+          <Medal className="h-4 w-4" /> Ver classificações
+        </button>
+      </div>
+
       {jogo === 'fortnite' && <FortniteTorneiosTab />}
 
       {jogo === 'cs2' && <CS2PrevisoesTab user={user} />}
@@ -1418,15 +1483,6 @@ export default function PrevisoesPage({ user }) {
               </p>
             </div>
           )}
-          <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setClassificacaoAberta(true)}
-              className="flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-violet-200 transition-colors hover:bg-violet-500/20"
-            >
-              <Medal className="h-4 w-4" /> Ver classificação
-            </button>
-          </div>
         </div>
       ) : tab === 'resultados' ? (
         <div className="space-y-4">

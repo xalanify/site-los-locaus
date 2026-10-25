@@ -227,11 +227,11 @@ export function BadgeGem({ badge, size = 56 }) {
           </clipPath>
           {obsidian && (
             <linearGradient id={`ob-${uid}`} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#E9D5FF">
-                <animate attributeName="stop-color" values="#E9D5FF;#67E8F9;#C084FC;#E9D5FF" dur="4s" repeatCount="indefinite" />
+              <stop offset="0%" stopColor="#F3E8FF">
+                <animate attributeName="stop-color" values="#F3E8FF;#C084FC;#A855F7;#F3E8FF" dur="4s" repeatCount="indefinite" />
               </stop>
-              <stop offset="100%" stopColor="#7C3AED">
-                <animate attributeName="stop-color" values="#7C3AED;#A855F7;#22D3EE;#7C3AED" dur="4s" repeatCount="indefinite" />
+              <stop offset="100%" stopColor="#A855F7">
+                <animate attributeName="stop-color" values="#A855F7;#7C3AED;#C084FC;#A855F7" dur="4s" repeatCount="indefinite" />
               </stop>
             </linearGradient>
           )}
@@ -319,7 +319,7 @@ export function BadgeGem({ badge, size = 56 }) {
             fontSize="30"
             fontWeight="900"
             letterSpacing="-1"
-            fill={r6 ? '#FF4D63' : '#FFFFFF'}
+            fill={r6 ? '#FFFFFF' : '#FFFFFF'}
             style={{
               filter: r6
                 ? 'drop-shadow(0 0 3px #FF1F3D)'

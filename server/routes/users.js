@@ -496,7 +496,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
 
     if (hasBorda) {
       const borda = String(body.borda_cor || '').trim();
-      if (borda && !['banner', 'branco', 'preto'].includes(borda)) {
+      if (borda && !['banner', 'branco', 'preto', 'violeta', 'azul', 'verde', 'ambar', 'rosa', 'ciano', 'vermelho', 'roxo'].includes(borda)) {
         return res.status(400).json({ error: 'Cor da borda inválida.' });
       }
       await db
