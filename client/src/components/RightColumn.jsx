@@ -5,7 +5,7 @@ import AvatarImg from './AvatarImg'
 import UserBanner from './UserBanner'
 import { authHeaders } from '../lib/auth'
 import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
-import { classesNome } from '../data/nomeEfeitos'
+import { classesCard, classesNome } from '../data/nomeEfeitos'
 import { anunciosVisiveis } from '../lib/anuncios'
 
 /* ============================================================
@@ -130,7 +130,7 @@ export default function RightColumn() {
                   <li key={m.username}>
                     <button
                       onClick={() => navigate(`/perfil/${encodeURIComponent(m.username)}`)}
-                      className="relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-1 py-1.5 pl-2.5 text-left transition-colors hover:bg-white/5"
+                      className={`relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-1 py-1.5 pl-2.5 text-left transition-colors hover:bg-white/5 ${classesCard(m.name_effect)}`}
                     >
                       <UserBanner
                         bannerId={m.banner_id}
