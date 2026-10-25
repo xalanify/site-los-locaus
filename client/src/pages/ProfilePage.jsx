@@ -331,11 +331,14 @@ export default function ProfilePage({
         banner_id: form.banner_id,
         background_id: form.background_id,
         musica_id: form.musica_id,
-        musica_url: form.musica_url,
-        musica_nome: form.musica_nome,
         dynamic_colors: form.dynamic_colors,
         ...(isAdmin || me.is_admin
-          ? { name_color: form.name_color, name_effect: form.name_effect }
+          ? {
+              musica_url: form.musica_url,
+              musica_nome: form.musica_nome,
+              name_color: form.name_color,
+              name_effect: form.name_effect,
+            }
           : {}),
         borda_cor: form.borda_cor,
         fonte_perfil: form.fonte_perfil,

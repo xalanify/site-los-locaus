@@ -437,27 +437,28 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     if (hasMusicUrl || hasMusicNome) {
       const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
-      if (!souAdmin) {
-        return res.status(403).json({ error: 'A pesquisa de músicas é exclusiva do admin.' });
-      }
-      if (hasMusicUrl) {
-        const url = String(body.musica_url || '').trim();
-        if (url && !/^yt:[A-Za-z0-9_-]{11}$/.test(url)) {
-          return res.status(400).json({ error: 'Música inválida.' });
+      // As músicas pesquisadas no YouTube são só para o admin. Para os
+      // restantes users, estes campos são simplesmente ignorados (sem erro).
+      if (souAdmin) {
+        if (hasMusicUrl) {
+          const url = String(body.musica_url || '').trim();
+          if (url && !/^yt:[A-Za-z0-9_-]{11}$/.test(url)) {
+            return res.status(400).json({ error: 'Música inválida.' });
+          }
+          await db
+            .prepare(
+              'UPDATE user_profiles SET musica_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(url || null, uid);
         }
-        await db
-          .prepare(
-            'UPDATE user_profiles SET musica_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(url || null, uid);
-      }
-      if (hasMusicNome) {
-        const nome = String(body.musica_nome || '').trim().slice(0, 120);
-        await db
-          .prepare(
-            'UPDATE user_profiles SET musica_nome = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(nome || null, uid);
+        if (hasMusicNome) {
+          const nome = String(body.musica_nome || '').trim().slice(0, 120);
+          await db
+            .prepare(
+              'UPDATE user_profiles SET musica_nome = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(nome || null, uid);
+        }
       }
     }
     if (hasAccent) {
@@ -506,30 +507,31 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     if (hasNameColor || hasNameEffect) {
       const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
-      if (!souAdmin) {
-        return res.status(403).json({ error: 'Os efeitos de nome são exclusivos do admin.' });
-      }
-      if (hasNameColor) {
-        const cor = String(body.name_color || '').trim();
-        if (!CORES_NOME.has(cor)) {
-          return res.status(400).json({ error: 'Cor de nome inválida.' });
+      // Cores/efeitos de nome são só para o admin; para os restantes
+      // users os campos são ignorados (sem mostrar erro).
+      if (souAdmin) {
+        if (hasNameColor) {
+          const cor = String(body.name_color || '').trim();
+          if (!CORES_NOME.has(cor)) {
+            return res.status(400).json({ error: 'Cor de nome inválida.' });
+          }
+          await db
+            .prepare(
+              'UPDATE user_profiles SET name_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(cor || null, uid);
         }
-        await db
-          .prepare(
-            'UPDATE user_profiles SET name_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(cor || null, uid);
-      }
-      if (hasNameEffect) {
-        const efeito = String(body.name_effect || '').trim();
-        if (!EFEITOS_NOME.has(efeito)) {
-          return res.status(400).json({ error: 'Efeito de nome inválido.' });
+        if (hasNameEffect) {
+          const efeito = String(body.name_effect || '').trim();
+          if (!EFEITOS_NOME.has(efeito)) {
+            return res.status(400).json({ error: 'Efeito de nome inválido.' });
+          }
+          await db
+            .prepare(
+              'UPDATE user_profiles SET name_effect = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(efeito || null, uid);
         }
-        await db
-          .prepare(
-            'UPDATE user_profiles SET name_effect = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(efeito || null, uid);
       }
     }
 
