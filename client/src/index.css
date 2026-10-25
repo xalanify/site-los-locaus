@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -749,15 +749,15 @@ body.in-jogo::before { display: none; }
   color: rgb(var(--perfil-accent-rgb, 139 92 246));
 }
 body.profile-bg .painel-fixo {
-  background: rgba(8, 5, 16, 0.46);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(8, 5, 16, 0.3);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 body.profile-theme .painel-fixo {
   background:
-    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.18), rgba(8, 5, 16, 0.5) 45%, rgba(8, 5, 16, 0.62));
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.1), rgba(8, 5, 16, 0.32) 45%, rgba(8, 5, 16, 0.42));
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.22);
 }
 body.profile-theme .gradient-text {
@@ -822,6 +822,21 @@ body.profile-theme [class*="to-violet-"] {
 body.profile-theme [class*="via-violet-"],
 body.profile-theme [class*="via-fuchsia-"] {
   --tw-gradient-via: var(--perfil-accent, #8b5cf6) var(--tw-gradient-via-position) !important;
+}
+body.profile-theme .right-card {
+  border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.28);
+}
+body.profile-theme .right-card.glass {
+  background:
+    linear-gradient(180deg, rgb(var(--perfil-accent-rgb, 139 92 246) / 0.05), rgba(8, 5, 16, 0.16)),
+    rgba(8, 5, 16, 0.2);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+body.profile-theme .filtro-clips {
+  border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.35);
+  background-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.14);
+  color: var(--perfil-accent, #8b5cf6);
 }
 body.profile-theme .clip-card {
   border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.22);

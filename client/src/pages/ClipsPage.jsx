@@ -15,6 +15,8 @@ import {
   AlertTriangle,
   Check,
   Zap,
+  MessageSquare,
+  Image as ImageIcon,
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
@@ -24,6 +26,7 @@ import { BADGES, BadgeGem } from '../components/BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { authHeaders, mmss, parseTime } from '../lib/auth'
 import PageShell from '../components/PageShell'
+import { toast } from '../components/Feedback'
 
 const TABS = [
   { id: 'todos', label: 'Todos' },
@@ -250,6 +253,14 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const [tab, setTab] = useState('todos')
   const [jogo, setJogo] = useState('') // filtro por jogo ('' = todos)
   const [showForm, setShowForm] = useState(false)
+  const [escolhaPublicar, setEscolhaPublicar] = useState(false)
+  const [showMensagem, setShowMensagem] = useState(false)
+  const [msgTexto, setMsgTexto] = useState('')
+  const [msgImagem, setMsgImagem] = useState(null)
+  const [msgPreview, setMsgPreview] = useState('')
+  const [msgEnviando, setMsgEnviando] = useState(false)
+  const [msgErro, setMsgErro] = useState('')
+  const msgFileRef = useRef(null)
 
   // perfil público aberto (clique no autor de um clip)
   const [member, setMember] = useState(null)
@@ -359,6 +370,84 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setYtEstado(d))
       .catch(() => {})
+  }
+
+  /* Botão único "Publicar" -> escolhe Vídeo ou Mensagem */
+  const abrirPublicar = () => {
+    if (!user) return onRequestAuth && onRequestAuth()
+    setShowForm(false)
+    setShowMensagem(false)
+    setEscolhaPublicar(true)
+    setError('')
+    setMsgErro('')
+  }
+
+  const fecharMensagem = () => {
+    if (msgPreview) URL.revokeObjectURL(msgPreview)
+    setShowMensagem(false)
+    setMsgTexto('')
+    setMsgImagem(null)
+    setMsgPreview('')
+    setMsgErro('')
+  }
+
+  const escolherImagemMensagem = (f) => {
+    setMsgErro('')
+    if (!f) return
+    if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)) {
+      setMsgErro('Formato não suportado — usa JPG, PNG, WebP ou GIF.')
+      return
+    }
+    if (f.size > 4 * 1024 * 1024) {
+      setMsgErro('A imagem é demasiado grande (máx. 4 MB).')
+      return
+    }
+    if (msgPreview) URL.revokeObjectURL(msgPreview)
+    setMsgImagem(f)
+    setMsgPreview(URL.createObjectURL(f))
+    if (msgFileRef.current) msgFileRef.current.value = ''
+  }
+
+  const publicarMensagem = async (e) => {
+    e?.preventDefault()
+    if (msgEnviando) return
+    if (!msgTexto.trim() && !msgImagem) {
+      setMsgErro('Escreve uma mensagem ou escolhe uma imagem.')
+      return
+    }
+    setMsgEnviando(true)
+    setMsgErro('')
+    try {
+      let imageUrl = ''
+      if (msgImagem) {
+        const token =
+          localStorage.getItem('userToken') || localStorage.getItem('adminToken') || ''
+        const up = await fetch('/api/posts/image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': msgImagem.type || 'image/jpeg',
+            Authorization: `Bearer ${token}`,
+          },
+          body: msgImagem,
+        })
+        const ud = await up.json().catch(() => ({}))
+        if (!up.ok) throw new Error(ud.error || 'Não deu para enviar a imagem.')
+        imageUrl = ud.url || ''
+      }
+      const r = await fetch('/api/posts', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ content: msgTexto.trim(), image_url: imageUrl }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(d.error || 'Não deu para publicar a mensagem.')
+      toast.ok('Mensagem publicada no teu perfil.')
+      fecharMensagem()
+    } catch (err) {
+      setMsgErro(err.message || 'Não deu para publicar a mensagem.')
+    } finally {
+      setMsgEnviando(false)
+    }
   }
 
   const resetForm = () => {
@@ -1277,12 +1366,161 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               </p>
             </div>
             <button
-              onClick={openForm}
+              onClick={abrirPublicar}
               className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-violet-900/30 transition-all hover:brightness-110 hover:shadow-violet-800/40"
             >
-              <Plus className="h-4 w-4" /> Publicar clip
+              <Plus className="h-4 w-4" /> Publicar
             </button>
           </div>
+
+          {/* Escolha: vídeo ou mensagem */}
+          {escolhaPublicar && (
+            <div className="glass mb-6 rounded-2xl p-4 sm:p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 font-bold text-white">
+                  <Plus className="h-5 w-5 text-violet-400" /> O que queres publicar?
+                </h2>
+                <button
+                  onClick={() => setEscolhaPublicar(false)}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEscolhaPublicar(false)
+                    openForm()
+                  }}
+                  className="flex items-start gap-3 rounded-2xl border border-violet-400/30 bg-violet-500/10 p-4 text-left transition-colors hover:bg-violet-500/20"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-500/25 text-violet-200">
+                    <Film className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-black text-white">Vídeo / Clip</span>
+                    <span className="mt-0.5 block text-[11px] leading-snug text-gray-400">
+                      Envia um clip, corta e publica no feed com capa e comentários.
+                    </span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEscolhaPublicar(false)
+                    setMsgErro('')
+                    setShowMensagem(true)
+                  }}
+                  className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition-colors hover:bg-white/[0.08]"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10 text-gray-200">
+                    <MessageSquare className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-black text-white">Mensagem</span>
+                    <span className="mt-0.5 block text-[11px] leading-snug text-gray-400">
+                      Escreve uma mensagem (com ou sem imagem) para o teu perfil.
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Formulário de mensagem */}
+          {showMensagem && user && (
+            <form onSubmit={publicarMensagem} className="glass mb-6 rounded-2xl p-4 sm:p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 font-bold text-white">
+                  <MessageSquare className="h-5 w-5 text-violet-400" /> Nova mensagem
+                </h2>
+                <button
+                  type="button"
+                  onClick={fecharMensagem}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <textarea
+                value={msgTexto}
+                onChange={(e) => setMsgTexto(e.target.value)}
+                rows={4}
+                maxLength={2000}
+                placeholder="O que estás a pensar? Podes juntar uma imagem do PC ou do telemóvel."
+                className="w-full resize-none rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-400 focus:bg-white/15"
+              />
+
+              {msgPreview && (
+                <div className="relative mt-3 w-fit">
+                  <img
+                    src={msgPreview}
+                    alt=""
+                    className="max-h-48 rounded-xl border border-white/10 object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (msgPreview) URL.revokeObjectURL(msgPreview)
+                      setMsgImagem(null)
+                      setMsgPreview('')
+                    }}
+                    className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-red-500 text-white"
+                    aria-label="Remover imagem"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {msgErro && (
+                <p className="mt-2 rounded-lg bg-red-500/15 px-3 py-2 text-[12px] font-bold text-red-300">
+                  {msgErro}
+                </p>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => msgFileRef.current && msgFileRef.current.click()}
+                  className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-[12px] font-bold text-gray-200 hover:bg-white/10"
+                >
+                  <ImageIcon className="h-4 w-4" /> {msgPreview ? 'Trocar imagem' : 'Juntar imagem'}
+                </button>
+                <input
+                  ref={msgFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(e) => escolherImagemMensagem(e.target.files && e.target.files[0])}
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={fecharMensagem}
+                    className="rounded-xl border border-white/15 px-3 py-2 text-[12px] font-bold text-gray-300 hover:bg-white/10"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={msgEnviando}
+                    className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-[12px] font-black text-white hover:bg-violet-400 disabled:opacity-50"
+                  >
+                    {msgEnviando ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                    Publicar mensagem
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
 
           {/* Formulário */}
           {showForm && user && (
@@ -1761,7 +1999,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
               }
               acao={
                 user
-                  ? { label: 'Publicar clip', onClick: openForm }
+                  ? { label: 'Publicar', onClick: abrirPublicar }
                   : { label: 'Entrar para publicar', onClick: () => onRequestAuth?.('clips') }
               }
             />

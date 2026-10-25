@@ -1,8 +1,18 @@
 const express = require('express');
 const { getDb } = require('../database');
 const { requireAdmin, attachAuth } = require('../middleware/auth');
+const storage = require('../storage');
 
 const router = express.Router();
+
+const BUCKET_POSTS = 'posts';
+const POST_IMG_EXT = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+};
+const MAX_POST_IMG = 4 * 1024 * 1024;
 
 /* Foto de perfil de quem escreveu — o nome do comentário/com publicação
    bate certo com o username da conta, por isso dá para ir buscar a foto. */
@@ -18,7 +28,10 @@ async function avatarLookup(db) {
   return (name) => map.get(String(name || '').trim().toLowerCase()) || null;
 }
 
-// Obter todas as publicações (com gostos e comentários)
+// Obter publicações (com gostos e comentários)
+// - sem filtro: anúncios oficiais (sem user_id)
+// - ?mine=1: mensagens da conta autenticada (perfil)
+// - ?user_id=N: mensagens públicas de um perfil
 // — aceita ?limit / ?offset para paginar o feed
 router.get('/', attachAuth, async (req, res) => {
   try {
@@ -30,11 +43,27 @@ router.get('/', attachAuth, async (req, res) => {
       : 0;
     const offset = Math.max(0, Number(req.query.offset) || 0);
 
+    let where = 'user_id IS NULL';
+    const params = [];
+    if (String(req.query.mine || '') === '1') {
+      if (!req.auth || !req.auth.uid) return res.json([]);
+      where = 'user_id = ?';
+      params.push(Number(req.auth.uid));
+    } else if (req.query.user_id != null && req.query.user_id !== '') {
+      const uid = Number(req.query.user_id);
+      if (!Number.isInteger(uid) || uid <= 0) return res.status(400).json({ error: 'ID inválido' });
+      where = 'user_id = ?';
+      params.push(uid);
+    }
+
+    const sql =
+      'SELECT * FROM posts WHERE ' +
+      where +
+      ' ORDER BY created_at DESC, id DESC' +
+      (limit ? ' LIMIT ? OFFSET ?' : '');
     const posts = limit
-      ? await db
-          .prepare('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?')
-          .all(limit, offset)
-      : await db.prepare('SELECT * FROM posts ORDER BY created_at DESC').all();
+      ? await db.prepare(sql).all(...params, limit, offset)
+      : await db.prepare(sql).all(...params);
 
     // O autor de um anúncio de clip não vê o próprio anúncio
     const eu = req.auth && req.auth.username ? String(req.auth.username).toLowerCase() : null;
@@ -45,7 +74,7 @@ router.get('/', attachAuth, async (req, res) => {
     const ids = filtrados.map((p) => Number(p.id));
 
     // Tudo numa só passagem (antes eram N+1 consultas) — e só dos
-    // posts desta página, em vez de a lista inteira da BD
+    // posts desta página, em vez da lista inteira da BD
     const comments = ids.length
       ? await db
           .prepare(
@@ -90,14 +119,67 @@ router.get('/', attachAuth, async (req, res) => {
   }
 });
 
-// Criar nova publicação (SÓ ADMIN)
-router.post('/', requireAdmin, async (req, res) => {
+// Enviar imagem de uma mensagem (o corpo do pedido é a imagem)
+router.post(
+  '/image',
+  attachAuth,
+  express.raw({ type: 'image/*', limit: MAX_POST_IMG }),
+  async (req, res) => {
+    if (!req.auth || (!req.auth.uid && !req.auth.admin)) {
+      return res.status(401).json({ error: 'Inicia sessão para publicares.' });
+    }
+    try {
+      const ct = String(req.headers['content-type'] || '')
+        .split(';')[0]
+        .trim()
+        .toLowerCase();
+      const ext = POST_IMG_EXT[ct];
+      if (!ext) {
+        return res
+          .status(415)
+          .json({ error: 'Formato não suportado — usa JPG, PNG, WebP ou GIF.' });
+      }
+      if (!req.body || !req.body.length) {
+        return res.status(400).json({ error: 'Imagem em falta.' });
+      }
+      if (!storage.isConfigured()) {
+        return res.status(503).json({ error: 'Armazenamento por configurar.' });
+      }
+      const uid = req.auth.uid || 0;
+      const name = `post-${uid}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
+      await storage.ensureBucket(BUCKET_POSTS, true).catch(() => {});
+      await storage.upload(BUCKET_POSTS, name, req.body, ct);
+      res.json({ ok: true, url: storage.publicUrl(BUCKET_POSTS, name) });
+    } catch (error) {
+      console.error('Erro imagem post:', error.message);
+      res.status(500).json({ error: 'Erro ao guardar a imagem.' });
+    }
+  },
+);
+
+// Criar nova publicação
+// - conta de utilizador -> mensagem no perfil (com ou sem imagem)
+// - admin (sessão do painel) -> anúncio oficial
+router.post('/', attachAuth, async (req, res) => {
   try {
-    const title = String(req.body.title || '').trim().slice(0, 150);
+    const auth = req.auth;
+    if (!auth || (!auth.uid && !auth.admin)) {
+      return res.status(401).json({ error: 'Inicia sessão para publicares.' });
+    }
+
     const content = String(req.body.content || '').trim().slice(0, 5000);
     const image_url = String(req.body.image_url || '').trim().slice(0, 2000);
+    const autorMensagem = Boolean(auth.uid);
+    const title = String(
+      req.body.title || (autorMensagem ? 'Mensagem' : ''),
+    )
+      .trim()
+      .slice(0, 150);
 
-    if (!title || !content) {
+    if (!content && !image_url) {
+      return res.status(400).json({ error: 'Escreve uma mensagem ou escolhe uma imagem.' });
+    }
+    if (!title) {
       return res.status(400).json({ error: 'Título e conteúdo são obrigatórios' });
     }
     if (image_url && !/^https?:\/\//i.test(image_url)) {
@@ -105,13 +187,36 @@ router.post('/', requireAdmin, async (req, res) => {
     }
 
     const db = getDb();
+    let author = null;
+    let userId = null;
+    if (autorMensagem) {
+      const conta = await db
+        .prepare('SELECT id, username FROM users WHERE id = ?')
+        .get(Number(auth.uid))
+        .catch(() => null);
+      if (!conta) return res.status(401).json({ error: 'Conta não encontrada.' });
+      userId = Number(conta.id);
+      author = String(conta.username || auth.username || '').slice(0, 60);
+    }
+
     const result = await db
-      .prepare('INSERT INTO posts (title, content, image_url) VALUES (?, ?, ?) RETURNING id')
-      .run(title, content, image_url || null);
+      .prepare(
+        'INSERT INTO posts (title, content, image_url, author, user_id, kind) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+      )
+      .run(
+        title,
+        content,
+        image_url || null,
+        author,
+        userId,
+        autorMensagem ? 'message' : 'post',
+      );
 
-    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(result.lastInsertRowid);
-
-    res.json(post);
+    const post = await db
+      .prepare('SELECT * FROM posts WHERE id = ?')
+      .get(result.lastInsertRowid);
+    const avatarOf = await avatarLookup(db);
+    res.json({ ...post, author_avatar: avatarOf(post.author), comments: [], comments_count: 0 });
   } catch (error) {
     console.error('Erro posts POST:', error.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -214,14 +319,21 @@ router.delete('/:id/comments/:commentId', requireAdmin, async (req, res) => {
   }
 });
 
-// Eliminar publicação (SÓ ADMIN)
-router.delete('/:id', requireAdmin, async (req, res) => {
+// Eliminar publicação (autor ou ADMIN)
+router.delete('/:id', attachAuth, async (req, res) => {
   try {
     const postId = Number(req.params.id);
     if (!Number.isInteger(postId)) {
       return res.status(400).json({ error: 'ID inválido' });
     }
     const db = getDb();
+    const post = await db.prepare('SELECT id, user_id FROM posts WHERE id = ?').get(postId);
+    if (!post) return res.status(404).json({ error: 'Publicação não encontrada' });
+    const auth = req.auth;
+    const dono = auth && auth.uid && Number(auth.uid) === Number(post.user_id);
+    if (!dono && !(auth && auth.admin)) {
+      return res.status(403).json({ error: 'Não podes apagar esta publicação.' });
+    }
     // As FKs têm ON DELETE CASCADE, mas apagamos por ordem por segurança.
     await db.prepare('DELETE FROM post_likes WHERE post_id = ?').run(postId);
     await db.prepare('DELETE FROM post_comments WHERE post_id = ?').run(postId);
@@ -233,17 +345,27 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// Apagar TODAS as publicações (SÓ ADMIN) — limpar testes
+// Apagar TODAS as publicações oficiais (SÓ ADMIN) — limpar testes
 router.delete('/', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     // As FKs têm ON DELETE CASCADE, mas apagamos por ordem por segurança.
-    await db.exec('DELETE FROM post_likes; DELETE FROM post_comments; DELETE FROM posts;');
+    await db.exec(
+      'DELETE FROM post_likes WHERE post_id IN (SELECT id FROM posts WHERE user_id IS NULL); DELETE FROM post_comments WHERE post_id IN (SELECT id FROM posts WHERE user_id IS NULL); DELETE FROM posts WHERE user_id IS NULL;',
+    );
     res.json({ success: true });
   } catch (error) {
     console.error('Erro clear posts:', error.message);
     res.status(500).json({ error: 'Erro interno' });
   }
+});
+
+// Erros próprios deste router (ex.: imagem acima do limite)
+router.use((err, req, res, next) => {
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Imagem demasiado grande (máx. 4 MB).' });
+  }
+  next(err);
 });
 
 module.exports = { postsRouter: router };

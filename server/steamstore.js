@@ -293,32 +293,49 @@ const ORDENAR = {
   nome: 'Name_ASC',
 };
 
-async function procurar({ q, genero, maxpreco, ordenar }) {
+async function procurar({ q, genero, maxpreco, ordenar, pagina }) {
   const termo = String(q || '').trim().slice(0, 80);
-  const chave = `procurar:${termo}|${genero || ''}|${maxpreco || ''}|${ordenar || ''}`;
+  const pag = Math.max(1, Number(pagina) || 1);
+  const porPagina = 25;
+  const chave = `procurar:${termo}|${genero || ''}|${maxpreco || ''}|${ordenar || ''}|${pag}`;
   const hit = ler(chave);
   if (hit) return hit;
 
   const params = {
     term: termo,
     sort_by: ORDENAR[ordenar] || '',
-    count: maxpreco ? '40' : '24',
+    count: String(porPagina),
+    start: String((pag - 1) * porPagina),
   };
   if (genero && GENEROS[genero]) params.category1 = String(GENEROS[genero]);
+  if (String(maxpreco) === '0') params.maxprice = 'free';
+  else if (Number(maxpreco) > 0) params.maxprice = String(Number(maxpreco));
 
-  let jogos = await pesquisa(params);
-  if (String(maxpreco) === '0') {
-    jogos = jogos.filter((j) => !j.preco || j.preco.gratis);
-  } else {
-    const limite = (Number(maxpreco) || 0) / 100;
-    if (limite > 0) {
-      jogos = jogos.filter((j) => {
-        const v = j.preco && j.preco.valor;
-        return j.preco && (j.preco.gratis || (v != null && v <= limite));
-      });
-    }
-  }
-  const dados = { ok: true, atualizadoEm: new Date().toISOString(), jogos };
+  const r = await fetch(
+    `https://store.steampowered.com/search/results/?${new URLSearchParams({
+      query: '',
+      cc: CC,
+      l: L,
+      infinite: '1',
+      ...params,
+    })}`,
+    { headers: { 'User-Agent': UA, 'Accept-Language': 'pt-PT,pt;q=0.9,en;q=0.8' }, timeout: 20000 },
+  );
+  if (!r.ok) throw new Error('steam search ' + r.status);
+  const bruto = await r.json();
+  const jogos = parseResultados(bruto.results_html);
+
+  const total = Number(bruto.total_count) || jogos.length;
+
+  const dados = {
+    ok: true,
+    atualizadoEm: new Date().toISOString(),
+    jogos,
+    total,
+    pagina: pag,
+    porPagina,
+    paginas: Math.max(1, Math.ceil(total / porPagina)),
+  };
   guardar(chave, dados);
   return dados;
 }

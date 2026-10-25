@@ -23,6 +23,8 @@ const PASSOS = [
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS background_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_id text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_url text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_nome text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS accent_color text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS dynamic_colors boolean NOT NULL DEFAULT true',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',
@@ -30,7 +32,27 @@ const PASSOS = [
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS mouse text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS dpi integer',
   'ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS author text',
+  // Mensagens dos utilizadores (feed do perfil) — os anúncios oficiais ficam sem user_id
+  'ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS user_id bigint REFERENCES public.users(id) ON DELETE CASCADE',
+  "ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'post'",
+  'CREATE INDEX IF NOT EXISTS idx_posts_user ON public.posts (user_id, created_at DESC)',
   "DELETE FROM public.posts WHERE title LIKE 'Novo clip:%' AND author IS NULL",
+  // Contas de teste voltam ao padrão (sem banner, fundo, música nem efeitos)
+  `UPDATE public.user_profiles
+      SET banner_id = NULL,
+          background_id = NULL,
+          musica_id = NULL,
+          musica_url = NULL,
+          musica_nome = NULL,
+          accent_color = NULL,
+          name_color = NULL,
+          name_effect = NULL,
+          dynamic_colors = true,
+          updated_at = now()
+    WHERE user_id IN (
+      SELECT id FROM public.users
+       WHERE lower(username) IN ('afonso teste', 'teste', 'teste2')
+    )`,
   // Specs dos PCs (recolhidas no browser, com baseline para comparar)
   `CREATE TABLE IF NOT EXISTS public.user_specs (
      user_id    bigint primary key references public.users(id) on delete cascade,

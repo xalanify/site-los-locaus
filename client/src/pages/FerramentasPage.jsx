@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import {
   Wrench,
   Terminal,
@@ -161,7 +162,7 @@ function Badge({ tom, children }) {
   )
 }
 
-export default function FerramentasPage() {
+export default function FerramentasPage({ isAdmin = false }) {
   const [avisoSite] = useState('O .exe foi retirado do fluxo. Usa o site com login. Comandos Windows (revo/wmic) precisam de PC local.')
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
@@ -692,6 +693,15 @@ export default function FerramentasPage() {
   const logs = estado?.logs || []
   const podeLocal = dados?.podeLocal
   const podeExecutar = Boolean(podeLocal || agente.online)
+
+  if (!isAdmin) {
+    return (
+      <EmDesenvolvimento
+        titulo="Ferramentas Windows"
+        descricao="As ferramentas de otimização, limpeza e diagnóstico ainda estão a ser testadas. Em breve ficam disponíveis para todos os membros."
+      />
+    )
+  }
 
   /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
   /* A página só abre quando a app deste utilizador está ligada ao site

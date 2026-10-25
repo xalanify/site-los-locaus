@@ -13,6 +13,7 @@ import {
   Gamepad2,
   Store,
   ChevronRight,
+  Newspaper,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import { GTA_VI, RUMORES, CANCELADOS } from '../data/jogosRumores'
@@ -298,10 +299,17 @@ function CartaoEditorial({ item, onClick, destaque = false }) {
       className={`relative overflow-hidden rounded-2xl border border-white/10 p-4 text-left transition-transform hover:-translate-y-0.5 ${
         destaque ? 'sm:col-span-2' : ''
       }`}
-      style={{
-        background: `linear-gradient(135deg, ${item.cor}44, #0b0716 70%)`,
-      }}
+      style={
+        item.imagem
+          ? {
+              backgroundImage: `linear-gradient(180deg, rgba(11,7,22,0.18), rgba(11,7,22,0.94)), url(${item.imagem})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }
+          : { background: `linear-gradient(135deg, ${item.cor}44, #0b0716 70%)` }
+      }
     >
+      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0716] via-transparent to-transparent" />
       <span
         className="pointer-events-none absolute -right-2 -top-4 font-display text-7xl font-black opacity-20"
         style={{ color: item.cor }}
@@ -312,7 +320,7 @@ function CartaoEditorial({ item, onClick, destaque = false }) {
         {item.estado}
       </span>
       <span className="relative mt-1 block font-display text-lg font-black text-white">{item.nome}</span>
-      <span className="relative mt-1 block text-[11px] leading-snug text-gray-400">
+      <span className="relative mt-1 block text-[11px] leading-snug text-gray-300">
         {item.lancamento || item.descricao.slice(0, 100) + '…'}
       </span>
     </button>
@@ -344,6 +352,14 @@ function FichaEditorial({ item, onClose }) {
           </button>
         </div>
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          {item.imagem && (
+            <img
+              src={item.imagem}
+              alt={item.nome}
+              className="mb-3 aspect-video w-full rounded-xl object-cover"
+              loading="lazy"
+            />
+          )}
           <p className="text-sm leading-relaxed text-gray-300">{item.descricao}</p>
           {item.lancamento && (
             <p className="mt-3 text-[12px] font-bold text-white">Lançamento: {item.lancamento}</p>
@@ -368,7 +384,10 @@ export default function SteamStorePage() {
   const [genero, setGenero] = useState('')
   const [maxpreco, setMaxpreco] = useState('')
   const [ordenar, setOrdenar] = useState('relevancia')
+  const [pagina, setPagina] = useState(1)
+  const [paginas, setPaginas] = useState(1)
   const [ficha, setFicha] = useState(null)
+  const [noticias, setNoticias] = useState({ loading: false, lista: [], erro: '' })
 
   useEffect(() => {
     let vivo = true
@@ -389,13 +408,15 @@ export default function SteamStorePage() {
     }
   }, [])
 
-  const procurar = async (e) => {
+  const procurar = async (e, page = 1) => {
     e?.preventDefault()
+    setPagina(page)
     setPesquisa((p) => ({ ...p, loading: true, erro: '' }))
     try {
-      const params = new URLSearchParams({ q, genero, maxpreco, ordenar })
+      const params = new URLSearchParams({ q, genero, maxpreco, ordenar, pagina: String(page) })
       const r = await fetch(`/api/games/steam/procurar?${params}`)
       const d = await r.json()
+      setPaginas(Number(d?.paginas) || 1)
       setPesquisa({ loading: false, jogos: d?.jogos || [], erro: d?.error || '' })
     } catch {
       setPesquisa({ loading: false, jogos: [], erro: 'Sem ligação à Steam.' })
@@ -404,6 +425,23 @@ export default function SteamStorePage() {
 
   const abrir = (appid) => setFicha(appid)
 
+  /* Notícias gaming — só carrega quando a aba abre (e fica em cache no servidor) */
+  useEffect(() => {
+    if (aba !== 'noticias' || noticias.lista.length) return
+    let vivo = true
+    setNoticias((n) => ({ ...n, loading: true, erro: '' }))
+    fetch('/api/news')
+      .then((r) => r.json())
+      .then((d) => {
+        if (!vivo) return
+        setNoticias({ loading: false, lista: d?.noticias || [], erro: d?.error || '' })
+      })
+      .catch(() => vivo && setNoticias({ loading: false, lista: [], erro: 'Sem ligação às notícias.' }))
+    return () => {
+      vivo = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aba])
   return (
     <PageShell>
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -415,11 +453,12 @@ export default function SteamStorePage() {
         </p>
       </motion.div>
 
-      <div className="mb-5 grid grid-cols-3 gap-2">
+      <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
           { id: 'embreve', label: 'Em breve', Icon: Calendar },
           { id: 'top', label: 'Mais jogados', Icon: TrendingUp },
           { id: 'procurar', label: 'Procurar', Icon: Search },
+          { id: 'noticias', label: 'Notícias', Icon: Newspaper },
         ].map((t) => (
           <button
             key={t.id}
@@ -653,7 +692,122 @@ export default function SteamStorePage() {
                 ))}
               </div>
             )}
+            {paginas > 1 && (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => procurar(null, Math.max(1, pagina - 1))}
+                  disabled={pagina <= 1 || pesquisa.loading}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] font-black text-gray-300 disabled:opacity-30"
+                >
+                  ‹
+                </button>
+                {Array.from({ length: Math.min(paginas, 12) }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => procurar(null, n)}
+                    disabled={pesquisa.loading}
+                    className={`rounded-lg px-2.5 py-1.5 text-[11px] font-black ${
+                      n === pagina
+                        ? 'bg-violet-500 text-white'
+                        : 'border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+                {paginas > 12 && (
+                  <span className="px-1 text-[11px] text-gray-500">… {paginas}</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => procurar(null, Math.min(paginas, pagina + 1))}
+                  disabled={pagina >= paginas || pesquisa.loading}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] font-black text-gray-300 disabled:opacity-30"
+                >
+                  ›
+                </button>
+              </div>
+            )}
           </div>
+        </section>
+      )}
+
+      {aba === 'noticias' && (
+        <section className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Newspaper className="h-4 w-4 text-violet-400" />
+              <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
+                Notícias de gaming
+              </h2>
+            </div>
+            <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-bold text-gray-500">
+              Eurogamer PT · PC Gamer
+            </span>
+          </div>
+
+          {noticias.loading ? (
+            <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
+              <Loader2 className="h-4 w-4 animate-spin" /> A carregar notícias…
+            </p>
+          ) : noticias.erro && noticias.lista.length === 0 ? (
+            <p className="py-6 text-center text-sm text-yellow-300">{noticias.erro}</p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {noticias.lista.map((n) => (
+                <a
+                  key={n.id}
+                  href={n.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] transition-colors hover:border-violet-400/35 hover:bg-white/[0.05]"
+                >
+                  {n.imagem ? (
+                    <img
+                      src={n.imagem}
+                      alt=""
+                      loading="lazy"
+                      className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <div className="flex aspect-video w-full items-center justify-center bg-gradient-to-br from-violet-500/20 to-[#0b0716]">
+                      <Gamepad2 className="h-8 w-8 text-violet-300/60" />
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-violet-300">
+                      {n.fonte}
+                      <span className="text-gray-600">·</span>
+                      <span className="text-gray-500">
+                        {n.data
+                          ? new Date(n.data).toLocaleDateString('pt-PT', {
+                              day: '2-digit',
+                              month: 'short',
+                            })
+                          : ''}
+                      </span>
+                    </p>
+                    <h3 className="mt-1 line-clamp-2 text-[13px] font-bold leading-snug text-white">
+                      {n.titulo}
+                    </h3>
+                    {n.resumo && (
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-gray-400">
+                        {n.resumo}
+                      </p>
+                    )}
+                    <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-500 group-hover:text-violet-300">
+                      Ler notícia <ExternalLink className="h-3 w-3" />
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

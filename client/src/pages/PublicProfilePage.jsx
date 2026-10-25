@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -8,6 +8,7 @@ import {
   UserRoundX,
 } from 'lucide-react'
 import ClipCard from '../components/ClipCard'
+import UserPostCard from '../components/UserPostCard'
 import Estado from '../components/Estado'
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
@@ -39,6 +40,8 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const [carregado, setCarregado] = useState(false)
   const [ordemClips, setOrdemClips] = useState('recentes')
   const [jogoClips, setJogoClips] = useState('')
+  const [posts, setPosts] = useState([])
+  const [filtroFeed, setFiltroFeed] = useState('tudo')
 
   useEffect(() => {
     let vivo = true
@@ -58,6 +61,23 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
       vivo = false
     }
   }, [username])
+
+  /* Mensagens públicas deste membro (feed do perfil). */
+  useEffect(() => {
+    const uid = data?.profile?.id
+    if (!uid) {
+      setPosts([])
+      return
+    }
+    let vivo = true
+    fetch(`/api/posts?user_id=${encodeURIComponent(uid)}`, { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((lista) => vivo && setPosts(Array.isArray(lista) ? lista : []))
+      .catch(() => vivo && setPosts([]))
+    return () => {
+      vivo = false
+    }
+  }, [data?.profile?.id])
 
   const fundoAtual = fundoDe(data?.profile?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
@@ -134,7 +154,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
 
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
-  const corCard = dinamico ? fundoAtual.cor : tema.cor
+  const corCard = tema.cor
   const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
   const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
@@ -146,6 +166,21 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   else if (ordemClips === 'jogo')
     clipsMostrados.sort((a, b) => gameLabel(a.game).localeCompare(gameLabel(b.game), 'pt'))
   else clipsMostrados.sort((a, b) => Number(b.id) - Number(a.id))
+
+  const feedMostrado = [
+    ...(filtroFeed === 'mensagens' ? [] : clipsMostrados).map((c) => ({
+      tipo: 'clip',
+      chave: `c${c.id}`,
+      data: c.created_at,
+      item: c,
+    })),
+    ...(filtroFeed === 'videos' ? [] : posts).map((p2) => ({
+      tipo: 'post',
+      chave: `p${p2.id}`,
+      data: p2.created_at,
+      item: p2,
+    })),
+  ].sort((a, b) => (new Date(b.data || 0).getTime() || 0) - (new Date(a.data || 0).getTime() || 0))
   const souEu =
     p.username && user && p.username.toLowerCase() === user.username.toLowerCase()
 
@@ -158,11 +193,9 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const badges = Array.isArray(p.badges) ? p.badges : []
   const distOc = distincoesOverclock(p.distincoes)
   const minhas = [
-    ...BADGES.filter((b) => badges.includes(b.id) && b.id !== 'dev'),
+    ...BADGES.filter((b) => badges.includes(b.id)),
     ...distOc,
   ]
-  const temDev = badges.includes('dev')
-  const devBadge = BADGES.find((b) => b.id === 'dev')
 
   const avatarSrc = p.avatar_url || svgAvatar(p.username, '#8B5CF6')
   /* margem de casal: 0/1 clip público da até aparecer cheio */
@@ -207,8 +240,8 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               <img
                 src={avatarSrc}
                 alt={p.username}
-                className="h-16 w-16 rounded-full object-cover ring-2 ring-violet-500/60"
-                style={{ boxShadow: `0 0 26px ${corCard}66` }}
+                className="h-16 w-16 rounded-full object-cover"
+                style={{ boxShadow: `0 0 0 2px ${corCard}99, 0 0 26px ${corCard}66` }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
                   e.currentTarget.dataset.fb = '1'
@@ -234,17 +267,6 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                 >
                   {p.username}
                 </span>
-                {temDev && (
-                  <span
-                    className="flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5"
-                    style={{ boxShadow: '0 0 14px rgba(255,31,61,.35)' }}
-                  >
-                    <BadgeGem badge={devBadge} size={16} />
-                    <span className={`font-display text-[10px] font-black uppercase tracking-wider ${devLabelClass}`}>
-                      Dev
-                    </span>
-                  </span>
-                )}
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
                 <span>Membro desde {criado}</span>
@@ -252,12 +274,12 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                   className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
                   title="ID da conta"
                 >
-                  ID {p.id}
+                  ID {p.display_id ?? p.id}
                 </span>
               </p>
               {p.mouse && (
                 <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">Mouse</span>
                   {(() => {
                     const m = (searchMice(p.mouse) || []).find(
                       (x) => `${x.brand} ${x.model}` === p.mouse,
@@ -296,25 +318,47 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           )}
         </motion.div>
 
-        {/* ---------------- Clips do membro (mesma ordem/estilo) ---------------- */}
+        {/* ---------------- Feed do membro: clips + mensagens ---------------- */}
         <div className="mb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <h2
               className="font-display text-2xl font-black uppercase sm:text-3xl"
               style={{ color: 'var(--perfil-accent, #fff)' }}
             >
-              {souEu ? 'Os meus clips' : `Clips de ${p.username}`}
+              {souEu ? 'As minhas publicações' : `Publicações de ${p.username}`}
             </h2>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
-              {clipsMostrados.length}
+              {feedMostrado.length}
             </span>
           </div>
-          {clips.length > 0 && (
+
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {[
+              { id: 'tudo', label: 'Tudo' },
+              { id: 'videos', label: 'Vídeos' },
+              { id: 'mensagens', label: 'Mensagens' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFiltroFeed(f.id)}
+                className={`filtro-clips rounded-full border px-3 py-1.5 text-[11px] font-black ${
+                  filtroFeed === f.id
+                    ? 'border-white/60 bg-white/15 text-white'
+                    : 'border-white/10 bg-[#17112a] text-gray-300 hover:text-white'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {filtroFeed !== 'mensagens' && clips.length > 0 && (
             <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <select
                 value={jogoClips}
                 onChange={(e) => setJogoClips(e.target.value)}
-                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
               >
                 <option value="">Todos os jogos</option>
                 {jogosClips.map((g) => (
@@ -326,7 +370,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               <select
                 value={ordemClips}
                 onChange={(e) => setOrdemClips(e.target.value)}
-                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
               >
                 <option value="recentes">Mais recentes</option>
                 <option value="views">Mais vistos</option>
@@ -336,37 +380,54 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             </div>
           )}
 
-          {clips.length === 0 ? (
+          {feedMostrado.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
               <Clapperboard className="mx-auto mb-2 h-7 w-7 text-violet-400" />
-              <p className="font-bold text-white">Ainda sem clips</p>
+              <p className="font-bold text-white">
+                {filtroFeed === 'mensagens'
+                  ? 'Ainda sem mensagens'
+                  : filtroFeed === 'videos'
+                    ? 'Ainda sem clips'
+                    : 'Ainda sem publicações'}
+              </p>
               <p className="mx-auto max-w-md text-sm text-gray-400">
                 {souEu
-                  ? 'Publica o teu primeiro clip e ele aparece aqui, no teu perfil, com gostos e comentários.'
-                  : `${p.username} ainda não publicou nenhum clip no site.`}
+                  ? 'Publica um clip ou uma mensagem e aparece aqui no teu perfil.'
+                  : `${p.username} ainda não publicou nada no site.`}
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {clipsMostrados.map((c) => (
-                <ClipCard
-                  key={c.id}
-                  clip={c}
-                  user={user}
-                  onRequestAuth={onRequestAuth}
-                  onProfile={onProfile}
-                  onUpdate={(next) =>
-                    setData((prev) => ({
-                      ...prev,
-                      clips: prev.clips.map((x) => (x.id === next.id ? next : x)),
-                    }))
-                  }
-                  onDelete={(id) =>
-                    setData((prev) => ({ ...prev, clips: prev.clips.filter((x) => x.id !== id) }))
-                  }
-                  transparent
-                />
-              ))}
+            <div className="space-y-5">
+              {feedMostrado.map((f) =>
+                f.tipo === 'clip' ? (
+                  <div key={f.chave} className="mx-auto w-full max-w-2xl">
+                    <ClipCard
+                      clip={f.item}
+                      user={user}
+                      onRequestAuth={onRequestAuth}
+                      onProfile={onProfile}
+                      onUpdate={(next) =>
+                        setData((prev) => ({
+                          ...prev,
+                          clips: prev.clips.map((x) => (x.id === next.id ? next : x)),
+                        }))
+                      }
+                      onDelete={(id) =>
+                        setData((prev) => ({ ...prev, clips: prev.clips.filter((x) => x.id !== id) }))
+                      }
+                      transparent
+                    />
+                  </div>
+                ) : (
+                  <UserPostCard
+                    key={f.chave}
+                    post={f.item}
+                    viewer={user}
+                    autor={p}
+                    onDelete={(id) => setPosts((prev) => prev.filter((x) => x.id !== id))}
+                  />
+                ),
+              )}
             </div>
           )}
         </div>
@@ -383,7 +444,11 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             </Link>
           </div>
         )}
-        <ProfileMusic musicaId={p.musica_id} />
+        <ProfileMusic
+          musicaId={p.musica_id}
+          musicaUrl={p.musica_url}
+          musicaNome={p.musica_nome}
+        />
     </PageShell>
   )
 }

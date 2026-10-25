@@ -58,7 +58,7 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, dynamic_colors, accent_color, name_color, name_effect
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -70,6 +70,8 @@ const profileOf = async (userId) => {
       banner_id: (row && row.banner_id) || null,
       background_id: (row && row.background_id) || null,
       musica_id: (row && row.musica_id) || null,
+      musica_url: (row && row.musica_url) || null,
+      musica_nome: (row && row.musica_nome) || null,
       dynamic_colors: row && row.dynamic_colors != null ? Boolean(row.dynamic_colors) : true,
       accent_color: (row && row.accent_color) || null,
       name_color: (row && row.name_color) || null,
@@ -84,6 +86,8 @@ const profileOf = async (userId) => {
       banner_id: null,
       background_id: null,
       musica_id: null,
+      musica_url: null,
+      musica_nome: null,
       dynamic_colors: true,
       accent_color: null,
       name_color: null,
@@ -127,14 +131,29 @@ const distincoesOverclock = async (userId) => {
   }
 };
 
+/* ID visível e sequencial (1..N) pela ordem de entrada.
+   O id real da BD pode saltar (contas apagadas); este nunca salta. */
+const displayIdOf = async (userId) => {
+  try {
+    const row = await getDb()
+      .prepare("SELECT COUNT(*)::int AS n FROM users WHERE id <= ? AND COALESCE(password_hash, '') NOT LIKE '!%'")
+      .get(userId);
+    return Number(row && row.n) || null;
+  } catch {
+    return null;
+  }
+};
+
 const publicUser = async (u) => {
-  const [prof, badges, dist] = await Promise.all([
+  const [prof, badges, dist, displayId] = await Promise.all([
     profileOf(u.id),
     badgesOf(u.id),
     distincoesOverclock(u.id),
+    displayIdOf(u.id),
   ]);
   return {
     id: u.id,
+    display_id: displayId,
     username: u.username,
     email: u.email || null,
     is_admin: Boolean(u.is_admin),
@@ -305,6 +324,8 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasBanner = Object.prototype.hasOwnProperty.call(body, 'banner_id');
     const hasBackground = Object.prototype.hasOwnProperty.call(body, 'background_id');
     const hasMusic = Object.prototype.hasOwnProperty.call(body, 'musica_id');
+    const hasMusicUrl = Object.prototype.hasOwnProperty.call(body, 'musica_url');
+    const hasMusicNome = Object.prototype.hasOwnProperty.call(body, 'musica_nome');
     const hasAccent = Object.prototype.hasOwnProperty.call(body, 'accent_color');
     const hasDynamic = Object.prototype.hasOwnProperty.call(body, 'dynamic_colors');
     const hasNameColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
@@ -317,6 +338,8 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       !hasBanner &&
       !hasBackground &&
       !hasMusic &&
+      !hasMusicUrl &&
+      !hasMusicNome &&
       !hasAccent &&
       !hasDynamic &&
       !hasNameColor &&
@@ -402,6 +425,32 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     if (hasMusic) {
       const erro = await guardarTema('musica_id', body.musica_id);
       if (erro) return erro;
+    }
+    if (hasMusicUrl || hasMusicNome) {
+      const conta = await store.findById(uid);
+      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+      if (!souAdmin) {
+        return res.status(403).json({ error: 'A pesquisa de músicas é exclusiva do admin.' });
+      }
+      if (hasMusicUrl) {
+        const url = String(body.musica_url || '').trim();
+        if (url && !/^yt:[A-Za-z0-9_-]{11}$/.test(url)) {
+          return res.status(400).json({ error: 'Música inválida.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET musica_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(url || null, uid);
+      }
+      if (hasMusicNome) {
+        const nome = String(body.musica_nome || '').trim().slice(0, 120);
+        await db
+          .prepare(
+            'UPDATE user_profiles SET musica_nome = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(nome || null, uid);
+      }
     }
     if (hasAccent) {
       const cor = String(body.accent_color || '').trim();
@@ -668,7 +717,9 @@ router.get('/list', attachAuth, async (req, res) => {
     const db = getDb();
     const rows = await db
       .prepare(
-        `SELECT u.id, u.username, p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect,
+        `SELECT u.id, u.username,
+                (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
+                p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
@@ -687,6 +738,7 @@ router.get('/list', attachAuth, async (req, res) => {
     res.json({
       users: rows.map((r, i) => ({
         id: Number(r.id),
+        display_id: Number(r.display_id) || null,
         username: r.username,
         avatar_url: r.avatar_url || null,
         mouse: r.mouse || null,
@@ -694,6 +746,8 @@ router.get('/list', attachAuth, async (req, res) => {
         banner_id: r.banner_id || null,
         background_id: r.background_id || null,
         musica_id: r.musica_id || null,
+        musica_url: r.musica_url || null,
+        musica_nome: r.musica_nome || null,
         dynamic_colors: r.dynamic_colors != null ? Boolean(r.dynamic_colors) : true,
         accent_color: r.accent_color || null,
         name_color: r.name_color || null,
@@ -743,7 +797,7 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
-    const [badges, prof, pres, dist] = await Promise.all([
+    const [badges, prof, pres, dist, displayId] = await Promise.all([
       badgesOf(user.id),
       profileOf(user.id),
       getDb()
@@ -751,6 +805,7 @@ router.get('/:username', attachAuth, async (req, res) => {
         .get(user.id)
         .catch(() => null),
       distincoesOverclock(user.id),
+      displayIdOf(user.id),
     ]);
 
     // "online agora" — mesma regra da lista de membros (2 minutos)
@@ -764,6 +819,7 @@ router.get('/:username', attachAuth, async (req, res) => {
       found: true,
       profile: {
         id: user.id,
+        display_id: displayId,
         username: user.username,
         created_at: user.created_at,
         badges,

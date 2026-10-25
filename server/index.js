@@ -196,6 +196,7 @@ app.use('/api/notifications', notificationsRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/games', gamesRouter);
+app.use('/api/news', require('./routes/news').newsRouter);
 app.use('/api/ferramentas', ferramentasRouter);
 // Agente local: permite ao site na nuvem correr as ferramentas no PC
 app.use('/api/agente', agenteRouter);

@@ -181,6 +181,8 @@ export default function ChatPage({ user }) {
   const [novasMensagens, setNovasMensagens] = useState(false)
   const [erro, setErro] = useState('')
   const [onlineCount, setOnlineCount] = useState(0)
+  const [onlineUsers, setOnlineUsers] = useState([])
+  const [onlineAberto, setOnlineAberto] = useState(false)
   const [tema, setTema] = useState(TEMA_PADRAO)
   const [temaAberto, setTemaAberto] = useState(false)
   const [resposta, setResposta] = useState(null)
@@ -289,8 +291,9 @@ export default function ChatPage({ user }) {
         const r = await fetch('/api/users/list', { headers: authHeaders() })
         if (!r.ok) return
         const d = await r.json()
-        const count = (d.users || []).filter((u) => u.online).length
-        setOnlineCount(count)
+        const lista = (d.users || []).filter((u) => u.online)
+        setOnlineUsers(lista)
+        setOnlineCount(lista.length)
       } catch {}
     }
     fetchOnline()
@@ -596,10 +599,15 @@ export default function ChatPage({ user }) {
               )}
             </div>
           )}
-          <span className="hidden items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20 sm:flex">
+          <button
+            type="button"
+            onClick={() => setOnlineAberto(true)}
+            title="Ver quem está online"
+            className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20 transition-colors hover:bg-emerald-500/20"
+          >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
             {onlineCount > 0 ? `${onlineCount} online` : 'Online'}
-          </span>
+          </button>
         </div>
 
         {/* mensagem fixada (admin) — banner no topo */}
@@ -1087,6 +1095,54 @@ export default function ChatPage({ user }) {
                 />
               ) : (
                 <p className="p-8 text-center text-sm text-gray-400">Este clip não está disponível.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {onlineAberto && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
+          onClick={() => setOnlineAberto(false)}
+        >
+          <div
+            className="w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#0d0a16] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-black text-white">
+                <Users className="h-4 w-4 text-emerald-300" /> Quem está online
+              </h3>
+              <button
+                onClick={() => setOnlineAberto(false)}
+                className="rounded-lg bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-2">
+              {onlineUsers.length === 0 ? (
+                <p className="px-3 py-6 text-center text-sm text-gray-500">Ninguém online agora.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {onlineUsers.map((u) => (
+                    <li key={u.id || u.username}>
+                      <div className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/5">
+                        <span className="relative shrink-0">
+                          <AvatarImg src={u.avatar_url} name={u.username} className="h-9 w-9" />
+                          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0a16] bg-emerald-400" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-white">
+                          {u.username}
+                        </span>
+                        <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-400">
+                          {u.plataforma === 'mobile' ? 'Telemóvel' : u.plataforma === 'pc' ? 'PC' : 'Online'}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>

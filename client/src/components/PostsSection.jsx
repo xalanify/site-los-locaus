@@ -19,7 +19,7 @@ export default function PostsSection({ isAdmin }) {
 
   const authHeaders = () => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('adminToken') || ''}`,
+    Authorization: `Bearer ${localStorage.getItem('adminToken') || localStorage.getItem('userToken') || ''}`,
   })
 
   const handleLike = async (postId) => {

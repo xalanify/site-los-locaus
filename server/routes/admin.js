@@ -144,7 +144,8 @@ router.get('/users', requireAdmin, async (req, res) => {
         game_nick: (profByUser[u.id] && profByUser[u.id].game_nick) || null,
         tem_specs: specsUsers.has(Number(u.id)),
       }))
-      .sort((a, b) => Number(a.id) - Number(b.id));
+      .sort((a, b) => Number(a.id) - Number(b.id))
+      .map((u, i) => ({ ...u, display_id: i + 1 }));
     res.json({ users });
   } catch {
     res.status(500).json({ error: 'Erro ao carregar as contas.' });
@@ -469,6 +470,54 @@ router.get('/r6/links', requireAdmin, async (req, res) => {
     res.json({ ok: true, jogadores });
   } catch (error) {
     res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+/* ---------- Música do perfil (admin): pesquisa no YouTube ---------- */
+const MUSICA_CACHE = new Map();
+router.get('/musica/search', requireAdmin, async (req, res) => {
+  try {
+    const q = String(req.query.q || '').trim().slice(0, 80);
+    if (!q) return res.json({ ok: true, resultados: [] });
+    const key = (process.env.YOUTUBE_API_KEY || '').trim();
+    if (!key) {
+      return res.status(503).json({
+        ok: false,
+        error: 'Falta a YOUTUBE_API_KEY no servidor para pesquisar músicas.',
+        resultados: [],
+      });
+    }
+    const hit = MUSICA_CACHE.get(q);
+    if (hit && Date.now() - hit.t < 10 * 60 * 1000) {
+      return res.json({ ok: true, resultados: hit.v });
+    }
+    const url =
+      'https://www.googleapis.com/youtube/v3/search?' +
+      new URLSearchParams({
+        part: 'snippet',
+        type: 'video',
+        videoCategoryId: '10',
+        maxResults: '8',
+        q,
+        key,
+      });
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('youtube ' + r.status);
+    const j = await r.json();
+    const resultados = (j.items || []).map((it) => ({
+      id: it.id && it.id.videoId,
+      titulo: it.snippet && it.snippet.title,
+      canal: it.snippet && it.snippet.channelTitle,
+      thumb:
+        it.snippet &&
+        it.snippet.thumbnails &&
+        (it.snippet.thumbnails.medium?.url || it.snippet.thumbnails.default?.url),
+    })).filter((x) => x.id);
+    MUSICA_CACHE.set(q, { t: Date.now(), v: resultados });
+    res.json({ ok: true, resultados });
+  } catch (e) {
+    console.error('Erro admin musica/search:', e.message);
+    res.status(502).json({ ok: false, error: 'Não foi possível pesquisar no YouTube.', resultados: [] });
   }
 });
 

@@ -1,8 +1,8 @@
 ﻿/* ============================================================
-   Temas de perfil â€” banners (GIF), fundos e mÃºsicas
+   Temas de perfil — banners (GIF), fundos e músicas
    ------------------------------------------------------------
    Os ficheiros vivem em client/public/perfil/.
-   O id Ã© guardado em user_profiles.banner_id / background_id /
+   O id é guardado em user_profiles.banner_id / background_id /
    musica_id.
    ============================================================ */
 
@@ -23,20 +23,23 @@ const CORES_BANNER = [
   '#2dd4bf',
 ]
 
-export const BANNERS = Array.from({ length: 17 }, (_, i) => {
-  const n = dois(i + 1)
-  return {
-    id: `g${n}`,
-    nome: `Banner ${n}`,
-    ficheiro: `/perfil/cardbanner/${n}.webp`,
-    cor: CORES_BANNER[i % CORES_BANNER.length] || '#a855f7',
-  }
-})
+export const BANNERS = [
+  { id: '', nome: 'Padrão', ficheiro: '', cor: '#8b5cf6' },
+  ...Array.from({ length: 17 }, (_, i) => {
+    const n = dois(i + 1)
+    return {
+      id: `g${n}`,
+      nome: `Banner ${n}`,
+      ficheiro: `/perfil/cardbanner/${n}.webp`,
+      cor: CORES_BANNER[i % CORES_BANNER.length] || '#a855f7',
+    }
+  }),
+]
 
 export const FUNDOS = [
   {
     id: '',
-    nome: 'PadrÃ£o',
+    nome: 'Padrão',
     cor: '#8b5cf6',
     cor2: '#22d3ee',
     rgb: '139 92 246',
@@ -52,7 +55,7 @@ export const FUNDOS = [
   },
   {
     id: 'f02',
-    nome: 'OperaÃ§Ã£o',
+    nome: 'Operação',
     cor: '#cbd5e1',
     cor2: '#94a3b8',
     rgb: '203 213 225',
@@ -60,7 +63,7 @@ export const FUNDOS = [
   },
   {
     id: 'f03',
-    nome: 'EspaÃ§o',
+    nome: 'Espaço',
     cor: '#38bdf8',
     cor2: '#818cf8',
     rgb: '56 189 248',
@@ -92,7 +95,7 @@ export const FUNDOS = [
   },
   {
     id: 'f07',
-    nome: 'GTA V â€” Los Santos',
+    nome: 'GTA V — Los Santos',
     cor: '#f472b6',
     cor2: '#f59e0b',
     rgb: '244 114 182',
@@ -100,7 +103,7 @@ export const FUNDOS = [
   },
   {
     id: 'f08',
-    nome: 'GTA V â€” Pier',
+    nome: 'GTA V — Pier',
     cor: '#38bdf8',
     cor2: '#fb923c',
     rgb: '56 189 248',
@@ -124,7 +127,7 @@ export const FUNDOS = [
   },
   {
     id: 'f11',
-    nome: 'EspaÃ§o 01',
+    nome: 'Espaço 01',
     cor: '#818cf8',
     cor2: '#22d3ee',
     rgb: '129 140 248',
@@ -132,7 +135,7 @@ export const FUNDOS = [
   },
   {
     id: 'f12',
-    nome: 'EspaÃ§o 02',
+    nome: 'Espaço 02',
     cor: '#c084fc',
     cor2: '#38bdf8',
     rgb: '192 132 252',
@@ -141,11 +144,11 @@ export const FUNDOS = [
 ]
 
 export const CORES_ACENTO = [
-  { id: 'auto', nome: 'AutomÃ¡tica', cor: '' },
+  { id: 'auto', nome: 'Automática', cor: '' },
   { id: 'violeta', nome: 'Violeta', cor: '#8b5cf6' },
   { id: 'azul', nome: 'Azul', cor: '#38bdf8' },
   { id: 'verde', nome: 'Verde', cor: '#22c55e' },
-  { id: 'ambar', nome: 'Ã‚mbar', cor: '#f59e0b' },
+  { id: 'ambar', nome: 'Âmbar', cor: '#f59e0b' },
   { id: 'vermelho', nome: 'Vermelho', cor: '#ef4444' },
   { id: 'rosa', nome: 'Rosa', cor: '#ec4899' },
   { id: 'ciano', nome: 'Ciano', cor: '#22d3ee' },

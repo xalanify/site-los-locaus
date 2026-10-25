@@ -923,6 +923,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
+              { id: 'fortnite', label: 'Fortnite', Icon: Flame },
               { id: 'ferramentas', label: 'Auditoria', Icon: ScrollText },
             ]}
           />
@@ -1124,7 +1125,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                           )}
                         </p>
                         <p className="text-xs text-gray-400">
-                          ID {u.id} · criada a {fmtUserDate(u.created_at)}
+                          ID {u.display_id || u.id} · criada a {fmtUserDate(u.created_at)}
                         </p>
                       </div>
                       <button
@@ -1375,9 +1376,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </div>
             )}
           </div>
-        ) : tab === 'r6' ? (
-          /* ---------- RAINBOW SIX: atualização manual ---------- */
+        ) : tab === 'r6' || tab === 'fortnite' ? (
+          /* ---------- RAINBOW SIX / FORTNITE: atualização manual ---------- */
           <div>
+            {tab === 'r6' && (
             <div className="glass rounded-xl p-4">
               <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
                 <Gamepad2 className="h-4 w-4 text-violet-400" /> Rainbow Six — tracker.gg
@@ -1471,9 +1473,11 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </div>
               {r6Msg && <p className="mt-2 text-[13px] font-bold text-red-400">{r6Msg}</p>}
             </div>
+            )}
 
             {/* ---------- Fortnite: tracker.gg (save as) ---------- */}
-            <div className="glass mt-4 rounded-xl p-4">
+            {tab === 'fortnite' && (
+            <div className="glass rounded-xl p-4">
               <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
                 <Flame className="h-4 w-4 text-fuchsia-400" /> Fortnite — tracker.gg
               </h3>
@@ -1528,6 +1532,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 </p>
               )}
             </div>
+            )}
 
             {/* ---------- Notificações: teste de push ---------- */}
             <div className="glass mt-4 rounded-xl p-4">
@@ -1555,6 +1560,8 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             </div>
 
             {/* barra de progresso + logs */}
+            {tab === 'r6' && (
+              <>
             {(r6ACorrer || (r6?.trabalho?.logs?.length ?? 0) > 0) && (
               <div className="glass mt-4 rounded-xl p-4">
                 <div className="mb-2 flex items-center justify-between gap-2 text-[11px] font-black uppercase tracking-wider">
@@ -1609,6 +1616,8 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 <p className="mt-2 text-[12px] text-red-400">{r6.ultimoErro}</p>
               )}
             </div>
+              </>
+            )}
           </div>
         ) : tab === 'stats' ? (
           /* ---------- ESTATÍSTICAS ---------- */

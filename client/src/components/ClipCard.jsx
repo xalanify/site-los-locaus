@@ -25,6 +25,7 @@ import Estado from './Estado'
 import { authHeaders, mmss } from '../lib/auth'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { confirmar, toast } from './Feedback'
+import { videoComecou, videoParou } from '../lib/musicaPerfil'
 
 const fmtDate = (iso) => {
   if (!iso) return ''
@@ -126,6 +127,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   /* estado do leitor: -1 arranque, 0 fim, 1 a tocar, 2 pausa,
      3 a carregar, 5 pronto para tocar */
   const [estado, setEstado] = useState(-1)
+  const musicaPausada = useRef(false)
   /* véu NOSSO: 'inicio' cobre o título/logótipo deles no arranque,
      'fim' substitui o ecrã de fim deles (com o NOSSO botão) */
   const [veu, setVeu] = useState('nada')
@@ -213,11 +215,21 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                   if (d) setDur(d)
                 } catch {}
                 if (e.data === 1) {
+                  if (!musicaPausada.current) {
+                    musicaPausada.current = true
+                    videoComecou()
+                  }
                   forcerQualidade(e.target)
                   // o vídeo começou a tocar: levanta qualquer véu anterior
                   setVeu('nada')
                   setVeuSai(false)
                   clearTimeout(veuTempo.current[0])
+                }
+                if (e.data === 0 || e.data === 2) {
+                  if (musicaPausada.current) {
+                    musicaPausada.current = false
+                    videoParou()
+                  }
                 }
                 if (e.data === 0) {
                   // fim do vídeo: entra o ecrã nosso (o deles não aparece)
@@ -941,6 +953,7 @@ export default function ClipCard({
   const [offsetComent, setOffsetComent] = useState(0)
   const [aCarregarMais, setACarregarMais] = useState(false)
   const videoRef = useRef(null)
+  const musicaVideoLocal = useRef(false)
 
   // edição (só para o dono do clip)
   const [editando, setEditando] = useState(false)
@@ -1463,10 +1476,26 @@ export default function ClipCard({
             onTimeUpdate={onTime}
             /* só um clip a tocar de cada vez (menos CPU e banda) */
             onPlay={() => {
+              if (!musicaVideoLocal.current) {
+                musicaVideoLocal.current = true
+                videoComecou()
+              }
               registarVista(c.id, setC)
               document.querySelectorAll('video').forEach((v) => {
                 if (v !== videoRef.current && !v.paused) v.pause()
               })
+            }}
+            onPause={() => {
+              if (musicaVideoLocal.current) {
+                musicaVideoLocal.current = false
+                videoParou()
+              }
+            }}
+            onEnded={() => {
+              if (musicaVideoLocal.current) {
+                musicaVideoLocal.current = false
+                videoParou()
+              }
             }}
             className="mt-3 max-h-[65vh] w-full rounded-xl bg-black"
           />

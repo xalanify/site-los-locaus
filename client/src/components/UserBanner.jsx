@@ -4,6 +4,7 @@ import { bannerDe } from '../data/temasPerfil'
    como a lista "Membros online". */
 export default function UserBanner({ bannerId, className = 'h-2 w-full' }) {
   const b = bannerDe(bannerId)
+  if (!b.ficheiro) return null
   return (
     <span
       className={`${className} bg-cover bg-center`}

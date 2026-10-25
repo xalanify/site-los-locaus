@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import { authHeaders } from '../lib/auth'
 import { correrBench as medirBench } from '../lib/bench'
 
@@ -280,7 +281,7 @@ function TerminalPassos({ passos, aCorrer }) {
   )
 }
 
-export default function PcsPage() {
+export default function PcsPage({ isAdmin = false }) {
   const [lista, setLista] = useState([])
   const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(null) // linha expandida
@@ -535,6 +536,15 @@ export default function PcsPage() {
     if (lista.length) return <span className="flex flex-col items-end gap-1">{lista}</span>
     if (av.cpu?.estado === 'boost') return <Badge tom="aviso">Boost</Badge>
     return <Badge tom="ok">Normal</Badge>
+  }
+
+  if (!isAdmin) {
+    return (
+      <EmDesenvolvimento
+        titulo="PCs / Specs"
+        descricao="Estamos a afinar a leitura real dos PCs do grupo (relógios, temperaturas, RAM e discos). Esta página fica disponível para todos em breve."
+      />
+    )
   }
 
   /* ---- GATE: o LOCAUS-PC.bat é obrigatório ---- */

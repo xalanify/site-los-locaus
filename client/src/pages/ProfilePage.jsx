@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Clapperboard,
@@ -11,9 +11,11 @@ import {
   Upload,
   ZoomIn,
   X,
+  Sparkles,
 } from 'lucide-react'
 import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
+import UserPostCard from '../components/UserPostCard'
 import { searchMice } from '../data/mice'
 import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
@@ -59,13 +61,18 @@ export default function ProfilePage({
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(false)
   const [previewTema, setPreviewTema] = useState(null)
+  const [musicaQ, setMusicaQ] = useState('')
+  const [musicaResultados, setMusicaResultados] = useState([])
+  const [musicaLoading, setMusicaLoading] = useState(false)
   const [form, setForm] = useState({
     game_nick: '',
     mouse: '',
     dpi: '',
-    banner_id: 'g01',
+    banner_id: '',
     background_id: '',
     musica_id: '',
+    musica_url: '',
+    musica_nome: '',
     dynamic_colors: true,
     name_color: '',
     name_effect: '',
@@ -76,6 +83,8 @@ export default function ProfilePage({
   const [saving, setSaving] = useState(false)
   const [mouseSug, setMouseSug] = useState([])
   const [myClips, setMyClips] = useState([]) // publicações desta conta
+  const [myPosts, setMyPosts] = useState([]) // mensagens desta conta
+  const [filtroFeed, setFiltroFeed] = useState('tudo') // tudo | videos | mensagens
   const [ordemClips, setOrdemClips] = useState('recentes')
   const [jogoClips, setJogoClips] = useState('')
   const [err, setErr] = useState('')
@@ -105,6 +114,10 @@ export default function ProfilePage({
     fetch('/api/clips?mine=1', { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : []))
       .then((list) => vivo && setMyClips(Array.isArray(list) ? list : []))
+      .catch(() => {})
+    fetch('/api/posts?mine=1', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list) => vivo && setMyPosts(Array.isArray(list) ? list : []))
       .catch(() => {})
     return () => {
       vivo = false
@@ -166,11 +179,9 @@ export default function ProfilePage({
   /* chips em baixo: todas menos a DEV (essa fica só ao lado do nome) */
   const distOc = distincoesOverclock(me.distincoes)
   const minhas = [
-    ...BADGES.filter((b) => badges.includes(b.id) && b.id !== 'dev'),
+    ...BADGES.filter((b) => badges.includes(b.id) || (b.id === 'dev' && isAdmin)),
     ...distOc,
   ]
-  const temDev = badges.includes('dev') || isAdmin
-  const devBadge = BADGES.find((b) => b.id === 'dev')
 
   const avatarSrc = me.avatar_url || svgAvatar(me.username, '#8B5CF6')
 
@@ -180,9 +191,11 @@ export default function ProfilePage({
       game_nick: me.game_nick || '',
       mouse: me.mouse || '',
       dpi: me.dpi || '',
-      banner_id: me.banner_id || 'g01',
+      banner_id: me.banner_id || '',
       background_id: me.background_id || '',
       musica_id: me.musica_id || '',
+      musica_url: me.musica_url || '',
+      musica_nome: me.musica_nome || '',
       dynamic_colors: me.dynamic_colors !== false,
       name_color: me.name_color || '',
       name_effect: me.name_effect || '',
@@ -223,12 +236,31 @@ export default function ProfilePage({
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  const procurarMusica = async (e) => {
+    e?.preventDefault()
+    const q = musicaQ.trim()
+    if (!q) return
+    setMusicaLoading(true)
+    setMusicaResultados([])
+    try {
+      const r = await fetch(`/api/admin/musica/search?q=${encodeURIComponent(q)}`, {
+        headers: authHeaders(),
+      })
+      const d = await r.json().catch(() => ({}))
+      setMusicaResultados(Array.isArray(d?.resultados) ? d.resultados : [])
+    } catch {
+      setMusicaResultados([])
+    } finally {
+      setMusicaLoading(false)
+    }
+  }
+
   const guardar = async () => {
     if (saving) return
     setSaving(true)
     setErr('')
     try {
-      // 1) foto escolhida → o site guarda o ficheiro e associa o link à conta
+      // 1) foto escolhida â†’ o site guarda o ficheiro e associa o link à conta
       if (avatarFile) {
         const up = await fetch('/api/users/me/avatar', {
           method: 'POST',
@@ -256,6 +288,8 @@ export default function ProfilePage({
         banner_id: form.banner_id,
         background_id: form.background_id,
         musica_id: form.musica_id,
+        musica_url: form.musica_url,
+        musica_nome: form.musica_nome,
         dynamic_colors: form.dynamic_colors,
         ...(isAdmin || me.is_admin
           ? { name_color: form.name_color, name_effect: form.name_effect }
@@ -293,7 +327,7 @@ export default function ProfilePage({
 
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
-  const corCard = dinamico ? fundoAtual.cor : tema.cor
+  const corCard = tema.cor
   const nomeCls = classesNome(me.name_color, me.name_effect)
   const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
   const clipsMostrados = useMemo(() => {
@@ -305,6 +339,20 @@ export default function ProfilePage({
     else lista.sort((a, b) => Number(b.id) - Number(a.id))
     return lista
   }, [myClips, jogoClips, ordemClips])
+
+  /* Feed do perfil: clips (vídeos) + mensagens, por ordem do mais recente. */
+  const feedMostrado = useMemo(() => {
+    const clips = filtroFeed === 'mensagens' ? [] : clipsMostrados
+    const posts = filtroFeed === 'videos' ? [] : myPosts
+    return [
+      ...clips.map((c) => ({ tipo: 'clip', chave: `c${c.id}`, data: c.created_at, item: c })),
+      ...posts.map((p) => ({ tipo: 'post', chave: `p${p.id}`, data: p.created_at, item: p })),
+    ].sort((a, b) => {
+      const ta = new Date(a.data || 0).getTime() || 0
+      const tb = new Date(b.data || 0).getTime() || 0
+      return tb - ta
+    })
+  }, [clipsMostrados, myPosts, filtroFeed])
 
   return (
     <PageShell background={estiloFundo(fundoAtual)}>
@@ -341,8 +389,8 @@ export default function ProfilePage({
               <img
                 src={avatarSrc}
                 alt={me.username}
-                className="h-16 w-16 rounded-full object-cover ring-2 ring-violet-500/60"
-                style={{ boxShadow: `0 0 26px ${corCard}66` }}
+                className="h-16 w-16 rounded-full object-cover"
+                style={{ boxShadow: `0 0 0 2px ${corCard}99, 0 0 26px ${corCard}66` }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
                   e.currentTarget.dataset.fb = '1'
@@ -366,17 +414,6 @@ export default function ProfilePage({
                 >
                   {me.username}
                 </span>
-                {temDev && (
-                  <span
-                    className="flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5"
-                    style={{ boxShadow: '0 0 14px rgba(255,31,61,.35)' }}
-                  >
-                    <BadgeGem badge={devBadge} size={16} />
-                    <span className={`font-display text-[10px] font-black uppercase tracking-wider ${devLabelClass}`}>
-                      Dev
-                    </span>
-                  </span>
-                )}
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
                 <span>Membro desde {criado}</span>
@@ -384,12 +421,12 @@ export default function ProfilePage({
                   className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
                   title="ID da conta"
                 >
-                  ID {me.id}
+                  ID {me.display_id ?? me.id}
                 </span>
               </p>
               {me.mouse && (
                 <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-violet-400">Mouse</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">Mouse</span>
                   {(() => {
                     const m = (searchMice(me.mouse) || []).find(
                       (x) => `${x.brand} ${x.model}` === me.mouse,
@@ -688,9 +725,11 @@ export default function ProfilePage({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setForm((f) => ({ ...f, musica_id: '' }))}
+                    onClick={() =>
+                      setForm((f) => ({ ...f, musica_id: '', musica_url: '', musica_nome: '' }))
+                    }
                     className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
-                      !form.musica_id
+                      !form.musica_id && !form.musica_url
                         ? 'border-white/60 bg-white/15 text-white'
                         : 'border-white/10 bg-black/20 text-gray-400 hover:text-white'
                     }`}
@@ -701,7 +740,14 @@ export default function ProfilePage({
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() => setForm((f) => ({ ...f, musica_id: m.id }))}
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          musica_id: m.id,
+                          musica_url: '',
+                          musica_nome: '',
+                        }))
+                      }
                       className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
                         form.musica_id === m.id
                           ? 'border-white/60 bg-white/15 text-white'
@@ -723,6 +769,73 @@ export default function ProfilePage({
                       if (el) el.volume = 0.12
                     }}
                   />
+                )}
+
+                {(isAdmin || me.is_admin) && (
+                  <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                      Pesquisar música (admin)
+                    </p>
+                    <form onSubmit={procurarMusica} className="mt-2 flex gap-2">
+                      <input
+                        value={musicaQ}
+                        onChange={(e) => setMusicaQ(e.target.value)}
+                        placeholder="Ex.: GTA 5 theme, COD WaW…"
+                        className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-[12px] text-white outline-none focus:border-amber-400/50"
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-amber-500 px-3 py-1.5 text-[11px] font-black text-black hover:bg-amber-400"
+                      >
+                        {musicaLoading ? '…' : 'Procurar'}
+                      </button>
+                    </form>
+                    {form.musica_url && (
+                      <p className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2.5 py-1.5 text-[11px] text-gray-300">
+                        <span className="truncate">
+                          Música escolhida: <b className="text-white">{form.musica_nome}</b>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((f) => ({ ...f, musica_url: '', musica_nome: '' }))
+                          }
+                          className="shrink-0 text-red-300 hover:text-red-200"
+                        >
+                          Remover
+                        </button>
+                      </p>
+                    )}
+                    {musicaResultados.length > 0 && (
+                      <div className="mt-2 max-h-44 space-y-1 overflow-y-auto">
+                        {musicaResultados.map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() =>
+                              setForm((f) => ({
+                                ...f,
+                                musica_id: '',
+                                musica_url: `yt:${m.id}`,
+                                musica_nome: m.titulo,
+                              }))
+                            }
+                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-white/10"
+                          >
+                            {m.thumb && (
+                              <img src={m.thumb} alt="" className="h-9 w-14 shrink-0 rounded object-cover" />
+                            )}
+                            <span className="min-w-0">
+                              <span className="block truncate text-[11px] font-bold text-white">
+                                {m.titulo}
+                              </span>
+                              <span className="block truncate text-[10px] text-gray-500">{m.canal}</span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -807,25 +920,47 @@ export default function ProfilePage({
           )}
         </motion.div>
 
-        {/* ---------------- Os meus clips ---------------- */}
+        {/* ---------------- Feed: clips + mensagens ---------------- */}
         <div className="mb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <h2
               className="font-display text-2xl font-black uppercase sm:text-3xl"
               style={{ color: 'var(--perfil-accent, #fff)' }}
             >
-              Os meus clips
+              Publicações
             </h2>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
-              {clipsMostrados.length}
+              {feedMostrado.length}
             </span>
           </div>
-          {myClips.length > 0 && (
+
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {[
+              { id: 'tudo', label: 'Tudo' },
+              { id: 'videos', label: 'Vídeos' },
+              { id: 'mensagens', label: 'Mensagens' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFiltroFeed(f.id)}
+                className={`filtro-clips rounded-full border px-3 py-1.5 text-[11px] font-black ${
+                  filtroFeed === f.id
+                    ? 'border-white/60 bg-white/15 text-white'
+                    : 'border-white/10 bg-[#17112a] text-gray-300 hover:text-white'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {filtroFeed !== 'mensagens' && myClips.length > 0 && (
             <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <select
                 value={jogoClips}
                 onChange={(e) => setJogoClips(e.target.value)}
-                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
               >
                 <option value="">Todos os jogos</option>
                 {jogosClips.map((g) => (
@@ -837,7 +972,7 @@ export default function ProfilePage({
               <select
                 value={ordemClips}
                 onChange={(e) => setOrdemClips(e.target.value)}
-                className="rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
+                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
               >
                 <option value="recentes">Mais recentes</option>
                 <option value="views">Mais vistos</option>
@@ -847,32 +982,49 @@ export default function ProfilePage({
             </div>
           )}
 
-          {myClips.length === 0 ? (
+          {feedMostrado.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
               <Clapperboard className="mx-auto mb-2 h-7 w-7 text-violet-400" />
-              <p className="font-bold text-white">Ainda sem clips</p>
+              <p className="font-bold text-white">
+                {filtroFeed === 'mensagens'
+                  ? 'Ainda sem mensagens'
+                  : filtroFeed === 'videos'
+                    ? 'Ainda sem clips'
+                    : 'Ainda sem publicações'}
+              </p>
               <p className="mx-auto max-w-md text-sm text-gray-400">
-                Publica o teu primeiro clip na aba{' '}
-                <span className="font-bold text-white">Clips e Publicações</span> e ele aparece
-                aqui, no teu perfil, com gostos e comentários.
+                Publica um clip ou uma mensagem na aba{' '}
+                <span className="font-bold text-white">Clips e Publicações</span> e aparece aqui, no
+                teu perfil.
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {clipsMostrados.map((c) => (
-                <ClipCard
-                  key={c.id}
-                  clip={c}
-                  user={me}
-                  onRequestAuth={onAuthClick}
-                  onProfile={onProfile}
-                  onUpdate={(next) =>
-                    setMyClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
-                  }
-                  onDelete={(id) => setMyClips((prev) => prev.filter((x) => x.id !== id))}
-                  transparent
-                />
-              ))}
+            <div className="space-y-5">
+              {feedMostrado.map((f) =>
+                f.tipo === 'clip' ? (
+                  <div key={f.chave} className="mx-auto w-full max-w-2xl">
+                    <ClipCard
+                      clip={f.item}
+                      user={me}
+                      onRequestAuth={onAuthClick}
+                      onProfile={onProfile}
+                      onUpdate={(next) =>
+                        setMyClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
+                      }
+                      onDelete={(id) => setMyClips((prev) => prev.filter((x) => x.id !== id))}
+                      transparent
+                    />
+                  </div>
+                ) : (
+                  <UserPostCard
+                    key={f.chave}
+                    post={f.item}
+                    viewer={me}
+                    autor={me}
+                    onDelete={(id) => setMyPosts((prev) => prev.filter((x) => x.id !== id))}
+                  />
+                ),
+              )}
             </div>
           )}
         </div>
@@ -896,11 +1048,11 @@ export default function ProfilePage({
             Editar perfil
           </button>
           <button
-            onClick={onAuthClick}
+            onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
             className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
           >
-            <RefreshCcw className="h-4 w-4" />
-            Trocar de conta
+            <Sparkles className="h-4 w-4" />
+            Novidades
           </button>
           <button
             onClick={onLogout}
@@ -910,7 +1062,13 @@ export default function ProfilePage({
             Terminar sessão
           </button>
         </div>
-        {!edit && <ProfileMusic musicaId={me.musica_id} />}
+        {!edit && (
+          <ProfileMusic
+            musicaId={me.musica_id}
+            musicaUrl={me.musica_url}
+            musicaNome={me.musica_nome}
+          />
+        )}
         {previewTema && (
           <div
             className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-3 sm:p-6"
@@ -928,7 +1086,7 @@ export default function ProfilePage({
             <img
               src={previewTema}
               alt=""
-              className="max-h-[92vh] max-w-[96vw] rounded-2xl object-contain"
+              className="max-h-[42vh] max-w-[min(380px,82vw)] rounded-2xl border border-white/15 object-contain shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
           </div>

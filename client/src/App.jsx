@@ -17,6 +17,7 @@ import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
+import NovidadesModal from './components/NovidadesModal'
 import BootScreen from './components/BootScreen'
 import ErrorBoundary from './components/ErrorBoundary'
 import { Toasts, Dialogos } from './components/Feedback'
@@ -376,9 +377,9 @@ function App() {
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     {/* PCs dos membros: dashboard de specs — aberto a todos */}
-                    <Route path="/pcs" element={<PcsPage />} />
+                    <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
                     {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}
-                    <Route path="/ferramentas" element={<FerramentasPage />} />
+                    <Route path="/ferramentas" element={<FerramentasPage isAdmin={isAdmin} />} />
                     {/* /ligar: a app abria este endereço — manda para as ferramentas */}
                     <Route path="/ligar" element={<Navigate to="/ferramentas" replace />} />
                     {/* InfoAoVivo (beta) — app nativo de overlays do PC */}
@@ -440,6 +441,7 @@ function App() {
                 </main>
                 <Footer />
                 <BackToTop />
+                <NovidadesModal />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

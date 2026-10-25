@@ -721,6 +721,7 @@ router.get('/steam/procurar', async (req, res) => {
       genero: req.query.genero,
       maxpreco: req.query.maxpreco,
       ordenar: req.query.ordenar,
+      pagina: req.query.pagina,
     });
     res.setHeader('Cache-Control', 'no-store');
     res.json(dados);
