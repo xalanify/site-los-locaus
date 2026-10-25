@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Send,
   ImagePlus,
@@ -167,6 +168,7 @@ function ClipPreview({ clip, onOpen }) {
 }
 
 export default function ChatPage({ user }) {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState([])
   const [typing, setTyping] = useState([])
   const [loading, setLoading] = useState(true)
@@ -182,6 +184,10 @@ export default function ChatPage({ user }) {
   const [clips, setClips] = useState([])
   const [clipsLoading, setClipsLoading] = useState(false)
   const [clipAberto, setClipAberto] = useState(null)
+
+  const abrirClipNoFeed = (clip) => {
+    if (clip && clip.id) navigate(`/clips?clip=${clip.id}`)
+  }
   const [hasMore, setHasMore] = useState(false)
   const [novasMensagens, setNovasMensagens] = useState(false)
   const [erro, setErro] = useState('')
@@ -729,7 +735,7 @@ export default function ChatPage({ user }) {
                             />
                           </button>
                         )}
-                        <ClipPreview clip={m.clip} onOpen={setClipAberto} />
+                        <ClipPreview clip={m.clip} onOpen={abrirClipNoFeed} />
                         {minha && (
                           <span className="mt-1 block text-right text-[9px] font-semibold text-white/60">
                             {hora(m.created_at)}

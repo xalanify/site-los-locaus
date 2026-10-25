@@ -236,6 +236,28 @@ router.get('/limits', (req, res) => {
   res.json({ maxMB: MAX_MB });
 });
 
+// Um clip específico — usado quando se clica num clip enviado no chat
+router.get('/:id', attachAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'ID inválido' });
+    const db = getDb();
+    const row = await db.prepare(SELECT_SQL + ' WHERE c.id = ?').get(id);
+    if (!row) return res.status(404).json({ error: 'Clip não encontrado' });
+    const auth = req.auth;
+    const dono = Boolean(
+      auth && (auth.admin || (auth.uid && Number(auth.uid) === Number(row.user_id))),
+    );
+    if (row.visibility === 'private' && !dono) {
+      return res.status(403).json({ error: 'Esse clip é privado.' });
+    }
+    res.json((await decorate(db, [row], auth))[0]);
+  } catch (error) {
+    console.error('Erro clip GET:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 /* ============================================================
    Subida direta ao Supabase: o browser pede a URL de subida
    assinada, sobe o vídeo sozinho e só depois o servidor guarda

@@ -80,6 +80,55 @@ const FEEDS = [
     lingua: 'en',
     prioridade: 3,
   },
+  {
+    id: 'pplware',
+    fonte: 'Pplware',
+    url: 'https://pplware.sapo.pt/feed/',
+    lingua: 'pt',
+    prioridade: 3,
+  },
+  {
+    id: 'tek-sapo',
+    fonte: 'Tek Sapo',
+    url: 'https://tek.sapo.pt/rss',
+    lingua: 'pt',
+    prioridade: 3,
+  },
+  {
+    id: 'techpowerup',
+    fonte: 'TechPowerUp',
+    url: 'https://www.techpowerup.com/rss/news',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'tomshardware',
+    fonte: "Tom's Hardware",
+    url: 'https://www.tomshardware.com/feeds/all',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'gsmarena',
+    fonte: 'GSMArena',
+    url: 'https://www.gsmarena.com/rss-news-reviews.php3',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'androidcentral',
+    fonte: 'Android Central',
+    url: 'https://www.androidcentral.com/rss',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'arstechnica',
+    fonte: 'Ars Technica',
+    url: 'https://feeds.arstechnica.com/arstechnica/technology-lab',
+    lingua: 'en',
+    prioridade: 3,
+  },
 ];
 
 const FOCO =
@@ -90,6 +139,66 @@ const UA =
 
 const CACHE_MS = 10 * 60 * 1000;
 let cache = { t: 0, dados: null };
+const TRAD_CACHE = new Map();
+
+/* Tradução para português (Google Translate público, sem chave).
+   Cache em memória para não repetir pedidos a cada atualização. */
+async function traduzirLote(textos) {
+  const unicos = [...new Set(textos.filter(Boolean))];
+  const falta = unicos.filter((t) => !TRAD_CACHE.has(t));
+  for (let i = 0; i < falta.length; i += 8) {
+    const grupo = falta.slice(i, i + 8);
+    try {
+      const r = await fetch('https://translate.googleapis.com/translate_a/single', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'User-Agent': UA,
+        },
+        body: new URLSearchParams({
+          client: 'gtx',
+          sl: 'auto',
+          tl: 'pt',
+          dt: 't',
+          q: grupo.map((t) => String(t).replace(/\s+/g, ' ').trim()).join('\n'),
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!r.ok) throw new Error('translate ' + r.status);
+      const j = await r.json();
+      const bruto = (Array.isArray(j) && Array.isArray(j[0]) ? j[0] : [])
+        .map((seg) => (seg && seg[0]) || '')
+        .join('');
+      const partes = bruto.split('\n');
+      if (partes.length === grupo.length) {
+        grupo.forEach((original, idx) => {
+          const t = String(partes[idx] || '').trim();
+          if (t) TRAD_CACHE.set(original, t);
+        });
+      }
+    } catch (e) {
+      console.warn('Tradução falhou:', e.message);
+    }
+  }
+  return textos.map((t) => TRAD_CACHE.get(t) || t);
+}
+
+async function traduzirNoticias(noticias) {
+  const alvo = noticias.filter((n) => n.lingua !== 'pt');
+  if (!alvo.length) return noticias;
+  const textos = [];
+  for (const n of alvo) {
+    textos.push(n.titulo);
+    if (n.resumo) textos.push(n.resumo);
+  }
+  const trad = await traduzirLote(textos);
+  let i = 0;
+  for (const n of alvo) {
+    n.titulo = trad[i++] || n.titulo;
+    if (n.resumo) n.resumo = trad[i++] || n.resumo;
+  }
+  return noticias;
+}
 
 function limparHtml(s) {
   return String(s || '')
@@ -179,7 +288,7 @@ async function carregar() {
       if (feed.filtro) {
         itens = itens.filter((n) => FOCO.test(n.titulo));
       }
-      const cap = feed.prioridade === 0 ? 6 : feed.prioridade === 1 ? 8 : 6;
+      const cap = feed.prioridade === 0 ? 4 : feed.prioridade === 1 ? 5 : feed.prioridade === 2 ? 4 : 4;
       return itens.slice(0, cap);
     }),
   );
@@ -201,7 +310,9 @@ async function carregar() {
   noticias.sort(
     (a, b) => (a.prioridade || 0) - (b.prioridade || 0) || new Date(b.data) - new Date(a.data),
   );
-  return noticias.slice(0, 60);
+  const selecionadas = noticias.slice(0, 60);
+  await traduzirNoticias(selecionadas);
+  return selecionadas;
 }
 
 router.get('/', async (req, res) => {

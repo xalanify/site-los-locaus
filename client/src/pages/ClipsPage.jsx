@@ -246,6 +246,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const location = useLocation()
   const [clips, setClips] = useState([])
+  const [destaque, setDestaque] = useState(null)
   // paginação do feed — o servidor devolve uma página de cada vez
   const [maisClips, setMaisClips] = useState(false)
   const [aCarregarMaisClips, setACarregarMaisClips] = useState(false)
@@ -352,6 +353,32 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     const m = location.state && location.state.member
     if (m) setMember(m)
   }, [location.state])
+
+  /* Chegou do chat com ?clip=ID -> mostra esse clip no topo e vai até ele */
+  useEffect(() => {
+    const id = Number(new URLSearchParams(location.search).get('clip'))
+    if (!Number.isInteger(id) || id <= 0) {
+      setDestaque(null)
+      return
+    }
+    let vivo = true
+    setTab('todos')
+    setJogo('')
+    fetch(`/api/clips/${id}`, { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c) => {
+        if (!vivo || !c || !c.id) return
+        setDestaque(c)
+        setTimeout(() => {
+          const el = document.getElementById(`clip-${c.id}`)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 450)
+      })
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [location.search])
 
   useEffect(() => {
     if (location.state && location.state.novo) {
@@ -1304,13 +1331,17 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     }
   }
 
-  const filtered = clips.filter((c) => {
+  const filteredBase = clips.filter((c) => {
     if (tab === 'publicos' && c.visibility !== 'public') return false
     if (tab === 'meus' && !c.mine) return false
     if (tab === 'guardados' && !c.saved) return false
     if (jogo && c.game !== jogo) return false
     return true
   })
+  const filtered =
+    destaque && !filteredBase.some((c) => Number(c.id) === Number(destaque.id))
+      ? [destaque, ...filteredBase]
+      : filteredBase
 
   // jogos que já têm clips (para o filtro não ficar cheio de opções vazias)
   const jogosComClips = []
@@ -2006,17 +2037,26 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           ) : (
             <div className="space-y-6">
               {filtered.map((c) => (
-                <ClipCard
+                <div
                   key={c.id}
-                  clip={c}
-                  user={user}
-                  onRequestAuth={onRequestAuth}
-                  onProfile={onProfile}
-                  onUpdate={(next) =>
-                    setClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
+                  id={`clip-${c.id}`}
+                  className={
+                    destaque && Number(c.id) === Number(destaque.id)
+                      ? 'rounded-2xl ring-2 ring-violet-400/60'
+                      : ''
                   }
-                  onDelete={(id) => setClips((prev) => prev.filter((x) => x.id !== id))}
-                />
+                >
+                  <ClipCard
+                    clip={c}
+                    user={user}
+                    onRequestAuth={onRequestAuth}
+                    onProfile={onProfile}
+                    onUpdate={(next) =>
+                      setClips((prev) => prev.map((x) => (x.id === next.id ? next : x)))
+                    }
+                    onDelete={(id) => setClips((prev) => prev.filter((x) => x.id !== id))}
+                  />
+                </div>
               ))}
 
               {/* Feed paginado — só aparece se existir mais do que uma página */}
