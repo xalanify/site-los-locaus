@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, MessageCircle } from 'lucide-react'
 import Navbar from './components/Navbar'
@@ -40,52 +40,9 @@ const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
 const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
 
-/* /perfil/:username — se o nome da rota é o do utilizador ligado,
-   mostra o MESMO perfil cheio da sidebar (bio, editar, distinções…);
-   os dos outros membros continuam na página pública. */
-function RotaPerfil({
-  user,
-  onRequestAuth,
-  onUserUpdate,
-  isAdmin,
-  onLogout,
-  onPanelClick,
-  onAuthClick,
-  onProfile,
-}) {
-  const { username } = useParams()
-  const [dono, setDono] = useState(false)
-  useEffect(() => {
-    // saber se a página é do utilizador ligado (username não distingue
-    // maiúsculas — o servidor guarda username_lower)
-    let vivo = true
-    if (!user || !user.username) {
-      setDono(false)
-      if (!user) onRequestAuth && onRequestAuth()
-      return undefined
-    }
-    const igual =
-      String(user.username).toLowerCase() === String(username || '').toLowerCase() ||
-      (user.username_lower && String(user.username_lower).toLowerCase() ===
-        String(username || '').toLowerCase())
-    setDono(igual)
-    return () => {
-      vivo = false
-    }
-  }, [user, username])
-  if (dono) {
-    return (
-      <ProfilePage
-        user={user}
-        isAdmin={isAdmin}
-        onLogout={onLogout}
-        onPanelClick={onPanelClick}
-        onAuthClick={onAuthClick}
-        onProfile={onProfile}
-        onUserUpdate={onUserUpdate}
-      />
-    )
-  }
+/* /perfil/:username — perfil público. O próprio user também vê o
+   perfil público; para editar vai a /perfil/editar. */
+function RotaPerfil({ user, onRequestAuth, onProfile }) {
   return <PublicProfilePage user={user} onRequestAuth={onRequestAuth} onProfile={onProfile} />
 }
 
@@ -262,7 +219,10 @@ function App() {
   }
 
   // Sem o código certo, o site nem se monta: fica a página "em breve".
-  if (!unlocked) {
+  // Exceção: o link de recuperação de palavra-passe tem de abrir sempre.
+  const emRecuperacao =
+    typeof window !== 'undefined' && window.location.pathname === '/recuperar'
+  if (!unlocked && !emRecuperacao) {
     return (
       <GatePage
         onUnlock={(modo) => {
@@ -303,7 +263,20 @@ function App() {
             )}
 
             {/* Link de recuperação -> ecrã de nova palavra-passe */}
-            {sessionChecked && !user && <AuthScreen onAuthed={handleAuthed} />}
+            {sessionChecked && !user && location.pathname === '/recuperar' && (
+              <Suspense
+                fallback={
+                  <div className="flex min-h-screen items-center justify-center">
+                    <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
+                  </div>
+                }
+              >
+                <RecuperarPage onAuthed={handleAuthed} />
+              </Suspense>
+            )}
+            {sessionChecked && !user && location.pathname !== '/recuperar' && (
+              <AuthScreen onAuthed={handleAuthed} />
+            )}
 
             {/* Conta em modo recuperação -> sempre no ecrã de nova pass */}
             {needsRecovery && (
@@ -403,6 +376,15 @@ function App() {
                     <Route
                       path="/perfil"
                       element={
+                        <Navigate
+                          to={`/perfil/${encodeURIComponent(user?.username || '')}`}
+                          replace
+                        />
+                      }
+                    />
+                    <Route
+                      path="/perfil/editar"
+                      element={
                         <ProfilePage
                           user={user}
                           isAdmin={isAdmin}
@@ -414,9 +396,8 @@ function App() {
                         />
                       }
                     />
-                    {/* Perfil público com página própria — se o nome
-                        na rota é o do utilizador ligado, mostra o
-                        MESMO perfil cheio da sidebar (bio, editar…) */}
+                    {/* Perfil público — todos os membros (incluindo o próprio)
+                        veem esta página; editar fica em /perfil/editar */}
                     <Route
                       path="/perfil/:username"
                       element={
@@ -441,7 +422,7 @@ function App() {
                 </main>
                 <Footer />
                 <BackToTop />
-                <NovidadesModal />
+                <NovidadesModal user={user} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

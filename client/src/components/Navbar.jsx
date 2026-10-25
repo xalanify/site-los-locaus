@@ -25,7 +25,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
   }
 
   const isHome = location.pathname === '/'
-  const isProfile = location.pathname === '/perfil'
+  const isProfile = location.pathname.startsWith('/perfil')
   const isClips = location.pathname === '/clips'
   const isChat = location.pathname === '/chat'
   const isPrevisoes = location.pathname === '/previsoes'
@@ -121,7 +121,9 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
 
           {/* Conta — abre o perfil da conta */}
           <button
-            onClick={() => navigate('/perfil')}
+            onClick={() =>
+              navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
+            }
             title={user ? `Conta: ${user.username}` : 'Conta'}
             aria-label="Conta"
             aria-current={isProfile ? 'page' : undefined}

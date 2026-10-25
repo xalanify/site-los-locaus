@@ -436,7 +436,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       }
       const r = await fetch('/api/posts', {
         method: 'POST',
-        headers: authHeaders(),
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: msgTexto.trim(), image_url: imageUrl }),
       })
       const d = await r.json().catch(() => ({}))

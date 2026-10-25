@@ -12,7 +12,7 @@
 const BASE = 'https://uefn.fnjpnews.com/api/fortnite/tournaments';
 
 const REGIOES = ['EU', 'NAC', 'NAE', 'NAW', 'OCE', 'ME', 'BR', 'ASIA'];
-const TTL = 15 * 60 * 1000;
+const TTL = 5 * 60 * 1000;
 const cache = new Map(); // regiao -> { t, dados }
 
 const limpar = (s) => String(s || '').replace(/\s+/g, ' ').trim();
@@ -119,6 +119,30 @@ function normalizar(lista, agora) {
     .slice(0, 80);
 }
 
+async function pedirLista(alvo, tentativa = 1) {
+  try {
+    const r = await fetch(`${BASE}?region=${encodeURIComponent(alvo)}&lang=en`, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+        Accept: 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) throw new Error('fnjpnews ' + r.status);
+    const lista = await r.json();
+    if (!Array.isArray(lista)) throw new Error('resposta inesperada');
+    return lista;
+  } catch (e) {
+    if (tentativa < 3) {
+      await new Promise((ok) => setTimeout(ok, 700 * tentativa));
+      return pedirLista(alvo, tentativa + 1);
+    }
+    throw e;
+  }
+}
+
 async function listar(regiao = 'EU') {
   const reg = String(regiao || 'EU').toUpperCase();
   const alvo = REGIOES.includes(reg) ? reg : 'EU';
@@ -127,17 +151,7 @@ async function listar(regiao = 'EU') {
   if (hit && Date.now() - hit.t < TTL) return hit.dados;
 
   try {
-    const r = await fetch(`${BASE}?region=${encodeURIComponent(alvo)}&lang=en`, {
-      headers: {
-        'User-Agent': 'SiteLosLocaus/1.0',
-        Accept: 'application/json',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!r.ok) throw new Error('fnjpnews ' + r.status);
-    const lista = await r.json();
-    if (!Array.isArray(lista)) throw new Error('resposta inesperada');
+    const lista = await pedirLista(alvo);
 
     const torneios = normalizar(lista, Date.now());
     const dados = {

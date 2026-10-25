@@ -2,28 +2,29 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, Sparkles, Music2, Play, Pause, Image as ImageIcon } from 'lucide-react'
-import { NOVIDADES, NOVIDADES_VERSAO } from '../data/novidades'
+import { NOVIDADES } from '../data/novidades'
 import { BANNERS, FUNDOS, MUSICAS } from '../data/temasPerfil'
 
-const CHAVE = `locaus:novidades:${NOVIDADES_VERSAO}`
-
-/* Janela flutuante de novidades — aparece na primeira entrada de cada versão.
-   Também pode ser aberta outra vez pelo botão "Novidades" do perfil. */
-export default function NovidadesModal() {
+/* Janela flutuante de novidades — aparece sempre que se entra, até o
+   utilizador clicar em "Não mostrar novamente". O botão "Novidades"
+   do perfil abre-a outra vez mesmo depois de escondida. */
+export default function NovidadesModal({ user }) {
   const [aberto, setAberto] = useState(false)
   const [aTocar, setATocar] = useState('')
   const audioRef = useRef(null)
 
+  const chave = `locaus:novidades:ocultar:${user?.id || user?.username || 'anon'}`
+
   useEffect(() => {
     try {
-      if (!localStorage.getItem(CHAVE)) setAberto(true)
+      if (!localStorage.getItem(chave)) setAberto(true)
     } catch {
       setAberto(true)
     }
     const abrir = () => setAberto(true)
     window.addEventListener('locaus:abrir-novidades', abrir)
     return () => window.removeEventListener('locaus:abrir-novidades', abrir)
-  }, [])
+  }, [chave])
 
   useEffect(() => {
     if (!aberto) {
@@ -37,8 +38,12 @@ export default function NovidadesModal() {
   }, [aberto])
 
   const fechar = () => {
+    setAberto(false)
+  }
+
+  const naoMostrar = () => {
     try {
-      localStorage.setItem(CHAVE, '1')
+      localStorage.setItem(chave, '1')
     } catch {
       /* sem armazenamento */
     }
@@ -95,13 +100,22 @@ export default function NovidadesModal() {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={fechar}
-                className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
-                aria-label="Fechar novidades"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={naoMostrar}
+                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-gray-400 hover:bg-white/10 hover:text-white"
+                >
+                  Não mostrar novamente
+                </button>
+                <button
+                  onClick={fechar}
+                  className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                  aria-label="Fechar novidades"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <div className="mt-5 space-y-5">
@@ -191,13 +205,20 @@ export default function NovidadesModal() {
               ))}
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-2">
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={naoMostrar}
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[12px] font-bold text-gray-300 transition-colors hover:bg-white/10"
+              >
+                Não mostrar novamente
+              </button>
               <button
                 type="button"
                 onClick={fechar}
                 className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white transition-all hover:brightness-110"
               >
-                Entendi
+                OK
               </button>
             </div>
 

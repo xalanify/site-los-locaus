@@ -44,7 +44,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' },
     { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam', badge: 'Novo' },
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
-    { name: 'Conta', icon: User, path: '/perfil' },
+    { name: 'Conta', icon: User, path: user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil' },
   ]
 
   return (
@@ -84,7 +84,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
 
             {/* perfil */}
             <button
-              onClick={() => go('/perfil')}
+              onClick={() => go(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')}
               className="flex items-center gap-3 px-4 pb-4 text-left transition-colors hover:bg-white/5"
             >
               <AvatarImg

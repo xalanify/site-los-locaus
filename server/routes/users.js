@@ -58,7 +58,7 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -76,6 +76,8 @@ const profileOf = async (userId) => {
       accent_color: (row && row.accent_color) || null,
       name_color: (row && row.name_color) || null,
       name_effect: (row && row.name_effect) || null,
+      borda_cor: (row && row.borda_cor) || null,
+      fonte_perfil: (row && row.fonte_perfil) || null,
     };
   } catch {
     return {
@@ -92,6 +94,8 @@ const profileOf = async (userId) => {
       accent_color: null,
       name_color: null,
       name_effect: null,
+      borda_cor: null,
+      fonte_perfil: null,
     };
   }
 };
@@ -330,6 +334,8 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasDynamic = Object.prototype.hasOwnProperty.call(body, 'dynamic_colors');
     const hasNameColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
     const hasNameEffect = Object.prototype.hasOwnProperty.call(body, 'name_effect');
+    const hasBorda = Object.prototype.hasOwnProperty.call(body, 'borda_cor');
+    const hasFonte = Object.prototype.hasOwnProperty.call(body, 'fonte_perfil');
     if (
       !hasNick &&
       !hasAvatar &&
@@ -343,7 +349,9 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       !hasAccent &&
       !hasDynamic &&
       !hasNameColor &&
-      !hasNameEffect
+      !hasNameEffect &&
+      !hasBorda &&
+      !hasFonte
     ) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
@@ -469,6 +477,30 @@ router.put('/me/profile', attachAuth, async (req, res) => {
           'UPDATE user_profiles SET dynamic_colors = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
         )
         .run(Boolean(body.dynamic_colors), uid);
+    }
+
+    if (hasBorda) {
+      const borda = String(body.borda_cor || '').trim();
+      if (borda && !['banner', 'branco', 'preto'].includes(borda)) {
+        return res.status(400).json({ error: 'Cor da borda inválida.' });
+      }
+      await db
+        .prepare(
+          'UPDATE user_profiles SET borda_cor = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(borda || null, uid);
+    }
+    if (hasFonte) {
+      const fonte = String(body.fonte_perfil || '').trim();
+      const FONTES = new Set(['minecraft', 'gta', 'bo2', 'cod', 'fortnite', 'cyberpunk', 'halo']);
+      if (fonte && !FONTES.has(fonte)) {
+        return res.status(400).json({ error: 'Fonte inválida.' });
+      }
+      await db
+        .prepare(
+          'UPDATE user_profiles SET fonte_perfil = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(fonte || null, uid);
     }
 
     if (hasNameColor || hasNameEffect) {
@@ -714,12 +746,13 @@ router.post('/presence', requireUser, async (req, res) => {
 // GET /api/users/list — todos os membros + sinal online/offline
 router.get('/list', attachAuth, async (req, res) => {
   try {
+    require('../fortniteRank').sincronizar().catch(() => {});
     const db = getDb();
     const rows = await db
       .prepare(
         `SELECT u.id, u.username,
                 (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
-                p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect,
+                p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
@@ -752,6 +785,8 @@ router.get('/list', attachAuth, async (req, res) => {
         accent_color: r.accent_color || null,
         name_color: r.name_color || null,
         name_effect: r.name_effect || null,
+        borda_cor: r.borda_cor || null,
+        fonte_perfil: r.fonte_perfil || null,
         online: Boolean(r.online),
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],

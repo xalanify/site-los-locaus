@@ -14,22 +14,76 @@ const FEEDS = [
     url: 'https://www.eurogamer.pt/feed',
     lingua: 'pt',
     prioridade: 0,
+    filtro: true,
   },
   {
-    id: 'pcgamer-hw',
-    fonte: 'PC Gamer',
-    url: 'https://www.pcgamer.com/rss/tag/graphics-card/',
+    id: 'playstation',
+    fonte: 'PlayStation Blog',
+    url: 'https://blog.playstation.com/feed/',
     lingua: 'en',
     prioridade: 1,
   },
   {
-    id: 'pcgamer',
-    fonte: 'PC Gamer',
-    url: 'https://www.pcgamer.com/rss/',
+    id: 'nintendo-life',
+    fonte: 'Nintendo Life',
+    url: 'https://www.nintendolife.com/feeds/news',
+    lingua: 'en',
+    prioridade: 1,
+  },
+  {
+    id: 'gamesradar-cod',
+    fonte: 'GamesRadar · Call of Duty',
+    url: 'https://www.gamesradar.com/feeds/tag/call-of-duty/',
     lingua: 'en',
     prioridade: 2,
   },
+  {
+    id: 'gamesradar-gta',
+    fonte: 'GamesRadar · GTA',
+    url: 'https://www.gamesradar.com/feeds/tag/grand-theft-auto/',
+    lingua: 'en',
+    prioridade: 2,
+  },
+  {
+    id: 'gamesradar-bf',
+    fonte: 'GamesRadar · Battlefield',
+    url: 'https://www.gamesradar.com/feeds/tag/battlefield/',
+    lingua: 'en',
+    prioridade: 2,
+  },
+  {
+    id: 'gamesradar-fortnite',
+    fonte: 'GamesRadar · Fortnite',
+    url: 'https://www.gamesradar.com/feeds/tag/fortnite/',
+    lingua: 'en',
+    prioridade: 2,
+  },
+  {
+    id: 'pcgamer-cs2',
+    fonte: 'PC Gamer · CS2',
+    url: 'https://www.pcgamer.com/rss/tag/counter-strike-2/',
+    lingua: 'en',
+    prioridade: 2,
+    filtro: true,
+  },
+  {
+    id: 'nvidia',
+    fonte: 'NVIDIA',
+    url: 'https://nvidianews.nvidia.com/releases.xml',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'steam',
+    fonte: 'Steam',
+    url: 'https://store.steampowered.com/feeds/news.xml',
+    lingua: 'en',
+    prioridade: 3,
+  },
 ];
+
+const FOCO =
+  /call of duty|\bcod\b|warzone|grand theft auto|\bgta\b|battlefield|counter-strike|\bcs2\b|fortnite|minecraft|playstation|\bps5\b|\bps6\b|xbox|nintendo|switch|consola|console|desbloque|placa gr|gr[áa]fica|\brtx\b|geforce|radeon|\bgpu\b|steam|valve|rockstar|activision|ea sports|\bfc 2[56]\b|rainbow six|diablo|overwatch|valorant|league of legends|elden ring|cyberpunk/i;
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
@@ -118,12 +172,19 @@ async function carregar() {
           Accept: 'application/rss+xml,application/xml,text/xml,*/*',
           'Accept-Language': 'pt-PT,pt;q=0.9,en;q=0.8',
         },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(12000),
       });
       if (!r.ok) throw new Error(`${feed.id} ${r.status}`);
-      return lerFeed(await r.text(), feed);
+      let itens = lerFeed(await r.text(), feed);
+      if (feed.filtro) {
+        itens = itens.filter((n) => FOCO.test(n.titulo));
+      }
+      return itens.slice(0, 14);
     }),
   );
+  for (const r of resultados) {
+    if (r.status === 'rejected') console.warn('Notícias feed falhou:', r.reason && r.reason.message);
+  }
 
   const vistos = new Set();
   const noticias = [];

@@ -32,6 +32,8 @@ import {
   musicaDe,
 } from '../data/temasPerfil'
 import { CORES_NOME, EFEITOS_NOME, classesCard, classesNome } from '../data/nomeEfeitos'
+import { FONTES, fonteDe } from '../data/fontesPerfil'
+import { extrairCores } from '../lib/coresFundo'
 
 /* ============================================================
    Perfil da conta — abre ao clicar no ícone de Conta.
@@ -64,6 +66,7 @@ export default function ProfilePage({
   const [musicaQ, setMusicaQ] = useState('')
   const [musicaResultados, setMusicaResultados] = useState([])
   const [musicaLoading, setMusicaLoading] = useState(false)
+  const [coresExtra, setCoresExtra] = useState(null)
   const [form, setForm] = useState({
     game_nick: '',
     mouse: '',
@@ -76,6 +79,8 @@ export default function ProfilePage({
     dynamic_colors: true,
     name_color: '',
     name_effect: '',
+    borda_cor: 'banner',
+    fonte_perfil: '',
   })
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
@@ -127,6 +132,24 @@ export default function ProfilePage({
   const fundoAtual = fundoDe(me?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
   const dinamico = me?.dynamic_colors !== false && temFundo
+
+  /* cor dominante REAL da imagem (não a cor fixa do tema) */
+  useEffect(() => {
+    let vivo = true
+    setCoresExtra(null)
+    if (!temFundo || !dinamico) return
+    extrairCores(fundoAtual.imagem).then((c) => {
+      if (vivo && c) setCoresExtra(c)
+    })
+    return () => {
+      vivo = false
+    }
+  }, [temFundo, dinamico, fundoAtual.imagem])
+
+  const accent = coresExtra?.cor || fundoAtual.cor
+  const accent2 = coresExtra?.cor2 || fundoAtual.cor2
+  const accentRgb = coresExtra?.rgb || fundoAtual.rgb
+
   useEffect(() => {
     const root = document.documentElement
     document.body.classList.toggle('profile-bg', temFundo)
@@ -144,15 +167,15 @@ export default function ProfilePage({
       return () => document.body.classList.remove('profile-bg')
     }
     document.body.classList.add('profile-theme')
-    root.style.setProperty('--perfil-accent', fundoAtual.cor)
-    root.style.setProperty('--perfil-accent-2', fundoAtual.cor2)
-    root.style.setProperty('--perfil-accent-rgb', fundoAtual.rgb)
-    root.style.setProperty('--aj-300', fundoAtual.rgb)
-    root.style.setProperty('--aj-400', fundoAtual.rgb)
-    root.style.setProperty('--aj-500', fundoAtual.rgb)
-    root.style.setProperty('--aj-600', fundoAtual.rgb)
-    root.style.setProperty('--aj-700', fundoAtual.rgb)
-    root.style.setProperty('--aj-line', `rgba(${fundoAtual.rgb.split(' ').join(', ')}, 0.22)`)
+    root.style.setProperty('--perfil-accent', accent)
+    root.style.setProperty('--perfil-accent-2', accent2)
+    root.style.setProperty('--perfil-accent-rgb', accentRgb)
+    root.style.setProperty('--aj-300', accentRgb)
+    root.style.setProperty('--aj-400', accentRgb)
+    root.style.setProperty('--aj-500', accentRgb)
+    root.style.setProperty('--aj-600', accentRgb)
+    root.style.setProperty('--aj-700', accentRgb)
+    root.style.setProperty('--aj-line', `rgba(${accentRgb.split(' ').join(', ')}, 0.22)`)
     return () => {
       document.body.classList.remove('profile-theme')
       document.body.classList.remove('profile-bg')
@@ -166,7 +189,25 @@ export default function ProfilePage({
       root.style.removeProperty('--aj-700')
       root.style.removeProperty('--aj-line')
     }
-  }, [temFundo, dinamico, fundoAtual.id, fundoAtual.cor, fundoAtual.cor2, fundoAtual.rgb])
+  }, [temFundo, dinamico, fundoAtual.id, accent, accent2, accentRgb])
+
+  /* fonte escolhida pelo user — aplica-se a todos os textos */
+  const fonteId = edit ? form.fonte_perfil : me?.fonte_perfil
+  const fonte = fonteDe(fonteId)
+  useEffect(() => {
+    const body = document.body
+    if (!fonte.familia) {
+      body.classList.remove('profile-fonte')
+      body.style.removeProperty('--perfil-fonte')
+      return
+    }
+    body.classList.add('profile-fonte')
+    body.style.setProperty('--perfil-fonte', fonte.familia)
+    return () => {
+      body.classList.remove('profile-fonte')
+      body.style.removeProperty('--perfil-fonte')
+    }
+  }, [fonte.id, fonte.familia])
 
   if (!me) return null
 
@@ -199,6 +240,8 @@ export default function ProfilePage({
       dynamic_colors: me.dynamic_colors !== false,
       name_color: me.name_color || '',
       name_effect: me.name_effect || '',
+      borda_cor: me.borda_cor || 'banner',
+      fonte_perfil: me.fonte_perfil || '',
     })
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
@@ -294,6 +337,8 @@ export default function ProfilePage({
         ...(isAdmin || me.is_admin
           ? { name_color: form.name_color, name_effect: form.name_effect }
           : {}),
+        borda_cor: form.borda_cor,
+        fonte_perfil: form.fonte_perfil,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
 
@@ -327,7 +372,12 @@ export default function ProfilePage({
 
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
-  const corCard = tema.cor
+  const corBorda =
+    (edit ? form.borda_cor : me.borda_cor) === 'branco'
+      ? '#ffffff'
+      : (edit ? form.borda_cor : me.borda_cor) === 'preto'
+        ? '#000000'
+        : tema.cor
   const nomeCls = classesNome(me.name_color, me.name_effect)
   const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
   const clipsMostrados = useMemo(() => {
@@ -363,7 +413,7 @@ export default function ProfilePage({
           className="mb-6 font-black gradient-text"
           style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
         >
-          Bem-vindo
+          Editar perfil
         </motion.h1>
 
         {/* ---------------- Cartão da conta ---------------- */}
@@ -373,8 +423,8 @@ export default function ProfilePage({
           transition={{ delay: 0.05 }}
           className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(me.name_effect)}`}
           style={{
-            borderColor: `${corCard}66`,
-            boxShadow: `0 0 40px ${corCard}22, inset 0 0 0 1px ${corCard}18`,
+            borderColor: `${corBorda}66`,
+            boxShadow: `0 0 40px ${corBorda}22, inset 0 0 0 1px ${corBorda}18`,
           }}
         >
           <ProfileBanner bannerId={me.banner_id} />
@@ -390,7 +440,7 @@ export default function ProfilePage({
                 src={avatarSrc}
                 alt={me.username}
                 className="h-16 w-16 rounded-full object-cover"
-                style={{ boxShadow: `0 0 0 2px ${corCard}99, 0 0 26px ${corCard}66` }}
+                style={{ boxShadow: `0 0 0 2px ${corBorda}99, 0 0 26px ${corBorda}66` }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
                   e.currentTarget.dataset.fb = '1'
@@ -684,6 +734,77 @@ export default function ProfilePage({
                         </span>
                       )}
                       <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
+                        {f.nome}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cor das linhas / brilho do cartão e do avatar */}
+              <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
+                <p className="text-xs font-bold text-gray-300">Linhas e brilho do perfil</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
+                  A linha do banner, o brilho do cartão e o anel da foto.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'banner', nome: 'Cor do banner' },
+                    { id: 'branco', nome: 'Branco' },
+                    { id: 'preto', nome: 'Preto' },
+                  ].map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, borda_cor: b.id }))}
+                      className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
+                        form.borda_cor === b.id
+                          ? 'border-white/60 bg-white/15 text-white'
+                          : 'border-white/10 bg-black/20 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full align-middle ring-1 ring-white/30"
+                        style={{
+                          background:
+                            b.id === 'branco'
+                              ? '#fff'
+                              : b.id === 'preto'
+                                ? '#000'
+                                : tema.cor,
+                        }}
+                      />
+                      {b.nome}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fonte dos textos do perfil */}
+              <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
+                <p className="text-xs font-bold text-gray-300">Fonte do perfil</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
+                  Muda todos os textos do perfil e das sidebars enquanto o teu perfil está aberto.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                  {FONTES.map((f) => (
+                    <button
+                      key={f.id || 'padrao'}
+                      type="button"
+                      onClick={() => setForm((x) => ({ ...x, fonte_perfil: f.id }))}
+                      className={`rounded-xl border px-2.5 py-2 text-left transition-colors ${
+                        form.fonte_perfil === f.id
+                          ? 'border-white/60 bg-white/15 text-white'
+                          : 'border-white/10 bg-black/20 text-gray-300 hover:bg-white/5'
+                      }`}
+                    >
+                      <span
+                        className="block truncate text-[15px] leading-tight"
+                        style={f.familia ? { fontFamily: f.familia } : undefined}
+                      >
+                        {f.exemplo}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[9px] font-black uppercase tracking-wider text-gray-500">
                         {f.nome}
                       </span>
                     </button>
@@ -1002,7 +1123,7 @@ export default function ProfilePage({
             <div className="space-y-5">
               {feedMostrado.map((f) =>
                 f.tipo === 'clip' ? (
-                  <div key={f.chave} className="mx-auto w-full max-w-2xl">
+                  <div key={f.chave} className="mx-auto w-full max-w-3xl">
                     <ClipCard
                       clip={f.item}
                       user={me}
@@ -1030,7 +1151,7 @@ export default function ProfilePage({
         </div>
 
         {/* ---------------- Ações da conta ---------------- */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           {isAdmin && (
             <button
               onClick={onPanelClick}
@@ -1046,6 +1167,13 @@ export default function ProfilePage({
           >
             <Camera className="h-4 w-4" />
             Editar perfil
+          </button>
+          <button
+            onClick={() => onProfile?.(me.username)}
+            className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <Sparkles className="h-4 w-4" />
+            Ver perfil público
           </button>
           <button
             onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}

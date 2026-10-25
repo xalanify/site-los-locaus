@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 
 /* ============================================================
    Barra de abas em "segmented control" (estilo iOS): uma pista
@@ -19,7 +20,7 @@ export default function TabBar({ items = [], value, onChange, ariaLabel, classNa
       {items.map((it) => {
         const ativo = it.id === value
         return (
-          <button
+          <motion.button
             key={it.id}
             role="tab"
             aria-selected={ativo}
@@ -27,12 +28,13 @@ export default function TabBar({ items = [], value, onChange, ariaLabel, classNa
             ref={ativo ? setRefAtivo : null}
             onClick={() => onChange && onChange(it.id)}
             title={it.title || it.label}
+            whileTap={{ scale: 0.96 }}
             className={`tab-item ${ativo ? 'tab-ativo' : ''} ${it.Icon ? 'tem-icone' : ''}`}
           >
             {it.Icon && <it.Icon className="h-4 w-4 shrink-0" />}
             <span className="tab-texto">{it.label}</span>
             {it.cont != null && <em className="tab-cont">{it.cont}</em>}
-          </button>
+          </motion.button>
         )
       })}
     </div>

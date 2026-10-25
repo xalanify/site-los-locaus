@@ -14,21 +14,48 @@ import {
 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import Estado from './Estado'
+import Sparkline from './ui/Sparkline'
 import { gameLabel } from '../data/clipGames'
 
 /* Cartão de resumo (número grande + rótulo) */
-function Cartao({ Icon, cor, valor, rotulo }) {
+function Cartao({ Icon, cor, valor, rotulo, trend, corLinha = '#a78bfa' }) {
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    const alvo = Number(valor) || 0
+    if (alvo <= 0) {
+      setN(0)
+      return
+    }
+    let vivo = true
+    const inicio = performance.now()
+    const dur = 520
+    const passo = (t) => {
+      if (!vivo) return
+      const p = Math.min(1, (t - inicio) / dur)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setN(Math.round(alvo * eased))
+      if (p < 1) requestAnimationFrame(passo)
+    }
+    requestAnimationFrame(passo)
+    return () => {
+      vivo = false
+    }
+  }, [valor])
+
   return (
-    <div className="glass rounded-xl p-3 text-center">
+    <div className="glass relative overflow-hidden rounded-xl p-3 text-center">
       <span className={`mx-auto mb-1.5 flex h-8 w-8 items-center justify-center rounded-full ${cor}`}>
         <Icon className="h-4 w-4" />
       </span>
       <div className="font-display text-xl font-black leading-none text-white">
-        {Number(valor) || 0}
+        {n.toLocaleString('pt-PT')}
       </div>
       <div className="mt-1 text-[10px] font-bold uppercase tracking-wide text-gray-400">
         {rotulo}
       </div>
+      {Array.isArray(trend) && trend.length > 1 && (
+        <Sparkline values={trend} color={corLinha} height={22} className="mt-1 opacity-80" />
+      )}
     </div>
   )
 }
@@ -110,13 +137,13 @@ export default function AdminStats() {
           <TrendingUp className="h-4 w-4 text-violet-300" /> Resumo geral
         </h3>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-          <Cartao Icon={Film} cor="bg-violet-400/15 text-violet-300" valor={r.clipsTotal} rotulo="clips" />
+          <Cartao Icon={Film} cor="bg-violet-400/15 text-violet-300" valor={r.clipsTotal} trend={porDia.map((d) => d.clips)} corLinha="#a78bfa" rotulo="clips" />
           <Cartao Icon={Eye} cor="bg-emerald-400/15 text-emerald-300" valor={r.clipsPublicos} rotulo="públicos" />
           <Cartao Icon={Heart} cor="bg-rose-400/15 text-rose-300" valor={r.likes} rotulo="gostos" />
           <Cartao Icon={Download} cor="bg-sky-400/15 text-sky-300" valor={r.downloads} rotulo="transferidos" />
-          <Cartao Icon={Eye} cor="bg-violet-400/15 text-violet-300" valor={r.views} rotulo="visualizações" />
+          <Cartao Icon={Eye} cor="bg-violet-400/15 text-violet-300" valor={r.views} trend={porDia.map((d) => d.visitas)} corLinha="#38bdf8" rotulo="visualizações" />
           <Cartao Icon={Save} cor="bg-amber-400/15 text-amber-300" valor={r.saves} rotulo="guardados" />
-          <Cartao Icon={MessageSquare} cor="bg-indigo-400/15 text-indigo-300" valor={r.comentarios} rotulo="comentários" />
+          <Cartao Icon={MessageSquare} cor="bg-indigo-400/15 text-indigo-300" valor={r.comentarios} trend={porDia.map((d) => d.comentarios)} corLinha="#818cf8" rotulo="comentários" />
           <Cartao Icon={Clapperboard} cor="bg-fuchsia-400/15 text-fuchsia-300" valor={r.posts} rotulo="publicações" />
           <Cartao Icon={Users} cor="bg-lime-400/15 text-lime-300" valor={r.usersTotal} rotulo="contas" />
           <Cartao Icon={Users} cor="bg-teal-400/15 text-teal-300" valor={r.usersNovos} rotulo="novas (30d)" />

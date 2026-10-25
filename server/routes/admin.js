@@ -7,14 +7,14 @@ const { validateEmail } = require('../emailValidate');
 const router = express.Router();
 
 /* Distinções possíveis (tem de coincidir com o cliente) */
-const VALID_BADGES = ['dev', 'top1', 'previsao1'];
+const VALID_BADGES = ['dev', 'top1', 'previsao1', 'fortnite-rank1'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');
 const { notify } = require('../notify');
 
 /* Rótulos das distinções para as notificações */
-const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)', previsao1: '1.º nas Previsões' };
+const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)', previsao1: '1.º nas Previsões', 'fortnite-rank1': 'Rank mais alto Fortnite' };
 
 const count = async (db, sql) => {
   try {
@@ -323,6 +323,11 @@ router.post('/users/:id/game-accounts', requireAdmin, async (req, res) => {
         .syncTop1Badge()
         .catch(() => {});
     }
+    if (game === 'fortnite') {
+      require('../fortniteRank')
+        .sincronizar({ forcar: true })
+        .catch(() => {});
+    }
   } catch (error) {
     console.error('Erro game-accounts:', error.message);
     res.status(500).json({ error: 'Erro ao ligar a conta de jogo.' });
@@ -344,6 +349,7 @@ router.delete('/users/:id/game-accounts/:accId', requireAdmin, async (req, res) 
     const rows = await db
       .prepare('SELECT id, game, nick FROM user_game_accounts WHERE user_id = ? ORDER BY id')
       .all(id);
+    require('../fortniteRank').sincronizar({ forcar: true }).catch(() => {});
     res.json({ ok: true, accounts: rows });
   } catch (error) {
     console.error('Erro game-accounts delete:', error.message);
@@ -421,6 +427,20 @@ async function namesForGame(game) {
   if (game === 'r6') {
     const d = tracker.readJson(tracker.R6_FILE);
     return uniq((d?.players || []).flatMap((p) => [p.handle, p.key]));
+  }
+  if (game === 'fortnite') {
+    try {
+      const snap = await require('../fortnitestore').ler();
+      const nomes = Object.values((snap && snap.jogadores) || {})
+        .map((j) => j && j.nome)
+        .filter(Boolean);
+      if (nomes.length) return uniq(nomes);
+    } catch {}
+    try {
+      return uniq(require('../fortniteauto').links().map((l) => l.nome));
+    } catch {
+      return [];
+    }
   }
   if (tracker.BF_FILES[game]) {
     const d = tracker.readJson(tracker.BF_FILES[game]);
@@ -541,6 +561,7 @@ router.post(
       const resultados = [];
       for (const it of itens) resultados.push(await fn.importar(it));
       const ok = resultados.filter((r) => r.ok).length;
+      if (ok > 0) require('../fortniteRank').sincronizar({ forcar: true }).catch(() => {});
       res.json({ ok: ok > 0, importados: ok, total: resultados.length, resultados });
     } catch (error) {
       console.error('Erro fortnite/import:', error.message);

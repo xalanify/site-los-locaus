@@ -39,7 +39,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isHome = location.pathname === '/'
   const isClips = location.pathname === '/clips'
   const isDistincoes = location.pathname === '/distincoes'
-  const isProfile = location.pathname === '/perfil'
+  const isProfile = location.pathname.startsWith('/perfil')
   const isMembers = location.pathname === '/membros'
   const isGames = location.pathname === '/jogos'
   const isLojaJogos = location.pathname === '/jogos-steam'
@@ -105,7 +105,9 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       {/* Conta em baixo (as notificações vivem no cartão da coluna da direita) */}
       <div className="space-y-2">
         <button
-          onClick={() => navigate('/perfil')}
+          onClick={() =>
+            navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
+          }
           className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
             isProfile
               ? 'nav-ativo text-white'

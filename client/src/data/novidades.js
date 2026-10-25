@@ -4,36 +4,48 @@
    as secções. A janela só volta a aparecer quando a versão muda.
    ============================================================ */
 
-export const NOVIDADES_VERSAO = '2026-10-25'
+export const NOVIDADES_VERSAO = '2026-10-26'
 
 export const NOVIDADES = {
   versao: NOVIDADES_VERSAO,
   titulo: 'Novidades no Los Locaus',
   subtitulo: 'O que mudou por aqui — resumido.',
-  data: '25 de outubro de 2026',
+  data: '26 de outubro de 2026',
   secoes: [
     {
       titulo: 'Novo nesta atualização',
       itens: [
         {
-          titulo: 'Loja de Jogos com notícias',
-          texto: 'Nova aba de notícias de gaming e hardware, páginas na pesquisa e capas nos rumores.',
+          titulo: 'Fontes de perfil',
+          texto: 'Já podes mudar a fonte de todos os textos do perfil: Minecraft, GTA, Black Ops, Call of Duty, Fortnite, Cyberpunk e Halo.',
         },
         {
-          titulo: 'Mensagens no perfil',
-          texto: 'Agora podes publicar mensagens (com ou sem imagem) além de clips. O feed do perfil junta tudo.',
+          titulo: 'Cores reais do fundo',
+          texto: 'O site lê a cor dominante da imagem — imagens escuras ou cinzentas já não ficam verdes ou laranja.',
         },
         {
-          titulo: 'Música do YouTube (admin)',
-          texto: 'Pesquisa e escolhe qualquer música do YouTube para o teu perfil.',
+          titulo: 'Bordas à tua escolha',
+          texto: 'A linha do banner, o brilho do cartão e o anel da foto podem usar a cor do banner, branco ou preto.',
         },
         {
-          titulo: 'Chat com membros online',
-          texto: 'Clica no indicador de online para veres quem está ligado, no PC ou no telemóvel.',
+          titulo: 'Rank mais alto Fortnite',
+          texto: 'A conta ligada ao jogador com o rank atual mais alto recebe a distinção automaticamente.',
         },
         {
-          titulo: 'IDs sequenciais',
-          texto: 'Os IDs das contas passam a contar 1, 2, 3… pela ordem de entrada.',
+          titulo: 'Torneios ao vivo',
+          texto: 'O calendário de Fortnite atualiza sozinho a cada minuto e já não mostra listas locais.',
+        },
+        {
+          titulo: 'Notícias mais focadas',
+          texto: 'Call of Duty, GTA, Battlefield, CS2, Fortnite, consolas e placas gráficas em destaque.',
+        },
+        {
+          titulo: 'Mensagens corrigidas',
+          texto: 'Já podes publicar mensagens com ou sem imagem no teu perfil.',
+        },
+        {
+          titulo: 'Recuperar palavra-passe',
+          texto: 'O link do email abre agora diretamente a página para definir a nova palavra-passe.',
         },
       ],
     },
@@ -54,3 +66,4 @@ export const NOVIDADES = {
     },
   ],
 }
+

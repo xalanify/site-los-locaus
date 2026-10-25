@@ -19,6 +19,8 @@ import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
 import ProfileMusic from '../components/ProfileMusic'
 import { bannerDe, estiloFundo, fundoDe } from '../data/temasPerfil'
+import { fonteDe } from '../data/fontesPerfil'
+import { extrairCores } from '../lib/coresFundo'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
@@ -42,6 +44,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const [jogoClips, setJogoClips] = useState('')
   const [posts, setPosts] = useState([])
   const [filtroFeed, setFiltroFeed] = useState('tudo')
+  const [coresExtra, setCoresExtra] = useState(null)
 
   useEffect(() => {
     let vivo = true
@@ -82,6 +85,23 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
   const fundoAtual = fundoDe(data?.profile?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
   const dinamico = data?.profile?.dynamic_colors !== false && temFundo
+
+  useEffect(() => {
+    let vivo = true
+    setCoresExtra(null)
+    if (!temFundo || !dinamico) return
+    extrairCores(fundoAtual.imagem).then((c) => {
+      if (vivo && c) setCoresExtra(c)
+    })
+    return () => {
+      vivo = false
+    }
+  }, [temFundo, dinamico, fundoAtual.imagem])
+
+  const accent = coresExtra?.cor || fundoAtual.cor
+  const accent2 = coresExtra?.cor2 || fundoAtual.cor2
+  const accentRgb = coresExtra?.rgb || fundoAtual.rgb
+
   useEffect(() => {
     const root = document.documentElement
     document.body.classList.toggle('profile-bg', temFundo)
@@ -99,15 +119,15 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
       return () => document.body.classList.remove('profile-bg')
     }
     document.body.classList.add('profile-theme')
-    root.style.setProperty('--perfil-accent', fundoAtual.cor)
-    root.style.setProperty('--perfil-accent-2', fundoAtual.cor2)
-    root.style.setProperty('--perfil-accent-rgb', fundoAtual.rgb)
-    root.style.setProperty('--aj-300', fundoAtual.rgb)
-    root.style.setProperty('--aj-400', fundoAtual.rgb)
-    root.style.setProperty('--aj-500', fundoAtual.rgb)
-    root.style.setProperty('--aj-600', fundoAtual.rgb)
-    root.style.setProperty('--aj-700', fundoAtual.rgb)
-    root.style.setProperty('--aj-line', `rgba(${fundoAtual.rgb.split(' ').join(', ')}, 0.22)`)
+    root.style.setProperty('--perfil-accent', accent)
+    root.style.setProperty('--perfil-accent-2', accent2)
+    root.style.setProperty('--perfil-accent-rgb', accentRgb)
+    root.style.setProperty('--aj-300', accentRgb)
+    root.style.setProperty('--aj-400', accentRgb)
+    root.style.setProperty('--aj-500', accentRgb)
+    root.style.setProperty('--aj-600', accentRgb)
+    root.style.setProperty('--aj-700', accentRgb)
+    root.style.setProperty('--aj-line', `rgba(${accentRgb.split(' ').join(', ')}, 0.22)`)
     return () => {
       document.body.classList.remove('profile-theme')
       document.body.classList.remove('profile-bg')
@@ -121,7 +141,23 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
       root.style.removeProperty('--aj-700')
       root.style.removeProperty('--aj-line')
     }
-  }, [dinamico, fundoAtual.id, fundoAtual.cor, fundoAtual.cor2, fundoAtual.rgb])
+  }, [dinamico, fundoAtual.id, accent, accent2, accentRgb])
+
+  const fonte = fonteDe(data?.profile?.fonte_perfil)
+  useEffect(() => {
+    const body = document.body
+    if (!fonte.familia) {
+      body.classList.remove('profile-fonte')
+      body.style.removeProperty('--perfil-fonte')
+      return
+    }
+    body.classList.add('profile-fonte')
+    body.style.setProperty('--perfil-fonte', fonte.familia)
+    return () => {
+      body.classList.remove('profile-fonte')
+      body.style.removeProperty('--perfil-fonte')
+    }
+  }, [fonte.id, fonte.familia])
 
   if (!carregado) {
     return (
@@ -154,7 +190,8 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
 
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
-  const corCard = tema.cor
+  const corBorda =
+    p.borda_cor === 'branco' ? '#ffffff' : p.borda_cor === 'preto' ? '#000000' : tema.cor
   const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
   const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
@@ -225,8 +262,8 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           transition={{ delay: 0.05 }}
           className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(p.name_effect)}`}
           style={{
-            borderColor: `${corCard}66`,
-            boxShadow: `0 0 40px ${corCard}22, inset 0 0 0 1px ${corCard}18`,
+            borderColor: `${corBorda}66`,
+            boxShadow: `0 0 40px ${corBorda}22, inset 0 0 0 1px ${corBorda}18`,
           }}
         >
           <ProfileBanner bannerId={p.banner_id} />
@@ -241,7 +278,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
                 src={avatarSrc}
                 alt={p.username}
                 className="h-16 w-16 rounded-full object-cover"
-                style={{ boxShadow: `0 0 0 2px ${corCard}99, 0 0 26px ${corCard}66` }}
+                style={{ boxShadow: `0 0 0 2px ${corBorda}99, 0 0 26px ${corBorda}66` }}
                 onError={(e) => {
                   if (e.currentTarget.dataset.fb) return
                   e.currentTarget.dataset.fb = '1'
@@ -250,7 +287,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               />
               {souEu && (
                 <Link
-                  to="/perfil"
+                  to="/perfil/editar"
                   title="Editar foto e perfil"
                   className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
                 >
@@ -400,7 +437,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
             <div className="space-y-5">
               {feedMostrado.map((f) =>
                 f.tipo === 'clip' ? (
-                  <div key={f.chave} className="mx-auto w-full max-w-2xl">
+                  <div key={f.chave} className="mx-auto w-full max-w-3xl">
                     <ClipCard
                       clip={f.item}
                       user={user}
@@ -434,9 +471,9 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
 
         {/* ---------------- Ação (só se a página for tua) ---------------- */}
         {souEu && (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <Link
-              to="/perfil"
+              to="/perfil/editar"
               className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Camera className="h-4 w-4" />

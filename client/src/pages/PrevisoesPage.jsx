@@ -24,7 +24,6 @@ import {
 import AvatarImg from '../components/AvatarImg'
 import { R6_TORNEIOS } from '../data/r6Torneios'
 import { CS2_TORNEIOS } from '../data/cs2Torneios'
-import { FORTNITE_TORNEIOS } from '../data/fortniteTorneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 import PageShell from '../components/PageShell'
@@ -533,12 +532,13 @@ function FortniteTorneiosTab() {
   const [dados, setDados] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [tick, setTick] = useState(0)
 
   useEffect(() => {
     let vivo = true
     setCarregando(true)
     setErro('')
-    fetch(`/api/games/fortnite/torneios?region=${regiao}`)
+    fetch(`/api/games/fortnite/torneios?region=${regiao}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (!vivo) return
@@ -554,24 +554,25 @@ function FortniteTorneiosTab() {
     return () => {
       vivo = false
     }
-  }, [regiao])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regiao, tick])
+
+  /* calendário ao vivo: atualiza sozinho a cada 60s */
+  useEffect(() => {
+    const iv = setInterval(() => setTick((n) => n + 1), 60000)
+    return () => clearInterval(iv)
+  }, [])
 
   const remotos = Array.isArray(dados?.torneios) ? dados.torneios : []
-  const usarRemotos = remotos.length > 0
 
   const futuros = useMemo(() => {
-    if (usarRemotos) return remotos
-    return FORTNITE_TORNEIOS.map((t) => ({
-      ...t,
-      estado: 'upcoming',
-      modo: t.modo || 'outro',
-      regiao: null,
-      imagem: null,
-      link: null,
-    }))
-      .filter((t) => new Date(t.fim).getTime() > Date.now())
-      .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))
-  }, [remotos, usarRemotos])
+    return remotos
+      .filter((t) => t && t.inicio)
+      .sort((a, b) => {
+        if (a.estado !== b.estado) return a.estado === 'live' ? -1 : 1
+        return new Date(a.inicio) - new Date(b.inicio)
+      })
+  }, [remotos])
 
   const filtrados = useMemo(
     () => (modo === 'todos' ? futuros : futuros.filter((t) => (t.modo || 'outro') === modo)),
@@ -722,24 +723,37 @@ function FortniteTorneiosTab() {
           <h2 className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-400">
             <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
           </h2>
-          <span className="text-[10px] font-semibold text-gray-600">
-            {carregando
-              ? 'A atualizar…'
-              : dados?.atualizadoEm
-                ? `Atualizado ${fmtHora(dados.atualizadoEm)} · ${dados.fonte || 'FNJPNews'}`
-                : usarRemotos
-                  ? ''
-                  : 'Lista local'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-semibold text-gray-600">
+              {carregando
+                ? 'A atualizar…'
+                : dados?.atualizadoEm
+                  ? `Atualizado ${fmtHora(dados.atualizadoEm)} · ${dados.fonte || 'FNJPNews'}`
+                  : ''}
+            </span>
+            <button
+              type="button"
+              onClick={() => setTick((n) => n + 1)}
+              disabled={carregando}
+              className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-gray-300 hover:bg-white/10 disabled:opacity-40"
+            >
+              <Loader2 className={`h-3 w-3 ${carregando ? 'animate-spin' : ''}`} /> Atualizar
+            </button>
+          </div>
         </div>
 
-        {erro && !usarRemotos && (
+        {erro && (
           <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
-            {erro} A mostrar a lista local.
+            {erro} O calendário tenta novamente sozinho a cada minuto.
+          </p>
+        )}
+        {dados?.aviso && (
+          <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+            A mostrar a última atualização guardada.
           </p>
         )}
 
-        {carregando && !usarRemotos ? (
+        {carregando && !filtrados.length ? (
           <div className="flex items-center justify-center gap-2 py-8 text-sm text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin" /> A carregar torneios…
           </div>

@@ -40,6 +40,15 @@ export const BADGES = [
     dark: '#7A5A00',
     anim: 'shine',
   },
+  {
+    id: 'fortnite-rank1',
+    label: 'RANK MAIS ALTO FORTNITE',
+    desc: 'Melhor rank atual do Fortnite entre os membros ligados',
+    color: '#22D3EE',
+    light: '#A5F3FC',
+    dark: '#0E4F5A',
+    anim: 'float',
+  },
 ]
 
 /* Legenda DEV: branco → vermelho com brilho */

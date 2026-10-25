@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fontes icónicas locais (perfil) */
+@font-face {
+  font-family: 'Pricedown';
+  src: url('/fonts/pricedown.woff') format('woff');
+  font-display: swap;
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Minecraft';
+  src: url('/fonts/minecraft.woff') format('woff');
+  font-display: swap;
+  font-weight: 400;
+}
+
+/* Quando um perfil com fonte escolhida está aberto, TODOS os textos
+   (sidebar, cartões, botões, títulos) usam essa fonte. */
+body.profile-fonte,
+body.profile-fonte .font-display,
+body.profile-fonte button,
+body.profile-fonte input,
+body.profile-fonte textarea,
+body.profile-fonte select,
+body.profile-fonte a {
+  font-family: var(--perfil-fonte) !important;
+}
+
+/* Toque tátil em todos os botões (inspirado nos componentes EasyUI) */
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+button {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow, filter;
+  transition-duration: 160ms;
+}
+
 /* ============================================================
    Paleta do site — o Tailwind lê estas variáveis
    (guardar em RGB deixa qualquer cor com transparência:
