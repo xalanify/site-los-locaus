@@ -179,7 +179,8 @@ async function carregar() {
       if (feed.filtro) {
         itens = itens.filter((n) => FOCO.test(n.titulo));
       }
-      return itens.slice(0, 14);
+      const cap = feed.prioridade === 0 ? 6 : feed.prioridade === 1 ? 8 : 6;
+      return itens.slice(0, cap);
     }),
   );
   for (const r of resultados) {
