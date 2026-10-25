@@ -130,7 +130,7 @@ function VoterList({ match, user }) {
             className={`flex items-center gap-2 rounded-lg border px-2 py-1.5 ${
               v.id === Number(user && user.id)
                 ? 'border-violet-400/30 bg-violet-500/[0.08]'
-                : 'border-white/5 bg-white/[0.03]'
+                : 'border-white/5 bg-[#120d20]/80'
             }`}
           >
             <AvatarImg src={v.avatar_url} name={v.username} className="h-6 w-6" />
@@ -160,17 +160,17 @@ function PredictionCard({ match, user, onVote, votando }) {
     const escolhida = minhaEscolha === lado
     if (acabado) {
       if (match.winner === lado) return 'border-emerald-400/40 bg-emerald-500/[0.08]'
-      if (match.winner) return 'border-white/5 bg-white/[0.02] opacity-70'
+      if (match.winner) return 'border-white/5 bg-[#0f0a1a]/80 opacity-70'
     }
     if (escolhida) return 'border-violet-400/60 bg-violet-500/[0.14] ring-1 ring-violet-400/30'
     return match.can_vote
-      ? 'border-white/10 bg-white/[0.03] hover:border-violet-400/40 hover:bg-violet-500/[0.06]'
-      : 'border-white/5 bg-white/[0.02]'
+      ? 'border-white/10 bg-[#120d20]/80 hover:border-violet-400/40 hover:bg-violet-500/[0.06]'
+      : 'border-white/5 bg-[#0f0a1a]/80'
   }
 
   return (
     <article className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.045] to-white/[0.015] shadow-xl shadow-black/20">
-      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-black/15 px-3 py-2.5 sm:px-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-[#0d0918]/80 px-3 py-2.5 sm:px-4">
         {match.competition_logo ? (
           <img src={match.competition_logo} alt="" className="h-6 w-6 rounded object-contain" loading="lazy" />
         ) : (
@@ -324,7 +324,7 @@ function PalmaresTorneio({ t, destaque }) {
       className={`group relative w-80 shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
         destaque
           ? 'border-amber-400/30 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] shadow-lg shadow-amber-950/20'
-          : 'border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-violet-400/40 hover:bg-white/[0.05]'
+          : 'border-white/10 bg-[#120d20]/80 hover:-translate-y-0.5 hover:border-violet-400/40 hover:bg-white/[0.05]'
       }`}
     >
       {destaque && (
@@ -717,7 +717,7 @@ function FortniteTorneiosTab() {
         </motion.section>
       )}
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <section className="rounded-2xl border border-white/10 bg-[#120d20]/80 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-400">
             <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
@@ -765,7 +765,7 @@ function FortniteTorneiosTab() {
                       onClick={(e) => {
                         if (!t.link) e.preventDefault()
                       }}
-                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5 transition-colors hover:border-fuchsia-400/25 hover:bg-fuchsia-500/[0.06]"
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-[#120d20]/80 px-3 py-2.5 transition-colors hover:border-fuchsia-400/25 hover:bg-fuchsia-500/[0.06]"
                     >
                       {t.imagem ? (
                         <img
@@ -1067,7 +1067,7 @@ export default function PrevisoesPage({ user }) {
                     className={`group relative w-80 shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
                       i === 0
                         ? 'border-amber-400/30 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] shadow-lg shadow-amber-950/20'
-                        : 'border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-white/[0.05]'
+                        : 'border-white/10 bg-[#120d20]/80 hover:-translate-y-0.5 hover:border-sky-400/40 hover:bg-white/[0.05]'
                     }`}
                   >
                     {i === 0 && (
@@ -1134,11 +1134,11 @@ export default function PrevisoesPage({ user }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="rounded-2xl border border-white/10 bg-black/25 px-3 py-2 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-center">
               <p className="text-lg font-black text-white">{acertos}</p>
               <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Acertos</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-black/25 px-3 py-2 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-center">
               <p className="text-lg font-black text-white">{falhas}</p>
               <p className="text-[9px] font-black uppercase tracking-wider text-red-300">Falhas</p>
             </div>
@@ -1165,7 +1165,7 @@ export default function PrevisoesPage({ user }) {
           <select
             value={regiao}
             onChange={(e) => setRegiao(e.target.value)}
-            className="w-full max-w-[240px] rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-violet-400/40"
+            className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-violet-400/40"
           >
             <option value="Todas" className="bg-[#171122]">Todas as regiões</option>
             {regioesDisponiveis.map((r) => (
@@ -1179,7 +1179,7 @@ export default function PrevisoesPage({ user }) {
 
       {/* separadores */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-black/25 p-1 shadow-inner shadow-black/30">
+        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#120d20]/90 p-1 shadow-inner shadow-black/30">
           {(() => {
             const icones = {
               proximos: <Swords className="h-4 w-4 shrink-0" />,
@@ -1220,7 +1220,7 @@ export default function PrevisoesPage({ user }) {
         <button
           onClick={() => recarregarRef.current()}
           title="Atualizar resultados"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/25 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#120d20]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
         >
           <RefreshCw className="h-4 w-4" />
         </button>
@@ -1247,7 +1247,7 @@ export default function PrevisoesPage({ user }) {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] py-20 text-sm font-semibold text-gray-400">
+        <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#0f0a1a]/80 py-20 text-sm font-semibold text-gray-400">
           <Loader2 className="mr-2 h-5 w-5 animate-spin text-violet-400" /> A carregar os jogos…
         </div>
       ) : tab === 'proximos' ? (
@@ -1257,7 +1257,7 @@ export default function PrevisoesPage({ user }) {
               <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} />
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-14 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-14 text-center">
               <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-300 ring-1 ring-violet-400/20">
                 <Swords className="h-6 w-6" />
               </span>
@@ -1305,7 +1305,7 @@ export default function PrevisoesPage({ user }) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-14 text-center">
+              <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-14 text-center">
                 <Trophy className="mx-auto h-8 w-8 text-gray-600" />
                 <p className="mt-2 text-sm font-bold text-gray-400">Ainda não há resultados recentes.</p>
               </div>
@@ -1315,7 +1315,7 @@ export default function PrevisoesPage({ user }) {
       ) : (
         <div>
           {classLoading ? (
-            <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] py-20 text-sm font-semibold text-gray-400">
+            <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#0f0a1a]/80 py-20 text-sm font-semibold text-gray-400">
               <Loader2 className="mr-2 h-5 w-5 animate-spin text-violet-400" /> A carregar a classificação…
             </div>
           ) : classificacao.length ? (
@@ -1365,7 +1365,7 @@ export default function PrevisoesPage({ user }) {
               </p>
             </>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-14 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-14 text-center">
               <Trophy className="mx-auto h-8 w-8 text-gray-600" />
               <p className="mt-2 text-sm font-bold text-gray-400">Ainda não há votos suficientes.</p>
               <p className="text-xs text-gray-500">Sê o primeiro a prever um jogo.</p>
@@ -1374,7 +1374,7 @@ export default function PrevisoesPage({ user }) {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-3 text-[11px] font-semibold leading-relaxed text-gray-500">
+      <div className="mt-6 rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-3 text-[11px] font-semibold leading-relaxed text-gray-500">
         <p className="flex items-start gap-1.5">
           <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-400" />
           Fonte: site oficial da Rainbow Six Esports (Ubisoft). Só entram ligas profissionais Tier 1.
