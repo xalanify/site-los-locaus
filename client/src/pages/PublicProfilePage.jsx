@@ -288,6 +288,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
               {souEu && (
                 <Link
                   to="/perfil/editar"
+                  state={{ abrirEditar: true }}
                   title="Editar foto e perfil"
                   className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
                 >
@@ -474,6 +475,7 @@ export default function PublicProfilePage({ user, onRequestAuth, onProfile }) {
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               to="/perfil/editar"
+              state={{ abrirEditar: true }}
               className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Camera className="h-4 w-4" />

@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Clapperboard,
@@ -51,6 +52,22 @@ const authHeaders = () => ({
 
 const TOKEN = () => localStorage.getItem('userToken') || localStorage.getItem('adminToken')
 
+const formDe = (u) => ({
+  game_nick: u?.game_nick || '',
+  mouse: u?.mouse || '',
+  dpi: u?.dpi || '',
+  banner_id: u?.banner_id || '',
+  background_id: u?.background_id || '',
+  musica_id: u?.musica_id || '',
+  musica_url: u?.musica_url || '',
+  musica_nome: u?.musica_nome || '',
+  dynamic_colors: u?.dynamic_colors !== false,
+  name_color: u?.name_color || '',
+  name_effect: u?.name_effect || '',
+  borda_cor: u?.borda_cor || 'banner',
+  fonte_perfil: u?.fonte_perfil || '',
+})
+
 export default function ProfilePage({
   user,
   isAdmin,
@@ -60,6 +77,7 @@ export default function ProfilePage({
   onUserUpdate,
   onProfile,
 }) {
+  const location = useLocation()
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(false)
   const [previewTema, setPreviewTema] = useState(null)
@@ -68,21 +86,8 @@ export default function ProfilePage({
   const [musicaLoading, setMusicaLoading] = useState(false)
   const [musicaAlterada, setMusicaAlterada] = useState(false)
   const [coresExtra, setCoresExtra] = useState(null)
-  const [form, setForm] = useState({
-    game_nick: '',
-    mouse: '',
-    dpi: '',
-    banner_id: '',
-    background_id: '',
-    musica_id: '',
-    musica_url: '',
-    musica_nome: '',
-    dynamic_colors: true,
-    name_color: '',
-    name_effect: '',
-    borda_cor: 'banner',
-    fonte_perfil: '',
-  })
+  const [form, setForm] = useState(() => formDe(user))
+  const abriuState = useRef(false)
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
   const [removeAvatar, setRemoveAvatar] = useState(false)
@@ -129,6 +134,15 @@ export default function ProfilePage({
       vivo = false
     }
   }, [])
+
+  /* Veio do botão "Editar perfil" do perfil público -> abre logo a janela */
+  useEffect(() => {
+    if (!location.state?.abrirEditar || !me || abriuState.current) return
+    abriuState.current = true
+    setForm(formDe(me))
+    setMusicaAlterada(false)
+    setEdit(true)
+  }, [location.state, me])
 
   const fundoAtual = fundoDe(me?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
@@ -229,21 +243,7 @@ export default function ProfilePage({
 
   const abrirEditar = () => {
     // game_nick mantém-se guardado (liga o TOP 1 KILL ao CS2) — invisível no perfil
-    setForm({
-      game_nick: me.game_nick || '',
-      mouse: me.mouse || '',
-      dpi: me.dpi || '',
-      banner_id: me.banner_id || '',
-      background_id: me.background_id || '',
-      musica_id: me.musica_id || '',
-      musica_url: me.musica_url || '',
-      musica_nome: me.musica_nome || '',
-      dynamic_colors: me.dynamic_colors !== false,
-      name_color: me.name_color || '',
-      name_effect: me.name_effect || '',
-      borda_cor: me.borda_cor || 'banner',
-      fonte_perfil: me.fonte_perfil || '',
-    })
+    setForm(formDe(me))
     setAvatarFile(null)
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     setAvatarPreview('')
@@ -260,6 +260,7 @@ export default function ProfilePage({
     setRemoveAvatar(false)
     setErr('')
     setEdit(false)
+    if (location.state?.abrirEditar && onProfile) onProfile(me.username)
   }
 
   /* utilizador escolhe um ficheiro de imagem */
@@ -366,6 +367,7 @@ export default function ProfilePage({
       setAvatarPreview('')
       setRemoveAvatar(false)
       setEdit(false)
+      if (location.state?.abrirEditar && onProfile) onProfile(d2.username)
     } catch {
       setErr('Sem ligação ao servidor.')
     } finally {
