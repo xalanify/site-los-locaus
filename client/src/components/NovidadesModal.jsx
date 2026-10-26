@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Sparkles, Music2, Play, Pause, Image as ImageIcon } from 'lucide-react'
+import { X, Sparkles, Music2, Play, Pause, Image as ImageIcon, Newspaper } from 'lucide-react'
 import { NOVIDADES } from '../data/novidades'
 import { BANNERS, FUNDOS, MUSICAS } from '../data/temasPerfil'
 
@@ -13,7 +13,7 @@ export default function NovidadesModal({ user }) {
   const [aTocar, setATocar] = useState('')
   const audioRef = useRef(null)
 
-  const chave = `locaus:novidades:ocultar:${user?.id || user?.username || 'anon'}`
+  const chave = `locaus:novidades:${NOVIDADES.versao}:ocultar:${user?.id || user?.username || 'anon'}`
 
   useEffect(() => {
     try {
@@ -66,8 +66,10 @@ export default function NovidadesModal({ user }) {
       .catch(() => setATocar(''))
   }
 
-  const banners = BANNERS.filter((b) => b.ficheiro).slice(0, 6)
-  const fundos = FUNDOS.filter((f) => f.imagem).slice(0, 6)
+  const bannersDaSeccao = (s) =>
+    s.ids ? BANNERS.filter((b) => b.ficheiro && s.ids.includes(b.id)) : BANNERS.filter((b) => b.ficheiro).slice(0, 6)
+  const fundosDaSeccao = (s) =>
+    s.ids ? FUNDOS.filter((f) => f.imagem && s.ids.includes(f.id)) : FUNDOS.filter((f) => f.imagem).slice(0, 6)
 
   return createPortal(
     <AnimatePresence>
@@ -124,6 +126,8 @@ export default function NovidadesModal({ user }) {
                   <h3 className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-violet-300">
                     {s.tipo === 'musicas' ? (
                       <Music2 className="h-3.5 w-3.5" />
+                    ) : s.tipo === 'noticias' ? (
+                      <Newspaper className="h-3.5 w-3.5" />
                     ) : s.tipo ? (
                       <ImageIcon className="h-3.5 w-3.5" />
                     ) : (
@@ -149,7 +153,7 @@ export default function NovidadesModal({ user }) {
 
                   {s.tipo === 'banners' && (
                     <div className="grid grid-cols-3 gap-1.5">
-                      {banners.map((b) => (
+                      {bannersDaSeccao(s).map((b) => (
                         <img
                           key={b.id}
                           src={b.ficheiro}
@@ -163,7 +167,7 @@ export default function NovidadesModal({ user }) {
 
                   {s.tipo === 'fundos' && (
                     <div className="grid grid-cols-3 gap-1.5">
-                      {fundos.map((f) => (
+                      {fundosDaSeccao(s).map((f) => (
                         <img
                           key={f.id}
                           src={f.imagem}

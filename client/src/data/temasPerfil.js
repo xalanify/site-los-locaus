@@ -76,6 +76,24 @@ export const BANNERS = [
     ficheiro: '/perfil/cardbanner/24.webp',
     cor: '#a3a3a3',
   },
+  {
+    id: 'g25',
+    nome: 'Lâmina',
+    ficheiro: '/perfil/cardbanner/25.webp',
+    cor: '#ef4444',
+  },
+  {
+    id: 'g26',
+    nome: 'Samurai',
+    ficheiro: '/perfil/cardbanner/26.webp',
+    cor: '#a78bfa',
+  },
+  {
+    id: 'g27',
+    nome: 'Olho vermelho',
+    ficheiro: '/perfil/cardbanner/27.webp',
+    cor: '#ef4444',
+  },
 ]
 
 export const FUNDOS = [
