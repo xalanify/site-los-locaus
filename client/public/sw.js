@@ -7,7 +7,7 @@
    • recebe os pushes do servidor e mostra a notificação
    ============================================================ */
 
-const CACHE = 'locaus-v6';
+const CACHE = 'locaus-v7';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {

@@ -576,10 +576,16 @@ export default function ProfilePage({
                             : 'border-white/10 bg-black/20 hover:border-white/30'
                         }`}
                       >
-                        <span
-                          className="block h-12 w-full rounded-md bg-cover bg-center"
-                          style={{ backgroundImage: `url(${b.ficheiro})` }}
-                        />
+                        {b.ficheiro ? (
+                          <img
+                            src={b.ficheiro}
+                            alt=""
+                            loading="lazy"
+                            className="block h-12 w-full rounded-md object-cover"
+                          />
+                        ) : (
+                          <span className="block h-12 w-full rounded-md bg-gradient-to-br from-[#1b1230] to-[#0b0716]" />
+                        )}
                         <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
                           {b.nome}
                         </span>
@@ -618,14 +624,19 @@ export default function ProfilePage({
                             : 'border-white/10 bg-black/20 hover:border-white/30'
                         }`}
                       >
-                        <span
-                          className="block h-9 w-full rounded-md bg-cover bg-center"
-                          style={
-                            f.imagem
-                              ? { backgroundImage: `url(${f.imagem})` }
-                              : { background: 'linear-gradient(135deg, #1b1230, #0b0716)' }
-                          }
-                        />
+                        {f.imagem ? (
+                          <img
+                            src={f.imagem}
+                            alt=""
+                            loading="lazy"
+                            className="block h-9 w-full rounded-md object-cover"
+                          />
+                        ) : (
+                          <span
+                            className="block h-9 w-full rounded-md"
+                            style={{ background: 'linear-gradient(135deg, #1b1230, #0b0716)' }}
+                          />
+                        )}
                         <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
                           {f.nome}
                         </span>

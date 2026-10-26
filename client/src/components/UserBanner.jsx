@@ -6,9 +6,11 @@ export default function UserBanner({ bannerId, className = 'h-2 w-full' }) {
   const b = bannerDe(bannerId)
   if (!b.ficheiro) return null
   return (
-    <span
-      className={`${className} bg-cover bg-center`}
-      style={{ backgroundImage: `url(${b.ficheiro})` }}
+    <img
+      src={b.ficheiro}
+      alt=""
+      loading="lazy"
+      className={`${className} object-cover`}
       aria-hidden="true"
     />
   )
