@@ -200,6 +200,7 @@ async function typingUsers(db, uid) {
 /* GET /api/chat?after=ID | ?before=ID&limit=40 */
 router.get('/', requireUser, async (req, res) => {
   try {
+    await garantirChatTabelas();
     const db = getDb();
     const uid = req.auth.uid;
     const after = Number(req.query.after);
@@ -262,6 +263,33 @@ router.get('/', requireUser, async (req, res) => {
       }));
       m.pinned = pins.get(m.id) || null;
       if (m.reply_to && replies.get(m.reply_to)) m.reply = replies.get(m.reply_to);
+    }
+
+    /* Quem já leu cada mensagem — só interessa nas mensagens do próprio.
+       O chat_reads guarda o último id lido por utilizador; se for >= ao id
+       da mensagem, essa pessoa já a viu. */
+    try {
+      const leitores = await db
+        .prepare(
+          `SELECT r.user_id, r.last_read_id, u.username
+           FROM public.chat_reads r
+           JOIN users u ON u.id = r.user_id
+           WHERE r.last_read_id > 0`,
+        )
+        .all();
+      for (const m of mensagens) {
+        if (Number(m.user.id) !== Number(uid)) continue;
+        const quem = leitores
+          .filter(
+            (l) => Number(l.user_id) !== Number(m.user.id) && Number(l.last_read_id) >= m.id,
+          )
+          .map((l) => ({ id: Number(l.user_id), username: l.username }))
+          .sort((a, b) => a.username.localeCompare(b.username));
+        m.read_by = quem.slice(0, 12);
+        m.read_count = quem.length;
+      }
+    } catch {
+      /* sem tabela de leituras: o chat continua a funcionar */
     }
     // mensagem fixada (a mais recente) para o banner do topo
     let pinnedMsg = null;

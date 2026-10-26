@@ -4,6 +4,7 @@ import { Search, Loader2, X } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
+import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
@@ -117,14 +118,17 @@ export default function MembrosPage({ onProfile }) {
                         >
                           {m.username}
                         </span>
-                        <span className={`block text-xs ${m.online ? 'text-emerald-400/90' : 'text-gray-500'}`}>
+                        <span
+                          className={`block text-xs ${m.online ? 'text-emerald-400/90' : 'text-gray-500'}`}
+                          title={!m.online && m.last_seen ? new Date(m.last_seen).toLocaleString('pt-PT') : undefined}
+                        >
                           {m.online
                             ? m.plataforma === 'mobile'
                               ? 'No Telemóvel'
                               : m.plataforma === 'pc'
                                 ? 'No PC'
                                 : 'Online'
-                            : 'Offline'}
+                            : vistoPorUltimo(m.last_seen)}
                         </span>
                       </span>
                       {/* Distinções do membro (estáticas + overclock) */}

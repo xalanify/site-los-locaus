@@ -15,6 +15,7 @@ import {
   ArrowDown,
   Copy,
   Check,
+  CheckCheck,
   Maximize2,
   Users,
   Hash,
@@ -27,6 +28,7 @@ import {
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
 import { tocarSom } from '../lib/sons'
+import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import { confirmar, toast } from '../components/Feedback'
 
@@ -203,6 +205,7 @@ export default function ChatPage({ user }) {
   const [erro, setErro] = useState('')
   const [onlineCount, setOnlineCount] = useState(0)
   const [onlineUsers, setOnlineUsers] = useState([])
+  const [todosMembros, setTodosMembros] = useState([])
   const [onlineAberto, setOnlineAberto] = useState(false)
   const [tema, setTema] = useState(TEMA_PADRAO)
   const [temaAberto, setTemaAberto] = useState(false)
@@ -337,7 +340,9 @@ export default function ChatPage({ user }) {
         const r = await fetch('/api/users/list', { headers: authHeaders() })
         if (!r.ok) return
         const d = await r.json()
-        const lista = (d.users || []).filter((u) => u.online)
+        const todos = d.users || []
+        const lista = todos.filter((u) => u.online)
+        setTodosMembros(todos)
         setOnlineUsers(lista)
         setOnlineCount(lista.length)
       } catch {}
@@ -784,8 +789,23 @@ export default function ChatPage({ user }) {
                         )}
                         <ClipPreview clip={m.clip} onOpen={abrirClipNoFeed} />
                         {minha && (
-                          <span className="mt-1 block text-right text-[9px] font-semibold text-white/60">
+                          <span className="mt-1 flex items-center justify-end gap-1 text-right text-[9px] font-semibold text-white/60">
                             {hora(m.created_at)}
+                            {m.read_by && m.read_by.length > 0 && (
+                              <span
+                                className="ml-1 inline-flex items-center gap-0.5 text-emerald-200/90"
+                                title={`Lido por ${m.read_by.map((r) => r.username).join(', ')}${
+                                  m.read_count > m.read_by.length
+                                    ? ` e mais ${m.read_count - m.read_by.length}`
+                                    : ''
+                                }`}
+                              >
+                                <CheckCheck className="h-3 w-3" />
+                                {m.read_by.length <= 2
+                                  ? m.read_by.map((r) => r.username).join(', ')
+                                  : `${m.read_by.slice(0, 2).map((r) => r.username).join(', ')} +${m.read_count - 2}`}
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>
@@ -1201,6 +1221,43 @@ export default function ChatPage({ user }) {
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {/* quem esteve por último — mesmo estando offline */}
+              {todosMembros.filter((u) => !u.online).length > 0 && (
+                <>
+                  <p className="mt-3 px-2 pb-1 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    Visto por último
+                  </p>
+                  <ul className="space-y-1">
+                    {todosMembros
+                      .filter((u) => !u.online)
+                      .sort((a, b) => new Date(b.last_seen || 0) - new Date(a.last_seen || 0))
+                      .map((u) => (
+                        <li key={u.id || u.username}>
+                          <div className="flex items-center gap-2.5 rounded-xl px-2 py-2 opacity-75 hover:bg-white/5 hover:opacity-100">
+                            <span className="relative shrink-0">
+                              <AvatarImg
+                                src={u.avatar_url}
+                                name={u.username}
+                                className="h-9 w-9 grayscale"
+                              />
+                              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0a16] bg-gray-600" />
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-sm font-bold text-gray-300">
+                              {u.username}
+                            </span>
+                            <span
+                              className="shrink-0 text-[10px] font-semibold text-gray-500"
+                              title={u.last_seen ? new Date(u.last_seen).toLocaleString('pt-PT') : ''}
+                            >
+                              {vistoPorUltimo(u.last_seen)}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                  </ul>
+                </>
               )}
             </div>
           </div>

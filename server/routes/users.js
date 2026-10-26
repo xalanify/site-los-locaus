@@ -771,6 +771,7 @@ router.get('/list', attachAuth, async (req, res) => {
                 (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
                 p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
+                p2.last_seen,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
          FROM users u
@@ -805,6 +806,7 @@ router.get('/list', attachAuth, async (req, res) => {
         borda_cor: r.borda_cor || null,
         fonte_perfil: r.fonte_perfil || null,
         online: Boolean(r.online),
+        last_seen: r.last_seen ? new Date(r.last_seen).toISOString() : null,
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],
         distincoes: dists[i] || null,
