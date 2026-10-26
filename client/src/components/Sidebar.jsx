@@ -15,9 +15,9 @@ import {
   Swords,
   ShoppingBag,
   CircuitBoard,
-  Gauge,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
+import Sino from './Sino'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -52,7 +52,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isPrevisoes = location.pathname === '/previsoes'
   const isComponentes = location.pathname === '/componentes'
   const isCosmeticos = location.pathname === '/cosmeticos'
-  const isBuilds = location.pathname === '/builds'
   const naoLidas = useChatNaoLidas(Boolean(user))
 
   const links = [
@@ -88,13 +87,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             icon: Sparkles,
             action: () => navigate('/cosmeticos'),
             active: isCosmeticos,
-            badge: 'Admin',
-          },
-          {
-            name: 'Laboratório de builds',
-            icon: Gauge,
-            action: () => navigate('/builds'),
-            active: isBuilds,
             badge: 'Admin',
           },
         ]
@@ -147,8 +139,14 @@ export default function Sidebar({ user = null, isAdmin = false }) {
         </nav>
       </div>
 
-      {/* Conta em baixo (as notificações vivem no cartão da coluna da direita) */}
+      {/* Conta em baixo */}
       <div className="space-y-2">
+        <div className="flex items-center gap-2 px-1">
+          <Sino user={user} posicao="lateral" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            Notificações
+          </span>
+        </div>
         <button
           onClick={() =>
             navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')

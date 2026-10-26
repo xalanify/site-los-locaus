@@ -208,7 +208,7 @@ export default function Sino({ user, posicao = 'topo' }) {
                   compacto
                   icon={Bell}
                   titulo="Sem notificações"
-                  texto="Quando alguém comentar ou gostar dos teus clips, aparece aqui."
+                  texto="Quando alguém comentar, mandar mensagem no chat, houver notícias novas ou um jogo das previsões começar, aparece aqui."
                 />
               </div>
             ) : (

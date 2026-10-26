@@ -16,7 +16,6 @@ import {
   Swords,
   ShoppingBag,
   CircuitBoard,
-  Gauge,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AvatarImg from './AvatarImg'
@@ -59,7 +58,6 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
       ? [
           { name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes', badge: 'Admin' },
           { name: 'Loja de cosméticos', icon: Sparkles, path: '/cosmeticos', badge: 'Admin' },
-          { name: 'Laboratório de builds', icon: Gauge, path: '/builds', badge: 'Admin' },
         ]
       : []),
     { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
