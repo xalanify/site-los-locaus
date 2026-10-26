@@ -128,7 +128,10 @@ async function precos(titulo) {
   if (termo.length < 2) return { ok: false, deals: [], error: 'Falta o nome do jogo.' };
   const chave = termo.toLowerCase();
   const guardado = cache.get(chave);
-  if (guardado && Date.now() - guardado.t < TTL) return guardado.dados;
+  if (guardado) {
+    const ttl = guardado.vazio ? 5 * 60 * 1000 : TTL;
+    if (Date.now() - guardado.t < ttl) return guardado.dados;
+  }
 
   let dados = null;
   try {
@@ -155,7 +158,7 @@ async function precos(titulo) {
         aviso: 'Sem preços agora — abre o IsThereAnyDeal para veres todas as lojas.',
       };
 
-  cache.set(chave, { t: Date.now(), dados: resposta });
+  cache.set(chave, { t: Date.now(), dados: resposta, vazio: !resposta.deals.length });
   if (cache.size > 200) {
     const primeira = cache.keys().next().value;
     cache.delete(primeira);
