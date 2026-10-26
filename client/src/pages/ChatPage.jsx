@@ -43,65 +43,6 @@ const TEMAS = {
 }
 const TEMA_PADRAO = 'violeta'
 
-/* Emojis por categoria — o picker do telemóvel é só um botão */
-const EMOJI_CATEGORIAS = [
-  {
-    id: 'recentes',
-    nome: 'Recentes',
-    emojis: [],
-  },
-  {
-    id: 'rostos',
-    nome: 'Rostos',
-    emojis: [
-      '😀', '😂', '🤣', '😊', '😍', '😘', '😎', '🤔', '😅', '😭',
-      '😡', '🤯', '🥳', '😴', '🤠', '🤡', '👻', '💀', '🫡', '🤓',
-    ],
-  },
-  {
-    id: 'gestos',
-    nome: 'Gestos',
-    emojis: ['👍', '👎', '👌', '✌️', '🤝', '👏', '🙌', '💪', '🙏', '🫶', '👊', '✊', '🤞', '👋', '🖕', '🤙'],
-  },
-  {
-    id: 'gaming',
-    nome: 'Gaming',
-    emojis: ['🎮', '🕹️', '🏆', '🥇', '🥈', '🥉', '🎯', '🔥', '💥', '⚡', '💣', '🛡️', '🗡️', '🚀', '👀', '🧠'],
-  },
-  {
-    id: 'objetos',
-    nome: 'Objetos',
-    emojis: ['❤️', '💜', '💙', '💚', '🧡', '⭐', '🌟', '💯', '✅', '❌', '❗', '🎉', '🎁', '💰', '🍀', '🧿'],
-  },
-  {
-    id: 'animais',
-    nome: 'Animais',
-    emojis: ['🐐', '🦊', '🐺', '🐻', '🐼', '🐸', '🦁', '🐯', '🐍', '🦖', '🐧', '🦉', '🐝', '🦋', '🐢', '🦈'],
-  },
-]
-
-const RECENTES_CHAVE = 'aj-chat-emoji-recentes'
-const MAX_RECENTES = 24
-
-function lerRecentes() {
-  try {
-    const l = JSON.parse(localStorage.getItem(RECENTES_CHAVE) || '[]')
-    return Array.isArray(l) ? l.slice(0, MAX_RECENTES) : []
-  } catch {
-    return []
-  }
-}
-
-function guardarRecente(e) {
-  try {
-    const l = lerRecentes().filter((x) => x !== e)
-    l.unshift(e)
-    localStorage.setItem(RECENTES_CHAVE, JSON.stringify(l.slice(0, MAX_RECENTES)))
-  } catch {
-    /* sem armazenamento */
-  }
-}
-
 const linkify = (texto) => {
   const partes = String(texto || '').split(/(https?:\/\/[^\s]+)/g)
   return partes.map((p, i) =>
@@ -190,7 +131,6 @@ export default function ChatPage({ user }) {
   const [progresso, setProgresso] = useState(0)
   const [pendingMedia, setPendingMedia] = useState(null)
   const [pendingClip, setPendingClip] = useState(null)
-  const [emojiAberto, setEmojiAberto] = useState(false)
   const [stickersAberto, setStickersAberto] = useState(false)
   const [stickerPaginas, setStickerPaginas] = useState([])
   const [stickerPagina, setStickerPagina] = useState(0)
@@ -198,7 +138,6 @@ export default function ChatPage({ user }) {
   const [stickersLoading, setStickersLoading] = useState(false)
   const [stickersErro, setStickersErro] = useState('')
   const stickers = stickerPaginas[stickerPagina]?.itens || []
-  const [emojiCat, setEmojiCat] = useState('recentes')
   const [clipsAberto, setClipsAberto] = useState(false)
   const [clips, setClips] = useState([])
   const [clipsLoading, setClipsLoading] = useState(false)
@@ -602,7 +541,6 @@ export default function ChatPage({ user }) {
       setResposta(null)
       setPendingMedia(null)
       setPendingClip(null)
-      setEmojiAberto(false)
       setTimeout(() => scrollFundo(true), 20)
       if (textareaRef.current) textareaRef.current.focus()
     } catch (e) {
@@ -685,19 +623,6 @@ export default function ChatPage({ user }) {
     } catch (e) {
       toast.erro(e.message || 'Não deu para apagar.')
     }
-  }
-
-  const inserirEmoji = (e) => {
-    setTexto((t) => t + e)
-    guardarRecente(e)
-    setEmojiAberto(false)
-    setTimeout(() => textareaRef.current && textareaRef.current.focus(), 20)
-  }
-
-  const emojisAtuais = () => {
-    if (emojiCat === 'recentes') return lerRecentes()
-    const c = EMOJI_CATEGORIAS.find((c) => c.id === emojiCat)
-    return c ? c.emojis : []
   }
 
   let diaAnterior = ''
@@ -1112,42 +1037,6 @@ export default function ChatPage({ user }) {
               </button>
             </div>
           )}
-          {emojiAberto && (
-            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-white/10 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
-              <div className="flex gap-1 overflow-x-auto border-b border-white/10 p-1.5">
-                {EMOJI_CATEGORIAS.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setEmojiCat(c.id)}
-                    className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition ${
-                      emojiCat === c.id
-                        ? 'bg-violet-500 text-white'
-                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    {c.nome}
-                  </button>
-                ))}
-              </div>
-              <div className="grid max-h-52 grid-cols-8 gap-0.5 overflow-y-auto p-1.5">
-                {emojisAtuais().length ? (
-                  emojisAtuais().map((e) => (
-                    <button
-                      key={e}
-                      onClick={() => inserirEmoji(e)}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg text-xl transition-colors hover:bg-white/10"
-                    >
-                      {e}
-                    </button>
-                  ))
-                ) : (
-                  <p className="col-span-8 px-2 py-6 text-center text-[11px] font-semibold text-gray-500">
-                    Ainda não usaste emojis. Escolhe um numa categoria.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
           {stickersAberto && (
             <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-violet-400/20 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
@@ -1303,22 +1192,7 @@ export default function ChatPage({ user }) {
                 <Clapperboard className="h-5 w-5" />
               </button>
               <button
-                onClick={() => {
-                  setEmojiAberto((v) => !v)
-                  setStickersAberto(false)
-                }}
-                title="Emojis"
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 sm:h-11 sm:w-11 ${
-                  emojiAberto ? 'bg-violet-500/15 text-violet-300' : 'text-gray-400 hover:text-violet-300'
-                }`}
-              >
-                <Smile className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => {
-                  setStickersAberto((v) => !v)
-                  setEmojiAberto(false)
-                }}
+                onClick={() => setStickersAberto((v) => !v)}
                 title="Stickers animados"
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 sm:h-11 sm:w-11 ${
                   stickersAberto
