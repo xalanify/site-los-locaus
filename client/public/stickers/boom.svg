@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
-  <style>
-    @keyframes boom { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.22) rotate(8deg); } }
-    .s { animation: boom .55s ease-in-out infinite; transform-origin: 120px 130px; }
-  </style>
-  <text x="120" y="170" text-anchor="middle" font-size="135" class="s">💥</text>
-</svg>

@@ -571,7 +571,8 @@ router.post('/', requireUser, async (req, res) => {
       const svgLocal = /^\/stickers\/[a-z0-9-]+\.svg$/.test(sticker);
       const noBucket =
         Boolean(base) && sticker.startsWith(`${base}/storage/v1/object/public/${BUCKET}/`);
-      if (!svgLocal && !noBucket) {
+      const tenor = /^https:\/\/(?:media\d*|c)\.tenor\.com\//i.test(sticker);
+      if (!svgLocal && !noBucket && !tenor) {
         return res.status(400).json({ error: 'Sticker inválido.' });
       }
       mediaUrl = sticker;
@@ -701,6 +702,71 @@ router.post('/typing', requireUser, async (req, res) => {
   } catch (error) {
     console.error('Erro chat typing:', error.message);
     res.json({ ok: false });
+  }
+});
+
+/* GET /api/chat/stickers?q=... — stickers animados (Tenor).
+   Só em localhost, para testes. */
+const TENOR_KEY =
+  process.env.TENOR_API_KEY || 'AIzaSyCZt6SSh5VgVPzD9fhyzG1DprdPRhtoaR4';
+const TENOR_CLIENT = process.env.TENOR_CLIENT_KEY || 'tenor_web';
+const stickersCache = new Map();
+
+router.get('/stickers', requireUser, async (req, res) => {
+  try {
+    const host = String(req.headers.host || '').toLowerCase();
+    const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);
+    if (!local) {
+      return res.status(403).json({ error: 'Os stickers só estão disponíveis em localhost.' });
+    }
+    const q = String(req.query.q || '').trim().slice(0, 60);
+    const chave = q ? `q:${q.toLowerCase()}` : 'featured';
+    const agora = Date.now();
+    const cacheado = stickersCache.get(chave);
+    if (cacheado && agora - cacheado.t < 10 * 60 * 1000) {
+      return res.json({ ok: true, fonte: 'Tenor', stickers: cacheado.dados });
+    }
+
+    const endpoint = q ? 'search' : 'featured';
+    const params = new URLSearchParams({
+      key: TENOR_KEY,
+      client_key: TENOR_CLIENT,
+      limit: '24',
+      media_filter: 'tinygif,gif',
+      searchfilter: 'sticker',
+      contentfilter: 'high',
+    });
+    if (q) params.set('q', q);
+    const url = `https://tenor.googleapis.com/v2/${endpoint}?${params.toString()}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    if (!r.ok) throw new Error(`Tenor ${r.status}`);
+    const d = await r.json();
+    const stickers = (Array.isArray(d.results) ? d.results : [])
+      .map((item) => {
+        const gif = item.media_formats && item.media_formats.gif;
+        const tiny = item.media_formats && item.media_formats.tinygif;
+        const media = gif || tiny;
+        if (!media || !media.url) return null;
+        return {
+          id: item.id,
+          url: media.url,
+          preview: (tiny && tiny.url) || media.url,
+          titulo: item.content_description || item.title || 'Sticker',
+          w: media.dims ? media.dims[0] : null,
+          h: media.dims ? media.dims[1] : null,
+        };
+      })
+      .filter(Boolean);
+
+    stickersCache.set(chave, { t: agora, dados: stickers });
+    if (stickersCache.size > 40) {
+      const primeira = stickersCache.keys().next().value;
+      stickersCache.delete(primeira);
+    }
+    res.json({ ok: true, fonte: 'Tenor', stickers });
+  } catch (e) {
+    console.error('Erro stickers:', e.message);
+    res.status(502).json({ ok: false, error: 'Não foi possível carregar os stickers.', stickers: [] });
   }
 });
 

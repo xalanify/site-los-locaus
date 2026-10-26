@@ -43,22 +43,6 @@ const TEMAS = {
 }
 const TEMA_PADRAO = 'violeta'
 
-/* Stickers animados locais — só aparecem em localhost para testes. */
-const STICKERS_LOCAIS = [
-  { id: 'gg', nome: 'GG', src: '/stickers/gg.svg' },
-  { id: 'lol', nome: 'LOL', src: '/stickers/lol.svg' },
-  { id: 'fire', nome: 'Fogo', src: '/stickers/fire.svg' },
-  { id: 'heart', nome: 'Coração', src: '/stickers/heart.svg' },
-  { id: 'cat', nome: 'Gato', src: '/stickers/cat.svg' },
-  { id: 'boom', nome: 'Boom', src: '/stickers/boom.svg' },
-  { id: 'crown', nome: 'Coroa', src: '/stickers/crown.svg' },
-  { id: 'skull', nome: 'Caveira', src: '/stickers/skull.svg' },
-  { id: 'party', nome: 'Festa', src: '/stickers/party.svg' },
-  { id: 'shock', nome: 'Choque', src: '/stickers/shock.svg' },
-  { id: 'clap', nome: 'Palmas', src: '/stickers/clap.svg' },
-  { id: 'rocket', nome: 'Foguete', src: '/stickers/rocket.svg' },
-]
-
 /* Emojis por categoria — o picker do telemóvel é só um botão */
 const EMOJI_CATEGORIAS = [
   {
@@ -208,16 +192,10 @@ export default function ChatPage({ user }) {
   const [pendingClip, setPendingClip] = useState(null)
   const [emojiAberto, setEmojiAberto] = useState(false)
   const [stickersAberto, setStickersAberto] = useState(false)
-  const [stickersCustom, setStickersCustom] = useState(() => {
-    try {
-      const raw = localStorage.getItem('locaus:stickers-custom')
-      const lista = raw ? JSON.parse(raw) : []
-      return Array.isArray(lista) ? lista.filter((x) => typeof x === 'string') : []
-    } catch {
-      return []
-    }
-  })
-  const stickerFileRef = useRef(null)
+  const [stickers, setStickers] = useState([])
+  const [stickerQuery, setStickerQuery] = useState('')
+  const [stickersLoading, setStickersLoading] = useState(false)
+  const [stickersErro, setStickersErro] = useState('')
   const podeStickers =
     typeof window !== 'undefined' &&
     /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)
@@ -556,6 +534,31 @@ export default function ChatPage({ user }) {
     }
   }
 
+  const carregarStickers = async (q = '') => {
+    setStickersLoading(true)
+    setStickersErro('')
+    try {
+      const r = await fetch(`/api/chat/stickers?q=${encodeURIComponent(q)}`, {
+        headers: authHeaders(),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok || !d || d.ok === false) {
+        throw new Error((d && d.error) || 'Não deu para carregar os stickers.')
+      }
+      setStickers(Array.isArray(d.stickers) ? d.stickers : [])
+    } catch (e) {
+      setStickers([])
+      setStickersErro(e.message || 'Não deu para carregar os stickers.')
+    } finally {
+      setStickersLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (stickersAberto && podeStickers) carregarStickers('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stickersAberto])
+
   const enviar = async () => {
     const body = texto.trim()
     if (!body && !pendingMedia && !pendingClip) return
@@ -640,62 +643,6 @@ export default function ChatPage({ user }) {
       setASubir(false)
       setProgresso(0)
       if (inputFileRef.current) inputFileRef.current.value = ''
-    }
-  }
-
-  const guardarStickerCustom = (url) => {
-    setStickersCustom((prev) => {
-      const next = [url, ...prev.filter((x) => x !== url)].slice(0, 24)
-      try {
-        localStorage.setItem('locaus:stickers-custom', JSON.stringify(next))
-      } catch {
-        /* sem storage */
-      }
-      return next
-    })
-  }
-
-  const subirSticker = async (file) => {
-    if (!file) return
-    if (file.size > 8 * 1024 * 1024) {
-      toast.erro('O sticker é demasiado grande (máx. 8 MB).')
-      return
-    }
-    if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type)) {
-      toast.erro('Usa JPG, PNG, WebP ou GIF.')
-      return
-    }
-    setASubir(true)
-    setProgresso(0)
-    try {
-      const r = await fetch('/api/chat/upload-url', {
-        method: 'POST',
-        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: file.type }),
-      })
-      const d = await r.json().catch(() => null)
-      if (!r.ok) throw new Error((d && d.error) || 'Não deu para preparar o sticker.')
-      await new Promise((resolve, reject) => {
-        const x = new XMLHttpRequest()
-        x.open('PUT', d.uploadUrl)
-        x.setRequestHeader('Content-Type', file.type)
-        x.setRequestHeader('x-upsert', 'false')
-        x.upload.onprogress = (e) => {
-          if (e.lengthComputable) setProgresso(Math.round((e.loaded / e.total) * 100))
-        }
-        x.onload = () =>
-          x.status >= 200 && x.status < 300 ? resolve() : reject(new Error('Subida falhou.'))
-        x.onerror = () => reject(new Error('Sem ligação ao Storage.'))
-        x.send(file)
-      })
-      guardarStickerCustom(d.publicUrl)
-      await enviarSticker(d.publicUrl)
-    } catch (e) {
-      toast.erro(e.message || 'Não deu para subir o sticker.')
-    } finally {
-      setASubir(false)
-      setProgresso(0)
-      if (stickerFileRef.current) stickerFileRef.current.value = ''
     }
   }
 
@@ -1181,10 +1128,10 @@ export default function ChatPage({ user }) {
             </div>
           )}
           {stickersAberto && podeStickers && (
-            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-violet-400/20 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-80">
+            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-violet-400/20 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-violet-300">
-                  Stickers animados · localhost
+                  Stickers · Powered by Tenor
                 </span>
                 <button
                   type="button"
@@ -1194,45 +1141,50 @@ export default function ChatPage({ user }) {
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div className="grid max-h-64 grid-cols-4 gap-1 overflow-y-auto p-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  carregarStickers(stickerQuery)
+                }}
+                className="flex gap-1.5 border-b border-white/10 p-2"
+              >
+                <input
+                  value={stickerQuery}
+                  onChange={(e) => setStickerQuery(e.target.value)}
+                  placeholder="Pesquisar stickers (ex.: gato, meme, tiktok)"
+                  className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+                />
                 <button
-                  type="button"
-                  onClick={() => stickerFileRef.current && stickerFileRef.current.click()}
-                  disabled={aSubir}
-                  title="Adicionar sticker (imagem ou GIF)"
-                  className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-violet-400/30 bg-violet-500/[0.06] text-2xl font-black text-violet-300 transition hover:bg-violet-500/15 disabled:opacity-50"
+                  type="submit"
+                  disabled={stickersLoading}
+                  className="rounded-lg bg-violet-500 px-3 py-1.5 text-[10px] font-black text-white hover:bg-violet-400 disabled:opacity-50"
                 >
-                  {aSubir ? <Loader2 className="h-5 w-5 animate-spin" /> : '+'}
+                  {stickersLoading ? '…' : 'Procurar'}
                 </button>
-                {[
-                  ...STICKERS_LOCAIS,
-                  ...stickersCustom.map((src, i) => ({
-                    id: `custom-${i}`,
-                    nome: `Sticker ${i + 1}`,
-                    src,
-                  })),
-                ].map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => enviarSticker(s.src)}
-                    title={s.nome}
-                    className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-violet-400/30 hover:bg-violet-500/10"
-                  >
-                    <img src={s.src} alt={s.nome} className="h-full w-full object-contain" />
-                  </button>
-                ))}
-              </div>
-              <input
-                ref={stickerFileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="hidden"
-                onChange={(e) => subirSticker(e.target.files && e.target.files[0])}
-              />
+              </form>
+              {stickersErro ? (
+                <p className="px-3 py-4 text-center text-[11px] text-amber-300">{stickersErro}</p>
+              ) : stickersLoading ? (
+                <p className="flex items-center justify-center gap-2 py-6 text-[11px] text-gray-400">
+                  <Loader2 className="h-4 w-4 animate-spin" /> A carregar stickers…
+                </p>
+              ) : (
+                <div className="grid max-h-64 grid-cols-4 gap-1 overflow-y-auto p-2">
+                  {stickers.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => enviarSticker(s.url)}
+                      title={s.titulo}
+                      className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-violet-400/30 hover:bg-violet-500/10"
+                    >
+                      <img src={s.preview} alt={s.titulo} className="h-full w-full object-contain" />
+                    </button>
+                  ))}
+                </div>
+              )}
               <p className="px-3 pb-2 text-[9px] text-gray-500">
-                Carrega no “+” para adicionares as tuas imagens/GIFs. Ficam guardados neste browser.
-                Só aparece em localhost.
+                Stickers animados do Tenor. Só aparece em localhost.
               </p>
             </div>
           )}
