@@ -241,7 +241,28 @@ router.delete('/me/teste', requireUser, async (req, res) => {
       return res.status(403).json({ error: 'Esta conta não é uma conta de teste.' });
     }
     await db.prepare('DELETE FROM clip_comments WHERE user_id = ?').run(uid).catch(() => {});
+    const clipsGostados = await db
+      .prepare('SELECT DISTINCT clip_id FROM clip_likes WHERE user_id = ?')
+      .all(uid)
+      .catch(() => []);
     await db.prepare('DELETE FROM clip_likes WHERE user_id = ?').run(uid).catch(() => {});
+    for (const c of clipsGostados) {
+      await db
+        .prepare(
+          'UPDATE clips SET likes = (SELECT count(*)::int FROM clip_likes WHERE clip_id = ?) WHERE id = ?',
+        )
+        .run(c.clip_id, c.clip_id)
+        .catch(() => {});
+    }
+    // opcional: recalcula todos os contadores de gostos (limpeza de testes)
+    if (String(req.query.recalcular || '') === '1') {
+      await db
+        .prepare(
+          'UPDATE clips SET likes = (SELECT count(*)::int FROM clip_likes WHERE clip_id = clips.id)',
+        )
+        .run()
+        .catch(() => {});
+    }
     await db.prepare('DELETE FROM clip_saves WHERE user_id = ?').run(uid).catch(() => {});
     await db.prepare('DELETE FROM chat_reactions WHERE user_id = ?').run(uid).catch(() => {});
     await db.prepare('DELETE FROM chat_reads WHERE user_id = ?').run(uid).catch(() => {});
