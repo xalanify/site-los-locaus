@@ -20,8 +20,10 @@ import {
   MapPin,
   Crown,
   Star,
+  Shield,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import EquipasEsports from '../components/EquipasEsports'
 import { R6_TORNEIOS } from '../data/r6Torneios'
 import { CS2_TORNEIOS } from '../data/cs2Torneios'
 import { authHeaders } from '../lib/auth'
@@ -1087,6 +1089,7 @@ export default function PrevisoesPage({ user }) {
   const [classificacao, setClassificacao] = useState([])
   const [classLoading, setClassLoading] = useState(false)
   const [classificacaoAberta, setClassificacaoAberta] = useState(false)
+  const [equipasAberto, setEquipasAberto] = useState(false)
   const [classTotal, setClassTotal] = useState([])
   const [classModalLoading, setClassModalLoading] = useState(false)
   const [resultadosNovos, setResultadosNovos] = useState([])
@@ -1305,7 +1308,7 @@ export default function PrevisoesPage({ user }) {
         ))}
       </div>
 
-      <div className="mb-4 flex justify-center">
+      <div className="mb-4 flex flex-wrap justify-center gap-2">
         <button
           type="button"
           onClick={() => setClassificacaoAberta(true)}
@@ -1313,7 +1316,16 @@ export default function PrevisoesPage({ user }) {
         >
           <Medal className="h-4 w-4" /> Ver classificações
         </button>
+        <button
+          type="button"
+          onClick={() => setEquipasAberto(true)}
+          className="flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-sky-200 transition-colors hover:bg-sky-500/20"
+        >
+          <Shield className="h-4 w-4" /> Pesquisar equipas
+        </button>
       </div>
+
+      <EquipasEsports aberto={equipasAberto} onFechar={() => setEquipasAberto(false)} />
 
       {jogo === 'fortnite' && <FortniteTorneiosTab />}
 

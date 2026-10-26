@@ -189,6 +189,9 @@ app.use('/api/chat', chatRouter);
 // Previsões R6 (dados oficiais da Ubisoft)
 const { previsoesRouter } = require('./routes/previsoes');
 app.use('/api/previsoes', previsoesRouter);
+// Equipas de esports (CS2 / R6) — pesquisa e ficha
+const { equipasRouter } = require('./routes/equipas');
+app.use('/api/equipas', equipasRouter);
 // Componentes e periféricos (catálogo + comparação de preços; só admin)
 const { componentesRouter } = require('./routes/componentes');
 app.use('/api/componentes', componentesRouter);
