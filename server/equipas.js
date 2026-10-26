@@ -639,7 +639,7 @@ async function equipaR6(titulo) {
 async function pesquisar(jogo, q) {
   const termo = String(q || '').trim().slice(0, 60);
   if (termo.length < 2) return { resultados: [] };
-  const chave = `pesquisa:${jogo}:${termo.toLowerCase()}`;
+  const chave = `pesquisa:v2:${jogo}:${termo.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL_PESQUISA) return emMem.dados;
   const naBd = await cacheDb(chave, TTL_PESQUISA);
@@ -659,7 +659,7 @@ async function pesquisar(jogo, q) {
 async function equipa(jogo, ref) {
   const nome = String(ref || '').trim().slice(0, 120);
   if (!nome) throw new Error('Falta o nome da equipa.');
-  const chave = `equipa:${jogo}:${nome.toLowerCase()}`;
+  const chave = `equipa:v2:${jogo}:${nome.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL) return emMem.dados;
   const naBd = await cacheDb(chave, TTL);
