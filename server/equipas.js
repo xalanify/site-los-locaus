@@ -347,6 +347,7 @@ const semTags = (s) =>
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/<[^>]*>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -450,7 +451,7 @@ function lerPlantelFallback(html) {
     if (!id || vistos.has(chave)) continue;
     if (/^(category|file|template|special|portal|help|main page|rainbow six)/i.test(id)) continue;
     if (id.length > 32 || id.includes(':')) continue;
-    const antes = seg.slice(Math.max(0, m.index - 1200), m.index);
+    const antes = seg.slice(Math.max(0, m.index - 500), m.index);
     const pais = (antes.match(/<img[^>]+alt="([^"]+)"/gi) || [])
       .map((x) => (x.match(/alt="([^"]+)"/i) || [])[1])
       .filter((x) => x && x.length < 30)
@@ -459,7 +460,8 @@ function lerPlantelFallback(html) {
     const nome = depois
       .replace(id, ' ')
       .replace(/\[[^\]]*\]/g, ' ')
-      .replace(/\b(join(ed)?|joined|date|role|coach|captain)\b.*$/i, '')
+      .replace(/\b\d{4}-\d{2}-\d{2}\b[\s\S]*$/i, ' ')
+      .replace(/\b(join(ed)?|date|role|coach|captain)\b[\s\S]*$/i, ' ')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 60);
@@ -485,7 +487,7 @@ function lerTorneiosFallback(html, marcador, limite = 8) {
   const vistos = new Set();
   let m;
   while ((m = re.exec(seg))) {
-    const nome = semTags(m[2]);
+    const nome = semTags(m[2]).replace(/_/g, ' ');
     const chave = nome.toLowerCase();
     if (!nome || vistos.has(chave)) continue;
     if (/^(category|file|template|special|portal|help|main page|rainbow six)/i.test(nome)) continue;
@@ -497,12 +499,14 @@ function lerTorneiosFallback(html, marcador, limite = 8) {
     ) {
       continue;
     }
-    const perto = semTags(seg.slice(m.index, m.index + 700));
+    const perto = semTags(seg.slice(Math.max(0, m.index - 700), m.index + 900));
     const data = (perto.match(/\b\d{4}-\d{2}-\d{2}\b/) || [])[0] || null;
     const datas =
-      (perto.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[–-]\d{1,2}\b/i) || [])[0] ||
+      (perto.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s*[–-]\s*\d{1,2}\b/i) || [])[0] ||
+      (perto.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\b/i) || [])[0] ||
       null;
-    const tier = (perto.match(/\b(S|A|B|C)-Tier\b/) || [])[0] || null;
+    const tierMatch = perto.match(/\b(S|A|B|C)[-_ ]?Tier\b/i);
+    const tier = tierMatch ? `${tierMatch[1].toUpperCase()}-Tier` : null;
     const premio = (perto.match(/[$€£]\s?[\d.,]+/) || [])[0] || null;
     vistos.add(chave);
     out.push({
@@ -639,7 +643,7 @@ async function equipaR6(titulo) {
 async function pesquisar(jogo, q) {
   const termo = String(q || '').trim().slice(0, 60);
   if (termo.length < 2) return { resultados: [] };
-  const chave = `pesquisa:v2:${jogo}:${termo.toLowerCase()}`;
+  const chave = `pesquisa:v3:${jogo}:${termo.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL_PESQUISA) return emMem.dados;
   const naBd = await cacheDb(chave, TTL_PESQUISA);
@@ -659,7 +663,7 @@ async function pesquisar(jogo, q) {
 async function equipa(jogo, ref) {
   const nome = String(ref || '').trim().slice(0, 120);
   if (!nome) throw new Error('Falta o nome da equipa.');
-  const chave = `equipa:v2:${jogo}:${nome.toLowerCase()}`;
+  const chave = `equipa:v3:${jogo}:${nome.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL) return emMem.dados;
   const naBd = await cacheDb(chave, TTL);
