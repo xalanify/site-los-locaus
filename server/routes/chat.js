@@ -47,6 +47,8 @@ function garantirChatTabelas() {
           last_read_id bigint not null default 0,
           atualizado_em timestamptz not null default now()
         );
+        ALTER TABLE public.chat_reads ADD COLUMN IF NOT EXISTS chat_ativo boolean NOT NULL DEFAULT false;
+        ALTER TABLE public.chat_reads ADD COLUMN IF NOT EXISTS chat_ativo_em timestamptz;
         ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS reply_to bigint;
       `)
       .then(async () => {
@@ -346,6 +348,30 @@ router.get('/', requireUser, async (req, res) => {
    GET  /api/chat/nao-lidas  -> { count, last_read_id }
    POST /api/chat/lido       { last_id }  marca como visto
    ============================================================ */
+/* POST /api/chat/ativo { ativo } — diz ao servidor se estou a ver o chat.
+   Enquanto estiver ativo (e a página visível), não recebo push do chat. */
+router.post('/ativo', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const ativo = Boolean(req.body && req.body.ativo);
+    await db
+      .prepare(
+        `INSERT INTO public.chat_reads (user_id, last_read_id, chat_ativo, chat_ativo_em)
+         VALUES (?, 0, ?, CASE WHEN ?::boolean THEN now() ELSE NULL END)
+         ON CONFLICT (user_id) DO UPDATE
+           SET chat_ativo = EXCLUDED.chat_ativo,
+               chat_ativo_em = EXCLUDED.chat_ativo_em`,
+      )
+      .run(uid, ativo, ativo);
+    res.json({ ok: true, ativo });
+  } catch (error) {
+    console.error('Erro chat ativo:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 router.get('/nao-lidas', requireUser, async (req, res) => {
   try {
     await garantirChatTabelas();
@@ -384,8 +410,7 @@ router.get('/nao-lidas', requireUser, async (req, res) => {
   }
 });
 
-router.post('/lido', requireUser, async (req, res) => {
-  try {
+router.post('/lido', requireUser, async (req, res) => {  try {
     await garantirChatTabelas();
     const db = getDb();
     const uid = req.auth.uid;
@@ -606,9 +631,22 @@ router.post('/', requireUser, async (req, res) => {
     const previa =
       body ||
       (kind === 'clip' ? 'Enviou um clip' : mediaType === 'gif' ? 'Enviou um GIF' : 'Enviou uma imagem');
+    let aVerChat = [];
+    try {
+      aVerChat = await db
+        .prepare(
+          `SELECT user_id FROM public.chat_reads
+           WHERE chat_ativo = true
+             AND chat_ativo_em > now() - interval '20 seconds'`,
+        )
+        .all();
+    } catch {
+      /* sem tabela: envia a todos */
+    }
     notify
       .pushTodos({
         excluirUserId: uid,
+        excluirIds: aVerChat.map((x) => Number(x.user_id)),
         title: `💬 ${msg.user.username || 'Chat'}`,
         body: previa.slice(0, 140),
         link: '/chat',

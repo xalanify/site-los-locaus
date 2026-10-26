@@ -122,7 +122,7 @@ async function enviarPush({
 }
 
 /* Avisa todos os dispositivos de todos os utilizadores (menos o autor). */
-async function pushTodos({ excluirUserId = null, ...dados }) {
+async function pushTodos({ excluirUserId = null, excluirIds = [], ...dados }) {
   if (!pushPronto) return;
   const db = getDb();
   let ids = [];
@@ -133,10 +133,13 @@ async function pushTodos({ excluirUserId = null, ...dados }) {
   } catch {
     return;
   }
+  const bloquear = new Set(
+    (Array.isArray(excluirIds) ? excluirIds : []).map((x) => Number(x)).filter(Boolean),
+  );
   await Promise.all(
     ids
       .map((r) => Number(r.user_id))
-      .filter((id) => id && id !== Number(excluirUserId || 0))
+      .filter((id) => id && id !== Number(excluirUserId || 0) && !bloquear.has(id))
       .map((id) => enviarPush({ userId: id, ...dados }).catch(() => {})),
   );
 }

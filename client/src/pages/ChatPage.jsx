@@ -341,6 +341,27 @@ export default function ChatPage({ user }) {
     }
   }, [ultimaMsgId])
 
+  // Avisa o servidor enquanto estou a ver o chat (para não receber push do chat)
+  useEffect(() => {
+    const enviar = (ativo) =>
+      fetch('/api/chat/ativo', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ativo }),
+        keepalive: true,
+      }).catch(() => {})
+    const marcar = () => enviar(!document.hidden)
+    marcar()
+    const iv = setInterval(marcar, 10000)
+    const vis = () => enviar(!document.hidden)
+    document.addEventListener('visibilitychange', vis)
+    return () => {
+      clearInterval(iv)
+      document.removeEventListener('visibilitychange', vis)
+      enviar(false)
+    }
+  }, [])
+
   // Atualiza o número de membros online a cada 30s
   useEffect(() => {
     const fetchOnline = async () => {
