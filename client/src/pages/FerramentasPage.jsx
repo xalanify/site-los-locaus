@@ -209,6 +209,7 @@ export default function FerramentasPage({ isAdmin = false }) {
   const [agente, setAgente] = useState({ online: false, sessao: null, job: null })
   const [aLigarPc, setALigarPc] = useState(false)
   const [jobId, setJobId] = useState(null)
+  const [relogio, setRelogio] = useState(0)
   const jobPollRef = useRef(null)
   const discosPedidosRef = useRef(false)
 
@@ -369,6 +370,7 @@ export default function FerramentasPage({ isAdmin = false }) {
     setEstado((prev) => ({
       ...(prev || {}),
       aCorrer: job.ferramenta_id || job.id,
+      inicio: new Date().toISOString(),
       logs: [],
       fim: null,
       erro: null,
@@ -502,6 +504,13 @@ export default function FerramentasPage({ isAdmin = false }) {
 
   const aCorrer = estado?.aCorrer || null
 
+  /* relógio de 1 s enquanto corre — alimenta a barra de progresso */
+  useEffect(() => {
+    if (!aCorrer) return undefined
+    const iv = setInterval(() => setRelogio((x) => x + 1), 1000)
+    return () => clearInterval(iv)
+  }, [aCorrer])
+
   /* acompanha os logs enquanto há trabalho (só no modo local;
      no modo agente quem acompanha é o seguirTrabalho) */
   useEffect(() => {
@@ -521,6 +530,33 @@ export default function FerramentasPage({ isAdmin = false }) {
   }, [estado?.logs?.length])
 
   const ferramentas = useMemo(() => dados?.ferramentas || [], [dados])
+
+  /* progresso por passo (quando a ferramenta tem passos) ou por tempo */
+  const ferramentaAtual = useMemo(
+    () => ferramentas.find((f) => f.id === aCorrer) || null,
+    [ferramentas, aCorrer],
+  )
+  const passosAtuais = ferramentaAtual?.passos || []
+  const progressoPassos = useMemo(() => {
+    const logs = (estado?.logs || []).map((l) => l.l || '').join('\n')
+    const marcas = [...logs.matchAll(/\[(\d+)\s*\/\s*(\d+)\]/g)]
+    const ultima = marcas.length ? marcas[marcas.length - 1] : null
+    const feitos = ultima ? Math.max(0, Number(ultima[1]) - 1) : 0
+    const total = passosAtuais.length || (ultima ? Number(ultima[2]) : 0)
+    return { feitos, total }
+  }, [estado?.logs, passosAtuais.length])
+  const percentagem = useMemo(() => {
+    if (!aCorrer) return 100
+    if (progressoPassos.total) {
+      return Math.min(97, Math.max(4, (progressoPassos.feitos / progressoPassos.total) * 100))
+    }
+    const inicio = estado?.inicio ? new Date(estado.inicio).getTime() : 0
+    const decorrido = inicio ? Date.now() - inicio : 0
+    const estimado = Number(ferramentaAtual?.tempo) || 0
+    if (estimado) return Math.min(95, Math.max(5, (decorrido / estimado) * 100))
+    return Math.min(90, 8 + relogio * 1.5)
+  }, [aCorrer, progressoPassos, estado?.inicio, ferramentaAtual?.tempo, relogio])
+
   const cats = useMemo(() => {
     const usadas = new Set(ferramentas.map((f) => f.cat))
     return CATS.filter((c) => usadas.has(c))
@@ -1039,7 +1075,13 @@ export default function FerramentasPage({ isAdmin = false }) {
                 <span
                   className={`h-2 w-2 rounded-full ${aCorrer ? 'animate-pulse bg-emerald-400' : 'bg-gray-600'}`}
                 />
-                {aCorrer ? 'A executar…' : estado?.interrompido ? 'Interrompido' : 'Última execução'}
+                {aCorrer
+                  ? progressoPassos.total
+                    ? `Passo ${Math.min(progressoPassos.feitos + 1, progressoPassos.total)} de ${progressoPassos.total} · ${Math.round(percentagem)}%`
+                    : `A executar… ${Math.round(percentagem)}%`
+                  : estado?.interrompido
+                    ? 'Interrompido'
+                    : 'Última execução'}
                 {estado?.erro ? <span className="text-red-400">· erro</span> : null}
               </p>
               <div className="flex items-center gap-2">
@@ -1051,7 +1093,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                     title="Interrompe o script que está a correr"
                   >
                     {parando ? <Loader2 className="h-3 w-3 animate-spin" /> : <Square className="h-3 w-3" />}
-                    Parar
+                    Cancelar
                   </button>
                 )}
                 <button
@@ -1063,15 +1105,61 @@ export default function FerramentasPage({ isAdmin = false }) {
               </div>
             </div>
 
-            {/* barra de progresso (indeterminada — não sabemos o tamanho do script) */}
-            <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            {/* barra de progresso — por passo quando a ferramenta os tem */}
+            <div className="mb-1 flex items-center justify-between text-[10px] font-bold text-gray-500">
+              <span>
+                {aCorrer
+                  ? progressoPassos.total
+                    ? `Progresso · ${progressoPassos.feitos}/${progressoPassos.total} passos`
+                    : 'Progresso estimado'
+                  : 'Concluído'}
+              </span>
+              <span className="tabular-nums text-gray-400">{Math.round(percentagem)}%</span>
+            </div>
+            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
               <motion.div
-                className={`h-full rounded-full ${estado?.erro ? 'bg-red-500' : 'bg-emerald-400'}`}
-                initial={{ width: '4%' }}
-                animate={aCorrer ? { width: ['10%', '75%', '92%'] } : { width: '100%' }}
-                transition={aCorrer ? { duration: 22, repeat: Infinity, ease: 'easeInOut' } : undefined}
+                className={`h-full rounded-full ${
+                  estado?.erro ? 'bg-red-500' : 'bg-gradient-to-r from-emerald-500 to-emerald-300'
+                }`}
+                animate={{ width: `${percentagem}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
               />
             </div>
+
+            {/* passos da ferramenta atual */}
+            {passosAtuais.length > 0 && (
+              <ul className="mb-3 grid gap-1 sm:grid-cols-2">
+                {passosAtuais.map((p, i) => {
+                  const feito = i < progressoPassos.feitos
+                  const atual = aCorrer && i === progressoPassos.feitos
+                  return (
+                    <li
+                      key={`${i}-${p}`}
+                      className={`flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11px] ${
+                        atual
+                          ? 'bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-400/25'
+                          : feito
+                            ? 'text-gray-400'
+                            : 'text-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`mt-0.5 grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full text-[8px] font-black ${
+                          feito
+                            ? 'bg-emerald-500 text-black'
+                            : atual
+                              ? 'animate-pulse bg-emerald-400/30 text-emerald-200'
+                              : 'bg-white/10 text-gray-500'
+                        }`}
+                      >
+                        {feito ? <Check className="h-2.5 w-2.5" /> : i + 1}
+                      </span>
+                      <span className={feito ? 'line-through decoration-white/20' : ''}>{p}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
 
             <div className="scroll-forte max-h-64 overflow-y-auto rounded-xl border border-emerald-500/20 bg-black/70 p-3 font-mono text-[12px] leading-relaxed">
               {logs.map((lg, i) => (

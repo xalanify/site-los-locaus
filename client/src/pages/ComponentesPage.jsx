@@ -155,6 +155,7 @@ export default function ComponentesPage({ user }) {
   const [alertaProduto, setAlertaProduto] = useState(null)
   const [alertas, setAlertas] = useState([])
   const [bottleneckAberto, setBottleneckAberto] = useState(false)
+  const [filtrosAberto, setFiltrosAberto] = useState(false)
 
   const carregar = async () => {
     setCarregando(true)
@@ -502,22 +503,58 @@ export default function ComponentesPage({ user }) {
             </button>
           ) : null}
         </div>
-        {modoBusca && (
-          <select
-            value={ordenar}
-            onChange={(e) => setOrdenar(e.target.value)}
-            className="rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-xs font-bold text-gray-300 focus:border-violet-500/50 focus:outline-none"
-          >
-            <option value="relevancia">Relevância</option>
-            <option value="preco-asc">Preço ↑</option>
-            <option value="preco-desc">Preço ↓</option>
-          </select>
-        )}
+        <select
+          value={ordenar}
+          onChange={(e) => setOrdenar(e.target.value)}
+          className="rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-xs font-bold text-gray-300 focus:border-violet-500/50 focus:outline-none"
+        >
+          <option value="relevancia">Relevância</option>
+          <option value="preco-asc">Preço ↑</option>
+          <option value="preco-desc">Preço ↓</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => setFiltrosAberto(true)}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-black text-gray-300 transition hover:bg-white/10 hover:text-white lg:hidden"
+        >
+          <SlidersHorizontal className="h-4 w-4" /> Filtros
+          {(marcasAtivas.length > 0 || ramTipo !== 'todas' || stockFiltro !== 'todas' || soPromocoes) && (
+            <span className="rounded-full bg-violet-500 px-1.5 text-[9px] text-white">
+              {marcasAtivas.length + (ramTipo !== 'todas' ? 1 : 0) + (stockFiltro !== 'todas' ? 1 : 0) + (soPromocoes ? 1 : 0)}
+            </span>
+          )}
+        </button>
       </div>
 
+      {filtrosAberto && (
+        <div
+          className="fixed inset-0 z-[75] bg-black/70 backdrop-blur-sm lg:hidden"
+          onClick={() => setFiltrosAberto(false)}
+        />
+      )}
+
       <div className="lg:grid lg:grid-cols-[230px_1fr] lg:gap-5">
-        <aside className="mb-4 lg:mb-0">
+        <aside
+          className={`${
+            filtrosAberto
+              ? 'fixed inset-x-3 top-3 bottom-3 z-[80] overflow-y-auto'
+              : 'hidden'
+          } lg:static lg:z-auto lg:mb-0 lg:block lg:overflow-visible`}
+        >
           <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-3 lg:sticky lg:top-4">
+            <div className="mb-2 flex items-center justify-between lg:hidden">
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                Filtros
+              </p>
+              <button
+                type="button"
+                onClick={() => setFiltrosAberto(false)}
+                className="rounded-lg bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                aria-label="Fechar filtros"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-gray-500">
               Categorias
             </p>
