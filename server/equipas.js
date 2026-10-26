@@ -531,7 +531,7 @@ function lerTorneiosFallback(html, marcador, limite = 8) {
 }
 
 function lerProximosTorneios(html) {
-  const seg = tabelaCom(html, ['>Tournament<', 'Date'], 60000);
+  const seg = tabelaCom(html, ['>Tournament<'], 60000);
   if (!seg) return [];
   const rows = seg.match(/<tr class="table2__row--body"[\s\S]*?<\/tr>/gi) || [];
   const out = [];
@@ -552,7 +552,7 @@ function lerProximosTorneios(html) {
 }
 
 function lerUltimosTorneios(html) {
-  const seg = tabelaCom(html, ['>Prize<', '>Tournament<'], 200000);
+  const seg = tabelaCom(html, ['>Prize<'], 200000);
   if (!seg) return [];
   const rows = seg.match(/<tr class="table2__row--body"[\s\S]*?<\/tr>/gi) || [];
   const out = [];
@@ -650,7 +650,7 @@ async function equipaR6(titulo) {
 async function pesquisar(jogo, q) {
   const termo = String(q || '').trim().slice(0, 60);
   if (termo.length < 2) return { resultados: [] };
-  const chave = `pesquisa:v4:${jogo}:${termo.toLowerCase()}`;
+  const chave = `pesquisa:v5:${jogo}:${termo.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL_PESQUISA) return emMem.dados;
   const naBd = await cacheDb(chave, TTL_PESQUISA);
@@ -670,7 +670,7 @@ async function pesquisar(jogo, q) {
 async function equipa(jogo, ref) {
   const nome = String(ref || '').trim().slice(0, 120);
   if (!nome) throw new Error('Falta o nome da equipa.');
-  const chave = `equipa:v4:${jogo}:${nome.toLowerCase()}`;
+  const chave = `equipa:v5:${jogo}:${nome.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL) return emMem.dados;
   const naBd = await cacheDb(chave, TTL);
