@@ -68,24 +68,20 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
-    // PCs/Specs, Componentes e Ferramentas: só admin
+    // PCs/Specs e Ferramentas: visíveis para todos; a página mostra o aviso
+    { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
+    // Componentes e Periféricos: só o admin vê no sidebar
     ...(isAdmin
       ? [
-          { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
           {
             name: 'Componentes e Periféricos',
             icon: CircuitBoard,
             action: () => navigate('/componentes'),
             active: isComponentes,
           },
-          {
-            name: 'Ferramentas Windows',
-            icon: Wrench,
-            action: () => navigate('/ferramentas'),
-            active: isFerramentas,
-          },
         ]
       : []),
+    { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
   ]
 
   return (
