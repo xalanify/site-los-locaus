@@ -218,6 +218,19 @@ const CATEGORIA_QUERY = {
   microfone: 'microfone usb microphone',
 };
 
+/* Marcas usadas nos filtros da página. */
+const MARCAS = [
+  'ASUS', 'MSI', 'Gigabyte', 'ASRock', 'AMD', 'Intel', 'NVIDIA',
+  'Corsair', 'Kingston', 'Samsung', 'WD', 'Crucial', 'Seagate',
+  'Seasonic', 'NZXT', 'Lian Li', 'Fractal', 'Thermalright', 'Noctua',
+  'Arctic', 'Cooler Master', 'be quiet!', 'DeepCool', 'Montech',
+  'Phanteks', 'Antec', 'Thermaltake',
+  'Logitech', 'Razer', 'HyperX', 'SteelSeries', 'Wooting', 'Keychron',
+  'Zowie', 'BenQ', 'Lamzu', 'Pulsar', 'Artisan', 'Lethal Gaming Gear',
+  'Shure', 'Elgato', 'Endgame Gear', 'WLmouse', 'Glorious', 'Roccat',
+  'Turtle Beach', 'Sennheiser', 'Audio-Technica',
+];
+
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
@@ -347,9 +360,13 @@ function parseGlobalData(html) {
   while ((m = re.exec(html))) {
     try {
       const data = JSON.parse(decodificar(m[1]));
-      const preco = numero(data.price);
+      // O JSON de tracking pode trazer um preço antigo/de campanha.
+      // O preço que o cliente vê está em "sales js-sales" (ou no price).
+      const chunk = html.slice(m.index, m.index + 22000);
+      const venda = chunk.match(/class="sales js-sales"[\s\S]{0,600}?content="([\d.]+)"/);
+      const precoBloco = chunk.match(/class="price js-price"[\s\S]{0,2000}?content="([\d.]+)"/);
+      const preco = numero((venda && venda[1]) || (precoBloco && precoBloco[1]) || data.price);
       if (!preco || !data.item_name) continue;
-      const chunk = html.slice(m.index, m.index + 7000);
       const href = (chunk.match(/href="([^"]+)"/) || [])[1];
       const img = (chunk.match(/<img[^>]+(?:data-src|src)="([^"]+)"/) || [])[1];
       out.push({
@@ -366,8 +383,8 @@ function parseGlobalData(html) {
 }
 
 /* PCComponentes via Algolia — resultados já com preço, imagem e categoria. */
-async function pesquisarPCComponentes(consulta) {
-  const r = await fetchFn(`https://${PCC_APP}-dsn.algolia.net/1/indexes/${PCC_INDEX}/query`, {
+async function pesquisarPCComponentes(consulta, indice = PCC_INDEX) {
+  const r = await fetchFn(`https://${PCC_APP}-dsn.algolia.net/1/indexes/${indice}/query`, {
     method: 'POST',
     headers: {
       'X-Algolia-Application-Id': PCC_APP,
@@ -391,6 +408,7 @@ async function pesquisarPCComponentes(consulta) {
         url: h.slug ? `${LOJAS.pccomponentes.base}/${h.slug}` : LOJAS.pccomponentes.base,
         imagem: img,
         categoriaLoja: (h.mainCategory && h.mainCategory.name) || '',
+        marca: h.brandName || detectarMarca(h.name || ''),
       };
     })
     .filter((x) => x.titulo && x.preco && x.imagem);
@@ -445,6 +463,27 @@ function parseMaxGaming(html) {
 }
 
 /* Verifica se o título faz sentido para a categoria pedida. */
+function detectarMarca(titulo) {
+  const t = normalizar(titulo);
+  if (!t) return '';
+  for (const m of MARCAS) {
+    if (t.includes(normalizar(m))) return m;
+  }
+  return '';
+}
+
+function classificarTipo(titulo, categoriaLoja) {
+  const t = normalizar(`${categoriaLoja || ''} ${titulo || ''}`);
+  if (!t) return '';
+  if (/(rato|raton|mouse(?!pad)|teclado|keyboard|mousepad|tapete|alfombrilla|headset|auricular|auscultador|microfone|microphone|webcam)/.test(t)) {
+    return 'periferico';
+  }
+  if (/(placa grafica|grafica|geforce|rtx|gtx|radeon|ryzen|processador|core i|memoria|ddr|motherboard|placa mae|ssd|nvme|fonte|psu|caixa|case|cooler|refrigeracao|dissipador|monitor)/.test(t)) {
+    return 'componente';
+  }
+  return '';
+}
+
 function relevante(titulo, categoria, tipo) {
   const t = normalizar(titulo);
   if (!t) return false;
@@ -534,6 +573,9 @@ async function buscarTudo(consulta, { tipo = 'componente', categoria = '', lojas
             if (!relevante(x.titulo, categoria, tipo)) return false;
             if (!pediuAcessorio && ACESSORIOS.test(x.titulo)) return false;
             if (!pediuAcessorio && tipo === 'periferico' && ACESSORIOS_PERIFERICO.test(x.titulo)) return false;
+            const ct = classificarTipo(x.titulo, x.categoriaLoja);
+            if (tipo === 'componente' && ct === 'periferico') return false;
+            if (tipo === 'periferico' && ct === 'componente') return false;
             return true;
           })
           .map((x) => ({
@@ -541,6 +583,7 @@ async function buscarTudo(consulta, { tipo = 'componente', categoria = '', lojas
             loja,
             lojaNome: LOJAS[loja].nome,
             cor: LOJAS[loja].cor,
+            marca: x.marca || detectarMarca(x.titulo),
             pontos: pontuar(x.titulo, q),
           }));
       } catch {
@@ -565,6 +608,68 @@ async function buscarTudo(consulta, { tipo = 'componente', categoria = '', lojas
     buscaCache.delete(primeiro);
   }
   return dados;
+}
+
+/* Mais vendidos / mais relevantes nas lojas (para a entrada da página). */
+const vendidosCache = new Map();
+async function buscarMaisVendidos({ tipo = 'componente', categoria = '', limite = 12 } = {}) {
+  const chave = `${tipo}:${categoria}`;
+  const agora = Date.now();
+  const cacheado = vendidosCache.get(chave);
+  if (cacheado && agora - cacheado.t < 10 * 60 * 1000) return cacheado.dados;
+
+  const q = categoria ? CATEGORIA_QUERY[categoria] || '' : '';
+  let lista = [];
+  try {
+    lista = await pesquisarPCComponentes(q, 'products_list:pt:sales');
+  } catch {
+    lista = [];
+  }
+  const vistos = new Set();
+  const filtrados = lista
+    .filter((x) => {
+      if (!x.titulo || !x.preco || !x.imagem) return false;
+      const t = normalizar(x.titulo);
+      if (/(instalacion|instalação|configuracion|configuração|montagem|licen[cç]a|software|windows 1[01]|norton|office|antivirus|servicio|serviço|digital|oem)/.test(t)) {
+        return false;
+      }
+      if (tipo === 'componente' && /(portatil|notebook|laptop|monitor|smartphone|telemovel|tablet|consola)/.test(t)) {
+        return false;
+      }
+      const ct = classificarTipo(x.titulo, x.categoriaLoja);
+      if (!ct) return false;
+      if (tipo === 'componente' && ct !== 'componente') return false;
+      if (tipo === 'periferico' && ct !== 'periferico') return false;
+      if (categoria && !relevante(x.titulo, categoria, tipo)) return false;
+      return true;
+    })
+    .map((x) => ({
+      ...x,
+      loja: 'pccomponentes',
+      lojaNome: LOJAS.pccomponentes.nome,
+      cor: LOJAS.pccomponentes.cor,
+      marca: x.marca || detectarMarca(x.titulo),
+      pontos: 100,
+    }))
+    .filter((x) => {
+      const k = normalizar(x.titulo).split(' ').slice(0, 7).join(' ');
+      if (vistos.has(k)) return false;
+      vistos.add(k);
+      return true;
+    })
+    .slice(0, limite);
+
+  if (!filtrados.length) {
+    const fallback = await buscarTudo(q || CATEGORIA_QUERY[categoria] || 'gaming', {
+      tipo,
+      categoria,
+      limite,
+    });
+    vendidosCache.set(chave, { t: agora, dados: fallback });
+    return fallback;
+  }
+  vendidosCache.set(chave, { t: agora, dados: filtrados });
+  return filtrados;
 }
 
 /* Procura o modelo em todas as lojas do produto e devolve a melhor correspondência. */
@@ -687,6 +792,7 @@ module.exports = {
   LOJAS,
   buscarPrecos,
   buscarTudo,
+  buscarMaisVendidos,
   guardarPreco,
   listarPrecos,
   montarProdutos,

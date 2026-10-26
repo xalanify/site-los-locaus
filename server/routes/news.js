@@ -14,21 +14,6 @@ const FEEDS = [
     url: 'https://www.eurogamer.pt/feed',
     lingua: 'pt',
     prioridade: 1,
-    filtro: true,
-  },
-  {
-    id: 'playstation',
-    fonte: 'PlayStation Blog',
-    url: 'https://blog.playstation.com/feed/',
-    lingua: 'en',
-    prioridade: 2,
-  },
-  {
-    id: 'nintendo-life',
-    fonte: 'Nintendo Life',
-    url: 'https://www.nintendolife.com/feeds/news',
-    lingua: 'en',
-    prioridade: 2,
   },
   {
     id: 'gamesradar-cod',
@@ -45,33 +30,39 @@ const FEEDS = [
     prioridade: 0,
   },
   {
-    id: 'gamesradar-bf',
-    fonte: 'GamesRadar · Battlefield',
-    url: 'https://www.gamesradar.com/feeds/tag/battlefield/',
+    id: 'gamesradar-rockstar',
+    fonte: 'GamesRadar · Rockstar',
+    url: 'https://www.gamesradar.com/feeds/tag/rockstar/',
     lingua: 'en',
     prioridade: 0,
   },
   {
-    id: 'gamesradar-fortnite',
-    fonte: 'GamesRadar · Fortnite',
-    url: 'https://www.gamesradar.com/feeds/tag/fortnite/',
+    id: 'gamesradar-amd',
+    fonte: 'GamesRadar · AMD',
+    url: 'https://www.gamesradar.com/feeds/tag/amd/',
     lingua: 'en',
     prioridade: 0,
   },
   {
-    id: 'pcgamer-cs2',
-    fonte: 'PC Gamer · CS2',
-    url: 'https://www.pcgamer.com/rss/tag/counter-strike-2/',
+    id: 'gamesradar-nvidia',
+    fonte: 'GamesRadar · NVIDIA',
+    url: 'https://www.gamesradar.com/feeds/tag/nvidia/',
     lingua: 'en',
-    prioridade: 1,
-    filtro: true,
+    prioridade: 0,
   },
   {
-    id: 'wololo',
-    fonte: 'Wololo.net · Jailbreak',
-    url: 'https://wololo.net/feed/',
+    id: 'pcgamer-amd',
+    fonte: 'PC Gamer · AMD',
+    url: 'https://www.pcgamer.com/rss/tag/amd/',
     lingua: 'en',
-    prioridade: 2,
+    prioridade: 0,
+  },
+  {
+    id: 'pcgamer-nvidia',
+    fonte: 'PC Gamer · NVIDIA',
+    url: 'https://www.pcgamer.com/rss/tag/nvidia/',
+    lingua: 'en',
+    prioridade: 0,
   },
   {
     id: 'nvidia',
@@ -81,24 +72,17 @@ const FEEDS = [
     prioridade: 3,
   },
   {
-    id: 'steam',
-    fonte: 'Steam',
-    url: 'https://store.steampowered.com/feeds/news.xml',
+    id: 'wololo',
+    fonte: 'Wololo.net · Jailbreak',
+    url: 'https://wololo.net/feed/',
     lingua: 'en',
-    prioridade: 3,
+    prioridade: 2,
   },
   {
-    id: 'pplware',
-    fonte: 'Pplware',
-    url: 'https://pplware.sapo.pt/feed/',
-    lingua: 'pt',
-    prioridade: 3,
-  },
-  {
-    id: 'tek-sapo',
-    fonte: 'Tek Sapo',
-    url: 'https://tek.sapo.pt/rss',
-    lingua: 'pt',
+    id: 'tomshardware',
+    fonte: "Tom's Hardware",
+    url: 'https://www.tomshardware.com/feeds/all',
+    lingua: 'en',
     prioridade: 3,
   },
   {
@@ -109,44 +93,34 @@ const FEEDS = [
     prioridade: 3,
   },
   {
-    id: 'tomshardware',
-    fonte: "Tom's Hardware",
-    url: 'https://www.tomshardware.com/feeds/all',
-    lingua: 'en',
-    prioridade: 3,
-  },
-  {
-    id: 'gsmarena',
-    fonte: 'GSMArena',
-    url: 'https://www.gsmarena.com/rss-news-reviews.php3',
-    lingua: 'en',
-    prioridade: 3,
-  },
-  {
-    id: 'androidcentral',
-    fonte: 'Android Central',
-    url: 'https://www.androidcentral.com/rss',
-    lingua: 'en',
-    prioridade: 3,
-  },
-  {
-    id: 'arstechnica',
-    fonte: 'Ars Technica',
-    url: 'https://feeds.arstechnica.com/arstechnica/technology-lab',
-    lingua: 'en',
+    id: 'pplware',
+    fonte: 'Pplware',
+    url: 'https://pplware.sapo.pt/feed/',
+    lingua: 'pt',
     prioridade: 3,
   },
 ];
 
-const FOCO =
-  /call of duty|\bcod\b|warzone|grand theft auto|\bgta\b|battlefield|counter-strike|\bcs2\b|fortnite|minecraft|playstation|\bps[45]\b|\bps6\b|xbox|nintendo|switch|consola|console|desbloque|jailbreak|\bcfw\b|\bhen\b|placa gr|gr[áa]fica|\brtx\b|geforce|nvidia|radeon|\bamd\b|\bgpu\b|steam|valve|rockstar|activision|ea sports|\bfc 2[56]\b|rainbow six|diablo|overwatch|valorant|league of legends|elden ring|cyberpunk|telem[oó]vel|smartphone|iphone|samsung|galaxy|pixel|android/i;
+/* Temas aceites: Call of Duty, Rockstar/GTA, NVIDIA, AMD/placas gráficas,
+   processadores/memórias e desbloqueios de PS4/PS5. */
+const TEMAS =
+  /call of duty|warzone|\bcod\b|modern warfare|black ops|rockstar|grand theft auto|\bgta\b|red dead|nvidia|geforce|\brtx\b|\bgtx\b|\bamd\b|radeon|ryzen|placa gr[áa]fica|gr[áa]fica|\bgpu\b|processador|\bcpu\b|mem[oó]ria|\bram\b|ddr[45]/i;
 
-/* Só franquias grandes + telemóveis + desbloqueios (para os destaques da home). */
-const DESTAQUES =
-  /call of duty|warzone|\bcod\b|grand theft auto|\bgta\b|rockstar|battlefield|nvidia|geforce|\brtx\b|\bamd\b|radeon|ryzen|iphone|smartphone|telem[oó]vel|samsung galaxy|galaxy s\d|galaxy z|pixel \d|android|oppo|xiaomi|oneplus|huawei|jailbreak|desbloque|\bcfw\b|\bhen\b|\bps4\b|\bps5\b|playstation/i;
-const NAO_DESTAQUE = /ssd|disco r[ií]gido|monitor|teclado|rato|mouse|impressora|router|review de|an[aá]lise ao/i;
+const JAILBREAK = /jailbreak|unlock|desbloque|\bcfw\b|\bhen\b/i;
+const PS = /ps4|ps5|playstation/i;
+
+function temaAceite(titulo) {
+  const t = String(titulo || '');
+  if (JAILBREAK.test(t)) return PS.test(t);
+  return TEMAS.test(t);
+}
+
 const GRANDES =
-  /call of duty|warzone|\bcod\b|grand theft auto|\bgta\b|rockstar|battlefield|nvidia|geforce|\brtx\b|\bamd\b|radeon|ryzen/i;
+  /call of duty|warzone|\bcod\b|modern warfare|black ops|rockstar|grand theft auto|\bgta\b|red dead|nvidia|geforce|\brtx\b|\bgtx\b|\bamd\b|radeon|ryzen/i;
+
+/* Fora do tema: notícias de IA/segurança que só falam de CPU/cache por acaso. */
+const NAO_TEMA =
+  /openai|intelig[eê]ncia artificial|red team|sandbox|microvm|malware|ransomware|phishing|vulnerab|exploit|hackead|hacked|laptop|notebook|portatil|roubo de dados|conta hackeada/i;
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
@@ -299,10 +273,8 @@ async function carregar() {
       });
       if (!r.ok) throw new Error(`${feed.id} ${r.status}`);
       let itens = lerFeed(await r.text(), feed);
-      if (feed.filtro) {
-        itens = itens.filter((n) => FOCO.test(n.titulo));
-      }
-      const cap = feed.prioridade === 0 ? 4 : feed.prioridade === 1 ? 5 : feed.prioridade === 2 ? 4 : 4;
+      itens = itens.filter((n) => temaAceite(n.titulo) && !NAO_TEMA.test(n.titulo));
+      const cap = feed.prioridade === 0 ? 5 : feed.prioridade === 1 ? 5 : 4;
       return itens.slice(0, cap);
     }),
   );
@@ -351,14 +323,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-/* As 4 notícias da home — só franquias grandes, telemóveis e desbloqueios. */
+/* As 4 notícias da home — só Call of Duty, Rockstar/GTA, NVIDIA, AMD/hardware
+   e desbloqueios de PS4/PS5. */
 router.get('/destaques', async (req, res) => {
   try {
     const noticias = await obterNoticias();
     const filtradas = noticias.filter(
-      (n) => DESTAQUES.test(n.titulo) && !NAO_DESTAQUE.test(n.titulo),
+      (n) => temaAceite(n.titulo) && !NAO_TEMA.test(n.titulo),
     );
-    // Até 2 notícias das grandes franquias + as restantes de telemóveis/desbloqueios.
+    // Até 2 notícias das grandes franquias + as restantes de hardware/desbloqueios.
     const grandes = filtradas.filter((n) => GRANDES.test(n.titulo));
     const outros = filtradas.filter((n) => !GRANDES.test(n.titulo));
     const escolhidas = [];

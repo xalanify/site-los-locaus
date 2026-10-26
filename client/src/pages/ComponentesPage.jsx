@@ -106,6 +106,10 @@ export default function ComponentesPage({ user }) {
   const [progresso, setProgresso] = useState(null)
   const [editar, setEditar] = useState(null)
   const [aviso, setAviso] = useState('')
+  const [maisVendidos, setMaisVendidos] = useState([])
+  const [carregandoVendidos, setCarregandoVendidos] = useState(false)
+  const [marcasAtivas, setMarcasAtivas] = useState([])
+  const [ramTipo, setRamTipo] = useState('todas')
 
   const carregar = async () => {
     setCarregando(true)
@@ -188,26 +192,89 @@ export default function ComponentesPage({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, modoBusca, termo, tipo, categoria, lojasAtivas.join(',')])
 
+  // Mais vendidos nas lojas (entrada da página, sem pesquisa)
+  useEffect(() => {
+    if (!isAdmin || modoBusca) return undefined
+    let vivo = true
+    setCarregandoVendidos(true)
+    const params = new URLSearchParams({ tipo })
+    if (categoria !== 'todas') params.set('categoria', categoria)
+    fetch(`/api/componentes/mais-vendidos?${params.toString()}`, { headers: authHeaders() })
+      .then(async (r) => {
+        const d = await r.json().catch(() => null)
+        if (!r.ok) throw new Error((d && d.error) || 'Sem mais vendidos.')
+        if (vivo) setMaisVendidos(Array.isArray(d.resultados) ? d.resultados : [])
+      })
+      .catch(() => vivo && setMaisVendidos([]))
+      .finally(() => vivo && setCarregandoVendidos(false))
+    return () => {
+      vivo = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, modoBusca, tipo, categoria])
+
+  const ramCombina = (item) => {
+    if (categoria !== 'ram' || ramTipo === 'todas') return true
+    const t = `${item.titulo || ''} ${item.nome || ''} ${item.spec || ''}`
+      .toLowerCase()
+      .replace(/×/g, 'x')
+      .replace(/\s+/g, '')
+    return t.includes(ramTipo)
+  }
+
+  const passaFiltros = (item) => {
+    if (marcasAtivas.length && !marcasAtivas.includes(item.marca)) return false
+    return ramCombina(item)
+  }
+
   const destaques = useMemo(() => {
     if (!dados) return []
     return (dados.produtos || []).filter(
-      (p) => p.tipo === tipo && p.imagem && (categoria === 'todas' || p.categoria === categoria),
+      (p) =>
+        p.tipo === tipo &&
+        p.imagem &&
+        (categoria === 'todas' || p.categoria === categoria) &&
+        (!marcasAtivas.length || marcasAtivas.includes(p.marca)) &&
+        (categoria !== 'ram' || ramTipo === 'todas' || `${p.nome} ${p.spec}`.toLowerCase().replace(/×/g, 'x').replace(/\s+/g, '').includes(ramTipo)),
     )
-  }, [dados, tipo, categoria])
+  }, [dados, tipo, categoria, marcasAtivas, ramTipo])
 
-  const resultadosOrdenados = useMemo(() => {
+  const marcasDisponiveis = useMemo(() => {
+    const set = new Set()
+    for (const p of (dados?.produtos || []).filter(
+      (x) => x.tipo === tipo && (categoria === 'todas' || x.categoria === categoria),
+    )) {
+      if (p.marca) set.add(p.marca)
+    }
+    for (const r of resultados || []) if (r.marca) set.add(r.marca)
+    for (const r of maisVendidos) if (r.marca) set.add(r.marca)
+    return [...set].sort((a, b) => a.localeCompare(b, 'pt'))
+  }, [dados, tipo, categoria, resultados, maisVendidos])
+
+  const resultadosFiltrados = useMemo(() => {
     if (!resultados) return []
-    const arr = [...resultados]
+    const arr = resultados.filter(passaFiltros)
     if (ordenar === 'preco-asc') arr.sort((a, b) => a.preco - b.preco)
     else if (ordenar === 'preco-desc') arr.sort((a, b) => b.preco - a.preco)
     else arr.sort((a, b) => b.pontos - a.pontos || a.preco - b.preco)
     return arr
-  }, [resultados, ordenar])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resultados, ordenar, marcasAtivas, ramTipo, categoria])
 
   const maisBaratoBusca = useMemo(() => {
-    if (!resultadosOrdenados.length) return null
-    return resultadosOrdenados.reduce((a, b) => (b.preco < a.preco ? b : a))
-  }, [resultadosOrdenados])
+    if (!resultadosFiltrados.length) return null
+    return resultadosFiltrados.reduce((a, b) => (b.preco < a.preco ? b : a))
+  }, [resultadosFiltrados])
+
+  const vendidosFiltrados = useMemo(() => {
+    return maisVendidos.filter(passaFiltros)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maisVendidos, marcasAtivas, ramTipo, categoria])
+
+  const maisBaratoVendidos = useMemo(() => {
+    if (!vendidosFiltrados.length) return null
+    return vendidosFiltrados.reduce((a, b) => (b.preco < a.preco ? b : a))
+  }, [vendidosFiltrados])
 
   const trocarTipo = (novo) => {
     setTipo(novo)
@@ -217,6 +284,9 @@ export default function ComponentesPage({ user }) {
     setResultados(null)
     setEditar(null)
     setLojasAtivas([])
+    setMarcasAtivas([])
+    setRamTipo('todas')
+    setMaisVendidos([])
   }
 
   const alternarLoja = (id) => {
@@ -327,7 +397,11 @@ export default function ComponentesPage({ user }) {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Pesquisar qualquer produto (ex.: WLmouse, RTX 5070, mousepad…)"
+            placeholder={
+              tipo === 'componente'
+                ? 'Pesquisar componente (ex.: RTX 5070, Ryzen, SSD…)'
+                : 'Pesquisar periférico (ex.: WLmouse, teclado, mousepad…)'
+            }
             className="w-full rounded-xl border border-white/10 bg-black/40 py-3 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
           />
           {q ? (
@@ -357,71 +431,152 @@ export default function ComponentesPage({ user }) {
         )}
       </div>
 
-      {/* Lojas */}
-      <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
-        <button
-          type="button"
-          onClick={() => setLojasAtivas([])}
-          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
-            !lojasAtivas.length
-              ? 'bg-white text-black'
-              : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <Store className="h-3 w-3" /> Todas
-        </button>
-        {lojasTipo.map((l) => {
-          const ativa = lojasAtivas.includes(l.id)
-          return (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => alternarLoja(l.id)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
-                ativa
-                  ? 'bg-white text-black'
-                  : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: l.cor }}
-              />
-              {l.nome}
-            </button>
-          )
-        })}
-      </div>
+      <div className="lg:grid lg:grid-cols-[230px_1fr] lg:gap-5">
+        <aside className="mb-4 lg:mb-0">
+          <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-3 lg:sticky lg:top-4">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-gray-500">
+              Categorias
+            </p>
+            <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-1">
+              <button
+                type="button"
+                onClick={() => setCategoria('todas')}
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-[11px] font-bold transition-colors ${
+                  categoria === 'todas'
+                    ? 'bg-violet-500 text-white'
+                    : 'bg-white/[0.04] text-gray-400 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5 shrink-0" /> Todos
+              </button>
+              {categorias.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategoria(c.id)}
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-[11px] font-bold transition-colors ${
+                    categoria === c.id
+                      ? 'bg-violet-500 text-white'
+                      : 'bg-white/[0.04] text-gray-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <IconeCategoria id={c.icone} className="h-3.5 w-3.5 shrink-0" />
+                  {c.nome}
+                </button>
+              ))}
+            </div>
 
-      {/* Categorias */}
-      <div className="-mx-1 mb-5 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
-        <button
-          type="button"
-          onClick={() => setCategoria('todas')}
-          className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
-            categoria === 'todas'
-              ? 'bg-violet-500 text-white'
-              : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          Destaques
-        </button>
-        {categorias.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => setCategoria(c.id)}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
-              categoria === c.id
-                ? 'bg-violet-500 text-white'
-                : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <IconeCategoria id={c.icone} className="h-3 w-3" />
-            {c.nome}
-          </button>
-        ))}
-      </div>
+            {categoria === 'ram' && (
+              <>
+                <p className="mb-2 mt-4 text-[10px] font-black uppercase tracking-wider text-gray-500">
+                  Memória
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    { id: 'todas', nome: 'Todas' },
+                    { id: '2x8', nome: '2×8 GB' },
+                    { id: '2x16', nome: '2×16 GB' },
+                    { id: '1x16', nome: '1×16 GB' },
+                    { id: '2x32', nome: '2×32 GB' },
+                    { id: '4x8', nome: '4×8 GB' },
+                  ].map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setRamTipo(r.id)}
+                      className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                        ramTipo === r.id
+                          ? 'bg-white text-black'
+                          : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      {r.nome}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {marcasDisponiveis.length > 0 && (
+              <>
+                <p className="mb-2 mt-4 text-[10px] font-black uppercase tracking-wider text-gray-500">
+                  Marcas
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setMarcasAtivas([])}
+                    className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                      !marcasAtivas.length
+                        ? 'bg-white text-black'
+                        : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    Todas
+                  </button>
+                  {marcasDisponiveis.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() =>
+                        setMarcasAtivas((prev) =>
+                          prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m],
+                        )
+                      }
+                      className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                        marcasAtivas.includes(m)
+                          ? 'bg-white text-black'
+                          : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <p className="mb-2 mt-4 text-[10px] font-black uppercase tracking-wider text-gray-500">
+              Lojas
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => setLojasAtivas([])}
+                className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                  !lojasAtivas.length
+                    ? 'bg-white text-black'
+                    : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <Store className="h-2.5 w-2.5" /> Todas
+              </button>
+              {lojasTipo.map((l) => {
+                const ativa = lojasAtivas.includes(l.id)
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => alternarLoja(l.id)}
+                    className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                      ativa
+                        ? 'bg-white text-black'
+                        : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: l.cor }}
+                    />
+                    {l.nome}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </aside>
+
+        <div className="min-w-0">
 
       {carregando ? (
         <div className="flex justify-center py-16">
@@ -445,11 +600,9 @@ export default function ComponentesPage({ user }) {
             <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
               <SlidersHorizontal className="h-4 w-4 text-violet-400" />
               Resultados ao vivo
-              {resultados ? (
-                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
-                  {resultados.length}
-                </span>
-              ) : null}
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
+                {resultadosFiltrados.length}
+              </span>
             </h2>
             {buscando && (
               <span className="flex items-center gap-1.5 text-[11px] font-bold text-violet-300">
@@ -471,7 +624,7 @@ export default function ComponentesPage({ user }) {
                 />
               ))}
             </div>
-          ) : resultadosOrdenados.length === 0 ? (
+          ) : resultadosFiltrados.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-12 text-center">
               <p className="text-sm font-bold text-gray-400">
                 Sem resultados para “{qAtiva || termo}”.
@@ -495,7 +648,7 @@ export default function ComponentesPage({ user }) {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {resultadosOrdenados.map((r) => (
+              {resultadosFiltrados.map((r) => (
                 <CartaoLoja
                   key={`${r.loja}:${r.url}`}
                   r={r}
@@ -507,6 +660,41 @@ export default function ComponentesPage({ user }) {
         </section>
       ) : (
         <section>
+          {carregandoVendidos ? (
+            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-64 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
+                />
+              ))}
+            </div>
+          ) : vendidosFiltrados.length > 0 ? (
+            <section className="mb-6">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
+                  <Store className="h-4 w-4 text-emerald-400" />
+                  Mais vendidos nas lojas
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
+                    {vendidosFiltrados.length}
+                  </span>
+                </h2>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-gray-600">
+                  PCComponentes · top de vendas
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {vendidosFiltrados.map((r) => (
+                  <CartaoLoja
+                    key={`vendido:${r.url}`}
+                    r={r}
+                    maisBarato={maisBaratoVendidos && r.url === maisBaratoVendidos.url}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
               <Sparkles className="h-4 w-4 text-violet-400" />
@@ -548,6 +736,8 @@ export default function ComponentesPage({ user }) {
           )}
         </section>
       )}
+        </div>
+      </div>
 
       <p className="mt-6 text-[11px] leading-relaxed text-gray-600">
         Preços lidos ao vivo das lojas e guardados por 10 minutos. A PCDiga bloqueia leitura
@@ -643,6 +833,10 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
   const Icone = ICONES[produto.categoria] || Cpu
   const maisBarato = produto.maisBarato
   const precos = new Map((produto.precos || []).map((p) => [p.loja, p]))
+  const lojasComPreco = (produto.lojas || []).filter((id) => {
+    const p = precos.get(id)
+    return p && p.preco > 0
+  })
   const atualizado = dataFmt(produto.atualizado_em)
 
   return (
@@ -722,7 +916,7 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
         </div>
 
         <div className="mt-2 space-y-1">
-          {(produto.lojas || []).map((id) => {
+          {lojasComPreco.map((id) => {
             const loja = lojas[id] || { nome: id, cor: '#8b5cf6' }
             const preco = precos.get(id)
             const pesquisa = pesquisaLoja(loja, produto.consulta)

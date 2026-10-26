@@ -380,22 +380,6 @@ foreach ($alvo in @('1.1.1.1', '8.8.8.8')) {
 
   /* ---------------- Debloat ---------------- */
   {
-    id: 'debloat-xbox',
-    cat: 'Debloat',
-    nome: 'Remover apps da Xbox',
-    desc: 'Game Bar, Xbox UI e companhia. Não afeta os jogos da Steam.',
-    perigo: 'medio',
-    tempo: 180000,
-    cmd: `$p = @(Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'Xbox|Microsoft.GamingApp|Microsoft.GamingServices' })
-if (-not $p.Count) { Write-Output 'Nada para remover: nao ha apps da Xbox.' }
-foreach ($x in $p) {
-  Write-Output ("A remover " + $x.Name)
-  try { Remove-AppxPackage -Package $x.PackageFullName -ErrorAction Stop; Write-Output ("  ok: " + $x.Name) }
-  catch { Write-Output ("  falhou: " + $_.Exception.Message) }
-}
-Write-Output 'Feito.'`,
-  },
-  {
     id: 'debloat-telemetria',
     cat: 'Debloat',
     nome: 'Desativar telemetria',
@@ -1177,21 +1161,6 @@ try {
   Write-Output '  [ok] Apps deixam de correr as costas.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
-  'xalana-a7': {
-    nome: 'Xbox Game Bar e GameDVR desligados',
-    desc: 'Sem overlay nem gravação de fundo.',
-    nivel: 'normal',
-    script: `Write-Output '[7/10] Xbox Game Bar e gravação (GameDVR): desligados'
-try {
-  $a = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR'
-  New-Item -Path $a -Force | Out-Null
-  Set-ItemProperty -Path $a -Name AppCaptureEnabled -Value 0 -Type DWord
-  $b = 'HKCU:\\System\\GameConfigStore'
-  New-Item -Path $b -Force | Out-Null
-  Set-ItemProperty -Path $b -Name GameDVR_Enabled -Value 0 -Type DWord
-  Write-Output '  [ok] Sem overlay nem gravacao de fundo a roubar recursos.'
-} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
-  },
   'xalana-a8': {
     nome: 'Sugestões do Início desligadas',
     desc: 'Menu Início sem apps promovidas.',
@@ -1293,13 +1262,12 @@ try {
   /* nível 3: extremo (5 ações extras) */
   'xalana-a11': {
     nome: 'Debloat: apps pré-instaladas removidas',
-    desc: 'Xbox, Widgets, Cortana, Solitaire, Maps, etc.',
+    desc: 'Widgets, Cortana, Solitaire, Maps, Get Help, etc.',
     nivel: 'extremo',
     script: `Write-Output '[11/15] Debloat: apps pré-instaladas removidas'
 try {
   $alvos = @(
-    'Microsoft.XboxApp', 'Microsoft.XboxGameOverlay', 'Microsoft.XboxGamingOverlay',
-    'Microsoft.XboxSpeechToTextOverlay', 'Microsoft.GamingApp', 'Microsoft.WindowsWidgets',
+    'Microsoft.WindowsWidgets',
     'Microsoft.GetHelp', 'Microsoft.Getstarted', 'Microsoft.MicrosoftSolitaireCollection',
     'Microsoft.People', 'Microsoft.WindowsMaps', 'Microsoft.Clipchamp', 'Microsoft.549981C3F5F10'
   )
@@ -1313,12 +1281,11 @@ try {
   },
   'xalana-a12': {
     nome: 'Serviços pesados parados e desligados',
-    desc: 'SysMain, Pesquisa, Xbox, DoSvc, TrkWks, Fax, Mapas...',
+    desc: 'SysMain, Pesquisa, DoSvc, TrkWks, Fax, Mapas...',
     nivel: 'extremo',
     script: `Write-Output 'Serviços pesados e inúteis: parados e desligados'
 try {
   $svcs = @('SysMain', 'WSearch', 'Fax', 'RetailDemo', 'MapsBroker', 'lfsvc',
-            'XblAuthManager', 'XblGameSave', 'XboxGipSvc', 'XboxNetApiSvc',
             'wisvc', 'dmwappushservice', 'DiagTrack',
             'TrkWks', 'PhoneSvc', 'SmsRouter', 'PcaSvc', 'DoSvc', 'WmpNetworkSvc',
             'RemoteRegistry', 'WerSvc', 'Netlogon', 'RemoteAccess')
@@ -1326,7 +1293,7 @@ try {
     Stop-Service -Name $s -Force -ErrorAction SilentlyContinue
     Set-Service -Name $s -StartupType Disabled -ErrorAction SilentlyContinue
   }
-  Write-Output '  [ok] SysMain, Pesquisa, Xbox, DoSvc (deliveries), Fax, Mapas, Partilha... desligados.'
+  Write-Output '  [ok] SysMain, Pesquisa, DoSvc (deliveries), Fax, Mapas, Partilha... desligados.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
   'xalana-a13': {
@@ -1661,6 +1628,57 @@ foreach ($p in $pastas) {
   }
 }
 Write-Output 'Relatorios limpados.'`,
+});
+
+FERRAMENTAS.push({
+  id: 'limpeza-ram',
+  cat: 'Limpeza',
+  nome: 'Limpar RAM (standby + cache)',
+  desc: 'Liberta a standby memory, reduz os working sets dos processos e limpa a cache do sistema — estilo RAMMap.',
+  perigo: 'baixo',
+  tempo: 90000,
+  cmd: `$ErrorActionPreference='Continue'
+$antes = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
+Write-Output ("RAM livre antes: {0} MB" -f $antes)
+$code = @'
+using System;
+using System.Runtime.InteropServices;
+public class LocausMem {
+  [DllImport("ntdll.dll")]
+  public static extern uint NtSetSystemInformation(int InfoClass, IntPtr Info, int Length);
+  [DllImport("psapi.dll")]
+  public static extern int EmptyWorkingSet(IntPtr hProcess);
+}
+'@
+try { Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue } catch {}
+try {
+  $info = [System.Runtime.InteropServices.Marshal]::AllocHGlobal(4)
+  [System.Runtime.InteropServices.Marshal]::WriteInt32($info, 4)
+  [LocausMem]::NtSetSystemInformation(80, $info, 4) | Out-Null
+  [System.Runtime.InteropServices.Marshal]::FreeHGlobal($info)
+  Write-Output 'Standby memory limpa.'
+} catch { Write-Output ('Standby: ' + $_.Exception.Message) }
+$n = 0
+Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
+  try { if ([LocausMem]::EmptyWorkingSet($_.Handle) -ne 0) { $n++ } } catch {}
+}
+Write-Output ("Working sets reduzidos em $n processos.")
+try {
+  $sig = @'
+using System;
+using System.Runtime.InteropServices;
+public class LocausCache {
+  [DllImport("kernel32.dll", SetLastError=true)]
+  public static extern bool SetSystemFileCacheSize(IntPtr min, IntPtr max, uint flags);
+}
+'@
+  Add-Type -TypeDefinition $sig -ErrorAction SilentlyContinue
+  [LocausCache]::SetSystemFileCacheSize([IntPtr](-1), [IntPtr](-1), 0) | Out-Null
+  Write-Output 'Cache de ficheiros do sistema libertada.'
+} catch { Write-Output ('Cache: ' + $_.Exception.Message) }
+Start-Sleep -Milliseconds 600
+$depois = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
+Write-Output ("RAM livre depois: {0} MB (libertados {1} MB)" -f $depois, ($depois - $antes))`,
 });
 
 /* ---------------------------------------------------------------

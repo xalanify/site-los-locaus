@@ -1013,8 +1013,8 @@ function CS2PrevisoesTab({ user }) {
       <section>
         <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
           <Target className="h-4 w-4 text-sky-300" /> Próximos jogos CS2
-          <span className="ml-auto rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20">
-            Ao vivo
+          <span className="ml-auto rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-500">
+            Atualiza sozinho
           </span>
         </h2>
         {dados.loading ? (
@@ -1074,7 +1074,12 @@ export default function PrevisoesPage({ user }) {
   const [matches, setMatches] = useState([])
   const [tab, setTab] = useState('proximos')
   const [regiao, setRegiao] = useState('Todas')
-  const [jogo, setJogo] = useState('r6') // r6 | cs2
+  const [jogo, setJogo] = useState('r6') // r6 | cs2 | fortnite
+  const fundosJogo = {
+    r6: '/coastliner6.jpg',
+    cs2: '/nukecs2.png',
+    fortnite: '/fortnite.jpg',
+  }
   const [loading, setLoading] = useState(true)
   const [sync, setSync] = useState(null)
   const [erro, setErro] = useState('')
@@ -1252,7 +1257,7 @@ export default function PrevisoesPage({ user }) {
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{ backgroundImage: 'url(/coastliner6.jpg)' }}
+          style={{ backgroundImage: `url(${fundosJogo[jogo]})` }}
         />
         <div className="absolute inset-0 bg-black/70" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612]/85 via-[#0a0612]/55 to-[#0a0612]/92" />
@@ -1268,43 +1273,36 @@ export default function PrevisoesPage({ user }) {
         <p className="mt-2 max-w-2xl text-sm text-gray-400">
           Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade.
         </p>
+        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-violet-400/20 bg-violet-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-violet-300">
+          <RefreshCw className="h-2.5 w-2.5" /> atualiza sozinho
+        </span>
       </motion.div>
 
       {/* seletor de jogo: Rainbow Six · CS2 · Fortnite */}
       <div className="mt-2 mb-4 grid grid-cols-3 gap-2">
-        <button
-          onClick={() => setJogo('r6')}
-          className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-black transition-all sm:text-xs ${
-            jogo === 'r6'
-              ? 'border-violet-400/40 bg-gradient-to-b from-violet-600/40 to-fuchsia-600/20 text-white shadow-lg shadow-violet-950/30'
-              : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <Swords className="h-4 w-4 shrink-0" /> Rainbow Six
-        </button>
-        <button
-          onClick={() => setJogo('cs2')}
-          className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-black transition-all sm:text-xs ${
-            jogo === 'cs2'
-              ? 'border-sky-400/40 bg-gradient-to-b from-sky-600/30 to-sky-900/20 text-white'
-              : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <Target className="h-4 w-4 shrink-0" /> CS2
-          <span className="rounded-full bg-emerald-500/15 px-1 py-0.5 text-[7px] font-black uppercase tracking-wider text-emerald-300 sm:px-1.5 sm:text-[9px]">
-            Ao vivo
-          </span>
-        </button>
-        <button
-          onClick={() => setJogo('fortnite')}
-          className={`flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[10px] font-black transition-all sm:text-xs ${
-            jogo === 'fortnite'
-              ? 'border-fuchsia-400/40 bg-gradient-to-b from-fuchsia-600/30 to-purple-900/20 text-white'
-              : 'border-white/10 bg-[#100b1d]/90 text-gray-400 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <Flame className="h-4 w-4 shrink-0" /> Fortnite
-        </button>
+        {[
+          { id: 'r6', nome: 'Rainbow Six', Icon: Swords },
+          { id: 'cs2', nome: 'CS2', Icon: Target },
+          { id: 'fortnite', nome: 'Fortnite', Icon: Flame },
+        ].map((g) => (
+          <button
+            key={g.id}
+            type="button"
+            onClick={() => setJogo(g.id)}
+            style={{
+              backgroundImage: `linear-gradient(rgba(8,5,15,0.55), rgba(8,5,15,0.84)), url(${fundosJogo[g.id]})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+            className={`relative flex items-center justify-center gap-1.5 overflow-hidden rounded-2xl border px-2 py-3 text-[10px] font-black transition-all sm:text-xs ${
+              jogo === g.id
+                ? 'border-white/40 text-white shadow-lg shadow-black/40'
+                : 'border-white/10 text-gray-300 hover:border-white/25 hover:text-white'
+            }`}
+          >
+            <g.Icon className="h-4 w-4 shrink-0" /> {g.nome}
+          </button>
+        ))}
       </div>
 
       <div className="mb-4 flex justify-center">

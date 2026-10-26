@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import EmDesenvolvimento from '../components/EmDesenvolvimento'
+import { confirmar } from '../components/Feedback'
 import {
   Wrench,
   Terminal,
@@ -256,12 +257,28 @@ export default function FerramentasPage({ isAdmin = false }) {
     }
   }
 
+  const alternarSoInstalados = async () => {
+    if (soInstalados) {
+      setSoInstalados(false)
+      return
+    }
+    setSoInstalados(true)
+    if (!instalados.size && !aDetectar) {
+      await detectarInstalados()
+    }
+  }
+
   /* desinstala por completo os programas instalados que estão
      selecionados (winget + limpeza estilo Revo, no servidor) */
   const desinstalarSelecionados = async () => {
     if (aCorrer) return
     const ids = Array.from(selecionados).filter((id) => instalados.has(id))
     if (!ids.length) return
+    const ok = await confirmar(
+      `Forçar a desinstalação de ${ids.length} programa(s)? Isto remove pastas, registo, atalhos, tarefas e serviços.`,
+      { okTexto: 'Forçar desinstalação' },
+    )
+    if (!ok) return
     setAviso(null)
     if (dados?.podeLocal === false && agente.online) {
       try {
@@ -761,6 +778,13 @@ export default function FerramentasPage({ isAdmin = false }) {
           <p className="mt-2 max-w-2xl text-sm text-gray-400">
             Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
           </p>
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.07] px-4 py-2.5 text-[11px] leading-relaxed text-emerald-200">
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              Não removemos a <b>Microsoft Store</b> nem a <b>Xbox</b>. Podes remover Cortana,
+              OneDrive, apps de consumo e limpar a RAM/cache em segurança.
+            </span>
+          </div>
         </motion.div>
 
         {/* aviso: PC ligado ao servidor local (só no modo local) */}
@@ -836,16 +860,16 @@ export default function FerramentasPage({ isAdmin = false }) {
           })}
           {cat === 'Programas' && (
             <button
-              onClick={() => setSoInstalados((v) => !v)}
+              onClick={alternarSoInstalados}
               className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-black uppercase tracking-wide transition-colors ${
                 soInstalados
                   ? 'bg-emerald-500 text-white'
                   : 'btn-glass text-gray-400 hover:text-white'
               }`}
-              title="Mostra só os programas que já tens instalados no PC"
+              title="Mostra só os programas que já tens instalados no PC (deteta automaticamente)"
             >
               <Check className="h-3.5 w-3.5" />
-              Só instalados
+              Só instalados{soInstalados && instalados.size ? ` (${instalados.size})` : ''}
             </button>
           )}
         </div>
@@ -888,18 +912,6 @@ export default function FerramentasPage({ isAdmin = false }) {
               <span className="text-gray-300">Selecionar todos ({visiveis.length})</span>
             </label>
 
-            {/* só na categoria Programas: detetar os que já estão no PC */}
-            {cat === 'Programas' && (
-              <button
-                onClick={detectarInstalados}
-                disabled={aDetectar || aCorrer}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-black text-emerald-300 transition-colors hover:bg-emerald-500/20 disabled:opacity-50"
-              >
-                <Check className={`h-3.5 w-3.5 ${aDetectar ? 'animate-pulse' : ''}`} />
-                {aDetectar ? 'A verificar…' : instalados.size ? `Rever instalados (${instalados.size})` : 'Detetar instalados'}
-              </button>
-            )}
-
             <span className="flex-1" />
             {selecionados.size > 0 && (
               <>
@@ -909,9 +921,9 @@ export default function FerramentasPage({ isAdmin = false }) {
                     onClick={desinstalarSelecionados}
                     disabled={aCorrer || !podeExecutar}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-red-500 disabled:opacity-50"
-                    title="Desinstala por completo (winget + limpa pastas, registo, tasks e serviços — estilo Revo)"
+                    title="Força a desinstalação (winget --force + limpa pastas, registo, tasks e serviços)"
                   >
-                    <Trash2 className="h-3.5 w-3.5" /> Desinstalar selecionados ({Array.from(selecionados).filter((id) => instalados.has(id)).length})
+                    <Trash2 className="h-3.5 w-3.5" /> Forçar desinstalação ({Array.from(selecionados).filter((id) => instalados.has(id)).length})
                   </button>
                 )}
                 <button

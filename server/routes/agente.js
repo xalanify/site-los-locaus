@@ -369,4 +369,13 @@ router.post('/heartbeat', requireAgente, (req, res) => {
   res.json({ ok: true, agora: new Date().toISOString() });
 });
 
+router.post('/acordar', requireAgente, async (req, res) => {
+  try {
+    res.json(await agente.acordarSessao(req.agente.id));
+  } catch (e) {
+    console.error('Agente /acordar:', e);
+    res.status(500).json({ ok: false, erro: 'Não deu para acordar o agente.' });
+  }
+});
+
 module.exports = { agenteRouter: router };

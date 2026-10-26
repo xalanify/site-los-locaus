@@ -173,6 +173,18 @@ async function encerrarSessao(userId) {
   return { ok: true };
 }
 
+/* O utilizador voltou a abrir o .bat com o mesmo token: acorda a sessão
+   que tinha sido mandada desligar, sem precisar de descarregar outro .bat. */
+async function acordarSessao(id) {
+  const expira = new Date(Date.now() + SESSAO_MS).toISOString();
+  await getDb()
+    .prepare(
+      'UPDATE public.agente_sessoes SET encerrar = false, visto_em = now(), expira_em = ? WHERE id = ?',
+    )
+    .run(expira, id);
+  return { ok: true };
+}
+
 /* ---------------- construção de trabalhos ---------------- */
 
 function lerScript(nome) {
@@ -438,6 +450,7 @@ module.exports = {
   autenticar,
   estado,
   encerrarSessao,
+  acordarSessao,
   criarJob,
   proximo,
   controlo,

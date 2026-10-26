@@ -209,6 +209,9 @@ function RunJob($job) {
 }
 
 Show "A ligar ao site $Site ..." 'Yellow'
+# Se este .bat ja foi usado antes, a sessao pode estar marcada para fechar.
+# Acorda-a para o utilizador nao ter de instalar/descarregar tudo outra vez.
+try { PostJson "$Site/api/agente/acordar" @{} | Out-Null } catch {}
 $falhas = 0
 $ligado = $false
 while ($true) {

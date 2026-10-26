@@ -16,6 +16,7 @@ const {
   LOJAS,
   buscarPrecos,
   buscarTudo,
+  buscarMaisVendidos,
   guardarPreco,
   listarPrecos,
   montarProdutos,
@@ -37,6 +38,19 @@ router.get('/', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Erro componentes GET:', error.message);
     res.status(500).json({ error: 'Não deu para carregar os componentes.' });
+  }
+});
+
+/* Mais vendidos / relevantes (entrada da página, sem pesquisa). */
+router.get('/mais-vendidos', requireAdmin, async (req, res) => {
+  try {
+    const tipo = req.query && req.query.tipo === 'periferico' ? 'periferico' : 'componente';
+    const categoria = String((req.query && req.query.categoria) || '');
+    const resultados = await buscarMaisVendidos({ tipo, categoria, limite: 12 });
+    res.json({ ok: true, resultados });
+  } catch (error) {
+    console.error('Erro componentes mais-vendidos:', error.message);
+    res.status(500).json({ error: 'Não deu para carregar os mais vendidos.' });
   }
 });
 

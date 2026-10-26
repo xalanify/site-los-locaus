@@ -62,7 +62,7 @@ export default function NoticiasHome() {
               Últimas notícias
             </h2>
             <p className="mt-1 text-[11px] font-semibold text-gray-500">
-              Atualizadas de hora a hora · franquias grandes, telemóveis e desbloqueios PS4/PS5
+              Atualizadas de hora a hora · Call of Duty, Rockstar, NVIDIA, AMD e desbloqueios PS4/PS5
             </p>
           </div>
           <Link

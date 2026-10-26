@@ -397,7 +397,7 @@ export default function SteamStorePage() {
   const [searchParams] = useSearchParams()
   const abaPedida = searchParams.get('aba')
   const [aba, setAba] = useState(
-    ['embreve', 'top', 'procurar', 'noticias'].includes(abaPedida) ? abaPedida : 'embreve',
+    ['embreve', 'top', 'procurar', 'noticias'].includes(abaPedida) ? abaPedida : 'top',
   )
   const [editorial, setEditorial] = useState(null)
   const [top, setTop] = useState({ loading: true, jogos: [], erro: '' })
@@ -497,9 +497,9 @@ export default function SteamStorePage() {
 
       <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          { id: 'embreve', label: 'Em breve', Icon: Calendar },
           { id: 'top', label: 'Mais jogados', Icon: TrendingUp },
           { id: 'procurar', label: 'Procurar', Icon: Search },
+          { id: 'embreve', label: 'Em breve', Icon: Calendar },
           { id: 'noticias', label: 'Notícias', Icon: Newspaper },
         ].map((t) => (
           <button
@@ -569,7 +569,9 @@ export default function SteamStorePage() {
             <p className="py-6 text-center text-sm text-yellow-300">{top.erro}</p>
           ) : (
             <div className="space-y-2">
-              {top.jogos.map((j, i) => (
+              {[...top.jogos]
+                .sort((a, b) => (Number(b.ccu) || 0) - (Number(a.ccu) || 0))
+                .map((j, i) => (
                 <button
                   key={j.appid}
                   onClick={() => abrir(j.appid)}
@@ -753,9 +755,13 @@ export default function SteamStorePage() {
               </h2>
             </div>
             <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-bold text-gray-500">
-              Eurogamer PT · PC Gamer
+              Atualiza de hora a hora
             </span>
           </div>
+          <p className="mb-3 text-[11px] font-semibold text-gray-500">
+            Só Call of Duty, Rockstar/GTA, NVIDIA, AMD/placas gráficas, processadores/memórias e
+            desbloqueios PS4/PS5.
+          </p>
 
           {noticias.loading ? (
             <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">

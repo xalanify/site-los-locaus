@@ -28,6 +28,10 @@ import { correrBench as medirBench } from '../lib/bench'
    a aba tem um portão: sem clicar em "Ler o PC", não se entra.
    ============================================================ */
 const fmt = (n) => (Number(n) || 0).toLocaleString('pt-PT')
+const ghz = (n) => {
+  const v = Number(n)
+  return v > 0 ? `${(v / 1000).toFixed(2).replace('.', ',')} GHz` : '—'
+}
 
 function Badge({ tom, children }) {
   const tons = {
@@ -88,11 +92,11 @@ function LeituraReal({ d }) {
           {cpu.relogio_mhz ? (
             <p className="text-gray-400">
               Relógio{' '}
-              <span className="font-bold text-white">{fmt(cpu.relogio_mhz)} MHz</span>
+              <span className="font-bold text-white">{ghz(cpu.relogio_mhz)}</span>
               {cpu.teto_fabrica_mhz ? (
                 <>
                   {' '}
-                  · fábrica até <span className="font-bold text-white">{fmt(cpu.teto_fabrica_mhz)} MHz</span>
+                  · fábrica até <span className="font-bold text-white">{ghz(cpu.teto_fabrica_mhz)}</span>
                 </>
               ) : null}
               {cpu.desvio_pct != null ? ` (${cpu.desvio_pct > 0 ? '+' : ''}${cpu.desvio_pct}%)` : ''}
@@ -105,14 +109,14 @@ function LeituraReal({ d }) {
               {cpu.relogio_repouso_mhz ? (
                 <>
                   em repouso{' '}
-                  <span className="font-bold text-gray-300">{fmt(cpu.relogio_repouso_mhz)} MHz</span>
+                  <span className="font-bold text-gray-300">{ghz(cpu.relogio_repouso_mhz)}</span>
                 </>
               ) : null}
               {cpu.relogio_repouso_mhz && cpu.relogio_carga_mhz ? ' · ' : ''}
               {cpu.relogio_carga_mhz ? (
                 <>
                   todos os núcleos{' '}
-                  <span className="font-bold text-gray-300">{fmt(cpu.relogio_carga_mhz)} MHz</span>
+                  <span className="font-bold text-gray-300">{ghz(cpu.relogio_carga_mhz)}</span>
                 </>
               ) : null}
             </p>
@@ -486,18 +490,6 @@ export default function PcsPage({ isAdmin = false }) {
     }
   }
 
-  /* primeiro quem já tem leitura real */
-  const ordenada = useMemo(
-    () =>
-      [...lista].sort((a, b) => {
-        const ra = a.details ? 1 : 0
-        const rb = b.details ? 1 : 0
-        if (ra !== rb) return rb - ra
-        return String(a.username).localeCompare(String(b.username), 'pt')
-      }),
-    [lista],
-  )
-
   const badgeDe = (s) => {
     const av = s.details?.avaliacao
     if (!av) return <Badge tom="ok">—</Badge>
@@ -627,6 +619,10 @@ export default function PcsPage({ isAdmin = false }) {
           <p className="px-4 pt-2 text-[10px] text-gray-500 sm:hidden">
             Desliza a tabela para o lado para ver RAM e placa gráfica →
           </p>
+          <div className="mx-4 mt-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-200">
+            Esta tabela não tem ordem nem pontuação de melhor ou pior. Mostra apenas as máquinas
+            do grupo.
+          </div>
 
           {!carregado ? (
             <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
@@ -641,7 +637,6 @@ export default function PcsPage({ isAdmin = false }) {
               <table className="w-full min-w-[640px] text-left text-sm sm:min-w-[720px]">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-gray-400">
-                    <th className="px-4 py-2.5 font-bold">#</th>
                     <th className="px-4 py-2.5 font-bold">Membro</th>
                     <th className="px-4 py-2.5 font-bold">Sistema</th>
                     <th className="px-4 py-2.5 font-bold">CPU</th>
@@ -651,7 +646,7 @@ export default function PcsPage({ isAdmin = false }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {ordenada.map((s, i) => {
+                  {lista.map((s) => {
                     const av = s.details?.avaliacao
                     const expandido = aberto === s.user_id
                     return (
@@ -662,15 +657,6 @@ export default function PcsPage({ isAdmin = false }) {
                             expandido ? 'bg-white/5' : ''
                           }`}
                         >
-                          <td className="px-4 py-3">
-                            <span
-                              className={`font-display text-sm font-black ${
-                                i === 0 ? 'text-violet-400' : 'text-gray-400'
-                              }`}
-                            >
-                              {i + 1}
-                            </span>
-                          </td>
                           <td className="px-4 py-3">
                             <span className="flex items-center gap-2">
                               <AvatarImg
@@ -685,7 +671,7 @@ export default function PcsPage({ isAdmin = false }) {
                           <td className="px-4 py-3 text-gray-300">
                             {av?.cpu?.relogio_mhz ? (
                               <span className="font-black text-white">
-                                {fmt(av.cpu.relogio_mhz)} MHz
+                                {ghz(av.cpu.relogio_mhz)}
                               </span>
                             ) : (
                               '—'
