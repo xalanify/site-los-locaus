@@ -222,30 +222,9 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 } catch {}
                 const ifr = e.target.getIframe && e.target.getIframe()
                 if (ifr) ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0'
-                /* qualidade máxima disponível: escolhe o melhor nível real
-                   (4K/2K/1080p) e só deixa tocar quando lá chegar */
-                let niveis = []
-                try {
-                  niveis = e.target.getAvailableQualityLevels
-                    ? e.target.getAvailableQualityLevels()
-                    : []
-                } catch {}
-                setNiveisQual(niveis)
-                let alvo = qualEsc.current
-                if (!alvo || alvo === 'auto' || alvo === 'max') {
-                  alvo = melhorQualidade(niveis)
-                  qualEsc.current = alvo
-                  gravarQual(alvo)
-                }
-                qualAlvoRef.current = alvo
-                setQualAlvo(alvo)
-                setVqPedida(alvo)
-                setVeuQual(NOME_QUAL[alvo] || alvo)
-                try {
-                  e.target.pauseVideo && e.target.pauseVideo()
-                } catch {}
-                forcerQualidade(e.target)
-                arrancaWatchdog()
+                /* qualidade máxima: espera o YouTube listar os níveis reais
+                   (às vezes no início só aparecem 240p/360p) */
+                iniciarQualidade(e.target)
               },
               onStateChange: (e) => {
                 if (!vivo) return
@@ -365,6 +344,63 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
       if (typeof alvo.setPlaybackQualityRange === 'function') alvo.setPlaybackQualityRange(q, q)
       if (typeof alvo.setPlaybackQuality === 'function') alvo.setPlaybackQuality(q)
     } catch {}
+  }
+
+  /* Escolhe a qualidade máxima real. O YouTube às vezes só devolve
+     240p/360p no primeiro instante; esperamos até 3,6 s pelos níveis
+     bons antes de decidir. */
+  const iniciarQualidade = (p) => {
+    const manual = qualEsc.current
+    if (manual && manual !== 'auto' && manual !== 'max') {
+      qualAlvoRef.current = manual
+      setQualAlvo(manual)
+      setVqPedida(manual)
+      setVeuQual(null)
+      try {
+        p.pauseVideo && p.pauseVideo()
+      } catch {}
+      forcerQualidade(p)
+      arrancaWatchdog()
+      return
+    }
+
+    let tentativas = 0
+    setVeuQual('máxima')
+    try {
+      p.pauseVideo && p.pauseVideo()
+    } catch {}
+
+    const escolher = () => {
+      let niveis = []
+      try {
+        niveis = p.getAvailableQualityLevels ? p.getAvailableQualityLevels() : []
+      } catch {}
+      setNiveisQual(niveis)
+      const temBoa = niveis.some((q) =>
+        ['highres', 'hd2160', 'hd1440', 'hd1080', 'hd720'].includes(q),
+      )
+      if (!temBoa && tentativas < 12) return false
+      const alvo = melhorQualidade(niveis)
+      qualAlvoRef.current = alvo
+      setQualAlvo(alvo)
+      setVqPedida(alvo)
+      qualEsc.current = alvo
+      gravarQual(alvo)
+      setVeuQual(NOME_QUAL[alvo] || alvo)
+      forcerQualidade(p)
+      arrancaWatchdog()
+      return true
+    }
+
+    if (escolher()) return
+    const iv = setInterval(() => {
+      tentativas += 1
+      if (escolher()) clearInterval(iv)
+    }, 300)
+    setTimeout(() => {
+      clearInterval(iv)
+      if (!qualidadeFeita.current) escolher()
+    }, 4000)
   }
 
   /* ===== QUALIDADE FORÇADA =====
