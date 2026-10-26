@@ -391,6 +391,13 @@ function lerInfobox(html) {
         .trim()
     : null;
   out.pais = campo('Location');
+  const locBloco = box.match(
+    /infobox-description[^>]*>\s*Location\s*:?\s*<\/div>\s*<div>([\s\S]*?)<\/div>/i,
+  );
+  if (locBloco) {
+    const primeira = locBloco[1].match(/<a[^>]+title="([^"]+)"/i);
+    if (primeira) out.pais = semTags(primeira[1]);
+  }
   out.regiao = campo('Region');
   out.ceo = campo('CEO');
   out.capitao = campo('Captain');
@@ -493,13 +500,13 @@ function lerTorneiosFallback(html, marcador, limite = 8) {
     if (/^(category|file|template|special|portal|help|main page|rainbow six)/i.test(nome)) continue;
     if (nome.length > 80 || nome.includes(':')) continue;
     if (
-      !/\b(19|20)\d{2}\b|major|league|cup|series|invitational|open|pro|championship|tournament|masters|blast|six|qualifier/i.test(
+      !/\b(19|20)\d{2}\b|major|invitational|pro league|six|blast|championship|masters|qualifier|world cup|dreamhack/i.test(
         nome,
       )
     ) {
       continue;
     }
-    const perto = semTags(seg.slice(Math.max(0, m.index - 700), m.index + 900));
+    const perto = semTags(seg.slice(m.index, m.index + 320));
     const data = (perto.match(/\b\d{4}-\d{2}-\d{2}\b/) || [])[0] || null;
     const datas =
       (perto.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s*[–-]\s*\d{1,2}\b/i) || [])[0] ||
@@ -643,7 +650,7 @@ async function equipaR6(titulo) {
 async function pesquisar(jogo, q) {
   const termo = String(q || '').trim().slice(0, 60);
   if (termo.length < 2) return { resultados: [] };
-  const chave = `pesquisa:v3:${jogo}:${termo.toLowerCase()}`;
+  const chave = `pesquisa:v4:${jogo}:${termo.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL_PESQUISA) return emMem.dados;
   const naBd = await cacheDb(chave, TTL_PESQUISA);
@@ -663,7 +670,7 @@ async function pesquisar(jogo, q) {
 async function equipa(jogo, ref) {
   const nome = String(ref || '').trim().slice(0, 120);
   if (!nome) throw new Error('Falta o nome da equipa.');
-  const chave = `equipa:v3:${jogo}:${nome.toLowerCase()}`;
+  const chave = `equipa:v4:${jogo}:${nome.toLowerCase()}`;
   const emMem = mem.get(chave);
   if (emMem && Date.now() - emMem.t < TTL) return emMem.dados;
   const naBd = await cacheDb(chave, TTL);
