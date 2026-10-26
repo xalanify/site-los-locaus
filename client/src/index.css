@@ -691,6 +691,31 @@ button[class~='bg-violet-500']:active {
   }
 }
 
+/* ---------- Chat geral no telemóvel ----------
+   O ecrã fica fixo entre a barra de topo e a navegação de baixo:
+   a página não rola, só a lista de mensagens. */
+@media (max-width: 1023px) {
+  body:has(.chat-fixo) {
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  .chat-fixo {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    padding: 4rem 0.75rem calc(4.5rem + env(safe-area-inset-bottom));
+    overflow: hidden;
+  }
+  .chat-fixo .page-container {
+    height: 100%;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .chat-fixo {
+    padding: 4.5rem 1.5rem calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 /* Painéis fixos (sidebar + coluna direita): fundo quase sólido
    para os menus serem legíveis; a foto do jogo fica só como detalhe. */
 .painel-fixo {

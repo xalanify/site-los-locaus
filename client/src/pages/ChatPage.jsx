@@ -703,9 +703,9 @@ export default function ChatPage({ user }) {
   let diaAnterior = ''
 
   return (
-    <PageShell className="!pb-6">
-      <div className="mx-auto w-full max-w-6xl overflow-x-hidden">
-      <div className="flex h-[min(78dvh,860px)] min-h-[460px] w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40" style={{ backgroundColor: t.bg + 'f2' }}>
+    <PageShell className="chat-fixo lg:!pb-6">
+      <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-x-hidden">
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40 lg:h-[min(78dvh,860px)] lg:min-h-[460px]" style={{ backgroundColor: t.bg + 'f2' }}>
         {/* cabeçalho */}
         <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.07] to-transparent px-4 py-4 sm:px-5">
           <span className={`hidden h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${t.grad} text-white shadow-lg sm:flex`}>
