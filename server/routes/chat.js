@@ -612,6 +612,7 @@ router.post('/', requireUser, async (req, res) => {
         title: `💬 ${msg.user.username || 'Chat'}`,
         body: previa.slice(0, 140),
         link: '/chat',
+        image: msg.user.avatar_url || null,
         tag: `chat-${msg.id}`,
         tipo: 'chat',
       })

@@ -66,7 +66,7 @@ export default function UserPostCard({ post, viewer, onDelete, onUpdate, autor }
   }
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
+    <article className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.022] shadow-lg shadow-black/10 backdrop-blur-md">
       <header className="flex items-center gap-2.5 px-4 pt-3.5">
         <img
           src={avatar || svgAvatar(nome, '#8b5cf6')}

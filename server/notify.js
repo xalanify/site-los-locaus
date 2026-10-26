@@ -65,6 +65,7 @@ async function enviarPush({
   body,
   link,
   image = null,
+  icon = null,
   tag = 'locaus',
   tipo = 'geral',
 }) {
@@ -80,11 +81,20 @@ async function enviarPush({
   }
   if (!subs.length) return;
 
+  const base = (process.env.SITE_URL || 'https://www.locaus.fun').replace(/\/+$/, '');
+  const absoluto = (u) => {
+    if (!u) return null;
+    const s = String(u);
+    if (/^https?:\/\//i.test(s)) return s;
+    return `${base}${s.startsWith('/') ? '' : '/'}${s}`;
+  };
+
   const payload = JSON.stringify({
     title,
     body,
     link,
-    image,
+    image: absoluto(image),
+    icon: absoluto(icon),
     tag,
     tipo,
     sound: 'default',
@@ -172,14 +182,41 @@ async function notificarNoticias(noticias) {
     // não avisa de notícias antigas (ex.: primeira vez que a cache enche)
     if (quando && Date.now() - quando > 24 * 60 * 60 * 1000) continue;
     const id = n.id || n.link || n.titulo;
+    let imagem = n.imagem || null;
+    // se só temos a imagem SVG de recurso, tenta a capa real do artigo
+    if (!imagem || /\.svg(?:$|\?)/i.test(imagem)) {
+      imagem = (await ogImage(n.link)) || imagem;
+    }
     await avisarUmaVez(`noticia:${id}`, {
       title: `📰 ${n.fonte || 'Notícia nova'}`,
       body: n.titulo,
       link: n.link || '/jogos-steam?aba=noticias',
-      image: n.imagem || null,
+      image: imagem,
       tag: `noticia-${id}`,
       tipo: 'noticia',
     }).catch(() => {});
+  }
+}
+
+async function ogImage(url) {
+  if (!url || !/^https?:\/\//i.test(String(url))) return null;
+  try {
+    const r = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36',
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(9000),
+    });
+    if (!r.ok) return null;
+    const html = await r.text();
+    const m =
+      html.match(/<meta[^>]+(?:property|name)=["']og:image["'][^>]+content=["']([^"']+)/i) ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']og:image["']/i);
+    return m ? m[1].replace(/&amp;/g, '&') : null;
+  } catch {
+    return null;
   }
 }
 
@@ -187,10 +224,20 @@ async function avisarJogoAoVivo(jogo, match) {
   if (!match || !match.id) return;
   const nomeA = (match.team_a && (match.team_a.name || match.team_a)) || 'Equipa A';
   const nomeB = (match.team_b && (match.team_b.name || match.team_b)) || 'Equipa B';
+  const logoA =
+    (match.team_a && (match.team_a.logo || match.team_a.logo_url)) ||
+    match.team_a_logo ||
+    null;
+  const logoB =
+    (match.team_b && (match.team_b.logo || match.team_b.logo_url)) ||
+    match.team_b_logo ||
+    null;
   await avisarUmaVez(`live:${jogo}:${match.id}`, {
     title: `🔴 Ao vivo · ${jogo === 'cs2' ? 'CS2' : 'Rainbow Six'}`,
     body: `${nomeA} vs ${nomeB} — o jogo começou!`,
     link: '/previsoes',
+    image: logoA || logoB || (jogo === 'cs2' ? '/nukecs2.png' : '/coastliner6.jpg'),
+    icon: logoB || logoA || '/icon-192.png',
     tag: `live-${jogo}-${match.id}`,
     tipo: 'live',
   }).catch(() => {});

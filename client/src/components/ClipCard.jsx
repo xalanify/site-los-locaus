@@ -260,6 +260,8 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                     musicaPausada.current = true
                     videoComecou()
                   }
+                  // o vídeo já arrancou: o aviso de qualidade sai logo
+                  setVeuQual(null)
                   forcerQualidade(e.target)
                   // o vídeo começou a tocar: levanta qualquer véu anterior
                   setVeu('nada')
@@ -422,10 +424,10 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         if (typeof p.setPlaybackQualityRange === 'function') p.setPlaybackQualityRange(alvo, alvo)
         if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality(alvo)
       } catch {}
-      if (tentativasQual.current === 12) {
+      if (tentativasQual.current === 8) {
         setTentouRecarregar((x) => x + 1)
       }
-      if (tentativasQual.current >= 24) {
+      if (tentativasQual.current >= 20) {
         limpaWatchdog()
         tentativasQual.current = 0
         setVeuQual(null)
@@ -444,7 +446,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         const p = api.current
         if (p && typeof p.playVideo === 'function') p.playVideo()
       } catch {}
-    }, 20000)
+    }, 12000)
   }
 
   /* recarregar o vídeo já na qualidade pedida (suggestedQuality é o
@@ -527,6 +529,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   }
 
   const definirQualidade = (q) => {
+    setVeuQual(null)
     if (q === 'auto') {
       q = melhorQualidade(niveisQual)
     }
@@ -1391,9 +1394,9 @@ export default function ClipCard({
 
   return (
     <div
-      className={`clip-card overflow-hidden rounded-2xl border ${
+      className={`clip-card overflow-hidden rounded-3xl border ${
         transparent
-          ? 'border-white/10 bg-white/[0.035] backdrop-blur-[3px]'
+          ? 'border-white/10 bg-white/[0.022] shadow-xl shadow-black/20 backdrop-blur-md transition-colors hover:bg-white/[0.04]'
           : 'glass border-transparent'
       }`}
     >

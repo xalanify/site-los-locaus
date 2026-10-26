@@ -7,7 +7,7 @@
    • recebe os pushes do servidor e mostra a notificação
    ============================================================ */
 
-const CACHE = 'locaus-v8';
+const CACHE = 'locaus-v9';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -78,9 +78,9 @@ self.addEventListener('push', (e) => {
   e.waitUntil(
     self.registration.showNotification(dados.title || 'Locaus', {
       body: dados.body || '',
-      icon: '/icon-192.png',
+      icon: dados.icon || '/icon-192.png',
       badge: '/icon-192.png',
-      image: dados.image || '/icon-512.png',
+      image: dados.image || dados.icon || '/icon-512.png',
       tag: dados.tag || 'locaus',
       renotify: Boolean(dados.tag),
       silent: false,

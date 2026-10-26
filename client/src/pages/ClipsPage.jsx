@@ -229,6 +229,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
                       key={c.id}
                       clip={c}
                       user={user}
+                      transparent
                       onRequestAuth={onRequestAuth}
                       onProfile={onProfile}
                     />
@@ -1382,8 +1383,12 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         {/* ---------------- Conteúdo ---------------- */}
         <div className="min-w-0 flex-1">
           {/* Cabeçalho */}
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div className="mb-6 overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/15 via-[#17102a]/70 to-fuchsia-600/10 p-4 shadow-xl shadow-violet-950/10 backdrop-blur-md sm:p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
+              <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-violet-400/20 bg-violet-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-violet-300">
+                <Film className="h-2.5 w-2.5" /> Feed da comunidade
+              </span>
               <h1
                 className="font-black gradient-text"
                 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
@@ -1402,6 +1407,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             >
               <Plus className="h-4 w-4" /> Publicar
             </button>
+          </div>
           </div>
 
           {/* Escolha: vídeo ou mensagem */}
@@ -2049,6 +2055,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   <ClipCard
                     clip={c}
                     user={user}
+                    transparent
                     onRequestAuth={onRequestAuth}
                     onProfile={onProfile}
                     onUpdate={(next) =>

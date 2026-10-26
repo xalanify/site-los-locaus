@@ -702,7 +702,7 @@ router.post('/:id/like', requireUser, async (req, res) => {
   try {
     const db = getDb();
     const id = Number(req.params.id);
-    const clip = await db.prepare('SELECT id, user_id, title FROM clips WHERE id = ?').get(id);
+    const clip = await db.prepare('SELECT id, user_id, title, thumb FROM clips WHERE id = ?').get(id);
     if (!clip) return res.status(404).json({ error: 'Clip não encontrado' });
 
     const has = await db
@@ -724,6 +724,7 @@ router.post('/:id/like', requireUser, async (req, res) => {
         title: `${req.auth.username} gostou do teu clip`,
         body: clip.title,
         link: `/clips?clip=${id}`,
+        image: clip.thumb || null,
       }).catch(() => {});
     }
     const after = await db.prepare('SELECT likes FROM clips WHERE id = ?').get(id);
@@ -898,6 +899,7 @@ router.post('/:id/comments', requireUser, async (req, res) => {
         : `${req.auth.username} comentou no teu clip`,
       body: content.slice(0, 140),
       link: '/clips',
+      image: clip.thumb || clip.thumb_url || null,
     }).catch(() => {});
 
     const row = await db
