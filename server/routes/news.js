@@ -1,5 +1,6 @@
 const express = require('express');
 const notify = require('../notify');
+const { getDb } = require('../database');
 
 const router = express.Router();
 
@@ -416,9 +417,76 @@ async function carregar() {
 async function obterNoticias() {
   const agora = Date.now();
   if (cache.dados && agora - cache.t < CACHE_MS) return cache.dados;
+
+  // Cache persistente na BD: serve logo mesmo num servidor acabado de acordar.
+  if (!cache.dados) {
+    try {
+      const db = getDb();
+      await db
+        .prepare(
+          `CREATE TABLE IF NOT EXISTS public.noticias_cache (
+             chave text primary key,
+             dados jsonb not null,
+             atualizado_em timestamptz not null default now()
+           )`,
+        )
+        .run()
+        .catch(() => {});
+      const row = await db
+        .prepare("SELECT dados, atualizado_em FROM public.noticias_cache WHERE chave = 'todas'")
+        .get();
+      if (row && Array.isArray(row.dados) && row.dados.length) {
+        cache = { t: new Date(row.atualizado_em).getTime(), dados: row.dados };
+        if (agora - cache.t >= CACHE_MS) atualizarNoticiasEmFundo();
+        return cache.dados;
+      }
+    } catch {
+      /* sem BD: segue para a leitura normal */
+    }
+  } else {
+    // Já temos notícias (mesmo antigas): mostra já e atualiza por trás.
+    if (agora - cache.t >= CACHE_MS) atualizarNoticiasEmFundo();
+    return cache.dados;
+  }
+
   const noticias = await carregar();
-  if (noticias.length) cache = { t: agora, dados: noticias };
+  if (noticias.length) {
+    cache = { t: agora, dados: noticias };
+    guardarNoticiasBd(noticias);
+  }
   return noticias.length ? noticias : cache.dados || [];
+}
+
+let aCarregarNoticias = null;
+function atualizarNoticiasEmFundo() {
+  if (aCarregarNoticias) return;
+  aCarregarNoticias = carregar()
+    .then((noticias) => {
+      if (noticias.length) {
+        cache = { t: Date.now(), dados: noticias };
+        guardarNoticiasBd(noticias);
+      }
+    })
+    .catch(() => {})
+    .finally(() => {
+      aCarregarNoticias = null;
+    });
+}
+
+async function guardarNoticiasBd(noticias) {
+  try {
+    const db = getDb();
+    await db
+      .prepare(
+        `INSERT INTO public.noticias_cache (chave, dados, atualizado_em)
+         VALUES ('todas', ?::jsonb, now())
+         ON CONFLICT (chave) DO UPDATE
+           SET dados = EXCLUDED.dados, atualizado_em = now()`,
+      )
+      .run(JSON.stringify(noticias));
+  } catch {
+    /* cache persistente é opcional */
+  }
 }
 
 router.get('/', async (req, res) => {

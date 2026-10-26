@@ -24,9 +24,21 @@ const fmtData = (iso) => {
   })
 }
 
+const CACHE_LOCAL = 'locaus:noticias-home-v1'
+
+function lerCacheLocal() {
+  try {
+    const raw = localStorage.getItem(CACHE_LOCAL)
+    const dados = raw ? JSON.parse(raw) : null
+    return Array.isArray(dados) && dados.length ? dados : []
+  } catch {
+    return []
+  }
+}
+
 export default function NoticiasHome() {
-  const [noticias, setNoticias] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [noticias, setNoticias] = useState(lerCacheLocal)
+  const [loading, setLoading] = useState(() => lerCacheLocal().length === 0)
   const [erro, setErro] = useState('')
   const [selecionada, setSelecionada] = useState(null)
 
@@ -38,8 +50,14 @@ export default function NoticiasHome() {
         const d = await r.json().catch(() => null)
         if (!r.ok) throw new Error((d && d.error) || 'Sem notícias.')
         if (vivo) {
-          setNoticias(Array.isArray(d?.noticias) ? d.noticias : [])
+          const lista = Array.isArray(d?.noticias) ? d.noticias : []
+          setNoticias(lista)
           setErro('')
+          try {
+            if (lista.length) localStorage.setItem(CACHE_LOCAL, JSON.stringify(lista))
+          } catch {
+            /* cache local é opcional */
+          }
         }
       } catch (e) {
         if (vivo) setErro(e.message || 'Sem ligação às notícias.')

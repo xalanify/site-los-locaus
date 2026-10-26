@@ -63,16 +63,49 @@ export async function ativarPush() {
   }
 
   try {
-    const reg = (await navigator.serviceWorker.getRegistration()) || (await registarSW())
+    // espera pelo service worker ativo (evita "push service error" por o SW
+    // ainda não estar pronto, muito comum na primeira ativação)
+    const reg = await navigator.serviceWorker.ready
     if (!reg) return { ok: false, erro: 'Sem service worker.' }
 
     const chave = await chavePublica()
     if (!chave) return { ok: false, erro: 'Push não está configurado no servidor.' }
 
-    const sub = await reg.pushManager.subscribe({
+    // remove uma subscrição antiga (chave VAPID antiga / browser atualizado)
+    try {
+      const antiga = await reg.pushManager.getSubscription()
+      if (antiga) await antiga.unsubscribe()
+    } catch {
+      /* segue para a nova subscrição */
+    }
+
+    const opcoes = {
       userVisibleOnly: true,
       applicationServerKey: bytes(chave),
-    })
+    }
+
+    let sub = null
+    try {
+      sub = await reg.pushManager.subscribe(opcoes)
+    } catch (primeiroErro) {
+      // segunda tentativa depois de garantir o SW pronto
+      await new Promise((r) => setTimeout(r, 800))
+      try {
+        sub = await reg.pushManager.subscribe(opcoes)
+      } catch (segundoErro) {
+        const msg = String((segundoErro && segundoErro.message) || primeiroErro?.message || '')
+        if (/push service error|registration failed/i.test(msg)) {
+          return {
+            ok: false,
+            erro:
+              'O browser não conseguiu ligar ao serviço de push. Usa Chrome ou Edge, desativa VPN/firewall temporariamente e confirma que as notificações do Windows estão ligadas. No Brave, ativa “Use Google services for push messaging”.',
+          }
+        }
+        return { ok: false, erro: msg || 'Não deu para subscrever as notificações.' }
+      }
+    }
+
+    if (!sub) return { ok: false, erro: 'Não deu para criar a subscrição de push.' }
 
     const r = await fetch('/api/notifications/push/subscribe', {
       method: 'POST',
