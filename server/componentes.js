@@ -155,12 +155,12 @@ const CATALOGO = [
   /* ---------------- Teclados ---------------- */
   C('kb-wooting60he', '60HE+', 'Wooting', 'teclado', '60% · analógico · rapid trigger', 'Wooting 60HE+', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
   C('kb-huntsman-v3', 'Huntsman V3 Pro TKL', 'Razer', 'teclado', 'TKL · analógico · Gen-2', 'Razer Huntsman V3 Pro TKL', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
-  C('kb-keychron-q1', 'Q1 Pro', 'Keychron', 'teclado', '75% · hot-swap · wireless', 'Keychron Q1 Pro', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
+  C('kb-keychron-q1', 'Q1 HE', 'Keychron', 'teclado', '75% · Hall Effect · hot-swap', 'Keychron Q1 HE', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
   C('kb-gpro-tkl', 'G Pro X TKL Lightspeed', 'Logitech', 'teclado', 'TKL · sem fio · GL switches', 'Logitech G Pro X TKL Lightspeed', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
 
   /* ---------------- Mousepads ---------------- */
   C('mp-artisan-zero', 'Zero XL', 'Artisan', 'mousepad', 'XL · controlo · 490×420 mm', 'Artisan Zero XL', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
-  C('mp-saturn-pro', 'Saturn Pro XL', 'Lethal Gaming Gear', 'mousepad', 'XL · híbrido · 500×500 mm', 'Lethal Gaming Gear Saturn Pro XL', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
+  C('mp-saturn-pro', 'Saturn Pro XL', 'Pulsar', 'mousepad', 'XL · soft · 500×500 mm', 'Pulsar Saturn Pro XL Soft', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
   C('mp-gigantus-xxl', 'Gigantus V2 XXL', 'Razer', 'mousepad', 'XXL · tecido · 940×410 mm', 'Razer Gigantus V2 XXL', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
   C('mp-qck-heavy', 'QcK Heavy XXL', 'SteelSeries', 'mousepad', 'XXL · tecido · 900×400 mm', 'SteelSeries QcK Heavy XXL', ['pcdiga', 'globaldata', 'pccomponentes', 'maxgaming']),
 
