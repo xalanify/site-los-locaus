@@ -171,7 +171,7 @@ export default function Sino({ user, posicao = 'topo' }) {
 
       {aberto && (
         <div
-          className={`glass absolute z-50 w-[min(92vw,23rem)] overflow-hidden rounded-2xl ${
+          className={`glass absolute z-50 max-h-[80vh] w-[min(92vw,23rem)] overflow-hidden rounded-2xl ${
             // Na sidebar o sino fica em baixo: o painel abre para cima
             // e para a direita, para não sair do ecrã.
             posicao === 'lateral' ? 'bottom-0 left-11' : 'right-0 top-11'
