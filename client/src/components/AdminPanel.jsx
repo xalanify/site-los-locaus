@@ -292,17 +292,20 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
   /* ---------- Notificação de teste (ver o push no telemóvel) ---------- */
   const [testeNotifMsg, setTesteNotifMsg] = useState(null)
-  const testarNotificacao = async () => {
+  const testarNotificacao = async (tipo = 'geral') => {
     setTesteNotifMsg(null)
     try {
       const res = await fetch('/api/admin/teste-notificacao', {
         method: 'POST',
         headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ tipo }),
       })
       const d = await res.json().catch(() => ({}))
       if (res.ok) {
-        setTesteNotifMsg({ ok: true, texto: `Notificação de teste enviada (utilizador ${d.userId}). Verifica o telemóvel/PC.` })
+        setTesteNotifMsg({
+          ok: true,
+          texto: `Notificação de teste “${tipo}” enviada para o utilizador ${d.userId}. Minimiza o site e verifica o Windows.`,
+        })
       } else {
         setTesteNotifMsg({ ok: false, texto: d.error || 'Não foi possível enviar a notificação de teste.' })
       }
@@ -1540,14 +1543,28 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 <Bell className="h-4 w-4 text-amber-400" /> Notificações
               </h3>
               <p className="text-[13px] text-gray-400">
-                Envia uma notificação de teste (sino + push no telemóvel) para testares as notificações.
+                Testa o som e o aviso no Windows com cada tipo de notificação. Minimiza o site
+                depois de clicar.
               </p>
-              <button
-                onClick={testarNotificacao}
-                className="mt-3 rounded-full bg-amber-500 px-5 py-2 text-sm font-black text-black transition-colors hover:bg-amber-400"
-              >
-                Enviar notificação de teste
-              </button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  ['chat', '💬 Chat geral'],
+                  ['like', '❤️ Gosto'],
+                  ['comment', '💬 Comentário'],
+                  ['game', '🎮 Jogo R6'],
+                  ['live', '🔴 Jogo CS2'],
+                  ['news', '📰 Notícia'],
+                  ['geral', '🔔 Geral'],
+                ].map(([id, nome]) => (
+                  <button
+                    key={id}
+                    onClick={() => testarNotificacao(id)}
+                    className="rounded-full border border-amber-400/30 bg-amber-500/15 px-3 py-1.5 text-[11px] font-black text-amber-200 transition-colors hover:bg-amber-500/25"
+                  >
+                    {nome}
+                  </button>
+                ))}
+              </div>
               {testeNotifMsg && (
                 <p
                   className={`mt-2 text-[12px] font-bold ${

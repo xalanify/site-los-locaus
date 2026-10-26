@@ -83,12 +83,31 @@ function carregarApi() {
 }
 
 /* --------- qualidade guardada (por máquina) — o clip arranca logo
-   na qualidade escolhida da última vez (vq no player desde o início) */
+   na qualidade escolhida da última vez (vq no player desde o início).
+   Por defeito: MÁXIMA disponível (nunca “auto” a 360p). */
+const ORDEM_QUAL = ['highres', 'hd2160', 'hd1440', 'hd1080', 'hd720', 'large', 'medium', 'small', 'tiny']
+const melhorQualidade = (niveis) => {
+  const lista = Array.isArray(niveis) ? niveis.filter((q) => q && q !== 'auto') : []
+  return ORDEM_QUAL.find((q) => lista.includes(q)) || lista[0] || 'highres'
+}
+const NOME_QUAL = {
+  highres: '2160p+',
+  hd2160: '2160p',
+  hd1440: '1440p',
+  hd1080: '1080p',
+  hd720: '720p',
+  large: '480p',
+  medium: '480p',
+  small: '360p',
+  tiny: '240p',
+}
+
 const qualGravada = () => {
   try {
-    return localStorage.getItem('aj-clip-qual') || 'auto'
+    const q = localStorage.getItem('aj-clip-qual')
+    return !q || q === 'auto' ? 'max' : q
   } catch {
-    return 'auto'
+    return 'max'
   }
 }
 const gravarQual = (q) => {
@@ -175,7 +194,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             videoId: id,
             host: 'https://www.youtube-nocookie.com',
             playerVars: {
-              autoplay: 1,
+              autoplay: 0,
               controls: 0, // sem barra deles
               modestbranding: 1, // sem logotipo
               rel: 0,
@@ -203,8 +222,30 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 } catch {}
                 const ifr = e.target.getIframe && e.target.getIframe()
                 if (ifr) ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0'
-                /* qualidade máxima (1080p60 quando existe) */
+                /* qualidade máxima disponível: escolhe o melhor nível real
+                   (4K/2K/1080p) e só deixa tocar quando lá chegar */
+                let niveis = []
+                try {
+                  niveis = e.target.getAvailableQualityLevels
+                    ? e.target.getAvailableQualityLevels()
+                    : []
+                } catch {}
+                setNiveisQual(niveis)
+                let alvo = qualEsc.current
+                if (!alvo || alvo === 'auto' || alvo === 'max') {
+                  alvo = melhorQualidade(niveis)
+                  qualEsc.current = alvo
+                  gravarQual(alvo)
+                }
+                qualAlvoRef.current = alvo
+                setQualAlvo(alvo)
+                setVqPedida(alvo)
+                setVeuQual(NOME_QUAL[alvo] || alvo)
+                try {
+                  e.target.pauseVideo && e.target.pauseVideo()
+                } catch {}
                 forcerQualidade(e.target)
+                arrancaWatchdog()
               },
               onStateChange: (e) => {
                 if (!vivo) return
@@ -296,19 +337,22 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
      MAS se o utilizador escolheu uma qualidade específica, é ESSA
      que se pede — nunca por cima da escolha dele. */
   const forcerQualidade = (alvo) => {
-    if (!alvo || qualidadeFeita.current) return
+    if (!alvo) return
+    let q = qualAlvoRef.current
+    if (!q || q === 'auto' || q === 'max') {
+      let niveis = []
+      try {
+        niveis = alvo.getAvailableQualityLevels ? alvo.getAvailableQualityLevels() : []
+      } catch {}
+      q = melhorQualidade(niveis)
+      qualAlvoRef.current = q
+      setQualAlvo(q)
+      setVqPedida(q)
+    }
     qualidadeFeita.current = true
-    const q = qualAlvoRef.current
     try {
-      if (q && q !== 'auto') {
-        if (typeof alvo.setPlaybackQualityRange === 'function') alvo.setPlaybackQualityRange(q, q)
-        if (typeof alvo.setPlaybackQuality === 'function') alvo.setPlaybackQuality(q)
-      } else {
-        if (typeof alvo.setPlaybackQualityRange === 'function') {
-          alvo.setPlaybackQualityRange('hd1080', 'highres')
-        }
-        if (typeof alvo.setPlaybackQuality === 'function') alvo.setPlaybackQuality('highres')
-      }
+      if (typeof alvo.setPlaybackQualityRange === 'function') alvo.setPlaybackQualityRange(q, q)
+      if (typeof alvo.setPlaybackQuality === 'function') alvo.setPlaybackQuality(q)
     } catch {}
   }
 
@@ -369,10 +413,10 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         if (typeof p.setPlaybackQualityRange === 'function') p.setPlaybackQualityRange(alvo, alvo)
         if (typeof p.setPlaybackQuality === 'function') p.setPlaybackQuality(alvo)
       } catch {}
-      if (tentativasQual.current === 8) {
+      if (tentativasQual.current === 12) {
         setTentouRecarregar((x) => x + 1)
       }
-      if (tentativasQual.current >= 12) {
+      if (tentativasQual.current >= 24) {
         limpaWatchdog()
         tentativasQual.current = 0
         setVeuQual(null)
@@ -391,7 +435,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         const p = api.current
         if (p && typeof p.playVideo === 'function') p.playVideo()
       } catch {}
-    }, 7000)
+    }, 20000)
   }
 
   /* recarregar o vídeo já na qualidade pedida (suggestedQuality é o
@@ -474,6 +518,9 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   }
 
   const definirQualidade = (q) => {
+    if (q === 'auto') {
+      q = melhorQualidade(niveisQual)
+    }
     qualEsc.current = q
     setMenuQual(false)
     const p = api.current

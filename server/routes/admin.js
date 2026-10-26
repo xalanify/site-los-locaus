@@ -11,7 +11,7 @@ const VALID_BADGES = ['dev', 'top1', 'previsao1', 'fortnite-rank1'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');
-const { notify } = require('../notify');
+const { notify, enviarPush } = require('../notify');
 
 /* Rótulos das distinções para as notificações */
 const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)', previsao1: '1.º na classificação das previsões', 'fortnite-rank1': 'Rank mais alto Fortnite' };
@@ -736,8 +736,8 @@ router.get('/stats', requireAdmin, async (req, res) => {
 router.post('/teste-notificacao', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
+    const tipo = String((req.body && req.body.tipo) || 'geral').toLowerCase();
     // envia a quem o admin indicar (userId) ou, sem userId, ao próprio admin
-    // (se tiver conta) e, em último caso, ao primeiro utilizador existente.
     const alvo = Number((req.body && req.body.userId) || req.auth.uid || 0);
     let uid = alvo;
     if (!uid) {
@@ -746,16 +746,74 @@ router.post('/teste-notificacao', requireAdmin, async (req, res) => {
     }
     if (!uid) return res.status(400).json({ ok: false, error: 'Não há utilizadores para testar.' });
 
-    const id = await notify({
-      userId: uid,
-      type: 'teste',
-      entity: 'teste',
-      title: '🔔 Notificação de teste',
-      body: 'Se estás a ver isto, as notificações funcionam!',
-      link: '/notificacoes',
-      image: '/icon-512.png',
-    });
-    res.json({ ok: Boolean(id), userId: uid, push: require('../notify').pushAtivo() });
+    const exemplos = {
+      geral: {
+        title: '🔔 Locaus · teste',
+        body: 'Se estás a ver isto, as notificações funcionam!',
+        link: '/',
+        tag: 'teste-geral',
+        tipo: 'geral',
+      },
+      chat: {
+        title: '💬 Chat geral · teste',
+        body: 'O teste de mensagem no chat funcionou. Se ouviste o som, está bom.',
+        link: '/chat',
+        tag: `teste-chat-${Date.now()}`,
+        tipo: 'chat',
+      },
+      like: {
+        title: '❤️ Gosto no teu clip · teste',
+        body: 'Alguém gostou de um clip teu (teste).',
+        link: '/clips',
+        tag: `teste-like-${Date.now()}`,
+        tipo: 'like',
+      },
+      comment: {
+        title: '💬 Comentário no teu clip · teste',
+        body: '“Este é um comentário de teste para ver se a notificação aparece.”',
+        link: '/clips',
+        tag: `teste-comment-${Date.now()}`,
+        tipo: 'comment',
+      },
+      live: {
+        title: '🔴 Jogo ao vivo · CS2 (teste)',
+        body: 'NAVI vs Vitality — o jogo começou!',
+        link: '/previsoes',
+        tag: `teste-live-${Date.now()}`,
+        tipo: 'live',
+      },
+      news: {
+        title: '📰 Notícia nova · teste',
+        body: 'Esta é uma notícia de teste para verificares o som e o aviso no Windows.',
+        link: '/jogos-steam?aba=noticias',
+        tag: `teste-news-${Date.now()}`,
+        tipo: 'noticia',
+      },
+      game: {
+        title: '🎮 Jogo ao vivo · Rainbow Six (teste)',
+        body: 'G2 vs Team Secret — o jogo começou!',
+        link: '/previsoes',
+        tag: `teste-game-${Date.now()}`,
+        tipo: 'live',
+      },
+    };
+    const dados = exemplos[tipo] || exemplos.geral;
+
+    let id = null;
+    if (tipo === 'geral') {
+      id = await notify({
+        userId: uid,
+        type: 'teste',
+        entity: 'teste',
+        title: dados.title,
+        body: dados.body,
+        link: dados.link,
+        image: '/icon-512.png',
+      });
+    } else {
+      await enviarPush({ userId: uid, ...dados });
+    }
+    res.json({ ok: true, userId: uid, tipo, push: require('../notify').pushAtivo(), id });
   } catch (error) {
     console.error('Erro teste-notificacao:', error.message);
     res.status(500).json({ ok: false, error: 'Não foi possível enviar a notificação de teste.' });

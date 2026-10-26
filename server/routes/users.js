@@ -231,6 +231,35 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Apagar a própria conta de teste (só nomes que começam por teste-locaus-)
+router.delete('/me/teste', requireUser, async (req, res) => {
+  try {
+    const db = getDb();
+    const uid = Number(req.auth.uid);
+    const u = await db.prepare('SELECT username FROM users WHERE id = ?').get(uid);
+    if (!u || !/^teste-locaus-/i.test(String(u.username || ''))) {
+      return res.status(403).json({ error: 'Esta conta não é uma conta de teste.' });
+    }
+    await db.prepare('DELETE FROM clip_comments WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM clip_likes WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM clip_saves WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM chat_reactions WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM chat_reads WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM chat_messages WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM r6_predictions WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM cs2_predictions WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM notifications WHERE user_id = ? OR actor_id = ?').run(uid, uid).catch(() => {});
+    await db.prepare('DELETE FROM push_subs WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM user_badges WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM user_profiles WHERE user_id = ?').run(uid).catch(() => {});
+    await db.prepare('DELETE FROM users WHERE id = ?').run(uid);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Erro apagar conta teste:', e.message);
+    res.status(500).json({ error: 'Não deu para apagar a conta de teste.' });
+  }
+});
+
 // Entrar
 router.post('/login', async (req, res) => {
   try {
