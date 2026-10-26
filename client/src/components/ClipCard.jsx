@@ -284,10 +284,19 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 const q = e.data
                 if (q && q !== 'unknown') setQualAtual(q)
                 // chegou à qualidade FORÇADA: solta o véu e toca
-                if (q && qualAlvoRef.current !== 'auto' && q === qualAlvoRef.current) {
+                const alvo = qualAlvoRef.current
+                const chegou =
+                  q &&
+                  (q === alvo ||
+                    (q === 'highres' && alvo === 'hd2160') ||
+                    (q === 'hd2160' && alvo === 'highres'))
+                if (chegou) {
                   limpaWatchdog()
                   tentativasQual.current = 0
                   setVeuQual(null)
+                  try {
+                    typeof e.target.playVideo === 'function' && e.target.playVideo()
+                  } catch {}
                 }
               },
             },
