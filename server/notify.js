@@ -168,6 +168,9 @@ async function notificarNoticias(noticias) {
   const lista = (Array.isArray(noticias) ? noticias : []).slice(0, 2);
   for (const n of lista) {
     if (!n || !n.titulo) continue;
+    const quando = n.data ? new Date(n.data).getTime() : 0;
+    // não avisa de notícias antigas (ex.: primeira vez que a cache enche)
+    if (quando && Date.now() - quando > 24 * 60 * 60 * 1000) continue;
     const id = n.id || n.link || n.titulo;
     await avisarUmaVez(`noticia:${id}`, {
       title: `📰 ${n.fonte || 'Notícia nova'}`,
