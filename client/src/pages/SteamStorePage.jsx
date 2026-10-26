@@ -790,7 +790,12 @@ export default function SteamStorePage() {
                       loading="lazy"
                       className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none'
+                        if (!e.currentTarget.dataset.fallback) {
+                          e.currentTarget.dataset.fallback = '1'
+                          e.currentTarget.src = '/noticias/gaming.svg'
+                        } else {
+                          e.currentTarget.style.display = 'none'
+                        }
                       }}
                     />
                   ) : (

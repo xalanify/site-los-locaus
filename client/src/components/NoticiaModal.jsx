@@ -75,7 +75,12 @@ export default function NoticiaModal({ noticia, onFechar }) {
                 alt=""
                 className="h-full w-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none'
+                  if (!e.currentTarget.dataset.fallback) {
+                    e.currentTarget.dataset.fallback = '1'
+                    e.currentTarget.src = '/noticias/gaming.svg'
+                  } else {
+                    e.currentTarget.style.display = 'none'
+                  }
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0a16] via-transparent to-black/20" />

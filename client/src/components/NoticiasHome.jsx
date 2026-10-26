@@ -113,7 +113,12 @@ export default function NoticiasHome() {
                       loading="lazy"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none'
+                        if (!e.currentTarget.dataset.fallback) {
+                          e.currentTarget.dataset.fallback = '1'
+                          e.currentTarget.src = '/noticias/gaming.svg'
+                        } else {
+                          e.currentTarget.style.display = 'none'
+                        }
                       }}
                     />
                   ) : (
