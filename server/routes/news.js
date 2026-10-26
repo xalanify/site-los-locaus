@@ -16,6 +16,97 @@ const FEEDS = [
     prioridade: 1,
   },
   {
+    id: 'ign',
+    fonte: 'IGN',
+    url: 'https://feeds.ign.com/ign/all',
+    lingua: 'en',
+    prioridade: 1,
+  },
+  {
+    id: 'vgc',
+    fonte: 'VGC',
+    url: 'https://www.videogameschronicle.com/feed/',
+    lingua: 'en',
+    prioridade: 1,
+  },
+  {
+    id: 'dexerto',
+    fonte: 'Dexerto',
+    url: 'https://www.dexerto.com/feed/',
+    lingua: 'en',
+    prioridade: 1,
+  },
+  {
+    id: 'gamesradar',
+    fonte: 'GamesRadar',
+    url: 'https://www.gamesradar.com/rss/',
+    lingua: 'en',
+    prioridade: 1,
+  },
+  {
+    id: 'pcgamer',
+    fonte: 'PC Gamer',
+    url: 'https://www.pcgamer.com/rss/',
+    lingua: 'en',
+    prioridade: 1,
+  },
+  {
+    id: 'rockstar-google',
+    fonte: 'Rockstar Newswire',
+    url: 'https://news.google.com/rss/search?q=site%3Arockstargames.com%2Fnewswire&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 4,
+  },
+  {
+    id: 'amd-google',
+    fonte: 'AMD Newsroom',
+    url: 'https://news.google.com/rss/search?q=site%3Aamd.com%2Fen%2Fnewsroom&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 4,
+  },
+  {
+    id: 'cod-google',
+    fonte: 'Call of Duty · oficial',
+    url: 'https://news.google.com/rss/search?q=site%3Acallofduty.com&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 4,
+  },
+  {
+    id: 'cod-rumores',
+    fonte: 'Call of Duty · rumores',
+    url: 'https://news.google.com/rss/search?q=Call+of+Duty+leak+OR+rumor&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'bf-google',
+    fonte: 'Battlefield · oficial',
+    url: 'https://news.google.com/rss/search?q=site%3Aea.com%2Fgames%2Fbattlefield&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 4,
+  },
+  {
+    id: 'bf-rumores',
+    fonte: 'Battlefield · rumores',
+    url: 'https://news.google.com/rss/search?q=Battlefield+leak+OR+rumor&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'gta-rumores',
+    fonte: 'Rockstar / GTA · rumores',
+    url: 'https://news.google.com/rss/search?q=GTA+6+OR+Rockstar+leak+OR+rumor&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
+    id: 'jailbreak-google',
+    fonte: 'PS4/PS5 · jailbreak',
+    url: 'https://news.google.com/rss/search?q=PS4+OR+PS5+jailbreak+OR+exploit&hl=en-US&gl=US&ceid=US:en',
+    lingua: 'en',
+    prioridade: 3,
+  },
+  {
     id: 'gamesradar-cod',
     fonte: 'GamesRadar · Call of Duty',
     url: 'https://www.gamesradar.com/feeds/tag/call-of-duty/',
@@ -104,7 +195,7 @@ const FEEDS = [
 /* Temas aceites: Call of Duty, Rockstar/GTA, NVIDIA, AMD/placas gráficas,
    processadores/memórias e desbloqueios de PS4/PS5. */
 const TEMAS =
-  /call of duty|warzone|\bcod\b|modern warfare|black ops|rockstar|grand theft auto|\bgta\b|red dead|nvidia|geforce|\brtx\b|\bgtx\b|\bamd\b|radeon|ryzen|placa gr[áa]fica|gr[áa]fica|\bgpu\b|processador|\bcpu\b|mem[oó]ria|\bram\b|ddr[45]/i;
+  /call of duty|warzone|\bcod\b|modern warfare|black ops|battlefield|\bdice\b|rockstar|grand theft auto|\bgta\b|red dead|nvidia|geforce|\brtx\b|\bgtx\b|\bamd\b|radeon|ryzen|placa gr[áa]fica|gr[áa]fica|\bgpu\b|processador|\bcpu\b|mem[oó]ria|\bram\b|ddr[45]/i;
 
 const JAILBREAK = /jailbreak|unlock|desbloque|\bcfw\b|\bhen\b/i;
 const PS = /ps4|ps5|playstation/i;

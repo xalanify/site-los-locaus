@@ -17,6 +17,7 @@ import {
   Newspaper,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
+import NoticiaModal from '../components/NoticiaModal'
 import { GTA_VI, RUMORES } from '../data/jogosRumores'
 
 const GENEROS = [
@@ -411,6 +412,7 @@ export default function SteamStorePage() {
   const [paginas, setPaginas] = useState(1)
   const [ficha, setFicha] = useState(null)
   const [noticias, setNoticias] = useState({ loading: false, lista: [], erro: '' })
+  const [noticiaAberta, setNoticiaAberta] = useState(null)
 
   useEffect(() => {
     let vivo = true
@@ -772,12 +774,11 @@ export default function SteamStorePage() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {noticias.lista.map((n) => (
-                <a
+                <button
+                  type="button"
                   key={n.id}
-                  href={n.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] transition-colors hover:border-violet-400/35 hover:bg-white/[0.05]"
+                  onClick={() => setNoticiaAberta(n)}
+                  className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] text-left transition-colors hover:border-violet-400/35 hover:bg-white/[0.05]"
                 >
                   {n.imagem ? (
                     <img
@@ -816,10 +817,10 @@ export default function SteamStorePage() {
                       </p>
                     )}
                     <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-500 group-hover:text-violet-300">
-                      Ler notícia <ExternalLink className="h-3 w-3" />
+                      Ver resumo <Sparkles className="h-3 w-3" />
                     </span>
                   </div>
-                </a>
+                </button>
               ))}
             </div>
           )}
@@ -829,6 +830,8 @@ export default function SteamStorePage() {
       <p className="mt-4 flex items-center justify-center gap-2 text-center text-[10px] font-semibold text-gray-600">
         <Store className="h-3.5 w-3.5" /> Dados e imagens da Steam / SteamSpy. Preços sujeitos a alteração.
       </p>
+
+      <NoticiaModal noticia={noticiaAberta} onFechar={() => setNoticiaAberta(null)} />
 
       <AnimatePresence>
         {ficha && <FichaJogo appid={ficha} onClose={() => setFicha(null)} />}

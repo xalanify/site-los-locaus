@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, ExternalLink, Newspaper } from 'lucide-react'
+import { ArrowRight, Sparkles, Newspaper } from 'lucide-react'
+import NoticiaModal from './NoticiaModal'
 
 /* ============================================================
    Últimas notícias da home
@@ -27,6 +28,7 @@ export default function NoticiasHome() {
   const [noticias, setNoticias] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
+  const [selecionada, setSelecionada] = useState(null)
 
   useEffect(() => {
     let vivo = true
@@ -93,16 +95,15 @@ export default function NoticiasHome() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {noticias.map((n, i) => (
-              <motion.a
+              <motion.button
+                type="button"
                 key={n.id || n.link}
-                href={n.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => setSelecionada(n)}
                 initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: Math.min(i * 0.06, 0.24) }}
-                className="glass group flex flex-col overflow-hidden rounded-2xl"
+                className="glass group flex flex-col overflow-hidden rounded-2xl text-left"
               >
                 <span className="relative block aspect-video overflow-hidden bg-violet-500/10">
                   {n.imagem ? (
@@ -138,14 +139,16 @@ export default function NoticiasHome() {
                     </span>
                   )}
                   <span className="mt-auto flex items-center gap-1 pt-3 text-[10px] font-black uppercase tracking-wide text-violet-300">
-                    Ler notícia <ExternalLink className="h-3 w-3" />
+                    <Sparkles className="h-3 w-3" /> Ver resumo
                   </span>
                 </span>
-              </motion.a>
+              </motion.button>
             ))}
           </div>
         )}
       </div>
+
+      <NoticiaModal noticia={selecionada} onFechar={() => setSelecionada(null)} />
     </section>
   )
 }
