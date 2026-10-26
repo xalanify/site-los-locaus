@@ -194,7 +194,7 @@ export default function ChatPage({ user }) {
   const [stickersAberto, setStickersAberto] = useState(false)
   const [stickerPaginas, setStickerPaginas] = useState([])
   const [stickerPagina, setStickerPagina] = useState(0)
-  const [stickerQuery, setStickerQuery] = useState('')
+  const [stickerQuery, setStickerQuery] = useState('meme tiktok')
   const [stickersLoading, setStickersLoading] = useState(false)
   const [stickersErro, setStickersErro] = useState('')
   const podeStickers =
@@ -572,7 +572,8 @@ export default function ChatPage({ user }) {
     if (stickersAberto && podeStickers) {
       setStickerPaginas([])
       setStickerPagina(0)
-      carregarStickers('', 0, true)
+      setStickerQuery('meme tiktok')
+      carregarStickers('meme tiktok', 0, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stickersAberto])
