@@ -16,7 +16,7 @@ import {
   Newspaper,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
-import { GTA_VI, RUMORES, CANCELADOS } from '../data/jogosRumores'
+import { GTA_VI, RUMORES } from '../data/jogosRumores'
 
 const GENEROS = [
   { id: '', nome: 'Todos' },
@@ -374,9 +374,7 @@ function FichaEditorial({ item, onClose }) {
 
 export default function SteamStorePage() {
   const [aba, setAba] = useState('embreve')
-  const [subEmBreve, setSubEmBreve] = useState('steam')
   const [editorial, setEditorial] = useState(null)
-  const [emBreve, setEmBreve] = useState({ loading: true, jogos: [], erro: '' })
   const [top, setTop] = useState({ loading: true, jogos: [], erro: '' })
   const [maisComprados, setMaisComprados] = useState({ loading: true, jogos: [] })
   const [pesquisa, setPesquisa] = useState({ loading: false, jogos: [], erro: '' })
@@ -391,10 +389,6 @@ export default function SteamStorePage() {
 
   useEffect(() => {
     let vivo = true
-    fetch('/api/games/steam/em-breve')
-      .then((r) => r.json())
-      .then((d) => vivo && setEmBreve({ loading: false, jogos: d?.jogos || [], erro: d?.error || '' }))
-      .catch(() => vivo && setEmBreve({ loading: false, jogos: [], erro: 'Sem ligação.' }))
     fetch('/api/games/steam/top')
       .then((r) => r.json())
       .then(
@@ -506,64 +500,24 @@ export default function SteamStorePage() {
                 Em breve
               </h2>
             </div>
-            <div className="flex gap-1.5 overflow-x-auto">
-              {[
-                { id: 'steam', label: 'Steam' },
-                { id: 'rumores', label: 'Rumores' },
-                { id: 'cancelados', label: 'Cancelados / fechados' },
-              ].map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSubEmBreve(s.id)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${
-                    subEmBreve === s.id
-                      ? 'bg-violet-500 text-white'
-                      : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+            <span className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-violet-300 ring-1 ring-violet-400/20">
+              Jogos de topo
+            </span>
           </div>
 
-          {subEmBreve === 'steam' && (
-            <>
-              <div className="mb-3 grid gap-3 sm:grid-cols-2">
-                <CartaoEditorial item={GTA_VI} onClick={setEditorial} destaque />
-              </div>
-              {emBreve.loading ? (
-                <p className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
-                  <Loader2 className="h-4 w-4 animate-spin" /> A carregar lançamentos…
-                </p>
-              ) : emBreve.erro ? (
-                <p className="py-6 text-center text-sm text-yellow-300">{emBreve.erro}</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {emBreve.jogos.map((j) => (
-                    <CartaoJogo key={j.appid} jogo={j} onClick={abrir} />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+          <div className="mb-3 grid gap-3 sm:grid-cols-2">
+            <CartaoEditorial item={GTA_VI} onClick={setEditorial} destaque />
+          </div>
 
-          {subEmBreve === 'rumores' && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              <CartaoEditorial item={GTA_VI} onClick={setEditorial} destaque />
-              {RUMORES.map((r) => (
-                <CartaoEditorial key={r.id} item={r} onClick={setEditorial} />
-              ))}
-            </div>
-          )}
+          <p className="mb-3 text-[11px] font-semibold text-gray-500">
+            Próximos lançamentos e rumores das maiores editoras. Sem jogos cancelados.
+          </p>
 
-          {subEmBreve === 'cancelados' && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {CANCELADOS.map((r) => (
-                <CartaoEditorial key={r.id} item={r} onClick={setEditorial} />
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {RUMORES.map((r) => (
+              <CartaoEditorial key={r.id} item={r} onClick={setEditorial} />
+            ))}
+          </div>
         </section>
       )}
 

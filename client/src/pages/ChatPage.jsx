@@ -295,6 +295,27 @@ export default function ChatPage({ user }) {
     return () => clearInterval(t)
   }, [])
 
+  // Marca as mensagens como vistas (contador do menu lateral)
+  const ultimaMsgId = messages.length ? messages[messages.length - 1].id : 0
+  useEffect(() => {
+    if (!ultimaMsgId) return undefined
+    const marcar = () => {
+      if (document.hidden) return
+      fetch('/api/chat/lido', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ last_id: ultimaMsgId }),
+      })
+        .then(() => {
+          window.dispatchEvent(new Event('locaus:chat-lido'))
+        })
+        .catch(() => {})
+    }
+    marcar()
+    document.addEventListener('visibilitychange', marcar)
+    return () => document.removeEventListener('visibilitychange', marcar)
+  }, [ultimaMsgId])
+
   // Atualiza o número de membros online a cada 30s
   useEffect(() => {
     const fetchOnline = async () => {

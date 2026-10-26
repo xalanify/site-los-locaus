@@ -3454,7 +3454,7 @@ export default function GamesPage() {
             className="mb-3 font-black gradient-text"
             style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
           >
-            Jogos
+            Estatísticas
           </h1>
         </motion.div>
 

@@ -33,6 +33,26 @@ export const RUMORES = [
     cor2: '#ef4444',
   },
   {
+    id: 'rdr-3',
+    nome: 'Red Dead Redemption 3',
+    estado: 'Rumor',
+    imagem: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg',
+    descricao:
+      'A Rockstar ainda não anunciou Red Dead Redemption 3. Rumores e vagas de emprego sugerem que a saga vai continuar, mas não há data, plataformas nem história confirmadas.',
+    cor: '#ef4444',
+    cor2: '#f59e0b',
+  },
+  {
+    id: 'battlefield-2027',
+    nome: 'Próximo Battlefield',
+    estado: 'Rumor',
+    imagem: 'https://cdn.cloudflare.steamstatic.com/steam/apps/2807960/header.jpg',
+    descricao:
+      'Depois de Battlefield 6, a EA e os estúdios Battlefield continuam a trabalhar no futuro da série. Ainda não há anúncio oficial do próximo jogo.',
+    cor: '#38bdf8',
+    cor2: '#f97316',
+  },
+  {
     id: 'gta-vi-pc',
     nome: 'GTA VI para PC',
     estado: 'Rumor',

@@ -1082,10 +1082,7 @@ export default function PrevisoesPage({ user }) {
   const [classificacao, setClassificacao] = useState([])
   const [classLoading, setClassLoading] = useState(false)
   const [classificacaoAberta, setClassificacaoAberta] = useState(false)
-  const [classTipo, setClassTipo] = useState('total')
   const [classTotal, setClassTotal] = useState([])
-  const [classR6, setClassR6] = useState([])
-  const [classCs2, setClassCs2] = useState([])
   const [classModalLoading, setClassModalLoading] = useState(false)
   const [resultadosNovos, setResultadosNovos] = useState([])
   const [modalResultados, setModalResultados] = useState(false)
@@ -1166,15 +1163,10 @@ export default function PrevisoesPage({ user }) {
       fetch('/api/previsoes/classificacao', { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
-      fetch('/api/previsoes/cs2/classificacao', { headers: authHeaders() })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
     ])
-      .then(([t, r6, cs2]) => {
+      .then(([t, r6]) => {
         if (!vivo) return
         setClassTotal((t && t.users) || [])
-        setClassR6((r6 && r6.users) || [])
-        setClassCs2((cs2 && cs2.users) || [])
         setClassificacao((r6 && r6.users) || [])
       })
       .finally(() => vivo && setClassModalLoading(false))
@@ -1624,25 +1616,8 @@ export default function PrevisoesPage({ user }) {
               </button>
             </div>
 
-            <div className="flex gap-1.5 border-b border-white/10 px-3 py-2">
-              {[
-                { id: 'total', label: 'Total' },
-                { id: 'r6', label: 'R6' },
-                { id: 'cs2', label: 'CS2' },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setClassTipo(t.id)}
-                  className={`rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${
-                    classTipo === t.id
-                      ? 'bg-violet-500 text-white'
-                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div className="border-b border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-violet-300">
+              Classificação total · R6 + CS2
             </div>
 
             <div className="max-h-[55dvh] overflow-y-auto p-3">
@@ -1652,12 +1627,11 @@ export default function PrevisoesPage({ user }) {
                 </div>
               ) : (
                 (() => {
-                  const lista =
-                    classTipo === 'total' ? classTotal : classTipo === 'r6' ? classR6 : classCs2
+                  const lista = classTotal
                   if (!lista.length) {
                     return (
                       <p className="py-10 text-center text-sm text-gray-500">
-                        Ainda não há acertos nesta classificação.
+                        Ainda não há acertos na classificação total.
                       </p>
                     )
                   }
@@ -1689,9 +1663,7 @@ export default function PrevisoesPage({ user }) {
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-black text-white">{u.username}</p>
                             <p className="text-[10px] font-semibold text-gray-500">
-                              {classTipo === 'total'
-                                ? `R6 ${u.r6 || 0} · CS2 ${u.cs2 || 0}`
-                                : `${u.total || 0} jogos`}
+                              R6 {u.r6 || 0} · CS2 {u.cs2 || 0}
                             </p>
                           </div>
                           <span className="shrink-0 text-right">

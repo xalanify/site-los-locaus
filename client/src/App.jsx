@@ -37,6 +37,7 @@ const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
 const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
+const ComponentesPage = lazy(() => import('./pages/ComponentesPage'))
 
 /* /perfil/:username — perfil público. O próprio user também vê o
    perfil público; para editar vai a /perfil/editar. */
@@ -270,6 +271,8 @@ function App() {
                     <Route path="/jogos-steam" element={<SteamStorePage />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
+                    {/* Componentes e Periféricos — só admin (em testes) */}
+                    <Route path="/componentes" element={<ComponentesPage user={user} />} />
                     {/* PCs dos membros: dashboard de specs — aberto a todos */}
                     <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
                     {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}

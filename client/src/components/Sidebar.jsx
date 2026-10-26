@@ -14,7 +14,9 @@ import {
   MessageCircle,
   Swords,
   ShoppingBag,
+  CircuitBoard,
 } from 'lucide-react'
+import useChatNaoLidas from '../hooks/useChatNaoLidas'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -47,18 +49,37 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isFerramentas = location.pathname === '/ferramentas'
   const isChat = location.pathname === '/chat'
   const isPrevisoes = location.pathname === '/previsoes'
+  const isComponentes = location.pathname === '/componentes'
+  const naoLidas = useChatNaoLidas(Boolean(user))
 
   const links = [
     { name: 'Página inicial', icon: Home, action: () => goTo('#home'), active: isHome && !location.hash },
     { name: 'Clips e Publicações', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
-    { name: 'Chat geral', icon: MessageCircle, action: () => navigate('/chat'), active: isChat },
+    {
+      name: 'Chat geral',
+      icon: MessageCircle,
+      action: () => navigate('/chat'),
+      active: isChat,
+      naoLidas: !isChat ? naoLidas : 0,
+    },
     { name: 'Previsões', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes, badge: 'Novo' },
     { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos, badge: 'Novo' },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
-    { name: 'Jogos e estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
+    { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
     { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
+    // Só o admin vê a aba de componentes (ainda em testes)
+    ...(isAdmin
+      ? [
+          {
+            name: 'Componentes',
+            icon: CircuitBoard,
+            action: () => navigate('/componentes'),
+            active: isComponentes,
+          },
+        ]
+      : []),
     { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
   ]
 
@@ -91,6 +112,11 @@ export default function Sidebar({ user = null, isAdmin = false }) {
               >
                 <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'nav-ativo-icon' : ''}`} />
                 <span className="text-[15px] font-bold">{link.name}</span>
+                {link.naoLidas > 0 && (
+                  <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-violet-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(139,92,246,0.6)]">
+                    {link.naoLidas > 99 ? '99+' : link.naoLidas}
+                  </span>
+                )}
                 {link.badge && (
                   <span className="ml-auto rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
                     {link.badge}

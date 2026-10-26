@@ -127,7 +127,10 @@ async function matchAccount(key) {
 }
 
 /* Garante que só o líder tem a distinção top1 */
-async function syncTop1Badge() {
+let ultimoTop1 = 0;
+async function syncTop1Badge({ forcar = false } = {}) {
+  if (!forcar && Date.now() - ultimoTop1 < 2 * 60 * 1000) return null;
+  ultimoTop1 = Date.now();
   try {
     const leader = await computeLeader();
     if (!leader) return null;

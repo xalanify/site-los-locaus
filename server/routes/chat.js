@@ -41,6 +41,11 @@ function garantirChatTabelas() {
           chave text primary key,
           valor text
         );
+        CREATE TABLE IF NOT EXISTS public.chat_reads (
+          user_id bigint primary key references public.users(id) on delete cascade,
+          last_read_id bigint not null default 0,
+          atualizado_em timestamptz not null default now()
+        );
         ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS reply_to bigint;
       `)
       .then(() => true)
@@ -284,6 +289,70 @@ router.get('/', requireUser, async (req, res) => {
     });
   } catch (error) {
     console.error('Erro chat GET:', error.message);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+/* ============================================================
+   MENSAGENS POR LER — contador do item "Chat geral" no menu
+   GET  /api/chat/nao-lidas  -> { count, last_read_id }
+   POST /api/chat/lido       { last_id }  marca como visto
+   ============================================================ */
+router.get('/nao-lidas', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const row = await db
+      .prepare('SELECT last_read_id FROM public.chat_reads WHERE user_id = ?')
+      .get(uid);
+
+    let ultimo = Number(row && row.last_read_id) || 0;
+    if (!row) {
+      // Primeira visita: começa a contar a partir de agora (não do início do chat)
+      const max = await db
+        .prepare('SELECT COALESCE(MAX(id), 0) AS id FROM chat_messages')
+        .get();
+      ultimo = Number(max && max.id) || 0;
+      await db
+        .prepare(
+          `INSERT INTO public.chat_reads (user_id, last_read_id) VALUES (?, ?)
+           ON CONFLICT (user_id) DO NOTHING`,
+        )
+        .run(uid, ultimo);
+    }
+
+    const c = await db
+      .prepare(
+        `SELECT count(*)::int AS n FROM chat_messages
+         WHERE id > ? AND user_id <> ? AND deleted_at IS NULL`,
+      )
+      .get(ultimo, uid);
+    res.json({ count: Number(c && c.n) || 0, last_read_id: ultimo });
+  } catch (error) {
+    console.error('Erro chat nao-lidas:', error.message);
+    res.json({ count: 0, last_read_id: 0 });
+  }
+});
+
+router.post('/lido', requireUser, async (req, res) => {
+  try {
+    await garantirChatTabelas();
+    const db = getDb();
+    const uid = req.auth.uid;
+    const id = Number(req.body && req.body.last_id);
+    if (!Number.isFinite(id) || id <= 0) return res.json({ ok: true });
+    await db
+      .prepare(
+        `INSERT INTO public.chat_reads (user_id, last_read_id) VALUES (?, ?)
+         ON CONFLICT (user_id) DO UPDATE
+           SET last_read_id = GREATEST(public.chat_reads.last_read_id, EXCLUDED.last_read_id),
+               atualizado_em = now()`,
+      )
+      .run(uid, id);
+    res.json({ ok: true, last_read_id: id });
+  } catch (error) {
+    console.error('Erro chat lido:', error.message);
     res.status(500).json({ error: 'Erro interno' });
   }
 });

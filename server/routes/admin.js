@@ -7,14 +7,14 @@ const { validateEmail } = require('../emailValidate');
 const router = express.Router();
 
 /* Distinções possíveis (tem de coincidir com o cliente) */
-const VALID_BADGES = ['dev', 'top1', 'previsao1', 'r6-top1', 'cs2-top1', 'fortnite-rank1'];
+const VALID_BADGES = ['dev', 'top1', 'previsao1', 'fortnite-rank1'];
 
 /* Ligação user <-> conta de jogo — mesma lista dos clips (server/clipGames.js) */
 const { CLIP_GAME_IDS } = require('../clipGames');
 const { notify } = require('../notify');
 
 /* Rótulos das distinções para as notificações */
-const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)', previsao1: '1.º na classificação total', 'r6-top1': '1.º na classificação R6', 'cs2-top1': '1.º na classificação CS2', 'fortnite-rank1': 'Rank mais alto Fortnite' };
+const BADGE_LABEL = { dev: 'Dev', top1: 'Top 1 Kill de CS (total)', previsao1: '1.º na classificação das previsões', 'fortnite-rank1': 'Rank mais alto Fortnite' };
 
 const count = async (db, sql) => {
   try {

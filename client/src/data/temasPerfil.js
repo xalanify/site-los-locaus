@@ -34,6 +34,18 @@ export const BANNERS = [
       cor: CORES_BANNER[i % CORES_BANNER.length] || '#a855f7',
     }
   }),
+  {
+    id: 'g18',
+    nome: 'War 01',
+    ficheiro: '/perfil/cardbanner/18.webp',
+    cor: '#ef4444',
+  },
+  {
+    id: 'g19',
+    nome: 'War 02',
+    ficheiro: '/perfil/cardbanner/19.webp',
+    cor: '#f59e0b',
+  },
 ]
 
 export const FUNDOS = [
@@ -140,6 +152,22 @@ export const FUNDOS = [
     cor2: '#4933ad',
     rgb: '41 103 214',
     imagem: '/perfil/fundos/12.jpg',
+  },
+  {
+    id: 'f13',
+    nome: 'War 01',
+    cor: '#94a3b8',
+    cor2: '#64748b',
+    rgb: '148 163 184',
+    imagem: '/perfil/fundos/13.jpg',
+  },
+  {
+    id: 'f14',
+    nome: 'War 02',
+    cor: '#94a3b8',
+    cor2: '#64748b',
+    rgb: '148 163 184',
+    imagem: '/perfil/fundos/14.jpg',
   },
 ]
 

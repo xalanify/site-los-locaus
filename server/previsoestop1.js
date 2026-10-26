@@ -1,9 +1,9 @@
 /* ============================================================
-   Distinções automáticas das previsões
+   Distinção automática: 1.º na classificação total das previsões
    ------------------------------------------------------------
-   - r6-top1   -> 1.º na classificação R6
-   - cs2-top1  -> 1.º na classificação CS2
-   - previsao1 -> 1.º na classificação TOTAL (R6 + CS2)
+   A classificação total soma R6 + CS2. As classificações
+   individuais continuam guardadas na BD, mas por agora não dão
+   distinção própria.
    ============================================================ */
 const { getDb } = require('./database');
 
@@ -45,26 +45,6 @@ async function aplicar(db, badge, user_id) {
 async function syncTop1Previsoes() {
   try {
     const db = getDb();
-    const r6 = await lider(
-      db,
-      `SELECT user_id,
-              count(*) FILTER (WHERE correct IS TRUE)::int AS acertos
-         FROM r6_predictions
-         GROUP BY user_id
-         HAVING count(*) > 0
-         ORDER BY acertos DESC, count(*) DESC, user_id ASC
-         LIMIT 1`,
-    );
-    const cs2 = await lider(
-      db,
-      `SELECT user_id,
-              count(*) FILTER (WHERE correct IS TRUE)::int AS acertos
-         FROM cs2_predictions
-         GROUP BY user_id
-         HAVING count(*) > 0
-         ORDER BY acertos DESC, count(*) DESC, user_id ASC
-         LIMIT 1`,
-    );
     const total = await lider(
       db,
       `WITH juntas AS (
@@ -81,11 +61,14 @@ async function syncTop1Previsoes() {
          LIMIT 1`,
     );
 
-    await aplicar(db, 'r6-top1', r6 && r6.user_id);
-    await aplicar(db, 'cs2-top1', cs2 && cs2.user_id);
     await aplicar(db, 'previsao1', total && total.user_id);
+    // distinções por jogo ficam desligadas por agora
+    await db
+      .prepare("DELETE FROM user_badges WHERE badge IN ('r6-top1', 'cs2-top1')")
+      .run()
+      .catch(() => {});
 
-    return { r6, cs2, total };
+    return { total };
   } catch (e) {
     console.error('Erro syncTop1Previsoes:', e.message);
     return null;

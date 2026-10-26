@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -565,42 +566,35 @@ export default function ProfilePage({
                 </p>
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                   {BANNERS.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, banner_id: b.id }))}
-                      className={`relative rounded-xl border p-1.5 text-left transition-colors ${
-                        form.banner_id === b.id
-                          ? 'border-white/60 bg-white/10'
-                          : 'border-white/10 bg-black/20 hover:border-white/30'
-                      }`}
-                    >
-                      <span
-                        className="block h-12 w-full rounded-md bg-cover bg-center"
-                        style={{ backgroundImage: `url(${b.ficheiro})` }}
-                      />
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setPreviewTema(b.ficheiro)
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.stopPropagation()
-                            setPreviewTema(b.ficheiro)
-                          }
-                        }}
-                        className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white hover:bg-black"
-                        title="Ver imagem"
+                    <div key={b.id} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, banner_id: b.id }))}
+                        className={`w-full rounded-xl border p-1.5 text-left transition-colors ${
+                          form.banner_id === b.id
+                            ? 'border-white/60 bg-white/10'
+                            : 'border-white/10 bg-black/20 hover:border-white/30'
+                        }`}
                       >
-                        <ZoomIn className="h-3.5 w-3.5" />
-                      </span>
-                      <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
-                        {b.nome}
-                      </span>
-                    </button>
+                        <span
+                          className="block h-12 w-full rounded-md bg-cover bg-center"
+                          style={{ backgroundImage: `url(${b.ficheiro})` }}
+                        />
+                        <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
+                          {b.nome}
+                        </span>
+                      </button>
+                      {b.ficheiro && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewTema(b.ficheiro)}
+                          className="absolute right-2 top-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white hover:bg-black"
+                          title="Ver imagem"
+                        >
+                          <ZoomIn className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -613,49 +607,40 @@ export default function ProfilePage({
                 </p>
                 <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                   {FUNDOS.map((f) => (
-                    <button
-                      key={f.id || 'padrao'}
-                      type="button"
-                      title={f.nome}
-                      onClick={() => setForm((f2) => ({ ...f2, background_id: f.id }))}
-                      className={`relative rounded-xl border p-1 transition-colors ${
-                        form.background_id === f.id
-                          ? 'border-white/60 bg-white/10'
-                          : 'border-white/10 bg-black/20 hover:border-white/30'
-                      }`}
-                    >
-                      <span
-                        className="block h-9 w-full rounded-md bg-cover bg-center"
-                        style={
-                          f.imagem
-                            ? { backgroundImage: `url(${f.imagem})` }
-                            : { background: 'linear-gradient(135deg, #1b1230, #0b0716)' }
-                        }
-                      />
-                      {f.imagem && (
+                    <div key={f.id || 'padrao'} className="relative">
+                      <button
+                        type="button"
+                        title={f.nome}
+                        onClick={() => setForm((f2) => ({ ...f2, background_id: f.id }))}
+                        className={`w-full rounded-xl border p-1 transition-colors ${
+                          form.background_id === f.id
+                            ? 'border-white/60 bg-white/10'
+                            : 'border-white/10 bg-black/20 hover:border-white/30'
+                        }`}
+                      >
                         <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setPreviewTema(f.imagem)
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.stopPropagation()
-                              setPreviewTema(f.imagem)
-                            }
-                          }}
-                          className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-white hover:bg-black"
+                          className="block h-9 w-full rounded-md bg-cover bg-center"
+                          style={
+                            f.imagem
+                              ? { backgroundImage: `url(${f.imagem})` }
+                              : { background: 'linear-gradient(135deg, #1b1230, #0b0716)' }
+                          }
+                        />
+                        <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
+                          {f.nome}
+                        </span>
+                      </button>
+                      {f.imagem && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewTema(f.imagem)}
+                          className="absolute right-1.5 top-1.5 z-10 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-white hover:bg-black"
                           title="Ver imagem"
                         >
                           <ZoomIn className="h-3 w-3" />
-                        </span>
+                        </button>
                       )}
-                      <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
-                        {f.nome}
-                      </span>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -951,7 +936,42 @@ export default function ProfilePage({
 
   ) : null
 
-  if (standaloneEdit) return modalEdicao
+  /* Pré-visualização (zoom) de banners/fundos. Fica fora do modal de
+     edição para funcionar tanto na página normal como em /perfil/editar. */
+  const previewOverlay = previewTema
+    ? createPortal(
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-3 sm:p-6"
+          onClick={() => setPreviewTema(null)}
+          role="presentation"
+        >
+          <button
+            type="button"
+            onClick={() => setPreviewTema(null)}
+            className="absolute right-4 top-4 rounded-full bg-white/[0.12] p-2 text-white hover:bg-white/25"
+            aria-label="Fechar imagem"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={previewTema}
+            alt=""
+            className="max-h-[72vh] max-w-[min(960px,94vw)] rounded-2xl border border-white/15 object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>,
+        document.body,
+      )
+    : null
+
+  if (standaloneEdit) {
+    return (
+      <>
+        {modalEdicao}
+        {previewOverlay}
+      </>
+    )
+  }
 
   return (
     <PageShell background={estiloFundo(fundoAtual)}>
@@ -1224,28 +1244,7 @@ export default function ProfilePage({
             musicaNome={me.musica_nome}
           />
         )}
-        {previewTema && (
-          <div
-            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-3 sm:p-6"
-            onClick={() => setPreviewTema(null)}
-            role="presentation"
-          >
-            <button
-              type="button"
-              onClick={() => setPreviewTema(null)}
-              className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-              aria-label="Fechar imagem"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <img
-              src={previewTema}
-              alt=""
-              className="max-h-[42vh] max-w-[min(380px,82vw)] rounded-2xl border border-white/15 object-contain shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        )}
+        {previewOverlay}
     </PageShell>
   )
 }

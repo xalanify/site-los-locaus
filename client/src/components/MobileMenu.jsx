@@ -15,9 +15,11 @@ import {
   MessageCircle,
   Swords,
   ShoppingBag,
+  CircuitBoard,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AvatarImg from './AvatarImg'
+import useChatNaoLidas from '../hooks/useChatNaoLidas'
 
 /* ============================================================
    Menu lateral do telemóvel (abre pela foto na barra de topo).
@@ -27,6 +29,7 @@ import AvatarImg from './AvatarImg'
 export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const naoLidas = useChatNaoLidas(Boolean(user))
 
   const go = (path) => {
     onClose()
@@ -36,14 +39,23 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
   const itens = [
     { name: 'Página inicial', icon: Home, path: '/' },
     { name: 'Clips e Publicações', icon: Clapperboard, path: '/clips' },
-    { name: 'Chat geral', icon: MessageCircle, path: '/chat' },
+    {
+      name: 'Chat geral',
+      icon: MessageCircle,
+      path: '/chat',
+      naoLidas: location.pathname !== '/chat' ? naoLidas : 0,
+    },
     { name: 'Previsões', icon: Swords, path: '/previsoes' },
     { name: 'Distinções', icon: Trophy, path: '/distincoes' },
     { name: 'Membros', icon: Users, path: '/membros' },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
-    { name: 'Jogos e estatísticas', icon: Gamepad2, path: '/jogos' },
+    { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
     { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam', badge: 'Novo' },
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
+    // Só o admin vê a aba de componentes (ainda em testes)
+    ...(isAdmin
+      ? [{ name: 'Componentes', icon: CircuitBoard, path: '/componentes' }]
+      : []),
     { name: 'Conta', icon: User, path: user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil' },
   ]
 
@@ -124,6 +136,11 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
                       className={`h-5 w-5 shrink-0 ${ativo ? 'text-violet-400' : 'text-gray-500'}`}
                     />
                     <span className="text-[15px] font-bold">{it.name}</span>
+                    {it.naoLidas > 0 && (
+                      <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-violet-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(139,92,246,0.6)]">
+                        {it.naoLidas > 99 ? '99+' : it.naoLidas}
+                      </span>
+                    )}
                     {it.badge && (
                       <span className="ml-auto rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
                         {it.badge}

@@ -188,6 +188,9 @@ app.use('/api/chat', chatRouter);
 // Previsões R6 (dados oficiais da Ubisoft)
 const { previsoesRouter } = require('./routes/previsoes');
 app.use('/api/previsoes', previsoesRouter);
+// Componentes e periféricos (catálogo + comparação de preços; só admin)
+const { componentesRouter } = require('./routes/componentes');
+app.use('/api/componentes', componentesRouter);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Não encontrado' }));
 

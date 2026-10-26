@@ -763,6 +763,7 @@ router.post('/presence', requireUser, async (req, res) => {
 router.get('/list', attachAuth, async (req, res) => {
   try {
     require('../fortniteRank').sincronizar().catch(() => {});
+    require('../top1').syncTop1Badge().catch(() => {});
     const db = getDb();
     const rows = await db
       .prepare(
