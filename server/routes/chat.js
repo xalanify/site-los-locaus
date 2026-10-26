@@ -49,7 +49,25 @@ function garantirChatTabelas() {
         );
         ALTER TABLE public.chat_messages ADD COLUMN IF NOT EXISTS reply_to bigint;
       `)
-      .then(() => true)
+      .then(async () => {
+        // preenche o histórico: quem já enviou mensagens considera-se
+        // que leu tudo até à sua última mensagem
+        try {
+          await getDb()
+            .prepare(
+              `INSERT INTO public.chat_reads (user_id, last_read_id)
+               SELECT user_id, MAX(id) FROM chat_messages
+               WHERE deleted_at IS NULL
+               GROUP BY user_id
+               ON CONFLICT (user_id) DO UPDATE
+                 SET last_read_id = GREATEST(public.chat_reads.last_read_id, EXCLUDED.last_read_id)`,
+            )
+            .run();
+        } catch {
+          /* histórico opcional */
+        }
+        return true;
+      })
       .catch(() => false);
   }
   return chatTabelas;
@@ -267,8 +285,9 @@ router.get('/', requireUser, async (req, res) => {
     }
 
     /* Quem já leu cada mensagem — só interessa nas mensagens do próprio.
-       O chat_reads guarda o último id lido por utilizador; se for >= ao id
-       da mensagem, essa pessoa já a viu. */
+       O chat_reads guarda o último id lido; para o histórico também
+       contamos a última mensagem que cada pessoa enviou (quem respondeu
+       mais tarde já tinha visto o que estava para trás). */
     try {
       const leitores = await db
         .prepare(
@@ -550,6 +569,16 @@ router.post('/', requireUser, async (req, res) => {
       .run(uid, body, kind, mediaUrl, mediaType, clipId, replyTo);
 
     await db.prepare('DELETE FROM chat_typing WHERE user_id = ?').run(uid).catch(() => {});
+    // quem envia também fica com a conversa lida até à sua própria mensagem
+    await db
+      .prepare(
+        `INSERT INTO public.chat_reads (user_id, last_read_id) VALUES (?, ?)
+         ON CONFLICT (user_id) DO UPDATE
+           SET last_read_id = GREATEST(public.chat_reads.last_read_id, EXCLUDED.last_read_id),
+               atualizado_em = now()`,
+      )
+      .run(uid, Number(r.lastInsertRowid))
+      .catch(() => {});
     const row = await db.prepare(SELECT_MSG + ' AND m.id = ?').get(Number(r.lastInsertRowid));
     const msg = decorar(row);
     if (replyTo) {
