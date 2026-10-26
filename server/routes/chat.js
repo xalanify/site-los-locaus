@@ -319,7 +319,8 @@ router.get('/nao-lidas', requireUser, async (req, res) => {
           `INSERT INTO public.chat_reads (user_id, last_read_id) VALUES (?, ?)
            ON CONFLICT (user_id) DO NOTHING`,
         )
-        .run(uid, ultimo);
+        .run(uid, ultimo)
+        .catch(() => {});
     }
 
     const c = await db

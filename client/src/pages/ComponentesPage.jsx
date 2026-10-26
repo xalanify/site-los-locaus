@@ -267,9 +267,11 @@ export default function ComponentesPage({ user }) {
   }, [resultadosFiltrados])
 
   const vendidosFiltrados = useMemo(() => {
-    return maisVendidos.filter(passaFiltros)
+    return maisVendidos
+      .filter(passaFiltros)
+      .filter((r) => !lojasAtivas.length || lojasAtivas.includes(r.loja))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maisVendidos, marcasAtivas, ramTipo, categoria])
+  }, [maisVendidos, marcasAtivas, ramTipo, categoria, lojasAtivas.join(',')])
 
   const maisBaratoVendidos = useMemo(() => {
     if (!vendidosFiltrados.length) return null

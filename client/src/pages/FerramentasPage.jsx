@@ -869,7 +869,9 @@ export default function FerramentasPage({ isAdmin = false }) {
               title="Mostra só os programas que já tens instalados no PC (deteta automaticamente)"
             >
               <Check className="h-3.5 w-3.5" />
-              Só instalados{soInstalados && instalados.size ? ` (${instalados.size})` : ''}
+              {aDetectar
+                ? 'A verificar…'
+                : `Só instalados${soInstalados && instalados.size ? ` (${instalados.size})` : ''}`}
             </button>
           )}
         </div>
