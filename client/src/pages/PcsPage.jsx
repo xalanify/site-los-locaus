@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import { authHeaders } from '../lib/auth'
 import { correrBench as medirBench } from '../lib/bench'
 
@@ -527,6 +528,15 @@ export default function PcsPage({ isAdmin = false }) {
     if (lista.length) return <span className="flex flex-col items-end gap-1">{lista}</span>
     if (av.cpu?.estado === 'boost') return <Badge tom="aviso">Boost</Badge>
     return <Badge tom="ok">Normal</Badge>
+  }
+
+  if (!isAdmin) {
+    return (
+      <EmDesenvolvimento
+        titulo="PCs / Specs"
+        descricao="Esta página ainda está em desenvolvimento e reservada aos administradores durante os testes."
+      />
+    )
   }
 
   /* ---- GATE: o LOCAUS-PC.bat é obrigatório ---- */

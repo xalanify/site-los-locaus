@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { confirmar } from '../components/Feedback'
+import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import {
   Wrench,
   Terminal,
@@ -724,6 +725,15 @@ export default function FerramentasPage({ isAdmin = false }) {
   const logs = estado?.logs || []
   const podeLocal = dados?.podeLocal
   const podeExecutar = Boolean(podeLocal || agente.online)
+
+  if (!isAdmin) {
+    return (
+      <EmDesenvolvimento
+        titulo="Ferramentas Windows"
+        descricao="Estas ferramentas ainda estão em desenvolvimento e reservadas aos administradores durante os testes."
+      />
+    )
+  }
 
   /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
   /* A página só abre quando a app deste utilizador está ligada ao site
