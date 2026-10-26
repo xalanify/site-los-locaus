@@ -1022,6 +1022,25 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
         <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-300 ring-1 ring-white/10">
           {produto.marca}
         </span>
+        {Number(produto.desconto) > 0 && (
+          <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-lg bg-gradient-to-r from-red-600 to-rose-500 px-2 py-1 text-[11px] font-black text-white shadow-lg shadow-red-950/40 ring-1 ring-red-300/30">
+            <TrendingDown className="h-3 w-3" /> -{produto.desconto}% promoção
+          </span>
+        )}
+        {produto.stock && (
+          <span
+            className={`absolute bottom-2 right-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide ring-1 backdrop-blur ${
+              produto.stock === 'stock'
+                ? 'bg-emerald-500/85 text-white ring-emerald-300/40'
+                : produto.stock === 'sem'
+                  ? 'bg-red-500/85 text-white ring-red-300/40'
+                  : 'bg-amber-500/85 text-black ring-amber-300/40'
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-white/90" />
+            {produto.stock === 'stock' ? 'Em stock' : produto.stock === 'sem' ? 'Sem stock' : 'Encomenda'}
+          </span>
+        )}
         <div className="absolute right-2 top-2 flex gap-1">
           <button
             type="button"
@@ -1156,8 +1175,31 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
                   }`}
                   title={preco && preco.titulo ? preco.titulo : undefined}
                 >
+                  {preco && Number(preco.desconto) > 0 && (
+                    <span className="mr-1 rounded bg-red-400/15 px-1 py-0.5 text-[8px] font-black text-red-300">
+                      -{preco.desconto}%
+                    </span>
+                  )}
                   {preco ? precoFmt(preco.preco) : 'ver'}
                 </span>
+                {preco && preco.stock && (
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                      preco.stock === 'stock'
+                        ? 'bg-emerald-400'
+                        : preco.stock === 'sem'
+                          ? 'bg-red-400'
+                          : 'bg-amber-400'
+                    }`}
+                    title={
+                      preco.stock === 'stock'
+                        ? 'Em stock'
+                        : preco.stock === 'sem'
+                          ? 'Sem stock'
+                          : 'Sob encomenda'
+                    }
+                  />
+                )}
                 <a
                   href={preco && preco.url ? preco.url : pesquisa}
                   target="_blank"
@@ -1172,11 +1214,38 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
           })}
         </div>
 
-        <div className="mt-auto flex items-center justify-between pt-2.5 text-[9px] font-semibold text-gray-600">
-          <span>{atualizado ? `Atualizado ${atualizado}` : 'Sem dados'}</span>
-          <span className="flex items-center gap-1">
-            <ShoppingCart className="h-2.5 w-2.5" /> {produto.precos?.length || 0}/
-            {produto.lojas?.length || 0} lojas
+        {/* outras lojas de confiança — só link de pesquisa, sem leitura de preço */}
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {Object.values(lojas || {})
+            .filter((l) => l && l.semPrecos)
+            .map((l) => (
+              <a
+                key={l.id}
+                href={pesquisaLoja(l, produto.consulta)}
+                target="_blank"
+                rel="noreferrer"
+                title={`Procurar “${produto.consulta}” na ${l.nome}`}
+                className="inline-flex items-center gap-1 rounded-md border border-white/5 bg-white/[0.02] px-1.5 py-0.5 text-[8px] font-bold text-gray-500 transition hover:border-white/15 hover:text-gray-200"
+              >
+                {l.nome} <ExternalLink className="h-2 w-2" />
+              </a>
+            ))}
+        </div>
+
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2.5 text-[9px] font-semibold text-gray-600">
+          <span className="truncate">{atualizado ? `Atualizado ${atualizado}` : 'Sem dados'}</span>
+          <span className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={onHistorico}
+              className="flex items-center gap-1 rounded-md bg-white/5 px-1.5 py-1 text-[9px] font-black uppercase tracking-wide text-violet-300 transition hover:bg-white/10 hover:text-white"
+            >
+              <History className="h-2.5 w-2.5" /> Histórico
+            </button>
+            <span className="flex items-center gap-1">
+              <ShoppingCart className="h-2.5 w-2.5" /> {produto.precos?.length || 0}/
+              {produto.lojas?.length || 0} lojas
+            </span>
           </span>
         </div>
       </div>

@@ -62,6 +62,36 @@ const LOJAS = {
     componentes: true,
     perifericos: true,
   },
+  kuantokusta: {
+    id: 'kuantokusta',
+    nome: 'KuantoKusta',
+    base: 'https://www.kuantokusta.pt',
+    pesquisaBase: 'https://www.kuantokusta.pt/search?q=',
+    cor: '#f59e0b',
+    componentes: true,
+    perifericos: true,
+    comparador: true,
+  },
+  worten: {
+    id: 'worten',
+    nome: 'Worten',
+    base: 'https://www.worten.pt',
+    pesquisaBase: 'https://www.worten.pt/search?query=',
+    cor: '#e11d48',
+    componentes: true,
+    perifericos: true,
+    semPrecos: true,
+  },
+  alternate: {
+    id: 'alternate',
+    nome: 'Alternate',
+    base: 'https://www.alternate.pt',
+    pesquisaBase: 'https://www.alternate.pt/listing.xhtml?q=',
+    cor: '#f97316',
+    componentes: true,
+    perifericos: true,
+    semPrecos: true,
+  },
 };
 
 const CATEGORIAS = [
@@ -88,7 +118,7 @@ const C = (id, nome, marca, categoria, spec, consulta, lojas) => ({
   tipo: categoria === 'rato' || categoria === 'teclado' || categoria === 'mousepad' || categoria === 'headset' || categoria === 'microfone' ? 'periferico' : 'componente',
   spec,
   consulta,
-  lojas: lojas || ['pcdiga', 'globaldata', 'pccomponentes', 'ldlc'],
+  lojas: lojas || ['pcdiga', 'globaldata', 'pccomponentes', 'ldlc', 'kuantokusta'],
 });
 
 const CATALOGO = [
@@ -528,6 +558,38 @@ function relevante(titulo, categoria, tipo) {
   return extras[categoria] ? extras[categoria].test(t) : true;
 }
 
+/* KuantoKusta (comparador PT) — os resultados vêm no JSON do Next.js. */
+function parseKuantoKusta(html) {
+  const out = [];
+  const m = String(html || '').match(
+    /<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i,
+  );
+  if (!m) return out;
+  let j;
+  try {
+    j = JSON.parse(m[1]);
+  } catch {
+    return out;
+  }
+  const base = j && j.props && j.props.pageProps && j.props.pageProps.basePage;
+  const data = base && base.data;
+  for (const x of Array.isArray(data) ? data : []) {
+    const preco = Number(x && x.priceMin);
+    if (!preco || !x.name) continue;
+    out.push({
+      titulo: x.name,
+      preco,
+      url: x.url ? `https://www.kuantokusta.pt${x.url}` : LOJAS.kuantokusta.base,
+      imagem: (x.images && x.images[0]) || null,
+      marca: x.brand || null,
+      categoriaLoja: x.category || '',
+      stock: Number(x.totalOffers) > 0 ? 'stock' : 'encomenda',
+      desconto: 0,
+    });
+  }
+  return out;
+}
+
 async function pesquisarLoja(loja, consulta, { categoria = '', tipo = '' } = {}) {
   const q = encodeURIComponent(consulta);
   if (loja === 'globaldata') {
@@ -547,6 +609,13 @@ async function pesquisarLoja(loja, consulta, { categoria = '', tipo = '' } = {})
   }
   if (loja === 'ldlc') {
     return parseLDLC(await pedir(`https://www.ldlc.com/recherche/${q}/`));
+  }
+  if (loja === 'kuantokusta') {
+    return parseKuantoKusta(await pedir(`https://www.kuantokusta.pt/search?q=${q}`));
+  }
+  if (loja === 'worten' || loja === 'alternate') {
+    // lojas de referência: entram como link direto (sem leitura de preço)
+    return [];
   }
   if (loja === 'pcdiga') {
     // A PCDiga está atrás de Cloudflare: não dá para ler preços no servidor.

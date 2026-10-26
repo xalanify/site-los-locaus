@@ -765,9 +765,18 @@ function FortniteTorneiosTab() {
         </div>
 
         {erro && (
-          <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
-            {erro} O calendário tenta novamente sozinho a cada minuto.
-          </p>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+            <span className="min-w-0 flex-1">
+              {erro} O calendário tenta novamente sozinho a cada minuto.
+            </span>
+            <button
+              type="button"
+              onClick={() => setTick((n) => n + 1)}
+              className="flex shrink-0 items-center gap-1 rounded-md border border-amber-300/30 bg-amber-500/15 px-2 py-1 text-[10px] font-black text-amber-100 hover:bg-amber-500/25"
+            >
+              <RefreshCw className="h-3 w-3" /> Tentar outra vez
+            </button>
+          </div>
         )}
         {dados?.aviso && (
           <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
@@ -1024,9 +1033,19 @@ function CS2PrevisoesTab({ user }) {
             <Loader2 className="h-4 w-4 animate-spin" /> A carregar jogos CS2…
           </div>
         ) : dados.erro ? (
-          <p className="rounded-2xl border border-amber-400/20 bg-amber-500/10 px-3 py-3 text-sm text-amber-200">
-            {dados.erro}
-          </p>
+          <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 px-3 py-3 text-sm text-amber-200">
+            <p>{dados.erro}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setDados((x) => ({ ...x, loading: true, erro: '' }))
+                carregar()
+              }}
+              className="mt-2 flex items-center gap-1.5 rounded-lg border border-amber-300/30 bg-amber-500/15 px-2.5 py-1.5 text-[11px] font-black text-amber-100 transition hover:bg-amber-500/25"
+            >
+              <RefreshCw className="h-3 w-3" /> Tentar outra vez
+            </button>
+          </div>
         ) : proximos.length === 0 ? (
           <p className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-10 text-center text-sm text-gray-500">
             Sem jogos CS2 marcados neste momento. Atualizamos automaticamente.
@@ -1455,8 +1474,15 @@ export default function PrevisoesPage({ user }) {
 
       {/* erros */}
       {erro && (
-        <div className="mb-3 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">
-          {erro}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">
+          <span className="min-w-0 flex-1">{erro}</span>
+          <button
+            type="button"
+            onClick={() => recarregarRef.current()}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-300/30 bg-red-500/15 px-2.5 py-1.5 text-[11px] font-black text-red-100 transition hover:bg-red-500/25"
+          >
+            <RefreshCw className="h-3 w-3" /> Tentar outra vez
+          </button>
         </div>
       )}
 
