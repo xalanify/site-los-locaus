@@ -164,15 +164,26 @@ router.post(
   '/push/test',
   requireUser,
   safe(async (req, res) => {
+    const db = getDb();
+    const row = await db
+      .prepare('SELECT count(*)::int AS n FROM push_subs WHERE user_id = ?')
+      .get(req.auth.uid);
+    const subs = Number(row && row.n) || 0;
+    if (!subs) {
+      return res.status(400).json({
+        error: 'Este dispositivo não está registado. Clica em “Notificações ligadas” ou “Reativar”.',
+        subs: 0,
+      });
+    }
     await enviarPush({
       userId: req.auth.uid,
       title: '🔔 Locaus · teste',
       body: 'Se estás a ver isto no Windows, as notificações estão a funcionar.',
       link: '/',
-      tag: 'teste-notificacao',
+      tag: `teste-notificacao-${Date.now()}`,
       tipo: 'chat',
     });
-    res.json({ ok: true });
+    res.json({ ok: true, subs });
   }),
 );
 
