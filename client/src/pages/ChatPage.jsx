@@ -111,7 +111,7 @@ const linkify = (texto) => {
         href={p}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-semibold text-violet-300 underline decoration-violet-400/40 underline-offset-2 hover:text-violet-200"
+        className="break-all font-semibold text-violet-300 underline decoration-violet-400/40 underline-offset-2 hover:text-violet-200"
       >
         {p}
       </a>
@@ -704,11 +704,11 @@ export default function ChatPage({ user }) {
 
   return (
     <PageShell className="!pb-6">
-      <div className="mx-auto w-full max-w-6xl">
-      <div className="flex h-[min(78dvh,860px)] min-h-[460px] flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40" style={{ backgroundColor: t.bg + 'f2' }}>
+      <div className="mx-auto w-full max-w-6xl overflow-x-hidden">
+      <div className="flex h-[min(78dvh,860px)] min-h-[460px] w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40" style={{ backgroundColor: t.bg + 'f2' }}>
         {/* cabeçalho */}
         <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.07] to-transparent px-4 py-4 sm:px-5">
-          <span className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${t.grad} text-white shadow-lg`}>
+          <span className={`hidden h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${t.grad} text-white shadow-lg sm:flex`}>
             <MessageCircle className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
@@ -773,7 +773,8 @@ export default function ChatPage({ user }) {
             className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20 transition-colors hover:bg-emerald-500/20"
           >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            {onlineCount > 0 ? `${onlineCount} online` : 'Online'}
+            <span className="hidden sm:inline">{onlineCount > 0 ? `${onlineCount} online` : 'Online'}</span>
+            <span className="sm:hidden">{onlineCount > 0 ? onlineCount : ''}</span>
           </button>
         </div>
 
@@ -796,7 +797,7 @@ export default function ChatPage({ user }) {
         <div
           ref={listaRef}
           onScroll={onScroll}
-          className="chat-scroll flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-5"
+          className="chat-scroll flex-1 space-y-2 overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-5"
         >
           {loading && (
             <div className="flex h-full items-center justify-center text-sm font-semibold text-gray-400">
@@ -852,7 +853,7 @@ export default function ChatPage({ user }) {
                         <AvatarImg src={m.user.avatar_url} name={m.user.username} className="h-9 w-9" />
                       )}
                     </span>
-                    <div className={`max-w-[84%] sm:max-w-[70%] ${minha ? 'items-end' : 'items-start'} flex flex-col`}>
+                    <div className={`relative min-w-0 max-w-[84%] sm:max-w-[70%] ${minha ? 'items-end' : 'items-start'} flex flex-col`}>
                       {!seguida && (
                         <span className={`mb-1 px-1 text-[11px] font-bold ${minha ? t.cor : 'text-gray-400'}`}>
                           {minha ? 'Tu' : m.user.username} · {hora(m.created_at)}
@@ -955,41 +956,45 @@ export default function ChatPage({ user }) {
                           </button>
                         </div>
                       ) : null}
-                    </div>
-                    {/* ações (aparecem ao passar o rato) */}
-                    <div className={`mb-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100`}>
-                      <button
-                        onClick={() => iniciarResposta(m)}
-                        title="Responder"
-                        className="rounded-lg p-1 text-gray-500 hover:bg-white/10 hover:text-white"
+                      {/* ações (no telemóvel ficam por baixo; no PC ao passar o rato) */}
+                      <div
+                        className={`mt-1 flex items-center gap-0.5 opacity-100 transition-opacity sm:absolute sm:bottom-2 sm:mt-0 sm:opacity-0 sm:group-hover:opacity-100 ${
+                          minha ? 'sm:-left-11' : 'sm:-right-11'
+                        }`}
                       >
-                        <CornerUpLeft className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setReactAberto(reactAberto === m.id ? null : m.id)}
-                        title="Reagir"
-                        className="rounded-lg p-1 text-gray-500 hover:bg-white/10 hover:text-white"
-                      >
-                        <Smile className="h-3.5 w-3.5" />
-                      </button>
-                      {user && user.is_admin && (
                         <button
-                          onClick={() => (m.pinned ? desfixar(m.id) : fixar(m))}
-                          title={m.pinned ? 'Desfixar' : 'Fixar para todos (admin)'}
-                          className={`rounded-lg p-1 ${m.pinned ? t.cor : 'text-gray-500 hover:bg-white/10 hover:text-white'}`}
+                          onClick={() => iniciarResposta(m)}
+                          title="Responder"
+                          className="rounded-lg p-1 text-gray-500 hover:bg-white/10 hover:text-white"
                         >
-                          <Pin className="h-3.5 w-3.5" />
+                          <CornerUpLeft className="h-3.5 w-3.5" />
                         </button>
-                      )}
-                      {minha && (
                         <button
-                          onClick={() => apagar(m)}
-                          title="Apagar mensagem"
-                          className="rounded-lg p-1 text-gray-500 hover:bg-red-500/10 hover:text-red-300"
+                          onClick={() => setReactAberto(reactAberto === m.id ? null : m.id)}
+                          title="Reagir"
+                          className="rounded-lg p-1 text-gray-500 hover:bg-white/10 hover:text-white"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Smile className="h-3.5 w-3.5" />
                         </button>
-                      )}
+                        {user && user.is_admin && (
+                          <button
+                            onClick={() => (m.pinned ? desfixar(m.id) : fixar(m))}
+                            title={m.pinned ? 'Desfixar' : 'Fixar para todos (admin)'}
+                            className={`rounded-lg p-1 ${m.pinned ? t.cor : 'text-gray-500 hover:bg-white/10 hover:text-white'}`}
+                          >
+                            <Pin className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {minha && (
+                          <button
+                            onClick={() => apagar(m)}
+                            title="Apagar mensagem"
+                            className="rounded-lg p-1 text-gray-500 hover:bg-red-500/10 hover:text-red-300"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {/* picker de reações */}
                     {reactAberto === m.id && (
@@ -1255,55 +1260,7 @@ export default function ChatPage({ user }) {
               </p>
             </div>
           )}
-          <div className="flex items-end gap-1.5">
-            <input
-              ref={inputFileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="hidden"
-              onChange={(e) => subirImagem(e.target.files && e.target.files[0])}
-            />
-            <button
-              onClick={escolherImagem}
-              disabled={aSubir}
-              title="Enviar imagem ou GIF"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 disabled:opacity-40"
-            >
-              <ImagePlus className="h-5 w-5" />
-            </button>
-            <button
-              onClick={abrirClips}
-              title="Enviar um clip"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300"
-            >
-              <Clapperboard className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => {
-                setEmojiAberto((v) => !v)
-                setStickersAberto(false)
-              }}
-              title="Emojis"
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
-                emojiAberto ? 'bg-violet-500/15 text-violet-300' : 'text-gray-400 hover:text-violet-300'
-              }`}
-            >
-              <Smile className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => {
-                setStickersAberto((v) => !v)
-                setEmojiAberto(false)
-              }}
-              title="Stickers animados"
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
-                stickersAberto
-                  ? 'bg-violet-500/15 text-violet-300'
-                  : 'text-gray-400 hover:text-violet-300'
-              }`}
-            >
-              <Sticker className="h-5 w-5" />
-            </button>
+          <div className="flex flex-wrap items-end gap-1.5">
             <textarea
               ref={textareaRef}
               rows={1}
@@ -1320,12 +1277,71 @@ export default function ChatPage({ user }) {
                 }
               }}
               placeholder="Mensagem…"
-              className="max-h-28 min-h-[48px] flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-[13.5px] text-white placeholder-gray-500 outline-none transition focus:border-violet-400/40 focus:bg-white/[0.07]"
+              className="order-1 min-h-[54px] w-full min-w-0 max-h-32 resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-3.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-violet-400/40 focus:bg-white/[0.07] sm:order-2 sm:w-auto sm:flex-1"
             />
+            <div className="order-2 flex w-full items-center gap-1 sm:order-1 sm:w-auto">
+              <input
+                ref={inputFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={(e) => subirImagem(e.target.files && e.target.files[0])}
+              />
+              <button
+                onClick={escolherImagem}
+                disabled={aSubir}
+                title="Enviar imagem ou GIF"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 disabled:opacity-40 sm:h-11 sm:w-11"
+              >
+                <ImagePlus className="h-5 w-5" />
+              </button>
+              <button
+                onClick={abrirClips}
+                title="Enviar um clip"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 sm:h-11 sm:w-11"
+              >
+                <Clapperboard className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => {
+                  setEmojiAberto((v) => !v)
+                  setStickersAberto(false)
+                }}
+                title="Emojis"
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 sm:h-11 sm:w-11 ${
+                  emojiAberto ? 'bg-violet-500/15 text-violet-300' : 'text-gray-400 hover:text-violet-300'
+                }`}
+              >
+                <Smile className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => {
+                  setStickersAberto((v) => !v)
+                  setEmojiAberto(false)
+                }}
+                title="Stickers animados"
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 sm:h-11 sm:w-11 ${
+                  stickersAberto
+                    ? 'bg-violet-500/15 text-violet-300'
+                    : 'text-gray-400 hover:text-violet-300'
+                }`}
+              >
+                <Sticker className="h-5 w-5" />
+              </button>
+              <span className="flex-1 sm:hidden" />
+              <button
+                onClick={enviar}
+                disabled={aEnviar || aSubir || (!texto.trim() && !pendingMedia && !pendingClip)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40 sm:hidden"
+                title="Enviar"
+              >
+                {aEnviar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </div>
             <button
               onClick={enviar}
               disabled={aEnviar || aSubir || (!texto.trim() && !pendingMedia && !pendingClip)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40"
+              className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40 sm:order-3 sm:flex"
               title="Enviar"
             >
               {aEnviar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
