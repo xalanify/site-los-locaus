@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import NoticiaModal from '../components/NoticiaModal'
+import ItadPrecos from '../components/ItadPrecos'
 import { GTA_VI, RUMORES } from '../data/jogosRumores'
 
 const GENEROS = [
@@ -211,6 +212,8 @@ function FichaJogo({ appid, onClose }) {
                   Abrir na Steam <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </div>
+
+              {j?.nome && <ItadPrecos titulo={j.nome} />}
 
               <p className="text-sm leading-relaxed text-gray-300">{j.descricao}</p>
 
