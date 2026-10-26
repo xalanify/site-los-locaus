@@ -50,6 +50,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isChat = location.pathname === '/chat'
   const isPrevisoes = location.pathname === '/previsoes'
   const isComponentes = location.pathname === '/componentes'
+  const isCosmeticos = location.pathname === '/cosmeticos'
   const naoLidas = useChatNaoLidas(Boolean(user))
 
   const links = [
@@ -78,6 +79,12 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             icon: CircuitBoard,
             action: () => navigate('/componentes'),
             active: isComponentes,
+          },
+          {
+            name: 'Loja de cosméticos',
+            icon: Sparkles,
+            action: () => navigate('/cosmeticos'),
+            active: isCosmeticos,
           },
         ]
       : []),

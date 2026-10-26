@@ -192,6 +192,9 @@ app.use('/api/previsoes', previsoesRouter);
 // Equipas de esports (CS2 / R6) — pesquisa e ficha
 const { equipasRouter } = require('./routes/equipas');
 app.use('/api/equipas', equipasRouter);
+// Loja de cosméticos (só admin, paga com acertos das previsões)
+const { cosmeticosRouter } = require('./routes/cosmeticos');
+app.use('/api/cosmeticos', cosmeticosRouter);
 // Componentes e periféricos (catálogo + comparação de preços; só admin)
 const { componentesRouter } = require('./routes/componentes');
 app.use('/api/componentes', componentesRouter);

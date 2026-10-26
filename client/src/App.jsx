@@ -39,6 +39,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
 const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
 const ComponentesPage = lazy(() => import('./pages/ComponentesPage'))
+const CosmeticosPage = lazy(() => import('./pages/CosmeticosPage'))
 
 /* /perfil/:username — perfil público. O próprio user também vê o
    perfil público; para editar vai a /perfil/editar. */
@@ -282,6 +283,13 @@ function App() {
                     />
                     {/* PCs dos membros: dashboard de specs — só admin (aviso para os restantes) */}
                     <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
+                    {/* Loja de cosméticos — só admin */}
+                    <Route
+                      path="/cosmeticos"
+                      element={
+                        isAdmin ? <CosmeticosPage isAdmin={isAdmin} /> : <Navigate to="/" replace />
+                      }
+                    />
                     {/* Ferramentas Windows: scripts no PC do servidor — só admin (aviso para os restantes) */}
                     <Route path="/ferramentas" element={<FerramentasPage isAdmin={isAdmin} />} />
                     {/* /ligar: a app abria este endereço — manda para as ferramentas */}

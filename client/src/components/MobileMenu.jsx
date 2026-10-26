@@ -55,7 +55,10 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
     // Componentes e Periféricos: só o admin vê no menu
     ...(isAdmin
-      ? [{ name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes' }]
+      ? [
+          { name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes' },
+          { name: 'Loja de cosméticos', icon: Sparkles, path: '/cosmeticos' },
+        ]
       : []),
     { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
     { name: 'Conta', icon: User, path: user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil' },
