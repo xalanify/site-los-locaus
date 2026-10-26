@@ -208,6 +208,16 @@ export default function ChatPage({ user }) {
   const [pendingClip, setPendingClip] = useState(null)
   const [emojiAberto, setEmojiAberto] = useState(false)
   const [stickersAberto, setStickersAberto] = useState(false)
+  const [stickersCustom, setStickersCustom] = useState(() => {
+    try {
+      const raw = localStorage.getItem('locaus:stickers-custom')
+      const lista = raw ? JSON.parse(raw) : []
+      return Array.isArray(lista) ? lista.filter((x) => typeof x === 'string') : []
+    } catch {
+      return []
+    }
+  })
+  const stickerFileRef = useRef(null)
   const podeStickers =
     typeof window !== 'undefined' &&
     /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)
@@ -630,6 +640,62 @@ export default function ChatPage({ user }) {
       setASubir(false)
       setProgresso(0)
       if (inputFileRef.current) inputFileRef.current.value = ''
+    }
+  }
+
+  const guardarStickerCustom = (url) => {
+    setStickersCustom((prev) => {
+      const next = [url, ...prev.filter((x) => x !== url)].slice(0, 24)
+      try {
+        localStorage.setItem('locaus:stickers-custom', JSON.stringify(next))
+      } catch {
+        /* sem storage */
+      }
+      return next
+    })
+  }
+
+  const subirSticker = async (file) => {
+    if (!file) return
+    if (file.size > 8 * 1024 * 1024) {
+      toast.erro('O sticker é demasiado grande (máx. 8 MB).')
+      return
+    }
+    if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type)) {
+      toast.erro('Usa JPG, PNG, WebP ou GIF.')
+      return
+    }
+    setASubir(true)
+    setProgresso(0)
+    try {
+      const r = await fetch('/api/chat/upload-url', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: file.type }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para preparar o sticker.')
+      await new Promise((resolve, reject) => {
+        const x = new XMLHttpRequest()
+        x.open('PUT', d.uploadUrl)
+        x.setRequestHeader('Content-Type', file.type)
+        x.setRequestHeader('x-upsert', 'false')
+        x.upload.onprogress = (e) => {
+          if (e.lengthComputable) setProgresso(Math.round((e.loaded / e.total) * 100))
+        }
+        x.onload = () =>
+          x.status >= 200 && x.status < 300 ? resolve() : reject(new Error('Subida falhou.'))
+        x.onerror = () => reject(new Error('Sem ligação ao Storage.'))
+        x.send(file)
+      })
+      guardarStickerCustom(d.publicUrl)
+      await enviarSticker(d.publicUrl)
+    } catch (e) {
+      toast.erro(e.message || 'Não deu para subir o sticker.')
+    } finally {
+      setASubir(false)
+      setProgresso(0)
+      if (stickerFileRef.current) stickerFileRef.current.value = ''
     }
   }
 
@@ -1129,20 +1195,44 @@ export default function ChatPage({ user }) {
                 </button>
               </div>
               <div className="grid max-h-64 grid-cols-4 gap-1 overflow-y-auto p-2">
-                {STICKERS_LOCAIS.map((s) => (
+                <button
+                  type="button"
+                  onClick={() => stickerFileRef.current && stickerFileRef.current.click()}
+                  disabled={aSubir}
+                  title="Adicionar sticker (imagem ou GIF)"
+                  className="flex aspect-square items-center justify-center rounded-xl border border-dashed border-violet-400/30 bg-violet-500/[0.06] text-2xl font-black text-violet-300 transition hover:bg-violet-500/15 disabled:opacity-50"
+                >
+                  {aSubir ? <Loader2 className="h-5 w-5 animate-spin" /> : '+'}
+                </button>
+                {[
+                  ...STICKERS_LOCAIS,
+                  ...stickersCustom.map((src, i) => ({
+                    id: `custom-${i}`,
+                    nome: `Sticker ${i + 1}`,
+                    src,
+                  })),
+                ].map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => enviarSticker(s.src)}
                     title={s.nome}
-                    className="flex aspect-square items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-violet-400/30 hover:bg-violet-500/10"
+                    className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-violet-400/30 hover:bg-violet-500/10"
                   >
                     <img src={s.src} alt={s.nome} className="h-full w-full object-contain" />
                   </button>
                 ))}
               </div>
+              <input
+                ref={stickerFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={(e) => subirSticker(e.target.files && e.target.files[0])}
+              />
               <p className="px-3 pb-2 text-[9px] text-gray-500">
-                Só aparece em localhost. Em produção fica escondido.
+                Carrega no “+” para adicionares as tuas imagens/GIFs. Ficam guardados neste browser.
+                Só aparece em localhost.
               </p>
             </div>
           )}

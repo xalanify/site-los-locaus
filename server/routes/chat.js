@@ -567,7 +567,11 @@ router.post('/', requireUser, async (req, res) => {
       if (!local) {
         return res.status(403).json({ error: 'Os stickers só estão disponíveis em localhost.' });
       }
-      if (!/^\/stickers\/[a-z0-9-]+\.svg$/.test(sticker)) {
+      const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+      const svgLocal = /^\/stickers\/[a-z0-9-]+\.svg$/.test(sticker);
+      const noBucket =
+        Boolean(base) && sticker.startsWith(`${base}/storage/v1/object/public/${BUCKET}/`);
+      if (!svgLocal && !noBucket) {
         return res.status(400).json({ error: 'Sticker inválido.' });
       }
       mediaUrl = sticker;
