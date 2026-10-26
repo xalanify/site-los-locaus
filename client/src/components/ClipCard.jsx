@@ -102,6 +102,8 @@ const NOME_QUAL = {
   tiny: '240p',
 }
 
+let clipPlayerSeq = 0
+
 const qualGravada = () => 'max'
 const gravarQual = (q) => {
   try {
@@ -148,6 +150,9 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   const caixa = useRef(null)
   const api = useRef(null)
   const qualidadeFeita = useRef(false)
+  const tocandoRef = useRef(false)
+  const instancia = useRef(0)
+  if (!instancia.current) instancia.current = ++clipPlayerSeq
   const veuTempo = useRef([])
 
   const chamou = (fn, args) => {
@@ -158,6 +163,19 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
       /* player ainda não pronto */
     }
   }
+
+  /* só um vídeo a tocar de cada vez (remotos e locais) */
+  useEffect(() => {
+    const pausar = (ev) => {
+      if (ev && ev.detail && ev.detail.id === instancia.current) return
+      try {
+        api.current && api.current.pauseVideo && api.current.pauseVideo()
+      } catch {}
+      setTocando(false)
+    }
+    window.addEventListener('locaus:clip-play', pausar)
+    return () => window.removeEventListener('locaus:clip-play', pausar)
+  }, [])
 
   /* só depois de abrir é que perguntamos ao servidor se o vídeo
      está pronto — assim o leitor remoto nunca aparece a meio */
@@ -223,6 +241,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 if (!vivo) return
                 setEstado(e.data)
                 setTocando(e.data === 1)
+                tocandoRef.current = e.data === 1 || e.data === 3
                 try {
                   const d = e.target.getDuration()
                   if (d) setDur(d)
@@ -232,9 +251,20 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                     musicaPausada.current = true
                     videoComecou()
                   }
-                  // o vídeo já arrancou: o aviso de qualidade sai logo
+                  // o vídeo já arrancou: nunca voltar a forçar qualidade
+                  // durante a reprodução (era isto que causava paragens)
+                  limpaWatchdog()
+                  qualidadeFeita.current = true
                   setVeuQual(null)
-                  forcerQualidade(e.target)
+                  // pausa qualquer outro vídeo (YouTube ou local)
+                  window.dispatchEvent(
+                    new CustomEvent('locaus:clip-play', { detail: { id: instancia.current } }),
+                  )
+                  try {
+                    document.querySelectorAll('video').forEach((v) => {
+                      if (!v.paused) v.pause()
+                    })
+                  } catch {}
                   // o vídeo começou a tocar: levanta qualquer véu anterior
                   setVeu('nada')
                   setVeuSai(false)
@@ -268,9 +298,11 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                   limpaWatchdog()
                   tentativasQual.current = 0
                   setVeuQual(null)
-                  try {
-                    typeof e.target.playVideo === 'function' && e.target.playVideo()
-                  } catch {}
+                  if (!tocandoRef.current) {
+                    try {
+                      typeof e.target.playVideo === 'function' && e.target.playVideo()
+                    } catch {}
+                  }
                 }
               },
             },
@@ -434,6 +466,8 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
       const p = api.current
       const alvo = qualAlvoRef.current
       if (!p || alvo === 'auto') return limpaWatchdog()
+      // já está a tocar: não mexer mais na qualidade (evita paragens)
+      if (tocandoRef.current) return limpaWatchdog()
       const q = qualidadeAgora()
       const chegou =
         (q && q === alvo) ||
@@ -482,6 +516,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
      argumento que o leitor ainda respeita ao carregar) */
   useEffect(() => {
     if (!tentouRecarregar) return
+    if (tocandoRef.current) return
     const p = api.current
     const alvo = qualAlvoRef.current
     if (!p || alvo === 'auto') return
@@ -1569,6 +1604,10 @@ export default function ClipCard({
                 videoComecou()
               }
               registarVista(c.id, setC)
+              // pausa qualquer vídeo remoto que esteja a tocar
+              window.dispatchEvent(
+                new CustomEvent('locaus:clip-play', { detail: { id: `local-${c.id}` } }),
+              )
               document.querySelectorAll('video').forEach((v) => {
                 if (v !== videoRef.current && !v.paused) v.pause()
               })
