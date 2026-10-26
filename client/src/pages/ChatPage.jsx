@@ -222,6 +222,8 @@ export default function ChatPage({ user }) {
   const inputFileRef = useRef(null)
   const textareaRef = useRef(null)
   const aPollarRef = useRef(false)
+  const marcarLidoRef = useRef(() => {})
+  const ultimoLidoRef = useRef(0)
 
   const juntar = (novas) => {
     if (!novas || !novas.length) return
@@ -317,20 +319,26 @@ export default function ChatPage({ user }) {
   useEffect(() => {
     if (!ultimaMsgId) return undefined
     const marcar = () => {
-      if (document.hidden) return
+      if (document.hidden || !pertoDoFundoRef.current) return
+      if (ultimoLidoRef.current === ultimaMsgId) return
       fetch('/api/chat/lido', {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ last_id: ultimaMsgId }),
       })
         .then(() => {
+          ultimoLidoRef.current = ultimaMsgId
           window.dispatchEvent(new Event('locaus:chat-lido'))
         })
         .catch(() => {})
     }
+    marcarLidoRef.current = marcar
     marcar()
     document.addEventListener('visibilitychange', marcar)
-    return () => document.removeEventListener('visibilitychange', marcar)
+    return () => {
+      marcarLidoRef.current = () => {}
+      document.removeEventListener('visibilitychange', marcar)
+    }
   }, [ultimaMsgId])
 
   // Atualiza o número de membros online a cada 30s
@@ -438,7 +446,10 @@ export default function ChatPage({ user }) {
     if (!el) return
     const perto = el.scrollHeight - el.scrollTop - el.clientHeight < 140
     pertoDoFundoRef.current = perto
-    if (perto) setNovasMensagens(false)
+    if (perto) {
+      setNovasMensagens(false)
+      marcarLidoRef.current()
+    }
   }
 
   const pedirTyping = () => {
