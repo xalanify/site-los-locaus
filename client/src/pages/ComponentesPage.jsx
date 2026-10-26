@@ -35,6 +35,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
+import BuildLabPage from './BuildLabPage'
 import { authHeaders } from '../lib/auth'
 
 /* ============================================================
@@ -155,6 +156,7 @@ export default function ComponentesPage({ user }) {
   const [alertaProduto, setAlertaProduto] = useState(null)
   const [alertas, setAlertas] = useState([])
   const [bottleneckAberto, setBottleneckAberto] = useState(false)
+  const [buildLabAberto, setBuildLabAberto] = useState(false)
   const [filtrosAberto, setFiltrosAberto] = useState(false)
 
   const carregar = async () => {
@@ -450,6 +452,13 @@ export default function ComponentesPage({ user }) {
           className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-violet-400/25 bg-violet-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-violet-200 transition-colors hover:bg-violet-500/20"
         >
           <Gauge className="h-3.5 w-3.5" /> Calculadora de bottleneck
+        </button>
+        <button
+          type="button"
+          onClick={() => setBuildLabAberto(true)}
+          className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-xl border border-sky-400/25 bg-sky-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-sky-200 transition-colors hover:bg-sky-500/20"
+        >
+          <Gauge className="h-3.5 w-3.5" /> Laboratório de builds
         </button>
       </motion.div>
 
@@ -939,6 +948,36 @@ export default function ComponentesPage({ user }) {
       <AnimatePresence>
         {bottleneckAberto && <BottleneckModal onFechar={() => setBottleneckAberto(false)} />}
       </AnimatePresence>
+
+      {buildLabAberto && (
+        <div
+          className="fixed inset-0 z-[125] overflow-y-auto bg-black/85 p-3 backdrop-blur-sm"
+          onClick={() => setBuildLabAberto(false)}
+        >
+          <div
+            className="mx-auto my-3 w-full max-w-6xl rounded-3xl border border-white/10 bg-[#0d0a16] p-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-black text-white">
+                <Gauge className="h-4 w-4 text-sky-300" /> Laboratório de builds
+                <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+                  Admin
+                </span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setBuildLabAberto(false)}
+                className="rounded-lg bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <BuildLabPage embedded />
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {aviso && (
@@ -1777,8 +1816,14 @@ const GPUS_BOTTLENECK = [
 function BottleneckModal({ onFechar }) {
   const [cpuIdx, setCpuIdx] = useState(0)
   const [gpuIdx, setGpuIdx] = useState(2)
-  const cpu = CPUS_BOTTLENECK[cpuIdx]
-  const gpu = GPUS_BOTTLENECK[gpuIdx]
+  const [cpuCustom, setCpuCustom] = useState({ nome: '', score: '' })
+  const [gpuCustom, setGpuCustom] = useState({ nome: '', score: '' })
+  const cpu = cpuCustom.nome
+    ? { nome: cpuCustom.nome, score: Number(cpuCustom.score) || 100 }
+    : CPUS_BOTTLENECK[cpuIdx]
+  const gpu = gpuCustom.nome
+    ? { nome: gpuCustom.nome, score: Number(gpuCustom.score) || 100 }
+    : GPUS_BOTTLENECK[gpuIdx]
   const diff = gpu.score - cpu.score
   const pct = Math.round((Math.abs(diff) / Math.max(gpu.score, cpu.score)) * 100)
   const lado = diff > 8 ? 'CPU' : diff < -8 ? 'GPU' : 'Equilibrado'
@@ -1851,6 +1896,39 @@ function BottleneckModal({ onFechar }) {
               ))}
             </select>
           </label>
+        </div>
+
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <input
+            value={cpuCustom.nome}
+            onChange={(e) => setCpuCustom((x) => ({ ...x, nome: e.target.value }))}
+            placeholder="Ou escreve outra CPU (ex.: Ryzen 5 5500)"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+          />
+          <input
+            value={gpuCustom.nome}
+            onChange={(e) => setGpuCustom((x) => ({ ...x, nome: e.target.value }))}
+            placeholder="Ou escreve outra GPU (ex.: RTX 3080)"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+          />
+          <input
+            type="number"
+            value={cpuCustom.score}
+            onChange={(e) => setCpuCustom((x) => ({ ...x, score: e.target.value }))}
+            placeholder="Desempenho CPU (100 = 9800X3D)"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+          />
+          <input
+            type="number"
+            value={gpuCustom.score}
+            onChange={(e) => setGpuCustom((x) => ({ ...x, score: e.target.value }))}
+            placeholder="Desempenho GPU (100 = RTX 5090)"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+          />
+          <p className="text-[10px] text-gray-500 sm:col-span-2">
+            Escreve o nome de qualquer peça e ajusta o desempenho (100 = referência). Se deixares o
+            nome vazio, usa a peça escolhida na lista.
+          </p>
         </div>
 
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">

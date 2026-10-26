@@ -310,8 +310,23 @@ function tag(bloco, nome) {
   return m ? decodificar(m[1]).trim() : '';
 }
 
-function imagemDe(bloco, html) {
-  const media = bloco.match(/<media:content[^>]*url=["']([^"']+)["']/i);
+/* Imagem de recurso quando o feed não traz nenhuma — garante que
+   todos os cartões têm sempre uma imagem. */
+function imagemFallback(titulo, fonte) {
+  const t = `${titulo || ''} ${fonte || ''}`.toLowerCase();
+  if (/gta|rockstar|red dead/.test(t)) return '/noticias/gta.svg';
+  if (/call of duty|warzone|modern warfare|black ops|\bcod\b/.test(t)) return '/noticias/cod.svg';
+  if (/battlefield|\bdice\b/.test(t)) return '/bf1.jpg';
+  if (/rainbow six|\br6\b|siege/.test(t)) return '/skyr6.jpg';
+  if (/fortnite/.test(t)) return '/fortnite.jpg';
+  if (/nvidia|geforce|\brtx\b|dlss/.test(t)) return '/noticias/nvidia.svg';
+  if (/\bamd\b|radeon|ryzen|fsr/.test(t)) return '/noticias/amd.svg';
+  if (/jailbreak|ps4|ps5|playstation|cfw|\bhen\b/.test(t)) return '/noticias/playstation.svg';
+  if (/cpu|gpu|processador|placa gr|mem[oó]ria|\bram\b|ssd|hardware/.test(t)) return '/noticias/hardware.svg';
+  return '/noticias/gaming.svg';
+}
+
+function imagemDe(bloco, html) {  const media = bloco.match(/<media:content[^>]*url=["']([^"']+)["']/i);
   if (media) return decodificar(media[1]);
   const enc = bloco.match(/<enclosure[^>]*url=["']([^"']+)["']/i);
   if (enc) return decodificar(enc[1]);
@@ -390,6 +405,9 @@ async function carregar() {
   );
   const selecionadas = noticias.slice(0, 80);
   await traduzirNoticias(selecionadas);
+  for (const n of selecionadas) {
+    if (!n.imagem) n.imagem = imagemFallback(n.titulo, n.fonte);
+  }
   // avisa no Windows/PWA só das duas mais recentes (uma vez por notícia)
   notify.notificarNoticias(selecionadas.slice(0, 2)).catch(() => {});
   return selecionadas;

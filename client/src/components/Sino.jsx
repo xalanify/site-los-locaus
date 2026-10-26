@@ -136,6 +136,23 @@ export default function Sino({ user, posicao = 'topo' }) {
     setBusy(false)
   }
 
+  const testarPush = async () => {
+    setBusy(true)
+    setMsg('')
+    try {
+      const r = await fetch('/api/notifications/push/test', {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const d = await r.json().catch(() => ({}))
+      setMsg(r.ok ? 'Enviado. Deve aparecer no Windows em segundos.' : d.error || 'Não deu para enviar.')
+    } catch {
+      setMsg('Não deu para enviar o teste.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="relative" ref={caixa}>
       <button
@@ -230,7 +247,20 @@ export default function Sino({ user, posicao = 'topo' }) {
                 {push ? <Check className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
                 {push ? 'Notificações ligadas no aparelho' : 'Receber avisos mesmo com o site fechado'}
               </button>
+              {push && (
+                <button
+                  onClick={testarPush}
+                  disabled={busy}
+                  className="mt-2 w-full rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-bold text-gray-300 transition hover:bg-white/10 hover:text-white disabled:opacity-60"
+                >
+                  Testar notificação com som
+                </button>
+              )}
               {msg && <p className="mt-2 text-center text-[11px] text-gray-400">{msg}</p>}
+              <p className="mt-2 text-center text-[9px] leading-relaxed text-gray-600">
+                No Windows, mantém o Chrome/Edge abertos em segundo plano ou instala o site como app
+                para receber avisos com o browser fechado.
+              </p>
             </div>
           )}
         </div>

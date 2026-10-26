@@ -67,13 +67,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     },
     { name: 'Previsões', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes, badge: 'Novo' },
     { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos, badge: 'Novo' },
-    {
-      name: 'Laboratório de builds',
-      icon: Gauge,
-      action: () => navigate('/builds'),
-      active: isBuilds,
-      badge: 'Novo',
-    },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Estatísticas: aberta a todos os membros
@@ -88,12 +81,21 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             icon: CircuitBoard,
             action: () => navigate('/componentes'),
             active: isComponentes,
+            badge: 'Admin',
           },
           {
             name: 'Loja de cosméticos',
             icon: Sparkles,
             action: () => navigate('/cosmeticos'),
             active: isCosmeticos,
+            badge: 'Admin',
+          },
+          {
+            name: 'Laboratório de builds',
+            icon: Gauge,
+            action: () => navigate('/builds'),
+            active: isBuilds,
+            badge: 'Admin',
           },
         ]
       : []),

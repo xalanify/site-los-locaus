@@ -81,12 +81,38 @@ function gargalo(cpu, gpu, jogo, res) {
 const fmt = (n) => Math.round(n).toLocaleString('pt-PT')
 const eur = (n) => `${Math.round(n).toLocaleString('pt-PT')} €`
 
-export default function BuildLabPage() {
+const customVazia = () => ({ nome: '', score: '', consumo: '', preco: '', watts: '' })
+
+function pecaCustom(tipo, c = {}) {
+  if (tipo === 'psu') {
+    return {
+      id: 'custom',
+      nome: c.nome || 'Fonte personalizada',
+      watts: Number(c.watts) || 650,
+      preco: Number(c.preco) || 0,
+    }
+  }
+  return {
+    id: 'custom',
+    nome: c.nome || 'Peça personalizada',
+    score: Number(c.score) || 100,
+    consumo: Number(c.consumo) || (tipo === 'cpu' ? 100 : tipo === 'gpu' ? 200 : 0),
+    preco: Number(c.preco) || 0,
+    vram: tipo === 'gpu' ? 0 : undefined,
+  }
+}
+
+function pecaDe(lista, id, custom, tipo) {
+  if (id === 'custom') return pecaCustom(tipo, custom)
+  return buscar(lista, id)
+}
+
+export default function BuildLabPage({ embedded = false }) {
   const [aba, setAba] = useState('comparador')
 
-  return (
-    <PageShell>
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+  const conteudo = (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+      {!embedded && (
         <div className="mb-5">
           <h1 className="font-display text-2xl font-black text-white sm:text-3xl">
             Laboratório de <span className="gradient-text">builds</span>
@@ -96,36 +122,39 @@ export default function BuildLabPage() {
             recomendado para cada peça. Tudo com estimativas locais.
           </p>
         </div>
+      )}
 
-        <div className="mb-4 grid grid-cols-3 gap-2">
-          {ABAS.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              onClick={() => setAba(a.id)}
-              className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-[11px] font-black transition sm:text-xs ${
-                aba === a.id
-                  ? 'border-violet-400/40 bg-violet-500/20 text-white'
-                  : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white'
-              }`}
-            >
-              <a.Icon className="h-4 w-4 shrink-0" /> {a.nome}
-            </button>
-          ))}
-        </div>
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        {ABAS.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            onClick={() => setAba(a.id)}
+            className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-[11px] font-black transition sm:text-xs ${
+              aba === a.id
+                ? 'border-violet-400/40 bg-violet-500/20 text-white'
+                : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white'
+            }`}
+          >
+            <a.Icon className="h-4 w-4 shrink-0" /> {a.nome}
+          </button>
+        ))}
+      </div>
 
-        {aba === 'comparador' && <Comparador />}
-        {aba === 'fps' && <CalculadoraFps />}
-        {aba === 'overclock' && <Overclock />}
+      {aba === 'comparador' && <Comparador />}
+      {aba === 'fps' && <CalculadoraFps />}
+      {aba === 'overclock' && <Overclock />}
 
-        <p className="mt-6 flex items-start gap-1.5 text-[10px] leading-relaxed text-gray-500">
-          <Info className="mt-0.5 h-3 w-3 shrink-0" />
-          Valores estimados a partir de pontuações relativas e perfis de jogos. O FPS real varia com
-          drivers, mapa, servidor, temperatura e definições. Usa isto para comparar, não como promessa.
-        </p>
-      </motion.div>
-    </PageShell>
+      <p className="mt-6 flex items-start gap-1.5 text-[10px] leading-relaxed text-gray-500">
+        <Info className="mt-0.5 h-3 w-3 shrink-0" />
+        Valores estimados a partir de pontuações relativas e perfis de jogos. O FPS real varia com
+        drivers, mapa, servidor, temperatura e definições. Usa isto para comparar, não como promessa.
+      </p>
+    </motion.div>
   )
+
+  if (embedded) return conteudo
+  return <PageShell>{conteudo}</PageShell>
 }
 
 /* ---------------- Comparador ---------------- */
@@ -135,12 +164,14 @@ function Comparador() {
     gpu: 'rtx4070s',
     ram: 'ddr5-32-6000',
     psu: 'psu-750',
+    custom: { cpu: customVazia(), gpu: customVazia(), ram: customVazia(), psu: customVazia() },
   })
   const [b, setB] = useState({
     cpu: 'r5-7600',
     gpu: 'rtx4060',
     ram: 'ddr5-16-5600',
     psu: 'psu-550',
+    custom: { cpu: customVazia(), gpu: customVazia(), ram: customVazia(), psu: customVazia() },
   })
   const [jogoId, setJogoId] = useState('cs2')
   const [presetId, setPresetId] = useState('alto')
@@ -148,10 +179,10 @@ function Comparador() {
   const preset = buscar(PRESETS, presetId)
 
   const calcular = (x) => {
-    const cpu = buscar(CPUS, x.cpu)
-    const gpu = buscar(GPUS, x.gpu)
-    const ram = buscar(RAMS, x.ram)
-    const psu = buscar(PSUS, x.psu)
+    const cpu = pecaDe(CPUS, x.cpu, x.custom.cpu, 'cpu')
+    const gpu = pecaDe(GPUS, x.gpu, x.custom.gpu, 'gpu')
+    const ram = pecaDe(RAMS, x.ram, x.custom.ram, 'ram')
+    const psu = pecaDe(PSUS, x.psu, x.custom.psu, 'psu')
     const f1080 = fpsDe(cpu, gpu, ram, jogo, preset, '1080')
     const f1440 = fpsDe(cpu, gpu, ram, jogo, preset, '1440')
     const f4k = fpsDe(cpu, gpu, ram, jogo, preset, '4k')
@@ -272,33 +303,45 @@ function BuildCard({ titulo, valor, setValor, calc, jogo, cor }) {
       </div>
 
       <div className="space-y-2">
-        <SelectPeca
+        <PecaSelect
           icon={Cpu}
           rotulo="CPU"
+          tipo="cpu"
           lista={CPUS}
           valor={valor.cpu}
           onChange={(cpu) => setValor((v) => ({ ...v, cpu }))}
+          custom={valor.custom.cpu}
+          setCustom={(c) => setValor((v) => ({ ...v, custom: { ...v.custom, cpu: c } }))}
         />
-        <SelectPeca
+        <PecaSelect
           icon={MonitorPlay}
           rotulo="GPU"
+          tipo="gpu"
           lista={GPUS}
           valor={valor.gpu}
           onChange={(gpu) => setValor((v) => ({ ...v, gpu }))}
+          custom={valor.custom.gpu}
+          setCustom={(c) => setValor((v) => ({ ...v, custom: { ...v.custom, gpu: c } }))}
         />
-        <SelectPeca
+        <PecaSelect
           icon={MemoryStick}
           rotulo="RAM"
+          tipo="ram"
           lista={RAMS}
           valor={valor.ram}
           onChange={(ram) => setValor((v) => ({ ...v, ram }))}
+          custom={valor.custom.ram}
+          setCustom={(c) => setValor((v) => ({ ...v, custom: { ...v.custom, ram: c } }))}
         />
-        <SelectPeca
+        <PecaSelect
           icon={PlugZap}
           rotulo="Fonte"
+          tipo="psu"
           lista={PSUS}
           valor={valor.psu}
           onChange={(psu) => setValor((v) => ({ ...v, psu }))}
+          custom={valor.custom.psu}
+          setCustom={(c) => setValor((v) => ({ ...v, custom: { ...v.custom, psu: c } }))}
         />
       </div>
 
@@ -336,6 +379,78 @@ function BuildCard({ titulo, valor, setValor, calc, jogo, cor }) {
         {calc.cpu.nome} + {calc.gpu.nome} + {calc.ram.nome.split(' ').slice(0, 3).join(' ')} ·{' '}
         {jogo.nome}
       </p>
+    </div>
+  )
+}
+
+function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom = {}, setCustom }) {
+  const c = custom || {}
+  const set = (campo, v) => setCustom && setCustom({ ...c, [campo]: v })
+  return (
+    <div>
+      <span className="mb-0.5 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-gray-500">
+        <Icon className="h-2.5 w-2.5" /> {rotulo}
+      </span>
+      <select
+        value={valor}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-violet-400/50 focus:outline-none"
+      >
+        {lista.map((x) => (
+          <option key={x.id} value={x.id}>
+            {x.nome}
+          </option>
+        ))}
+        <option value="custom">Personalizado (qualquer peça)…</option>
+      </select>
+      {valor === 'custom' && (
+        <div className="mt-1 grid grid-cols-2 gap-1 rounded-lg border border-violet-400/20 bg-violet-500/[0.05] p-1.5">
+          <input
+            value={c.nome || ''}
+            onChange={(e) => set('nome', e.target.value)}
+            placeholder={`Nome da ${rotulo.toLowerCase()} (ex.: RTX 4090)`}
+            className="col-span-2 w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+          />
+          {tipo !== 'psu' && (
+            <input
+              type="number"
+              value={c.score || ''}
+              onChange={(e) => set('score', e.target.value)}
+              placeholder="Desempenho (100 = ref.)"
+              title="Pontuação relativa: 100 = RTX 4060 / Ryzen 5 7600"
+              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+            />
+          )}
+          {(tipo === 'cpu' || tipo === 'gpu') && (
+            <input
+              type="number"
+              value={c.consumo || ''}
+              onChange={(e) => set('consumo', e.target.value)}
+              placeholder="Consumo W"
+              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+            />
+          )}
+          {tipo === 'psu' && (
+            <input
+              type="number"
+              value={c.watts || ''}
+              onChange={(e) => set('watts', e.target.value)}
+              placeholder="Watts"
+              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+            />
+          )}
+          <input
+            type="number"
+            value={c.preco || ''}
+            onChange={(e) => set('preco', e.target.value)}
+            placeholder="Preço €"
+            className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+          />
+          <p className="col-span-2 text-[9px] text-gray-500">
+            Pontuação: 100 = RTX 4060 / Ryzen 5 7600. Podes ajustar como quiseres.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -378,10 +493,15 @@ function CalculadoraFps() {
   const [jogoId, setJogoId] = useState('cs2')
   const [presetId, setPresetId] = useState('alto')
   const [res, setRes] = useState('1440')
+  const [custom, setCustom] = useState({
+    cpu: customVazia(),
+    gpu: customVazia(),
+    ram: customVazia(),
+  })
 
-  const cpu = buscar(CPUS, cpuId)
-  const gpu = buscar(GPUS, gpuId)
-  const ram = buscar(RAMS, ramId)
+  const cpu = pecaDe(CPUS, cpuId, custom.cpu, 'cpu')
+  const gpu = pecaDe(GPUS, gpuId, custom.gpu, 'gpu')
+  const ram = pecaDe(RAMS, ramId, custom.ram, 'ram')
   const jogo = buscar(JOGOS, jogoId)
   const preset = buscar(PRESETS, presetId)
   const fps = fpsDe(cpu, gpu, ram, jogo, preset, res)
@@ -393,9 +513,36 @@ function CalculadoraFps() {
     <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
       <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
         <div className="grid gap-2 sm:grid-cols-2">
-          <SelectPeca icon={Cpu} rotulo="CPU" lista={CPUS} valor={cpuId} onChange={setCpuId} />
-          <SelectPeca icon={MonitorPlay} rotulo="GPU" lista={GPUS} valor={gpuId} onChange={setGpuId} />
-          <SelectPeca icon={MemoryStick} rotulo="RAM" lista={RAMS} valor={ramId} onChange={setRamId} />
+          <PecaSelect
+            icon={Cpu}
+            rotulo="CPU"
+            tipo="cpu"
+            lista={CPUS}
+            valor={cpuId}
+            onChange={setCpuId}
+            custom={custom.cpu}
+            setCustom={(c) => setCustom((x) => ({ ...x, cpu: c }))}
+          />
+          <PecaSelect
+            icon={MonitorPlay}
+            rotulo="GPU"
+            tipo="gpu"
+            lista={GPUS}
+            valor={gpuId}
+            onChange={setGpuId}
+            custom={custom.gpu}
+            setCustom={(c) => setCustom((x) => ({ ...x, gpu: c }))}
+          />
+          <PecaSelect
+            icon={MemoryStick}
+            rotulo="RAM"
+            tipo="ram"
+            lista={RAMS}
+            valor={ramId}
+            onChange={setRamId}
+            custom={custom.ram}
+            setCustom={(c) => setCustom((x) => ({ ...x, ram: c }))}
+          />
           <SelectPeca icon={Gamepad2} rotulo="Jogo" lista={JOGOS} valor={jogoId} onChange={setJogoId} />
         </div>
 
@@ -510,12 +657,13 @@ function Overclock() {
   const [perfil, setPerfil] = useState('seguro')
   const [jogoId, setJogoId] = useState('cs2')
   const [res, setRes] = useState('1440')
+  const [custom, setCustom] = useState({ cpu: customVazia(), gpu: customVazia() })
 
-  const cpu = buscar(CPUS, cpuId)
-  const gpu = buscar(GPUS, gpuId)
+  const cpu = pecaDe(CPUS, cpuId, custom.cpu, 'cpu')
+  const gpu = pecaDe(GPUS, gpuId, custom.gpu, 'gpu')
   const jogo = buscar(JOGOS, jogoId)
-  const ocCpu = OC_CPUS[cpuId] || { ganho: 5, allCore: cpu.boost + 0.2, voltagem: 1.25, nota: 'OC moderado.' }
-  const ocGpu = OC_GPUS[gpuId] || { ganho: 8, core: 150, mem: 800, power: 108, nota: 'OC moderado.' }
+  const ocCpu = OC_CPUS[cpuId] || { ganho: 5, allCore: (cpu.boost || 5) + 0.2, voltagem: 1.25, nota: 'OC moderado para uma peça personalizada.' }
+  const ocGpu = OC_GPUS[gpuId] || { ganho: 8, core: 150, mem: 800, power: 108, nota: 'OC moderado para uma peça personalizada.' }
 
   const fatorArrefecimento = arrefecimento === 'ar' ? 0.78 : arrefecimento === 'aio' ? 1 : 1.12
   const fatorPerfil = perfil === 'seguro' ? 0.72 : perfil === 'agressivo' ? 1.25 : 1
@@ -536,8 +684,26 @@ function Overclock() {
     <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
       <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
         <div className="grid gap-2 sm:grid-cols-2">
-          <SelectPeca icon={Cpu} rotulo="CPU" lista={CPUS} valor={cpuId} onChange={setCpuId} />
-          <SelectPeca icon={MonitorPlay} rotulo="GPU" lista={GPUS} valor={gpuId} onChange={setGpuId} />
+          <PecaSelect
+            icon={Cpu}
+            rotulo="CPU"
+            tipo="cpu"
+            lista={CPUS}
+            valor={cpuId}
+            onChange={setCpuId}
+            custom={custom.cpu}
+            setCustom={(c) => setCustom((x) => ({ ...x, cpu: c }))}
+          />
+          <PecaSelect
+            icon={MonitorPlay}
+            rotulo="GPU"
+            tipo="gpu"
+            lista={GPUS}
+            valor={gpuId}
+            onChange={setGpuId}
+            custom={custom.gpu}
+            setCustom={(c) => setCustom((x) => ({ ...x, gpu: c }))}
+          />
           <SelectPeca icon={Gamepad2} rotulo="Jogo para medir" lista={JOGOS} valor={jogoId} onChange={setJogoId} />
           <label className="block">
             <span className="mb-0.5 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-gray-500">

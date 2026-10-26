@@ -275,7 +275,10 @@ function App() {
                     <Route path="/jogos-steam" element={<SteamStorePage />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
-                    <Route path="/builds" element={<BuildLabPage />} />
+                    <Route
+                      path="/builds"
+                      element={isAdmin ? <BuildLabPage /> : <Navigate to="/" replace />}
+                    />
                     {/* Componentes e Periféricos — só admin (em testes) */}
                     <Route
                       path="/componentes"

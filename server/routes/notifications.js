@@ -12,6 +12,7 @@
 const express = require('express');
 const { getDb } = require('../database');
 const { requireUser, attachAuth } = require('../middleware/auth');
+const { enviarPush } = require('../notify');
 
 const router = express.Router();
 
@@ -139,6 +140,22 @@ router.post(
         .prepare('DELETE FROM push_subs WHERE endpoint = ? AND user_id = ?')
         .run(endpoint, req.auth.uid);
     }
+    res.json({ ok: true });
+  }),
+);
+
+router.post(
+  '/push/test',
+  requireUser,
+  safe(async (req, res) => {
+    await enviarPush({
+      userId: req.auth.uid,
+      title: '🔔 Locaus · teste',
+      body: 'Se estás a ver isto no Windows, as notificações estão a funcionar.',
+      link: '/',
+      tag: 'teste-notificacao',
+      tipo: 'chat',
+    });
     res.json({ ok: true });
   }),
 );
