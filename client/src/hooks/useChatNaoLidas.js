@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { authHeaders, userToken } from '../lib/auth'
+import { tocarSom } from '../lib/sons'
 
 /* ============================================================
    Contador de mensagens por ler do Chat geral.
@@ -10,6 +11,8 @@ import { authHeaders, userToken } from '../lib/auth'
    ============================================================ */
 export default function useChatNaoLidas(ativo = true) {
   const [count, setCount] = useState(0)
+  const anteriorRef = useRef(0)
+  const primeiroRef = useRef(true)
 
   useEffect(() => {
     if (!ativo || !userToken()) {
@@ -24,7 +27,23 @@ export default function useChatNaoLidas(ativo = true) {
         const r = await fetch('/api/chat/nao-lidas', { headers: authHeaders() })
         if (!r.ok) return
         const d = await r.json().catch(() => null)
-        if (vivo) setCount(Number(d && d.count) || 0)
+        if (vivo) {
+          const novo = Number(d && d.count) || 0
+          if (primeiroRef.current) {
+            primeiroRef.current = false
+            anteriorRef.current = novo
+          } else {
+            if (
+              novo > anteriorRef.current &&
+              novo > 0 &&
+              !window.location.pathname.startsWith('/chat')
+            ) {
+              tocarSom('recebido')
+            }
+            anteriorRef.current = novo
+          }
+          setCount(novo)
+        }
       } catch {
         /* rede intermitente */
       }

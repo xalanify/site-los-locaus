@@ -21,9 +21,12 @@ import {
   CornerUpLeft,
   Pin,
   Palette,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
+import { tocarSom } from '../lib/sons'
 import PageShell from '../components/PageShell'
 import { confirmar, toast } from '../components/Feedback'
 
@@ -173,6 +176,13 @@ export default function ChatPage({ user }) {
   const [typing, setTyping] = useState([])
   const [loading, setLoading] = useState(true)
   const [texto, setTexto] = useState('')
+  const [somAtivo, setSomAtivo] = useState(() => {
+    try {
+      return localStorage.getItem('locaus:som-chat') !== '0'
+    } catch {
+      return true
+    }
+  })
   const [aEnviar, setAEnviar] = useState(false)
   const [aSubir, setASubir] = useState(false)
   const [progresso, setProgresso] = useState(0)
@@ -277,6 +287,10 @@ export default function ChatPage({ user }) {
             }
           }
           if (d.messages && d.messages.length) {
+            const recebidas = d.messages.filter(
+              (m) => Number(m.user.id) !== Number(user && user.id),
+            )
+            if (recebidas.length && depois) tocarSom('recebido')
             const antes = listaRef.current
             const perto =
               !antes || antes.scrollHeight - antes.scrollTop - antes.clientHeight < 140
@@ -474,6 +488,7 @@ export default function ChatPage({ user }) {
       const d = await r.json().catch(() => null)
       if (!r.ok) throw new Error((d && d.error) || 'Não deu para enviar.')
       juntar([d])
+      tocarSom('enviado')
       setTexto('')
       setResposta(null)
       setPendingMedia(null)
@@ -595,6 +610,23 @@ export default function ChatPage({ user }) {
                 : 'Toda a comunidade, em tempo real'}
             </p>
           </div>
+          {/* som das mensagens */}
+          <button
+            type="button"
+            onClick={() => {
+              const v = !somAtivo
+              setSomAtivo(v)
+              try {
+                localStorage.setItem('locaus:som-chat', v ? '1' : '0')
+              } catch {}
+              if (v) tocarSom('recebido')
+            }}
+            title={somAtivo ? 'Desligar som das mensagens' : 'Ligar som das mensagens'}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          >
+            {somAtivo ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+
           {/* tema — só o admin muda */}
           {user && user.is_admin && (
             <div className="relative">
