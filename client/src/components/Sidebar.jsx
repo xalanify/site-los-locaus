@@ -15,6 +15,7 @@ import {
   Swords,
   ShoppingBag,
   CircuitBoard,
+  Gauge,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
 
@@ -51,6 +52,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isPrevisoes = location.pathname === '/previsoes'
   const isComponentes = location.pathname === '/componentes'
   const isCosmeticos = location.pathname === '/cosmeticos'
+  const isBuilds = location.pathname === '/builds'
   const naoLidas = useChatNaoLidas(Boolean(user))
 
   const links = [
@@ -65,6 +67,13 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     },
     { name: 'Previsões', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes, badge: 'Novo' },
     { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos, badge: 'Novo' },
+    {
+      name: 'Laboratório de builds',
+      icon: Gauge,
+      action: () => navigate('/builds'),
+      active: isBuilds,
+      badge: 'Novo',
+    },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Estatísticas: aberta a todos os membros
