@@ -63,8 +63,10 @@ export async function ativarPush() {
   }
 
   try {
-    // espera pelo service worker ativo (evita "push service error" por o SW
-    // ainda não estar pronto, muito comum na primeira ativação)
+    // garante que o service worker está registado/ativo (evita "push
+    // service error" quando o browser ainda não tem o SW pronto)
+    const existente = await navigator.serviceWorker.getRegistration()
+    if (!existente) await registarSW()
     const reg = await navigator.serviceWorker.ready
     if (!reg) return { ok: false, erro: 'Sem service worker.' }
 
