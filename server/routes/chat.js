@@ -557,10 +557,24 @@ router.post('/', requireUser, async (req, res) => {
     const b = req.body || {};
     const body = String(b.body || '').replace(/\r\n/g, '\n').trim().slice(0, MAX_BODY);
     const clipId = Number(b.clip_id) || null;
+    const sticker = String(b.sticker || '').trim();
     let mediaUrl = b.media_url ? String(b.media_url).trim() : null;
     let mediaType = b.media_type ? String(b.media_type).toLowerCase() : null;
 
-    if (!body && !clipId && !mediaUrl) {
+    if (sticker) {
+      const host = String(req.headers.host || '').toLowerCase();
+      const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);
+      if (!local) {
+        return res.status(403).json({ error: 'Os stickers só estão disponíveis em localhost.' });
+      }
+      if (!/^\/stickers\/[a-z0-9-]+\.svg$/.test(sticker)) {
+        return res.status(400).json({ error: 'Sticker inválido.' });
+      }
+      mediaUrl = sticker;
+      mediaType = 'sticker';
+    }
+
+    if (!body && !clipId && !mediaUrl && !sticker) {
       return res.status(400).json({ error: 'Escreve uma mensagem ou anexa algo.' });
     }
 
@@ -575,7 +589,7 @@ router.post('/', requireUser, async (req, res) => {
       }
     }
 
-    if (mediaUrl) {
+    if (mediaUrl && !sticker) {
       const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
       if (!base || !mediaUrl.startsWith(base + '/storage/v1/object/public/' + BUCKET + '/')) {
         return res.status(400).json({ error: 'Imagem inválida.' });
@@ -585,7 +599,7 @@ router.post('/', requireUser, async (req, res) => {
       }
     }
 
-    const kind = clipId ? 'clip' : mediaUrl ? 'media' : 'text';
+    const kind = sticker ? 'sticker' : clipId ? 'clip' : mediaUrl ? 'media' : 'text';
     const replyTo = Number(b.reply_to) || null;
     const r = await db
       .prepare(
@@ -630,7 +644,13 @@ router.post('/', requireUser, async (req, res) => {
     /* notificação Windows/PWA para os outros membros (sem bloquear o envio) */
     const previa =
       body ||
-      (kind === 'clip' ? 'Enviou um clip' : mediaType === 'gif' ? 'Enviou um GIF' : 'Enviou uma imagem');
+      (kind === 'sticker'
+        ? 'Enviou um sticker'
+        : kind === 'clip'
+          ? 'Enviou um clip'
+          : mediaType === 'gif'
+            ? 'Enviou um GIF'
+            : 'Enviou uma imagem');
     let aVerChat = [];
     try {
       aVerChat = await db

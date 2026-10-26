@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <style>
+    @keyframes fire { 0%,100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 6px #f97316); } 50% { transform: translateY(-10px) scale(1.12); filter: drop-shadow(0 0 22px #f97316); } }
+    .s { animation: fire .7s ease-in-out infinite; transform-origin: 120px 150px; }
+  </style>
+  <text x="120" y="170" text-anchor="middle" font-size="135" class="s">🔥</text>
+</svg>

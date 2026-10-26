@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <style>
+    @keyframes party { 0%,100% { transform: translateY(0) rotate(-12deg); } 50% { transform: translateY(-14px) rotate(12deg); } }
+    .s { animation: party .8s ease-in-out infinite; transform-origin: 120px 130px; }
+  </style>
+  <text x="120" y="168" text-anchor="middle" font-size="130" class="s">🎉</text>
+</svg>

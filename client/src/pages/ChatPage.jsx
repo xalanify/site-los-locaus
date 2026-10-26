@@ -24,6 +24,7 @@ import {
   Palette,
   Volume2,
   VolumeX,
+  Sticker,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { authHeaders } from '../lib/auth'
@@ -31,7 +32,6 @@ import { tocarSom } from '../lib/sons'
 import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import { confirmar, toast } from '../components/Feedback'
-
 /* Temas do chat — só o admin muda; aplica a todos.
    Cada tema = cor principal + fundo do chat. */
 const TEMAS = {
@@ -42,6 +42,22 @@ const TEMAS = {
   laranja: { nome: 'Laranja', grad: 'from-orange-600 to-amber-500', cor: 'text-orange-300', borda: 'border-orange-400/40', bg: '#160f08', chip: 'bg-orange-500/15 text-orange-300' },
 }
 const TEMA_PADRAO = 'violeta'
+
+/* Stickers animados locais — só aparecem em localhost para testes. */
+const STICKERS_LOCAIS = [
+  { id: 'gg', nome: 'GG', src: '/stickers/gg.svg' },
+  { id: 'lol', nome: 'LOL', src: '/stickers/lol.svg' },
+  { id: 'fire', nome: 'Fogo', src: '/stickers/fire.svg' },
+  { id: 'heart', nome: 'Coração', src: '/stickers/heart.svg' },
+  { id: 'cat', nome: 'Gato', src: '/stickers/cat.svg' },
+  { id: 'boom', nome: 'Boom', src: '/stickers/boom.svg' },
+  { id: 'crown', nome: 'Coroa', src: '/stickers/crown.svg' },
+  { id: 'skull', nome: 'Caveira', src: '/stickers/skull.svg' },
+  { id: 'party', nome: 'Festa', src: '/stickers/party.svg' },
+  { id: 'shock', nome: 'Choque', src: '/stickers/shock.svg' },
+  { id: 'clap', nome: 'Palmas', src: '/stickers/clap.svg' },
+  { id: 'rocket', nome: 'Foguete', src: '/stickers/rocket.svg' },
+]
 
 /* Emojis por categoria — o picker do telemóvel é só um botão */
 const EMOJI_CATEGORIAS = [
@@ -191,6 +207,10 @@ export default function ChatPage({ user }) {
   const [pendingMedia, setPendingMedia] = useState(null)
   const [pendingClip, setPendingClip] = useState(null)
   const [emojiAberto, setEmojiAberto] = useState(false)
+  const [stickersAberto, setStickersAberto] = useState(false)
+  const podeStickers =
+    typeof window !== 'undefined' &&
+    /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)
   const [emojiCat, setEmojiCat] = useState('recentes')
   const [clipsAberto, setClipsAberto] = useState(false)
   const [clips, setClips] = useState([])
@@ -503,6 +523,29 @@ export default function ChatPage({ user }) {
     }
   }
 
+  const enviarSticker = async (src) => {
+    if (!podeStickers || aEnviar) return
+    setAEnviar(true)
+    setErro('')
+    try {
+      const r = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sticker: src }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para enviar o sticker.')
+      juntar([d])
+      tocarSom('enviado')
+      setStickersAberto(false)
+      setTimeout(() => scrollFundo(true), 40)
+    } catch (e) {
+      setErro(e.message || 'Não deu para enviar o sticker.')
+    } finally {
+      setAEnviar(false)
+    }
+  }
+
   const enviar = async () => {
     const body = texto.trim()
     if (!body && !pendingMedia && !pendingClip) return
@@ -794,32 +837,47 @@ export default function ChatPage({ user }) {
                         </div>
                       )}
                       <div
-                        className={`relative rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed shadow-sm ${
-                          minha
-                            ? `rounded-br-md bg-gradient-to-br ${t.grad} text-white shadow-lg`
-                            : 'rounded-bl-md border border-white/10 bg-white/[0.08] text-gray-100 shadow-lg'
-                        } ${m.pinned ? 'ring-2 ' + t.borda : ''}`}
+                        className={`relative text-[13.5px] leading-relaxed ${
+                          m.kind === 'sticker'
+                            ? 'p-0'
+                            : `rounded-2xl px-4 py-2.5 shadow-sm ${
+                                minha
+                                  ? `rounded-br-md bg-gradient-to-br ${t.grad} text-white shadow-lg`
+                                  : 'rounded-bl-md border border-white/10 bg-white/[0.08] text-gray-100 shadow-lg'
+                              } ${m.pinned ? 'ring-2 ' + t.borda : ''}`
+                        }`}
                       >
                         {m.pinned && (
                           <span className={`mb-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wider ${minha ? 'text-white/80' : t.cor}`}>
                             <Pin className="h-3 w-3" /> Fixada
                           </span>
                         )}
-                        {m.body && <p className="whitespace-pre-wrap break-words">{linkify(m.body)}</p>}
-                        {m.media_url && (
-                          <button
-                            onClick={() => window.open(m.media_url, '_blank', 'noopener')}
-                            className={`block overflow-hidden rounded-xl ${m.body ? 'mt-2' : ''}`}
-                          >
-                            <img
-                              src={m.media_url}
-                              alt=""
-                              loading="lazy"
-                              className="max-h-72 w-auto max-w-full object-contain"
-                            />
-                          </button>
+                        {m.kind === 'sticker' ? (
+                          <img
+                            src={m.media_url}
+                            alt="Sticker"
+                            loading="lazy"
+                            className="h-28 w-28 object-contain drop-shadow-2xl sm:h-32 sm:w-32"
+                          />
+                        ) : (
+                          <>
+                            {m.body && <p className="whitespace-pre-wrap break-words">{linkify(m.body)}</p>}
+                            {m.media_url && (
+                              <button
+                                onClick={() => window.open(m.media_url, '_blank', 'noopener')}
+                                className={`block overflow-hidden rounded-xl ${m.body ? 'mt-2' : ''}`}
+                              >
+                                <img
+                                  src={m.media_url}
+                                  alt=""
+                                  loading="lazy"
+                                  className="max-h-72 w-auto max-w-full object-contain"
+                                />
+                              </button>
+                            )}
+                            <ClipPreview clip={m.clip} onOpen={abrirClipNoFeed} />
+                          </>
                         )}
-                        <ClipPreview clip={m.clip} onOpen={abrirClipNoFeed} />
                         {minha && (
                           <span className="mt-1 flex items-center justify-end gap-1 text-right text-[9px] font-semibold text-white/60">
                             {hora(m.created_at)}
@@ -1056,6 +1114,38 @@ export default function ChatPage({ user }) {
               </div>
             </div>
           )}
+          {stickersAberto && podeStickers && (
+            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-violet-400/20 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-80">
+              <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-violet-300">
+                  Stickers animados · localhost
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setStickersAberto(false)}
+                  className="rounded p-1 text-gray-500 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="grid max-h-64 grid-cols-4 gap-1 overflow-y-auto p-2">
+                {STICKERS_LOCAIS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => enviarSticker(s.src)}
+                    title={s.nome}
+                    className="flex aspect-square items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-violet-400/30 hover:bg-violet-500/10"
+                  >
+                    <img src={s.src} alt={s.nome} className="h-full w-full object-contain" />
+                  </button>
+                ))}
+              </div>
+              <p className="px-3 pb-2 text-[9px] text-gray-500">
+                Só aparece em localhost. Em produção fica escondido.
+              </p>
+            </div>
+          )}
           <div className="flex items-end gap-1.5">
             <input
               ref={inputFileRef}
@@ -1080,7 +1170,10 @@ export default function ChatPage({ user }) {
               <Clapperboard className="h-5 w-5" />
             </button>
             <button
-              onClick={() => setEmojiAberto((v) => !v)}
+              onClick={() => {
+                setEmojiAberto((v) => !v)
+                setStickersAberto(false)
+              }}
               title="Emojis"
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
                 emojiAberto ? 'bg-violet-500/15 text-violet-300' : 'text-gray-400 hover:text-violet-300'
@@ -1088,6 +1181,22 @@ export default function ChatPage({ user }) {
             >
               <Smile className="h-5 w-5" />
             </button>
+            {podeStickers && (
+              <button
+                onClick={() => {
+                  setStickersAberto((v) => !v)
+                  setEmojiAberto(false)
+                }}
+                title="Stickers animados (localhost)"
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
+                  stickersAberto
+                    ? 'bg-violet-500/15 text-violet-300'
+                    : 'text-gray-400 hover:text-violet-300'
+                }`}
+              >
+                <Sticker className="h-5 w-5" />
+              </button>
+            )}
             <textarea
               ref={textareaRef}
               rows={1}

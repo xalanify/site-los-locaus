@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <style>
+    @keyframes rocket { 0%,100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-18px) rotate(4deg); } }
+    .s { animation: rocket .8s ease-in-out infinite; transform-origin: 120px 140px; }
+  </style>
+  <text x="120" y="170" text-anchor="middle" font-size="130" class="s">🚀</text>
+</svg>
