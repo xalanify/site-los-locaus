@@ -71,6 +71,9 @@ const formDe = (u) => ({
   fonte_perfil: u?.fonte_perfil || '',
 })
 
+const CROP = 288
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
+
 export default function ProfilePage({
   user,
   isAdmin,
@@ -95,6 +98,9 @@ export default function ProfilePage({
   const abriuState = useRef(false)
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState('')
+  const [crop, setCrop] = useState(null)
+  const cropImgRef = useRef(null)
+  const cropDragRef = useRef(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
   const [mouseSug, setMouseSug] = useState([])
@@ -292,10 +298,93 @@ export default function ProfilePage({
       return
     }
     if (avatarPreview) URL.revokeObjectURL(avatarPreview)
-    setAvatarFile(f)
-    setAvatarPreview(URL.createObjectURL(f))
+    const url = URL.createObjectURL(f)
+    const img = new Image()
+    img.onload = () => {
+      cropImgRef.current = img
+      setCrop({ src: url, w: img.naturalWidth, h: img.naturalHeight, zoom: 1, x: 0, y: 0 })
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      setErr('Não foi possível abrir esta imagem.')
+    }
+    img.src = url
     setRemoveAvatar(false)
     if (fileRef.current) fileRef.current.value = ''
+  }
+
+  /* limites do arrasto: a imagem tem de cobrir o quadrado */
+  const limitesCrop = (c) => {
+    if (!c) return { maxX: 0, maxY: 0 }
+    const escala = Math.max(CROP / c.w, CROP / c.h) * c.zoom
+    return {
+      maxX: Math.max(0, (c.w * escala - CROP) / 2),
+      maxY: Math.max(0, (c.h * escala - CROP) / 2),
+    }
+  }
+
+  const fecharCrop = () => {
+    if (crop && crop.src) URL.revokeObjectURL(crop.src)
+    setCrop(null)
+    cropImgRef.current = null
+    cropDragRef.current = null
+  }
+
+  const aplicarCrop = () => {
+    const img = cropImgRef.current
+    if (!img || !crop) return
+    const OUT = 512
+    const escala = Math.max(CROP / crop.w, CROP / crop.h) * crop.zoom
+    const ratio = OUT / CROP
+    const dw = crop.w * escala * ratio
+    const dh = crop.h * escala * ratio
+    const dx = OUT / 2 + crop.x * ratio - dw / 2
+    const dy = OUT / 2 + crop.y * ratio - dh / 2
+    const canvas = document.createElement('canvas')
+    canvas.width = OUT
+    canvas.height = OUT
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.fillStyle = '#0d0a16'
+    ctx.fillRect(0, 0, OUT, OUT)
+    ctx.drawImage(img, dx, dy, dw, dh)
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          setErr('Não foi possível recortar a imagem.')
+          return
+        }
+        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview)
+        setAvatarFile(file)
+        setAvatarPreview(URL.createObjectURL(file))
+        setRemoveAvatar(false)
+        fecharCrop()
+      },
+      'image/jpeg',
+      0.92,
+    )
+  }
+
+  const cropDown = (e) => {
+    if (!crop) return
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    cropDragRef.current = { sx: e.clientX, sy: e.clientY, x: crop.x, y: crop.y }
+  }
+
+  const cropMove = (e) => {
+    if (!crop || !cropDragRef.current) return
+    const { maxX, maxY } = limitesCrop(crop)
+    const d = cropDragRef.current
+    setCrop((c) => ({
+      ...c,
+      x: clamp(d.x + (e.clientX - d.sx), -maxX, maxX),
+      y: clamp(d.y + (e.clientY - d.sy), -maxY, maxY),
+    }))
+  }
+
+  const cropUp = () => {
+    cropDragRef.current = null
   }
 
   const procurarMusica = async (e) => {
@@ -504,6 +593,108 @@ export default function ProfilePage({
                   A tua foto atual será removida ao guardar.
                 </p>
               )}
+
+              {/* recortar / arrastar a foto antes de guardar */}
+              {crop &&
+                createPortal(
+                  <div
+                    className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 p-3 backdrop-blur-sm"
+                    onClick={fecharCrop}
+                  >
+                    <div
+                      className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d0a16] p-4 shadow-2xl"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-sm font-black text-white">Recortar foto</h3>
+                        <button
+                          type="button"
+                          onClick={fecharCrop}
+                          className="rounded-lg bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                          aria-label="Fechar"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div
+                        className="relative mx-auto touch-none select-none overflow-hidden rounded-full bg-black ring-2 ring-violet-500/50"
+                        style={{ width: CROP, height: CROP, cursor: 'grab' }}
+                        onPointerDown={cropDown}
+                        onPointerMove={cropMove}
+                        onPointerUp={cropUp}
+                        onPointerCancel={cropUp}
+                      >
+                        <img
+                          src={crop.src}
+                          alt="Recorte"
+                          draggable={false}
+                          style={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%',
+                            width: crop.w * Math.max(CROP / crop.w, CROP / crop.h) * crop.zoom,
+                            height: crop.h * Math.max(CROP / crop.w, CROP / crop.h) * crop.zoom,
+                            maxWidth: 'none',
+                            transform: `translate(-50%, -50%) translate(${crop.x}px, ${crop.y}px)`,
+                            userSelect: 'none',
+                            pointerEvents: 'none',
+                          }}
+                        />
+                      </div>
+
+                      <p className="mt-2 text-center text-[10px] text-gray-500">
+                        Arrasta a foto para centrar · usa o zoom para aproximar
+                      </p>
+
+                      <div className="mt-3 flex items-center gap-2">
+                        <ZoomIn className="h-4 w-4 shrink-0 text-gray-400" />
+                        <input
+                          type="range"
+                          min="1"
+                          max="3"
+                          step="0.05"
+                          value={crop.zoom}
+                          onChange={(e) => {
+                            const zoom = Number(e.target.value)
+                            setCrop((c) => {
+                              if (!c) return c
+                              const { maxX, maxY } = limitesCrop({ ...c, zoom })
+                              return {
+                                ...c,
+                                zoom,
+                                x: clamp(c.x, -maxX, maxX),
+                                y: clamp(c.y, -maxY, maxY),
+                              }
+                            })
+                          }}
+                          className="h-1.5 w-full accent-violet-500"
+                        />
+                        <span className="w-9 shrink-0 text-right text-[10px] font-bold tabular-nums text-gray-400">
+                          {crop.zoom.toFixed(1)}×
+                        </span>
+                      </div>
+
+                      <div className="mt-4 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={fecharCrop}
+                          className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-black text-gray-300 hover:bg-white/10 hover:text-white"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={aplicarCrop}
+                          className="flex-1 rounded-xl bg-violet-500 py-2 text-xs font-black text-white transition hover:bg-violet-400"
+                        >
+                          Aplicar recorte
+                        </button>
+                      </div>
+                    </div>
+                  </div>,
+                  document.body,
+                )}
 
               {/* Rato + DPI */}
               <div className="space-y-2">
