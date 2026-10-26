@@ -15,7 +15,8 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 60,
-      "includeFiles": "{historico-*.html,server/data/*.json,server/agente.ps1,server/scripts/*.ps1,server/LOCAUS-PC.exe}"
+      "includeFiles": "{historico-*.html,server/data/*.json,server/agente.ps1,server/scripts/*.ps1,server/LOCAUS-PC.exe}",
+      "excludeFiles": "client/dist/**"
     }
   },
 
