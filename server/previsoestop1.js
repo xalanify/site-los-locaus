@@ -52,12 +52,13 @@ async function syncTop1Previsoes() {
          UNION ALL
          SELECT user_id, correct FROM cs2_predictions
        )
-       SELECT user_id,
-              count(*) FILTER (WHERE correct IS TRUE)::int AS acertos
-         FROM juntas
-         GROUP BY user_id
+       SELECT j.user_id,
+              count(*) FILTER (WHERE j.correct IS TRUE)::int AS acertos
+         FROM juntas j
+         JOIN users u ON u.id = j.user_id
+         GROUP BY j.user_id, u.username
          HAVING count(*) > 0
-         ORDER BY acertos DESC, count(*) DESC, user_id ASC
+         ORDER BY acertos DESC, count(*) DESC, u.username ASC
          LIMIT 1`,
     );
 

@@ -77,7 +77,7 @@ const profileOf = async (userId) => {
       name_color: (row && row.name_color) || null,
       name_effect: (row && row.name_effect) || null,
       borda_cor: (row && row.borda_cor) || null,
-      fonte_perfil: (row && row.fonte_perfil) || null,
+      fonte_perfil: null,
     };
   } catch {
     return {
@@ -302,8 +302,15 @@ router.get('/me', attachAuth, async (req, res) => {
     return res.status(401).json({ error: 'Sessão não iniciada' });
   }
   try {
+    // garante que a distinção de 1.º nas previsões está atualizada
+    try {
+      await require('../previsoestop1').syncTop1Previsoes();
+    } catch {
+      /* segue sem distinção */
+    }
     const user = await store.findById(req.auth.uid);
     if (!user) return res.status(401).json({ error: 'Conta não encontrada' });
+    res.setHeader('Cache-Control', 'no-store');
     res.json(await publicUser(user));
   } catch (error) {
     console.error('Erro users me:', error.message);
@@ -385,7 +392,6 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasNameColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
     const hasNameEffect = Object.prototype.hasOwnProperty.call(body, 'name_effect');
     const hasBorda = Object.prototype.hasOwnProperty.call(body, 'borda_cor');
-    const hasFonte = Object.prototype.hasOwnProperty.call(body, 'fonte_perfil');
     const musicaAlterada = Boolean(body.musica_alterada);
     if (
       !hasNick &&
@@ -401,8 +407,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       !hasDynamic &&
       !hasNameColor &&
       !hasNameEffect &&
-      !hasBorda &&
-      !hasFonte
+      !hasBorda
     ) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
@@ -555,19 +560,6 @@ router.put('/me/profile', attachAuth, async (req, res) => {
         )
         .run(borda || null, uid);
     }
-    if (hasFonte) {
-      const fonte = String(body.fonte_perfil || '').trim();
-      const FONTES = new Set(['minecraft', 'gta', 'bo2', 'cod', 'fortnite', 'cyberpunk', 'halo']);
-      if (fonte && !FONTES.has(fonte)) {
-        return res.status(400).json({ error: 'Fonte inválida.' });
-      }
-      await db
-        .prepare(
-          'UPDATE user_profiles SET fonte_perfil = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-        )
-        .run(fonte || null, uid);
-    }
-
     if (hasNameColor || hasNameEffect) {
       const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
@@ -814,6 +806,7 @@ router.get('/list', attachAuth, async (req, res) => {
   try {
     require('../fortniteRank').sincronizar().catch(() => {});
     require('../top1').syncTop1Badge().catch(() => {});
+    require('../previsoestop1').syncTop1Previsoes().catch(() => {});
     const db = getDb();
     const rows = await db
       .prepare(
@@ -854,7 +847,7 @@ router.get('/list', attachAuth, async (req, res) => {
         name_color: r.name_color || null,
         name_effect: r.name_effect || null,
         borda_cor: r.borda_cor || null,
-        fonte_perfil: r.fonte_perfil || null,
+        fonte_perfil: null,
         online: Boolean(r.online),
         last_seen: r.last_seen ? new Date(r.last_seen).toISOString() : null,
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,

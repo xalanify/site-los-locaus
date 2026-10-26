@@ -38,8 +38,17 @@ process.on('uncaughtException', (e) => {
 
 // Inicializar base de dados (a ligação também é criada à 1.ª consulta)
 const ready = initDatabase()
-  .then(() => {
+  .then(async () => {
     console.log(`Contas de utilizador: ${backendInfo()}`);
+    // Fonte do perfil removida — todos ficam com a fonte Locaus padrão.
+    try {
+      const { getDb } = require('./database');
+      await getDb()
+        .prepare("UPDATE user_profiles SET fonte_perfil = '' WHERE COALESCE(fonte_perfil, '') <> ''")
+        .run();
+    } catch {
+      /* coluna pode ainda não existir */
+    }
     // TOP 1 KILL (CS2) automático — líder do ranking ganha a distinção
     const { syncTop1Badge } = require('./top1');
     // 1.º nas previsões automático — líder da classificação ganha a distinção

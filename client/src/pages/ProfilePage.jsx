@@ -36,7 +36,6 @@ import {
   musicaDe,
 } from '../data/temasPerfil'
 import { CORES_NOME, EFEITOS_NOME, classesCard, classesNome } from '../data/nomeEfeitos'
-import { FONTES, fonteDe } from '../data/fontesPerfil'
 import { extrairCores } from '../lib/coresFundo'
 
 /* ============================================================
@@ -68,7 +67,6 @@ const formDe = (u) => ({
   name_color: u?.name_color || '',
   name_effect: u?.name_effect || '',
   borda_cor: u?.borda_cor || 'banner',
-  fonte_perfil: u?.fonte_perfil || '',
 })
 
 const CROP = 288
@@ -116,7 +114,7 @@ export default function ProfilePage({
      no painel, foto) sem precisar de recarregar a página. */
   useEffect(() => {
     let vivo = true
-    fetch('/api/users/me', { headers: authHeaders() })
+    fetch('/api/users/me', { headers: authHeaders(), cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (vivo && d && d.id) {
@@ -223,24 +221,12 @@ export default function ProfilePage({
     }
   }, [temFundo, dinamico, fundoAtual.id, accent, accent2, accentRgb])
 
-  /* fonte escolhida pelo user — aplica-se a todos os textos */
-  const fonteId = edit ? form.fonte_perfil : me?.fonte_perfil
-  const fonte = fonteDe(fonteId)
+  /* A fonte do perfil foi removida: garante sempre a fonte Locaus padrão. */
   useEffect(() => {
-    if (standaloneEdit) return
     const body = document.body
-    if (!fonte.familia) {
-      body.classList.remove('profile-fonte')
-      body.style.removeProperty('--perfil-fonte')
-      return
-    }
-    body.classList.add('profile-fonte')
-    body.style.setProperty('--perfil-fonte', fonte.familia)
-    return () => {
-      body.classList.remove('profile-fonte')
-      body.style.removeProperty('--perfil-fonte')
-    }
-  }, [fonte.id, fonte.familia])
+    body.classList.remove('profile-fonte')
+    body.style.removeProperty('--perfil-fonte')
+  }, [])
 
   if (!me) return null
 
@@ -449,7 +435,6 @@ export default function ProfilePage({
             }
           : {}),
         borda_cor: form.borda_cor,
-        fonte_perfil: form.fonte_perfil,
         musica_alterada: musicaAlterada,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
@@ -515,7 +500,7 @@ export default function ProfilePage({
   const modalEdicao = edit ? (
 
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
-              <div className="glass max-h-[92dvh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-violet-500/30 p-4 shadow-2xl sm:p-6">
+              <div className="glass max-h-[92dvh] w-full max-w-4xl space-y-5 overflow-y-auto rounded-3xl border border-violet-500/30 p-4 shadow-2xl sm:p-6">
               <div className="sticky -top-4 z-20 -mx-4 -mt-4 mb-2 flex items-start justify-between gap-3 border-b border-white/10 bg-[#140f22]/95 px-4 py-3 backdrop-blur sm:-top-6 sm:-mx-6 sm:-mt-6 sm:px-6">
                 <div>
                   <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
@@ -533,6 +518,11 @@ export default function ProfilePage({
                 </button>
               </div>
 
+              {/* Foto de perfil */}
+              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                  Foto de perfil
+                </h3>
               {/* escolher ficheiro */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
@@ -593,6 +583,7 @@ export default function ProfilePage({
                   A tua foto atual será removida ao guardar.
                 </p>
               )}
+              </section>
 
               {/* recortar / arrastar a foto antes de guardar */}
               {crop &&
@@ -697,7 +688,12 @@ export default function ProfilePage({
                 )}
 
               {/* Rato + DPI */}
-              <div className="space-y-2">
+              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                  Rato e DPI
+                </h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
                 <label className="block text-xs font-bold text-gray-400">O teu rato (mouse)</label>
                 <div className="relative">
                   <input
@@ -748,8 +744,14 @@ export default function ProfilePage({
                   />
                 </div>
               </div>
+              </div>
+              </section>
 
               {/* Banner animado do perfil */}
+              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                  Banner e fundo
+                </h3>
               <div>
                 <label className="block text-xs font-bold text-gray-400">Banner do perfil</label>
                 <p className="mb-2 text-[11px] text-gray-500">
@@ -846,8 +848,13 @@ export default function ProfilePage({
                   ))}
                 </div>
               </div>
+              </section>
 
               {/* Cor das linhas / brilho do cartão e do avatar */}
+              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                  Estilo do perfil
+                </h3>
               <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
                 <p className="text-xs font-bold text-gray-300">Linhas e brilho do perfil</p>
                 <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
@@ -875,37 +882,7 @@ export default function ProfilePage({
                 </div>
               </div>
 
-              {/* Fonte dos textos do perfil */}
-              <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
-                <p className="text-xs font-bold text-gray-300">Fonte do perfil</p>
-                <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
-                  Muda todos os textos do perfil e das sidebars enquanto o teu perfil está aberto.
-                </p>
-                <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-                  {FONTES.map((f) => (
-                    <button
-                      key={f.id || 'padrao'}
-                      type="button"
-                      onClick={() => setForm((x) => ({ ...x, fonte_perfil: f.id }))}
-                      className={`rounded-xl border px-2.5 py-2 text-left transition-colors ${
-                        form.fonte_perfil === f.id
-                          ? 'border-white/60 bg-white/15 text-white'
-                          : 'border-white/10 bg-black/20 text-gray-300 hover:bg-white/5'
-                      }`}
-                    >
-                      <span
-                        className="block truncate text-[15px] leading-tight"
-                        style={f.familia ? { fontFamily: f.familia } : undefined}
-                      >
-                        {f.exemplo}
-                      </span>
-                      <span className="mt-0.5 block truncate text-[9px] font-black uppercase tracking-wider text-gray-500">
-                        {f.nome}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Fonte dos textos do perfil — removida (fonte Locaus padrão) */}
 
               {/* Cores dinâmicas do perfil */}
               <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-black/20 px-3 py-3">
@@ -931,8 +908,13 @@ export default function ProfilePage({
                   />
                 </button>
               </div>
+              </section>
 
               {/* Música do perfil */}
+              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                  Música do perfil
+                </h3>
               <div>
                 <label className="block text-xs font-bold text-gray-400">Música do perfil</label>
                 <p className="mb-2 text-[11px] text-gray-500">
@@ -1056,6 +1038,7 @@ export default function ProfilePage({
                   </div>
                 )}
               </div>
+              </section>
 
               {(isAdmin || me.is_admin) && (
                 <div className="rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">

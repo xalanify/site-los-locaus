@@ -23,7 +23,6 @@ import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
 import ProfileMusic from '../components/ProfileMusic'
 import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
-import { fonteDe } from '../data/fontesPerfil'
 import { extrairCores } from '../lib/coresFundo'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
@@ -156,21 +155,12 @@ export default function PublicProfilePage({
     }
   }, [dinamico, fundoAtual.id, accent, accent2, accentRgb])
 
-  const fonte = fonteDe(data?.profile?.fonte_perfil)
+  /* Fonte do perfil removida — fica sempre a fonte Locaus padrão. */
   useEffect(() => {
     const body = document.body
-    if (!fonte.familia) {
-      body.classList.remove('profile-fonte')
-      body.style.removeProperty('--perfil-fonte')
-      return
-    }
-    body.classList.add('profile-fonte')
-    body.style.setProperty('--perfil-fonte', fonte.familia)
-    return () => {
-      body.classList.remove('profile-fonte')
-      body.style.removeProperty('--perfil-fonte')
-    }
-  }, [fonte.id, fonte.familia])
+    body.classList.remove('profile-fonte')
+    body.style.removeProperty('--perfil-fonte')
+  }, [])
 
   if (!carregado) {
     return (

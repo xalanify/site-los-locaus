@@ -6,6 +6,7 @@ import UserBanner from './UserBanner'
 import { authHeaders } from '../lib/auth'
 import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
+import { bannerDe } from '../data/temasPerfil'
 import { anunciosVisiveis } from '../lib/anuncios'
 
 /* ============================================================
@@ -132,6 +133,11 @@ export default function RightColumn() {
                       onClick={() => navigate(`/perfil/${encodeURIComponent(m.username)}`)}
                       className={`relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-1 py-1.5 pl-2.5 text-left transition-colors hover:bg-white/5 ${classesCard(m.name_effect)}`}
                     >
+                      <span
+                        className="absolute inset-y-0 left-0 w-1"
+                        style={{ background: bannerDe(m.banner_id).cor || '#8b5cf6' }}
+                        aria-hidden="true"
+                      />
                       <UserBanner
                         bannerId={m.banner_id}
                         className="absolute inset-y-0 left-0 w-1"

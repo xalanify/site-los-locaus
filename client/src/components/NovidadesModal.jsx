@@ -104,13 +104,6 @@ export default function NovidadesModal({ user }) {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  type="button"
-                  onClick={naoMostrar}
-                  className="hidden rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-gray-400 hover:bg-white/10 hover:text-white sm:inline-flex"
-                >
-                  Não mostrar novamente
-                </button>
-                <button
                   onClick={fechar}
                   className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
                   aria-label="Fechar novidades"
