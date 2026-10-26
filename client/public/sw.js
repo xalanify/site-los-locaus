@@ -7,7 +7,7 @@
    • recebe os pushes do servidor e mostra a notificação
    ============================================================ */
 
-const CACHE = 'locaus-v7';
+const CACHE = 'locaus-v8';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -81,9 +81,13 @@ self.addEventListener('push', (e) => {
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       image: dados.image || '/icon-512.png',
-      tag: 'locaus',
-      renotify: false,
-      data: { link: dados.link || '/' },
+      tag: dados.tag || 'locaus',
+      renotify: Boolean(dados.tag),
+      silent: false,
+      requireInteraction: dados.tipo === 'chat' || dados.tipo === 'live',
+      vibrate: [80, 40, 80],
+      timestamp: Date.now(),
+      data: { link: dados.link || '/', tipo: dados.tipo || 'geral' },
     }),
   );
 });

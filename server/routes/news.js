@@ -1,4 +1,5 @@
 const express = require('express');
+const notify = require('../notify');
 
 const router = express.Router();
 
@@ -389,6 +390,8 @@ async function carregar() {
   );
   const selecionadas = noticias.slice(0, 80);
   await traduzirNoticias(selecionadas);
+  // avisa no Windows/PWA só das duas mais recentes (uma vez por notícia)
+  notify.notificarNoticias(selecionadas.slice(0, 2)).catch(() => {});
   return selecionadas;
 }
 

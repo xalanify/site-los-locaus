@@ -8,8 +8,21 @@ const { sincronizar, proximoTorneio } = require('../r6previsoes');
 const { syncTop1Previsoes } = require('../previsoestop1');
 const { syncStreaks } = require('../previsoesstreak');
 const cs2 = require('../cs2previsoes');
+const notify = require('../notify');
 
 const router = express.Router();
+
+/* Avisa no Windows/PWA quando um jogo entra ao vivo (uma vez por jogo). */
+function avisarAoVivo(jogo, lista) {
+  const agora = Date.now();
+  for (const m of Array.isArray(lista) ? lista : []) {
+    if (Number(m.status) !== 2) continue;
+    const t = new Date(m.start_time).getTime();
+    // só interessa se começou nas últimas 2 horas (evita avisos antigos)
+    if (Number.isFinite(t) && agora - t > 2 * 60 * 60 * 1000) continue;
+    notify.avisarJogoAoVivo(jogo, m).catch(() => {});
+  }
+}
 
 /* Regiões R6 Tier 1 — o calendário oficial da Ubisoft organiza o
    calendário por regiões. O nome do campeonato traz a região
@@ -180,6 +193,7 @@ router.get('/', attachAuth, async (req, res) => {
     ]);
 
     const todos = [...proximos, ...recentes.filter((r) => !proximos.some((p) => p.id === r.id))];
+    avisarAoVivo('r6', proximos);
     const votos = await votosDosJogos(
       db,
       todos.map((m) => Number(m.id)),
@@ -434,6 +448,7 @@ router.get('/cs2', attachAuth, async (req, res) => {
         .all(),
     ]);
     const todos = [...proximos, ...recentes.filter((r) => !proximos.some((p) => p.id === r.id))];
+    avisarAoVivo('cs2', proximos);
     const votos = await votosCs2(
       db,
       todos.map((m) => Number(m.id)),

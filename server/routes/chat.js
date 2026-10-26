@@ -10,6 +10,7 @@ const express = require('express');
 const crypto = require('crypto');
 const { getDb } = require('../database');
 const { requireUser, requireUserOrAdmin } = require('../middleware/auth');
+const notify = require('../notify');
 const storage = require('../storage');
 
 const router = express.Router();
@@ -571,6 +572,22 @@ router.post('/', requireUser, async (req, res) => {
     }
     msg.reactions = [];
     msg.pinned = null;
+
+    /* notificação Windows/PWA para os outros membros (sem bloquear o envio) */
+    const previa =
+      body ||
+      (kind === 'clip' ? 'Enviou um clip' : mediaType === 'gif' ? 'Enviou um GIF' : 'Enviou uma imagem');
+    notify
+      .pushTodos({
+        excluirUserId: uid,
+        title: `💬 ${msg.user.username || 'Chat'}`,
+        body: previa.slice(0, 140),
+        link: '/chat',
+        tag: `chat-${msg.id}`,
+        tipo: 'chat',
+      })
+      .catch(() => {});
+
     res.status(201).json(msg);
   } catch (error) {
     console.error('Erro chat POST:', error.message);
