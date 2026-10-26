@@ -145,6 +145,8 @@ const FOCO =
 const DESTAQUES =
   /call of duty|warzone|\bcod\b|grand theft auto|\bgta\b|rockstar|battlefield|nvidia|geforce|\brtx\b|\bamd\b|radeon|ryzen|iphone|smartphone|telem[oó]vel|samsung galaxy|galaxy s\d|galaxy z|pixel \d|android|oppo|xiaomi|oneplus|huawei|jailbreak|desbloque|\bcfw\b|\bhen\b|\bps4\b|\bps5\b|playstation/i;
 const NAO_DESTAQUE = /ssd|disco r[ií]gido|monitor|teclado|rato|mouse|impressora|router|review de|an[aá]lise ao/i;
+const GRANDES =
+  /call of duty|warzone|\bcod\b|grand theft auto|\bgta\b|rockstar|battlefield|nvidia|geforce|\brtx\b|\bamd\b|radeon|ryzen/i;
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
@@ -356,7 +358,15 @@ router.get('/destaques', async (req, res) => {
     const filtradas = noticias.filter(
       (n) => DESTAQUES.test(n.titulo) && !NAO_DESTAQUE.test(n.titulo),
     );
-    const escolhidas = filtradas.slice(0, 4);
+    // Até 2 notícias das grandes franquias + as restantes de telemóveis/desbloqueios.
+    const grandes = filtradas.filter((n) => GRANDES.test(n.titulo));
+    const outros = filtradas.filter((n) => !GRANDES.test(n.titulo));
+    const escolhidas = [];
+    for (const n of [...grandes.slice(0, 2), ...outros, ...grandes.slice(2)]) {
+      if (escolhidas.length >= 4) break;
+      if (!escolhidas.includes(n)) escolhidas.push(n);
+    }
+    escolhidas.sort((a, b) => new Date(b.data) - new Date(a.data));
     res.json({
       ok: true,
       atualizadoEm: new Date(cache.t || Date.now()).toISOString(),
