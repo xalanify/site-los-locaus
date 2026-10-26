@@ -172,9 +172,9 @@ export default function Sino({ user, posicao = 'topo' }) {
       {aberto && (
         <div
           className={`glass absolute z-50 w-[min(92vw,23rem)] overflow-hidden rounded-2xl ${
-            // Na sidebar o sino encosta à esquerda: o painel abre para a
-            // direita, senão saía do ecrã. Na barra de topo abre por baixo.
-            posicao === 'lateral' ? 'left-11 top-0' : 'right-0 top-11'
+            // Na sidebar o sino fica em baixo: o painel abre para cima
+            // e para a direita, para não sair do ecrã.
+            posicao === 'lateral' ? 'bottom-0 left-11' : 'right-0 top-11'
           }`}
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
