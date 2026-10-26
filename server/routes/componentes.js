@@ -12,8 +12,10 @@ const { requireAdmin } = require('../middleware/auth');
 const {
   CATALOGO,
   CATEGORIAS,
+  CATEGORIA_QUERY,
   LOJAS,
   buscarPrecos,
+  buscarTudo,
   guardarPreco,
   listarPrecos,
   montarProdutos,
@@ -26,10 +28,34 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     await garantirTabela();
     const rows = await listarPrecos();
-    res.json({ categorias: CATEGORIAS, lojas: LOJAS, produtos: montarProdutos(rows) });
+    res.json({
+      categorias: CATEGORIAS,
+      categoriaQuery: CATEGORIA_QUERY,
+      lojas: LOJAS,
+      produtos: montarProdutos(rows),
+    });
   } catch (error) {
     console.error('Erro componentes GET:', error.message);
     res.status(500).json({ error: 'Não deu para carregar os componentes.' });
+  }
+});
+
+/* Pesquisa ao vivo em todas as lojas (qualquer produto, não só o catálogo). */
+router.get('/pesquisar', requireAdmin, async (req, res) => {
+  try {
+    const q = String((req.query && req.query.q) || '').trim();
+    const tipo = req.query && req.query.tipo === 'periferico' ? 'periferico' : 'componente';
+    const categoria = String((req.query && req.query.categoria) || '');
+    const lojas = String((req.query && req.query.lojas) || '')
+      .split(',')
+      .map((x) => x.trim())
+      .filter((x) => LOJAS[x]);
+    if (!q) return res.json({ ok: true, resultados: [], lojas: LOJAS });
+    const resultados = await buscarTudo(q, { tipo, categoria, lojas, limite: 80 });
+    res.json({ ok: true, resultados, lojas: LOJAS });
+  } catch (error) {
+    console.error('Erro componentes pesquisar:', error.message);
+    res.status(500).json({ error: 'Não deu para pesquisar nas lojas.' });
   }
 });
 

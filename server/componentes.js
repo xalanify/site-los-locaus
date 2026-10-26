@@ -37,8 +37,8 @@ const LOJAS = {
   pccomponentes: {
     id: 'pccomponentes',
     nome: 'PCComponentes',
-    base: 'https://www.pccomponentes.com',
-    pesquisaBase: 'https://www.pccomponentes.com/search/?query=',
+    base: 'https://www.pccomponentes.pt',
+    pesquisaBase: 'https://www.pccomponentes.pt/search/?query=',
     cor: '#f97316',
     componentes: true,
     perifericos: true,
@@ -50,6 +50,16 @@ const LOJAS = {
     pesquisaBase: 'https://www.maxgaming.com/search?q=',
     cor: '#e11d48',
     componentes: false,
+    perifericos: true,
+  },
+  ldlc: {
+    id: 'ldlc',
+    nome: 'LDLC',
+    base: 'https://www.ldlc.com',
+    pesquisaBase: 'https://www.ldlc.com/recherche/',
+    pesquisaSufixo: '/',
+    cor: '#2563eb',
+    componentes: true,
     perifericos: true,
   },
 };
@@ -78,7 +88,7 @@ const C = (id, nome, marca, categoria, spec, consulta, lojas) => ({
   tipo: categoria === 'rato' || categoria === 'teclado' || categoria === 'mousepad' || categoria === 'headset' || categoria === 'microfone' ? 'periferico' : 'componente',
   spec,
   consulta,
-  lojas: lojas || ['pcdiga', 'globaldata', 'pccomponentes'],
+  lojas: lojas || ['pcdiga', 'globaldata', 'pccomponentes', 'ldlc'],
 });
 
 const CATALOGO = [
@@ -168,6 +178,46 @@ const CATALOGO = [
 
 const fetchFn = typeof fetch === 'function' ? fetch : require('node-fetch');
 
+/* PCComponentes — catálogo público do Algolia (locale PT).
+   É a mesma pesquisa que o site deles usa; evita o bloqueio de HTML. */
+const PCC_APP = 'BEWOYX1CF1';
+const PCC_KEY = '47978d8b445ceaceb718dd842d434099';
+const PCC_INDEX = 'products_list:pt';
+
+/* Nomes de categoria tal como aparecem em cada loja. */
+const CATEGORIA_LOJA = {
+  gpu: ['placa grafica', 'placas graficas', 'tarjeta grafica', 'tarjetas graficas', 'graphics card'],
+  cpu: ['processador', 'processadores', 'procesador', 'procesadores', 'processor'],
+  ram: ['memoria ram', 'memorias ram', 'memoria', 'ram'],
+  motherboard: ['motherboard', 'motherboards', 'placa base', 'placas base', 'placa mae', 'placas mae'],
+  ssd: ['disco rigido', 'discos rigidos', 'disco duro', 'discos duros', 'ssd', 'armazenamento', 'almacenamiento'],
+  psu: ['fonte de alimentacao', 'fontes de alimentacao', 'fuente de alimentacion', 'fuentes de alimentacion', 'power supply'],
+  caixa: ['caixa de computador', 'caixas de computador', 'caja de ordenador', 'caixas', 'case'],
+  cooler: ['refrigeracao', 'refrigeracion', 'cooler', 'ventilador', 'dissipador'],
+  rato: ['rato', 'ratos', 'raton', 'ratones', 'mouse'],
+  teclado: ['teclado', 'teclados', 'keyboard'],
+  mousepad: ['tapete de rato', 'tapetes de rato', 'alfombrilla', 'alfombrillas', 'mousepad', 'mouse pad'],
+  headset: ['auricular', 'auriculares', 'headset', 'fone', 'auscultadores'],
+  microfone: ['microfone', 'microfones', 'microfono', 'microfonos', 'microphone'],
+};
+
+/* Termos de pesquisa para explorar uma categoria nas lojas. */
+const CATEGORIA_QUERY = {
+  gpu: 'geforce rtx radeon',
+  cpu: 'processador ryzen intel core',
+  ram: 'memoria ram ddr5',
+  motherboard: 'motherboard b650 b850',
+  ssd: 'ssd nvme',
+  psu: 'fonte alimentacao power supply 850w',
+  caixa: 'caixa computador case atx',
+  cooler: 'cooler processador cpu',
+  rato: 'rato gaming mouse',
+  teclado: 'teclado gaming keyboard',
+  mousepad: 'tapete rato mousepad',
+  headset: 'headset gaming auricular',
+  microfone: 'microfone usb microphone',
+};
+
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
@@ -230,7 +280,7 @@ function normalizar(s) {
 const STOP = new Set(['de', 'da', 'do', 'com', 'para', 'the', 'and', 'edition', 'edicao', 'gaming']);
 const MAUS = /(usad[oa]|recondicionad|refurbish|open ?box|devolu)/i;
 const ACESSORIOS =
-  /\b(mouse ?skates?|skatez|skates?|grips?|grip ?tape|key ?caps?|switch plate|plate kit|replacement|spare|mouse ?feet|feet|protector|pelicula|bungee|paracord|palm rest|wrist rest|hub|dock|cabo|cable|carrying case|travel case|sleeve|pouch|bag|mochila)\b/i;
+  /\b(mouse ?skates?|skatez|skates?|grips?|grip ?tape|key ?caps?|switch plate|plate kit|replacement|spare|mouse ?feet|feet|protector|pelicula|bungee|paracord|palm rest|wrist rest|hub|dock|cabo|cable|carrying case|travel case|sleeve|pouch|bag|mochila|extension|extensor|rod|barra|barras|adapter|adaptador|tripod|tripe|clamp|braco)\b/i;
 const ACESSORIOS_PERIFERICO = /\b(case|housing|shell|cover|skin|sticker|stand|mount|holder|module|mod|pcb|foam|weight|balance|upgrade)\b/i;
 
 function pontuar(titulo, consulta) {
@@ -238,10 +288,15 @@ function pontuar(titulo, consulta) {
   const q = normalizar(consulta);
   if (!t || !q) return 0;
   if (t.includes(q)) return 100;
-  const tokens = q.split(' ').filter((x) => x.length > 1 && !STOP.has(x));
+  const tokens = q.split(' ').filter((x) => (x.length > 1 || /^\d+$/.test(x)) && !STOP.has(x));
   if (!tokens.length) return 0;
+  const palavras = new Set(t.split(' '));
   let n = 0;
-  for (const tok of tokens) if (t.includes(tok)) n++;
+  for (const tok of tokens) {
+    if (/^\d+$/.test(tok)) {
+      if (palavras.has(tok)) n++;
+    } else if (t.includes(tok)) n++;
+  }
   return Math.round((n / tokens.length) * 100);
 }
 
@@ -310,22 +365,61 @@ function parseGlobalData(html) {
   return out;
 }
 
-function parsePCComponentes(html) {
+/* PCComponentes via Algolia — resultados já com preço, imagem e categoria. */
+async function pesquisarPCComponentes(consulta) {
+  const r = await fetchFn(`https://${PCC_APP}-dsn.algolia.net/1/indexes/${PCC_INDEX}/query`, {
+    method: 'POST',
+    headers: {
+      'X-Algolia-Application-Id': PCC_APP,
+      'X-Algolia-API-Key': PCC_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query: consulta, hitsPerPage: 60 }),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!r.ok) return [];
+  const j = await r.json().catch(() => null);
+  return (j && j.hits ? j.hits : [])
+    .map((h) => {
+      const img =
+        (h.images && ((h.images.medium && h.images.medium.path) || (h.images.large && h.images.large.path) || (h.images.small && h.images.small.path))) ||
+        null;
+      const preco = Number(h.promotionalPrice || h.originalPrice) || null;
+      return {
+        titulo: h.name || h.groupName || '',
+        preco,
+        url: h.slug ? `${LOJAS.pccomponentes.base}/${h.slug}` : LOJAS.pccomponentes.base,
+        imagem: img,
+        categoriaLoja: (h.mainCategory && h.mainCategory.name) || '',
+      };
+    })
+    .filter((x) => x.titulo && x.preco && x.imagem);
+}
+
+/* LDLC (França) — cartões de resultado em HTML simples. */
+function parseLDLC(html) {
   const out = [];
   if (!html) return out;
-  const partes = html.split(/data-product-index="/).slice(1);
+  const partes = html.split('<li id="pdt-').slice(1);
   for (const parte of partes) {
-    const bloco = parte.slice(0, 9000);
-    const titulo = (bloco.match(/data-e2e="title-card"[^>]*>([^<]+)</) || [])[1];
-    const preco = numero((bloco.match(/data-e2e="price-card"[^>]*>([\d.,]+)\s*€/) || [])[1]);
-    const href = (bloco.match(/href="(\/[^"]+)"/) || [])[1];
-    const img = (bloco.match(/src="(https:\/\/thumb\.pccomponentes\.com\/[^"]+)"/) || [])[1];
-    if (!titulo || !preco) continue;
+    const bloco = parte.slice(0, 12000);
+    const titulo = (bloco.match(/<h3[^>]*>[\s\S]*?<a[^>]*>([^<]+)<\/a>/) || [])[1];
+    const href = (bloco.match(/<a href="(\/fiche\/[^"]+\.html)"/) || [])[1];
+    const img = (bloco.match(/<img[^>]+src="([^"]+)"/) || [])[1];
+    const basket = bloco.split('<div class="basket">')[1] || '';
+    const precoHtml = (basket.match(/<div class="price">[\s\S]*?<div class="price">([\s\S]*?)<\/div>/) || [])[1];
+    if (!titulo || !precoHtml) continue;
+    const precoTxt = precoHtml
+      .replace(/<sup>\s*(\d+)\s*<\/sup>/gi, '.$1')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ');
+    const preco = numero(precoTxt);
+    if (!preco) continue;
     out.push({
       titulo: decodificar(titulo),
       preco,
-      url: absoluto(LOJAS.pccomponentes.base, href),
-      imagem: img || null,
+      url: absoluto(LOJAS.ldlc.base, href),
+      imagem: img ? absoluto(LOJAS.ldlc.base, img) : null,
     });
   }
   return out;
@@ -350,16 +444,57 @@ function parseMaxGaming(html) {
   return out;
 }
 
-async function pesquisarLoja(loja, consulta) {
+/* Verifica se o título faz sentido para a categoria pedida. */
+function relevante(titulo, categoria, tipo) {
+  const t = normalizar(titulo);
+  if (!t) return false;
+  if (tipo === 'componente' && /(portatil|notebook|laptop|monitor|televis|smartphone|telemovel|tablet|consola)/.test(t)) {
+    return false;
+  }
+  if (categoria === 'rato' && /(mousepad|tapete|alfombrilla|desk mat)/.test(t)) return false;
+  if (categoria === 'teclado' && /(keycap|switch|palm rest|wrist rest|teclas)/.test(t)) return false;
+  if (categoria === 'headset' && /(stand|suporte|mount|suporte)/.test(t)) return false;
+  if (categoria === 'microfone' && /(stand|suporte|braco|arm|mount)/.test(t)) return false;
+  if (!categoria) return true;
+  const nomes = CATEGORIA_LOJA[categoria] || [];
+  if (nomes.some((n) => t.includes(n))) return true;
+  const extras = {
+    gpu: /\b(rtx|gtx|radeon|geforce|rx ?\d{3,4})\b/,
+    cpu: /\b(ryzen|core i[3579]|core ultra|processador|processor)\b/,
+    ram: /\b(ddr[45]|memoria|ram)\b/,
+    motherboard: /\b(motherboard|placa mae|placa base|b650|b760|b850|x670|x870|z790)\b/,
+    ssd: /\b(ssd|nvme|m\.?2)\b/,
+    psu: /\b(fonte|fuente|psu|80\+|\d{3,4} ?w)\b/,
+    caixa: /\b(caixa|case|torre|atx)\b/,
+    cooler: /\b(cooler|refrigera|dissipador|ventilador|aio|water)\b/,
+    rato: /\b(rato|raton|mouse)\b/,
+    teclado: /\b(teclado|keyboard)\b/,
+    mousepad: /\b(tapete|mousepad|mouse pad|alfombrilla|desk mat)\b/,
+    headset: /\b(headset|auricular|auscultador|fone)\b/,
+    microfone: /\b(microfone|microfono|microphone|mic)\b/,
+  };
+  return extras[categoria] ? extras[categoria].test(t) : true;
+}
+
+async function pesquisarLoja(loja, consulta, { categoria = '', tipo = '' } = {}) {
   const q = encodeURIComponent(consulta);
   if (loja === 'globaldata') {
     return parseGlobalData(await pedir(`https://www.globaldata.pt/search?q=${q}`));
   }
   if (loja === 'pccomponentes') {
-    return parsePCComponentes(await pedir(`https://www.pccomponentes.com/search/?query=${q}`));
+    const lista = await pesquisarPCComponentes(consulta);
+    if (!categoria) return lista;
+    const nomes = CATEGORIA_LOJA[categoria] || [];
+    return lista.filter((x) => {
+      const cat = normalizar(x.categoriaLoja);
+      return nomes.some((n) => cat.includes(n));
+    });
   }
   if (loja === 'maxgaming') {
     return parseMaxGaming(await pedir(`https://www.maxgaming.com/search?q=${q}`));
+  }
+  if (loja === 'ldlc') {
+    return parseLDLC(await pedir(`https://www.ldlc.com/recherche/${q}/`));
   }
   if (loja === 'pcdiga') {
     // A PCDiga está atrás de Cloudflare: não dá para ler preços no servidor.
@@ -369,13 +504,79 @@ async function pesquisarLoja(loja, consulta) {
   return [];
 }
 
+/* Pesquisa livre em todas as lojas (para a pesquisa ao vivo da página). */
+const buscaCache = new Map();
+const BUSCA_MS = 10 * 60 * 1000;
+
+async function buscarTudo(consulta, { tipo = 'componente', categoria = '', lojas = [], limite = 80 } = {}) {
+  const q = String(consulta || '').trim();
+  if (!q) return [];
+  const chave = JSON.stringify({ q, tipo, categoria, lojas });
+  const agora = Date.now();
+  const cacheado = buscaCache.get(chave);
+  if (cacheado && agora - cacheado.t < BUSCA_MS) return cacheado.dados;
+
+  const alvo = (lojas.length ? lojas : Object.keys(LOJAS)).filter((l) => {
+    if (!LOJAS[l]) return false;
+    // Pesquisa livre: todas as lojas. Com categoria: só as lojas desse tipo.
+    if (!categoria) return true;
+    return tipo === 'periferico' ? LOJAS[l].perifericos : LOJAS[l].componentes;
+  });
+  const pediuAcessorio = /skate|grip|keycap|switch|cabo|cable|funda|pelicula|protector|bungee|paracord|feet|pés|stand|suporte|hub|dock/i.test(q);
+
+  const listas = await Promise.all(
+    alvo.map(async (loja) => {
+      try {
+        const lista = await pesquisarLoja(loja, q, { categoria, tipo });
+        return lista
+          .filter((x) => {
+            if (!x.titulo || !x.preco || !x.imagem || MAUS.test(x.titulo)) return false;
+            if (!relevante(x.titulo, categoria, tipo)) return false;
+            if (!pediuAcessorio && ACESSORIOS.test(x.titulo)) return false;
+            if (!pediuAcessorio && tipo === 'periferico' && ACESSORIOS_PERIFERICO.test(x.titulo)) return false;
+            return true;
+          })
+          .map((x) => ({
+            ...x,
+            loja,
+            lojaNome: LOJAS[loja].nome,
+            cor: LOJAS[loja].cor,
+            pontos: pontuar(x.titulo, q),
+          }));
+      } catch {
+        return [];
+      }
+    }),
+  );
+
+  const vistos = new Set();
+  const resultados = [];
+  for (const x of listas.flat()) {
+    const chaveUrl = (x.url || '').split('?')[0];
+    if (!chaveUrl || vistos.has(chaveUrl)) continue;
+    vistos.add(chaveUrl);
+    resultados.push(x);
+  }
+  resultados.sort((a, b) => b.pontos - a.pontos || a.preco - b.preco);
+  const dados = resultados.slice(0, limite);
+  buscaCache.set(chave, { t: agora, dados });
+  if (buscaCache.size > 60) {
+    const primeiro = buscaCache.keys().next().value;
+    buscaCache.delete(primeiro);
+  }
+  return dados;
+}
+
 /* Procura o modelo em todas as lojas do produto e devolve a melhor correspondência. */
 async function buscarPrecos(produto) {
   const lojas = (produto.lojas || []).filter((l) => LOJAS[l]);
   const resultados = await Promise.all(
     lojas.map(async (loja) => {
       try {
-        const lista = await pesquisarLoja(loja, produto.consulta);
+        const lista = await pesquisarLoja(loja, produto.consulta, {
+          categoria: produto.categoria,
+          tipo: produto.tipo,
+        });
         const melhor = melhorResultado(lista, produto.consulta, produto.tipo);
         return melhor ? { loja, ...melhor, pontos: undefined } : null;
       } catch {
@@ -482,8 +683,10 @@ function montarProdutos(rows) {
 module.exports = {
   CATALOGO,
   CATEGORIAS,
+  CATEGORIA_QUERY,
   LOJAS,
   buscarPrecos,
+  buscarTudo,
   guardarPreco,
   listarPrecos,
   montarProdutos,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
@@ -327,6 +328,26 @@ function CartaoEditorial({ item, onClick, destaque = false }) {
   )
 }
 
+function CartaoRumor({ item }) {
+  return (
+    <article
+      className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+      style={{ borderColor: `${item.cor}33` }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-sm font-black leading-tight text-white">{item.nome}</h3>
+        <span
+          className="shrink-0 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider"
+          style={{ backgroundColor: `${item.cor}22`, color: item.cor }}
+        >
+          {item.estado}
+        </span>
+      </div>
+      <p className="mt-2 text-[12px] leading-relaxed text-gray-400">{item.descricao}</p>
+    </article>
+  )
+}
+
 function FichaEditorial({ item, onClose }) {
   return (
     <div
@@ -373,7 +394,11 @@ function FichaEditorial({ item, onClose }) {
 }
 
 export default function SteamStorePage() {
-  const [aba, setAba] = useState('embreve')
+  const [searchParams] = useSearchParams()
+  const abaPedida = searchParams.get('aba')
+  const [aba, setAba] = useState(
+    ['embreve', 'top', 'procurar', 'noticias'].includes(abaPedida) ? abaPedida : 'embreve',
+  )
   const [editorial, setEditorial] = useState(null)
   const [top, setTop] = useState({ loading: true, jogos: [], erro: '' })
   const [maisComprados, setMaisComprados] = useState({ loading: true, jogos: [] })
@@ -510,12 +535,13 @@ export default function SteamStorePage() {
           </div>
 
           <p className="mb-3 text-[11px] font-semibold text-gray-500">
-            Próximos lançamentos e rumores das maiores editoras. Sem jogos cancelados.
+            Próximos lançamentos e rumores das maiores editoras. Sem imagens — só a informação
+            que interessa, sempre visível.
           </p>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {RUMORES.map((r) => (
-              <CartaoEditorial key={r.id} item={r} onClick={setEditorial} />
+              <CartaoRumor key={r.id} item={r} />
             ))}
           </div>
         </section>

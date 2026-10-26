@@ -8,7 +8,7 @@ import { svgAvatar } from '../lib/avatar'
    a foto, o nome, os subscritores e as visualizações.
    Sem botões, sem blocos extra: o resto da página são os vídeos.
    ============================================================ */
-export default function Hero() {
+export default function Hero({ onVerVideos }) {
   const [channel, setChannel] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -77,6 +77,18 @@ export default function Hero() {
               </a>
             </div>
 
+          </div>
+
+          {/* botão para a janela flutuante com os vídeos do canal */}
+          <div className="px-5 pb-4 sm:px-6">
+            <button
+              type="button"
+              onClick={onVerVideos}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/15 px-4 py-2.5 text-xs font-black uppercase tracking-wide text-violet-200 transition-colors hover:bg-violet-500/25 hover:text-white"
+            >
+              <Play className="h-3.5 w-3.5" />
+              Ver vídeos
+            </button>
           </div>
 
           {/* números do canal — o que interessa ver de relance */}

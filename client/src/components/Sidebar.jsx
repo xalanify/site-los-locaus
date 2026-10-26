@@ -73,7 +73,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     ...(isAdmin
       ? [
           {
-            name: 'Componentes',
+            name: 'Componentes e Periféricos',
             icon: CircuitBoard,
             action: () => navigate('/componentes'),
             active: isComponentes,

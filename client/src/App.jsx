@@ -10,7 +10,8 @@ import Hero from './components/Hero'
 import BetaBadge from './components/BetaBadge'
 import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
-import VideosSection from './components/VideosSection'
+import NoticiasHome from './components/NoticiasHome'
+import VideosModal from './components/VideosModal'
 import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
@@ -67,6 +68,7 @@ function App() {
   const [entered, setEntered] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false) // menu lateral (telemóvel)
+  const [showVideos, setShowVideos] = useState(false) // janela flutuante dos vídeos
   const [user, setUser] = useState(null) // conta de utilizador (obrigatória)
   const [showAuth, setShowAuth] = useState(false)
   // false enquanto ainda não sabemos se há sessão guardada
@@ -258,11 +260,11 @@ function App() {
                           {/* Anúncios presos no topo — só aparece se houver */}
                           <BarraAnuncios />
                           {/* O canal: foto, nome, subscritores e visualizações */}
-                          <Hero />
+                          <Hero onVerVideos={() => setShowVideos(true)} />
                           {/* Só no telemóvel: instalar o site como app */}
                           <InstalarApp />
-                          {/* Os vídeos do canal, mais em baixo */}
-                          <VideosSection />
+                          {/* As últimas notícias (atualizadas de hora a hora) */}
+                          <NoticiasHome />
                         </>
                       }
                     />
@@ -342,6 +344,7 @@ function App() {
                 <Footer />
                 <BackToTop />
                 <NovidadesModal user={user} />
+                <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

@@ -26,6 +26,8 @@ import {
   Lock,
   ShoppingCart,
   Sparkles,
+  Store,
+  SlidersHorizontal,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import { authHeaders } from '../lib/auth'
@@ -33,10 +35,12 @@ import { authHeaders } from '../lib/auth'
 /* ============================================================
    COMPONENTES E PERIFÉRICOS (só admin · em testes)
    ------------------------------------------------------------
-   Catálogo curado de modelos concretos. Os preços são lidos
-   das lojas e fica sempre destacada a loja mais barata.
-   A PCDiga e a PCComponentes bloqueiam leitura automática em
-   servidor, por isso têm link direto e preço editável à mão.
+   Duas formas de ver:
+   · Destaques — modelos do catálogo, com comparação de preços
+     entre as lojas e a mais barata destacada.
+   · Pesquisa ao vivo — procura qualquer produto nas lojas
+     (GlobalData, PCComponentes, MaxGaming, LDLC) e mostra os
+     resultados reais com foto, preço e link.
    ============================================================ */
 
 const ICONES = {
@@ -75,6 +79,14 @@ function IconeCategoria({ id, className = 'h-4 w-4' }) {
   return <Icone className={className} />
 }
 
+function pesquisaLoja(loja, consulta) {
+  if (!loja) return '#'
+  if (loja.pesquisaBase) {
+    return `${loja.pesquisaBase}${encodeURIComponent(consulta)}${loja.pesquisaSufixo || ''}`
+  }
+  return loja.base || '#'
+}
+
 export default function ComponentesPage({ user }) {
   const isAdmin = Boolean(user && user.is_admin)
 
@@ -84,6 +96,12 @@ export default function ComponentesPage({ user }) {
   const [tipo, setTipo] = useState('componente')
   const [categoria, setCategoria] = useState('todas')
   const [q, setQ] = useState('')
+  const [qAtiva, setQAtiva] = useState('')
+  const [lojasAtivas, setLojasAtivas] = useState([])
+  const [resultados, setResultados] = useState(null)
+  const [buscando, setBuscando] = useState(false)
+  const [erroBusca, setErroBusca] = useState('')
+  const [ordenar, setOrdenar] = useState('relevancia')
   const [aAtualizar, setAAtualizar] = useState([])
   const [progresso, setProgresso] = useState(null)
   const [editar, setEditar] = useState(null)
@@ -116,30 +134,101 @@ export default function ComponentesPage({ user }) {
     return () => clearTimeout(t)
   }, [aviso])
 
+  // espera que o utilizador pare de escrever antes de ir às lojas
+  useEffect(() => {
+    const t = setTimeout(() => setQAtiva(q.trim()), 550)
+    return () => clearTimeout(t)
+  }, [q])
+
+  const lojas = dados?.lojas || {}
   const categorias = useMemo(() => {
     if (!dados) return []
     return (dados.categorias || []).filter((c) => c.tipo === tipo)
   }, [dados, tipo])
 
-  const produtos = useMemo(() => {
+  const lojasTipo = useMemo(() => {
+    return Object.values(lojas).filter(
+      (l) =>
+        l.id !== 'pcdiga' && (tipo === 'periferico' ? l.perifericos : l.componentes),
+    )
+  }, [lojas, tipo])
+
+  const modoBusca = Boolean(qAtiva) || categoria !== 'todas'
+  const termo = qAtiva || (categoria !== 'todas' ? (dados?.categoriaQuery || {})[categoria] || categoria : '')
+
+  // Pesquisa ao vivo nas lojas
+  useEffect(() => {
+    if (!isAdmin || !modoBusca || !termo) {
+      setResultados(null)
+      setBuscando(false)
+      return undefined
+    }
+    let vivo = true
+    setBuscando(true)
+    setErroBusca('')
+    const params = new URLSearchParams({ q: termo, tipo })
+    if (categoria !== 'todas') params.set('categoria', categoria)
+    if (lojasAtivas.length) params.set('lojas', lojasAtivas.join(','))
+    fetch(`/api/componentes/pesquisar?${params.toString()}`, { headers: authHeaders() })
+      .then(async (r) => {
+        const d = await r.json().catch(() => null)
+        if (!r.ok) throw new Error((d && d.error) || 'Não deu para pesquisar.')
+        if (vivo) setResultados(Array.isArray(d.resultados) ? d.resultados : [])
+      })
+      .catch((e) => {
+        if (vivo) {
+          setErroBusca(e.message || 'Não deu para pesquisar nas lojas.')
+          setResultados([])
+        }
+      })
+      .finally(() => vivo && setBuscando(false))
+    return () => {
+      vivo = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, modoBusca, termo, tipo, categoria, lojasAtivas.join(',')])
+
+  const destaques = useMemo(() => {
     if (!dados) return []
-    const termo = q.trim().toLowerCase()
-    return (dados.produtos || []).filter((p) => {
-      if (p.tipo !== tipo) return false
-      if (categoria !== 'todas' && p.categoria !== categoria) return false
-      if (!termo) return true
-      return `${p.nome} ${p.marca} ${p.spec}`.toLowerCase().includes(termo)
-    })
-  }, [dados, tipo, categoria, q])
+    return (dados.produtos || []).filter(
+      (p) => p.tipo === tipo && p.imagem && (categoria === 'todas' || p.categoria === categoria),
+    )
+  }, [dados, tipo, categoria])
+
+  const resultadosOrdenados = useMemo(() => {
+    if (!resultados) return []
+    const arr = [...resultados]
+    if (ordenar === 'preco-asc') arr.sort((a, b) => a.preco - b.preco)
+    else if (ordenar === 'preco-desc') arr.sort((a, b) => b.preco - a.preco)
+    else arr.sort((a, b) => b.pontos - a.pontos || a.preco - b.preco)
+    return arr
+  }, [resultados, ordenar])
+
+  const maisBaratoBusca = useMemo(() => {
+    if (!resultadosOrdenados.length) return null
+    return resultadosOrdenados.reduce((a, b) => (b.preco < a.preco ? b : a))
+  }, [resultadosOrdenados])
 
   const trocarTipo = (novo) => {
     setTipo(novo)
     setCategoria('todas')
+    setQ('')
+    setQAtiva('')
+    setResultados(null)
     setEditar(null)
+    setLojasAtivas([])
+  }
+
+  const alternarLoja = (id) => {
+    setLojasAtivas((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
   }
 
   const marcar = (ids, ativo) =>
-    setAAtualizar((prev) => (ativo ? [...new Set([...prev, ...ids])] : prev.filter((id) => !ids.includes(id))))
+    setAAtualizar((prev) =>
+      ativo ? [...new Set([...prev, ...ids])] : prev.filter((id) => !ids.includes(id)),
+    )
 
   const atualizar = async (ids) => {
     if (!ids.length) return
@@ -154,7 +243,11 @@ export default function ComponentesPage({ user }) {
       if (!r.ok) throw new Error((d && d.error) || 'Não deu para atualizar.')
       setDados((prev) => (prev ? { ...prev, produtos: d.produtos || prev.produtos } : prev))
       const total = (d.atualizados || []).reduce((n, x) => n + (x.encontrados || 0), 0)
-      setAviso(total ? `Preços atualizados (${total} loja${total > 1 ? 's' : ''}).` : 'Não foram encontrados preços novos.')
+      setAviso(
+        total
+          ? `Preços atualizados (${total} loja${total > 1 ? 's' : ''}).`
+          : 'Não foram encontrados preços novos.',
+      )
     } catch (e) {
       setAviso(e.message || 'Falhou a atualização.')
     } finally {
@@ -163,12 +256,11 @@ export default function ComponentesPage({ user }) {
   }
 
   const atualizarTudo = async () => {
-    const ids = produtos.map((p) => p.id)
+    const ids = destaques.map((p) => p.id)
     if (!ids.length || progresso) return
     setProgresso({ feitos: 0, total: ids.length })
     for (let i = 0; i < ids.length; i += 3) {
-      const lote = ids.slice(i, i + 3)
-      await atualizar(lote)
+      await atualizar(ids.slice(i, i + 3))
       setProgresso({ feitos: Math.min(i + 3, ids.length), total: ids.length })
     }
     setProgresso(null)
@@ -201,13 +293,12 @@ export default function ComponentesPage({ user }) {
           </span>
         </div>
         <p className="max-w-3xl text-[13px] leading-relaxed text-gray-400">
-          Modelos concretos comparados entre PCDiga, GlobalData, PCComponentes e MaxGaming.
-          A loja mais barata fica sempre destacada. Os preços automáticos vêm da GlobalData e da
-          MaxGaming; na PCDiga e PCComponentes podes preencher/corrigir o preço à mão.
+          Pesquisa qualquer produto nas lojas — GlobalData, PCComponentes, MaxGaming e LDLC — ou
+          vê os destaques com comparação de preços. A loja mais barata fica sempre destacada.
         </p>
       </motion.div>
 
-      {/* Tipo: componentes / periféricos */}
+      {/* Tipo */}
       <div className="mb-4 grid grid-cols-2 gap-2 sm:max-w-md">
         {[
           { id: 'componente', nome: 'Componentes', Icone: Cpu },
@@ -229,36 +320,77 @@ export default function ComponentesPage({ user }) {
         ))}
       </div>
 
-      {/* Filtros */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      {/* Pesquisa */}
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Procurar modelo, marca…"
-            className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            placeholder="Pesquisar qualquer produto (ex.: WLmouse, RTX 5070, mousepad…)"
+            className="w-full rounded-xl border border-white/10 bg-black/40 py-3 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
           />
-          {q && (
+          {q ? (
             <button
               type="button"
-              onClick={() => setQ('')}
+              onClick={() => {
+                setQ('')
+                setQAtiva('')
+              }}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-500 hover:bg-white/10 hover:text-white"
               aria-label="Limpar procura"
             >
               <X className="h-3.5 w-3.5" />
             </button>
-          )}
+          ) : null}
         </div>
+        {modoBusca && (
+          <select
+            value={ordenar}
+            onChange={(e) => setOrdenar(e.target.value)}
+            className="rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-xs font-bold text-gray-300 focus:border-violet-500/50 focus:outline-none"
+          >
+            <option value="relevancia">Relevância</option>
+            <option value="preco-asc">Preço ↑</option>
+            <option value="preco-desc">Preço ↓</option>
+          </select>
+        )}
+      </div>
+
+      {/* Lojas */}
+      <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
         <button
           type="button"
-          onClick={atualizarTudo}
-          disabled={Boolean(progresso) || !produtos.length}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/15 px-4 py-2.5 text-[12px] font-black text-violet-200 transition-colors hover:bg-violet-500/25 disabled:opacity-50"
+          onClick={() => setLojasAtivas([])}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
+            !lojasAtivas.length
+              ? 'bg-white text-black'
+              : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+          }`}
         >
-          <RefreshCcw className={`h-3.5 w-3.5 ${progresso ? 'animate-spin' : ''}`} />
-          {progresso ? `${progresso.feitos}/${progresso.total}` : 'Atualizar preços'}
+          <Store className="h-3 w-3" /> Todas
         </button>
+        {lojasTipo.map((l) => {
+          const ativa = lojasAtivas.includes(l.id)
+          return (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => alternarLoja(l.id)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
+                ativa
+                  ? 'bg-white text-black'
+                  : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: l.cor }}
+              />
+              {l.nome}
+            </button>
+          )
+        })}
       </div>
 
       {/* Categorias */}
@@ -266,26 +398,26 @@ export default function ComponentesPage({ user }) {
         <button
           type="button"
           onClick={() => setCategoria('todas')}
-          className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
+          className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
             categoria === 'todas'
-              ? 'bg-white text-black'
+              ? 'bg-violet-500 text-white'
               : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
           }`}
         >
-          Todas
+          Destaques
         </button>
         {categorias.map((c) => (
           <button
             key={c.id}
             type="button"
             onClick={() => setCategoria(c.id)}
-            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wide transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-colors ${
               categoria === c.id
-                ? 'bg-white text-black'
+                ? 'bg-violet-500 text-white'
                 : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
             }`}
           >
-            <IconeCategoria id={c.icone} className="h-3.5 w-3.5" />
+            <IconeCategoria id={c.icone} className="h-3 w-3" />
             {c.nome}
           </button>
         ))}
@@ -307,35 +439,127 @@ export default function ComponentesPage({ user }) {
             Tentar outra vez
           </button>
         </div>
-      ) : !produtos.length ? (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-12 text-center">
-          <p className="text-sm font-bold text-gray-400">Nenhum produto com esses filtros.</p>
-        </div>
+      ) : modoBusca ? (
+        <section>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
+              <SlidersHorizontal className="h-4 w-4 text-violet-400" />
+              Resultados ao vivo
+              {resultados ? (
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
+                  {resultados.length}
+                </span>
+              ) : null}
+            </h2>
+            {buscando && (
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-violet-300">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> a procurar nas lojas…
+              </span>
+            )}
+          </div>
+
+          {erroBusca ? (
+            <p className="rounded-xl bg-red-500/15 px-4 py-3 text-sm font-bold text-red-300">
+              {erroBusca}
+            </p>
+          ) : !resultados && buscando ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-64 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
+                />
+              ))}
+            </div>
+          ) : resultadosOrdenados.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-12 text-center">
+              <p className="text-sm font-bold text-gray-400">
+                Sem resultados para “{qAtiva || termo}”.
+              </p>
+              <p className="mt-1 text-xs text-gray-600">
+                Tenta o nome do modelo ou abre a pesquisa diretamente na loja.
+              </p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {lojasTipo.map((l) => (
+                  <a
+                    key={l.id}
+                    href={pesquisaLoja(l, qAtiva || termo)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-black text-gray-300 hover:bg-white/10"
+                  >
+                    {l.nome} ↗
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {resultadosOrdenados.map((r) => (
+                <CartaoLoja
+                  key={`${r.loja}:${r.url}`}
+                  r={r}
+                  maisBarato={maisBaratoBusca && r.url === maisBaratoBusca.url}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {produtos.map((p) => (
-            <CartaoProduto
-              key={p.id}
-              produto={p}
-              lojas={dados.lojas || {}}
-              aAtualizar={aAtualizar.includes(p.id)}
-              onAtualizar={() => atualizar([p.id])}
-              onEditar={() => setEditar(p)}
-            />
-          ))}
-        </div>
+        <section>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
+              <Sparkles className="h-4 w-4 text-violet-400" />
+              Destaques
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
+                {destaques.length}
+              </span>
+            </h2>
+            <button
+              type="button"
+              onClick={atualizarTudo}
+              disabled={Boolean(progresso) || !destaques.length}
+              className="flex items-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[11px] font-black text-violet-200 transition-colors hover:bg-violet-500/25 disabled:opacity-50"
+            >
+              <RefreshCcw className={`h-3.5 w-3.5 ${progresso ? 'animate-spin' : ''}`} />
+              {progresso ? `${progresso.feitos}/${progresso.total}` : 'Atualizar preços'}
+            </button>
+          </div>
+
+          {destaques.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-12 text-center">
+              <p className="text-sm font-bold text-gray-400">
+                Ainda não há destaques com fotos. Usa a pesquisa em cima ou atualiza os preços.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {destaques.map((p) => (
+                <CartaoProduto
+                  key={p.id}
+                  produto={p}
+                  lojas={lojas}
+                  aAtualizar={aAtualizar.includes(p.id)}
+                  onAtualizar={() => atualizar([p.id])}
+                  onEditar={() => setEditar(p)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
       <p className="mt-6 text-[11px] leading-relaxed text-gray-600">
-        Os preços mudam várias vezes ao dia. Usa o botão de atualizar antes de comprar e confirma
-        sempre o valor final na loja. A comparação é feita com o modelo indicado em cada cartão.
+        Preços lidos ao vivo das lojas e guardados por 10 minutos. A PCDiga bloqueia leitura
+        automática em servidor, por isso aparece só com link direto. Confirma sempre o valor final
+        na loja antes de comprar.
       </p>
 
       <AnimatePresence>
         {editar && (
           <ModalPrecos
             produto={editar}
-            lojas={dados?.lojas || {}}
+            lojas={lojas}
             onFechar={() => setEditar(null)}
             onGuardado={(lista) => {
               setDados((prev) => (prev ? { ...prev, produtos: lista } : prev))
@@ -361,7 +585,59 @@ export default function ComponentesPage({ user }) {
   )
 }
 
-/* ---------------- Cartão de produto ---------------- */
+/* ---------------- Cartão de resultado ao vivo ---------------- */
+
+function CartaoLoja({ r, maisBarato }) {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0f0a1a]/80">
+      <div className="relative flex h-36 items-center justify-center overflow-hidden bg-white/[0.03]">
+        <img
+          src={r.imagem}
+          alt={r.titulo}
+          loading="lazy"
+          className="h-full w-full object-contain p-3"
+          onError={(e) => {
+            e.currentTarget.style.visibility = 'hidden'
+          }}
+        />
+        <span
+          className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white ring-1 ring-white/15"
+          style={{ backgroundColor: `${r.cor}cc` }}
+        >
+          {r.lojaNome}
+        </span>
+        {maisBarato && (
+          <span className="absolute right-2 top-2 rounded-full bg-emerald-400/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-black">
+            mais barato
+          </span>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col p-3.5">
+        <p className="line-clamp-2 min-h-[2.2rem] text-sm font-black leading-tight text-white">
+          {r.titulo}
+        </p>
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <div>
+            <span className="block text-[9px] font-black uppercase tracking-wider text-gray-500">
+              {r.lojaNome}
+            </span>
+            <span className="text-xl font-black text-white">{precoFmt(r.preco)}</span>
+          </div>
+          <a
+            href={r.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] font-black text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            abrir <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Cartão de destaque (comparação) ---------------- */
 
 function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
   const Icone = ICONES[produto.categoria] || Cpu
@@ -371,7 +647,6 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0f0a1a]/80">
-      {/* imagem */}
       <div className="relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br from-violet-500/10 via-black/20 to-black/40">
         {produto.imagem ? (
           <img
@@ -414,7 +689,6 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
         <p className="text-sm font-black leading-tight text-white">{produto.nome}</p>
         <p className="mt-0.5 text-[11px] font-semibold text-gray-500">{produto.spec}</p>
 
-        {/* mais barato */}
         <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.07] px-3 py-2.5">
           {maisBarato ? (
             <>
@@ -447,14 +721,11 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
           )}
         </div>
 
-        {/* todas as lojas */}
         <div className="mt-2 space-y-1">
           {(produto.lojas || []).map((id) => {
             const loja = lojas[id] || { nome: id, cor: '#8b5cf6' }
             const preco = precos.get(id)
-            const pesquisa = loja.pesquisaBase
-              ? `${loja.pesquisaBase}${encodeURIComponent(produto.consulta)}`
-              : loja.base
+            const pesquisa = pesquisaLoja(loja, produto.consulta)
             return (
               <div
                 key={id}
@@ -476,11 +747,11 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
                 </span>
                 <span
                   className={`shrink-0 text-[11px] font-black ${
-                    preco ? 'text-gray-200' : 'text-gray-600'
+                    preco ? 'text-gray-200' : 'text-gray-500'
                   }`}
                   title={preco && preco.titulo ? preco.titulo : undefined}
                 >
-                  {preco ? precoFmt(preco.preco) : '—'}
+                  {preco ? precoFmt(preco.preco) : 'ver'}
                 </span>
                 <a
                   href={preco && preco.url ? preco.url : pesquisa}
@@ -603,7 +874,7 @@ function ModalPrecos({ produto, lojas, onFechar, onGuardado }) {
           <button
             type="button"
             onClick={onFechar}
-            className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+            className="rounded-full bg-white/[0.12] p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
             aria-label="Fechar"
           >
             <X className="h-4 w-4" />
@@ -622,10 +893,7 @@ function ModalPrecos({ produto, lojas, onFechar, onGuardado }) {
             return (
               <div key={id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                 <div className="mb-2 flex items-center gap-2">
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: loja.cor }}
-                  />
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: loja.cor }} />
                   <span className="text-xs font-black text-white">{loja.nome}</span>
                 </div>
                 <div className="grid grid-cols-[110px_1fr] gap-2">

@@ -54,7 +54,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
     // Só o admin vê a aba de componentes (ainda em testes)
     ...(isAdmin
-      ? [{ name: 'Componentes', icon: CircuitBoard, path: '/componentes' }]
+      ? [{ name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes' }]
       : []),
     { name: 'Conta', icon: User, path: user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil' },
   ]

@@ -25,7 +25,7 @@ const CORES_BANNER = [
 
 export const BANNERS = [
   { id: '', nome: 'Padrão', ficheiro: '', cor: '#8b5cf6' },
-  ...Array.from({ length: 17 }, (_, i) => {
+  ...Array.from({ length: 15 }, (_, i) => {
     const n = dois(i + 1)
     return {
       id: `g${n}`,
@@ -45,6 +45,36 @@ export const BANNERS = [
     nome: 'War 02',
     ficheiro: '/perfil/cardbanner/19.webp',
     cor: '#f59e0b',
+  },
+  {
+    id: 'g20',
+    nome: 'Noite estrelada',
+    ficheiro: '/perfil/cardbanner/20.webp',
+    cor: '#38bdf8',
+  },
+  {
+    id: 'g21',
+    nome: 'Cerejeira',
+    ficheiro: '/perfil/cardbanner/21.webp',
+    cor: '#f9a8d4',
+  },
+  {
+    id: 'g22',
+    nome: 'Olhar',
+    ficheiro: '/perfil/cardbanner/22.webp',
+    cor: '#94a3b8',
+  },
+  {
+    id: 'g23',
+    nome: 'Rosas',
+    ficheiro: '/perfil/cardbanner/23.webp',
+    cor: '#ef4444',
+  },
+  {
+    id: 'g24',
+    nome: 'Lobo',
+    ficheiro: '/perfil/cardbanner/24.webp',
+    cor: '#a3a3a3',
   },
 ]
 
@@ -122,14 +152,6 @@ export const FUNDOS = [
     imagem: '/perfil/fundos/08.jpg',
   },
   {
-    id: 'f09',
-    nome: 'Red Dead 1',
-    cor: '#e84642',
-    cor2: '#d18f39',
-    rgb: '232 70 66',
-    imagem: '/perfil/fundos/09.jpg',
-  },
-  {
     id: 'f10',
     nome: 'Red Dead 2',
     cor: '#c86052',
@@ -154,20 +176,20 @@ export const FUNDOS = [
     imagem: '/perfil/fundos/12.jpg',
   },
   {
-    id: 'f13',
-    nome: 'War 01',
-    cor: '#94a3b8',
-    cor2: '#64748b',
-    rgb: '148 163 184',
-    imagem: '/perfil/fundos/13.jpg',
-  },
-  {
     id: 'f14',
     nome: 'War 02',
     cor: '#94a3b8',
     cor2: '#64748b',
     rgb: '148 163 184',
     imagem: '/perfil/fundos/14.jpg',
+  },
+  {
+    id: 'f15',
+    nome: 'Inverno',
+    cor: '#cbd5e1',
+    cor2: '#94a3b8',
+    rgb: '203 213 225',
+    imagem: '/perfil/fundos/15.jpg',
   },
 ]
 

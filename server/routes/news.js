@@ -67,6 +67,13 @@ const FEEDS = [
     filtro: true,
   },
   {
+    id: 'wololo',
+    fonte: 'Wololo.net · Jailbreak',
+    url: 'https://wololo.net/feed/',
+    lingua: 'en',
+    prioridade: 2,
+  },
+  {
     id: 'nvidia',
     fonte: 'NVIDIA',
     url: 'https://nvidianews.nvidia.com/releases.xml',
@@ -132,12 +139,17 @@ const FEEDS = [
 ];
 
 const FOCO =
-  /call of duty|\bcod\b|warzone|grand theft auto|\bgta\b|battlefield|counter-strike|\bcs2\b|fortnite|minecraft|playstation|\bps5\b|\bps6\b|xbox|nintendo|switch|consola|console|desbloque|placa gr|gr[áa]fica|\brtx\b|geforce|radeon|\bgpu\b|steam|valve|rockstar|activision|ea sports|\bfc 2[56]\b|rainbow six|diablo|overwatch|valorant|league of legends|elden ring|cyberpunk/i;
+  /call of duty|\bcod\b|warzone|grand theft auto|\bgta\b|battlefield|counter-strike|\bcs2\b|fortnite|minecraft|playstation|\bps[45]\b|\bps6\b|xbox|nintendo|switch|consola|console|desbloque|jailbreak|\bcfw\b|\bhen\b|placa gr|gr[áa]fica|\brtx\b|geforce|nvidia|radeon|\bamd\b|\bgpu\b|steam|valve|rockstar|activision|ea sports|\bfc 2[56]\b|rainbow six|diablo|overwatch|valorant|league of legends|elden ring|cyberpunk|telem[oó]vel|smartphone|iphone|samsung|galaxy|pixel|android/i;
+
+/* Só franquias grandes + telemóveis + desbloqueios (para os destaques da home). */
+const DESTAQUES =
+  /call of duty|warzone|\bcod\b|grand theft auto|\bgta\b|rockstar|battlefield|nvidia|geforce|\brtx\b|\bamd\b|radeon|ryzen|iphone|smartphone|telem[oó]vel|samsung galaxy|galaxy s\d|galaxy z|pixel \d|android|oppo|xiaomi|oneplus|huawei|jailbreak|desbloque|\bcfw\b|\bhen\b|\bps4\b|\bps5\b|playstation/i;
+const NAO_DESTAQUE = /ssd|disco r[ií]gido|monitor|teclado|rato|mouse|impressora|router|review de|an[aá]lise ao/i;
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
-const CACHE_MS = 5 * 60 * 1000;
+const CACHE_MS = 60 * 60 * 1000;
 let cache = { t: 0, dados: null };
 const TRAD_CACHE = new Map();
 
@@ -310,27 +322,49 @@ async function carregar() {
   noticias.sort(
     (a, b) => new Date(b.data) - new Date(a.data) || (a.prioridade || 0) - (b.prioridade || 0),
   );
-  const selecionadas = noticias.slice(0, 60);
+  const selecionadas = noticias.slice(0, 80);
   await traduzirNoticias(selecionadas);
   return selecionadas;
 }
 
+async function obterNoticias() {
+  const agora = Date.now();
+  if (cache.dados && agora - cache.t < CACHE_MS) return cache.dados;
+  const noticias = await carregar();
+  if (noticias.length) cache = { t: agora, dados: noticias };
+  return noticias.length ? noticias : cache.dados || [];
+}
+
 router.get('/', async (req, res) => {
   try {
-    const agora = Date.now();
-    if (cache.dados && agora - cache.t < CACHE_MS) {
-      return res.json({ ok: true, atualizadoEm: new Date(cache.t).toISOString(), noticias: cache.dados });
-    }
-    const noticias = await carregar();
-    if (noticias.length) cache = { t: agora, dados: noticias };
+    const noticias = await obterNoticias();
     res.json({
       ok: true,
-      atualizadoEm: new Date(cache.t || agora).toISOString(),
-      noticias: noticias.length ? noticias : cache.dados || [],
+      atualizadoEm: new Date(cache.t || Date.now()).toISOString(),
+      noticias,
     });
   } catch (e) {
     console.error('Erro noticias:', e.message);
     res.status(502).json({ ok: false, error: 'Sem ligação às notícias.', noticias: cache.dados || [] });
+  }
+});
+
+/* As 4 notícias da home — só franquias grandes, telemóveis e desbloqueios. */
+router.get('/destaques', async (req, res) => {
+  try {
+    const noticias = await obterNoticias();
+    const filtradas = noticias.filter(
+      (n) => DESTAQUES.test(n.titulo) && !NAO_DESTAQUE.test(n.titulo),
+    );
+    const escolhidas = filtradas.slice(0, 4);
+    res.json({
+      ok: true,
+      atualizadoEm: new Date(cache.t || Date.now()).toISOString(),
+      noticias: escolhidas,
+    });
+  } catch (e) {
+    console.error('Erro noticias destaques:', e.message);
+    res.status(502).json({ ok: false, error: 'Sem ligação às notícias.', noticias: [] });
   }
 });
 
