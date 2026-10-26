@@ -73,7 +73,28 @@ export async function ativarPush() {
     const chave = await chavePublica()
     if (!chave) return { ok: false, erro: 'Push não está configurado no servidor.' }
 
-    // remove uma subscrição antiga (chave VAPID antiga / browser atualizado)
+    const enviarSub = async (sub) => {
+      const r = await fetch('/api/notifications/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(sub.toJSON()),
+      })
+      if (!r.ok) throw new Error('Falhou o registo no servidor')
+    }
+
+    // se já existe uma subscrição válida, reaproveita-a (não estraga o que
+    // já estava a funcionar)
+    try {
+      const existente = await reg.pushManager.getSubscription()
+      if (existente) {
+        await enviarSub(existente)
+        return { ok: true, reutilizada: true }
+      }
+    } catch {
+      /* segue para criar uma nova */
+    }
+
+    // remove uma subscrição antiga/inválida
     try {
       const antiga = await reg.pushManager.getSubscription()
       if (antiga) await antiga.unsubscribe()

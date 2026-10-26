@@ -39,6 +39,7 @@ export default function Sino({ user, posicao = 'topo' }) {
   const [items, setItems] = useState([])
   const [nLidas, setNLidas] = useState(0)
   const [push, setPush] = useState(false)
+  const [subs, setSubs] = useState(null)
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
   const caixa = useRef(null)
@@ -91,6 +92,12 @@ export default function Sino({ user, posicao = 'topo' }) {
     }
   }, [])
 
+  /* ao abrir o painel, confirma se o servidor tem este dispositivo ligado */
+  useEffect(() => {
+    if (aberto && user) carregarStatus()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aberto, user])
+
   if (!user) return null
 
   const clicar = async (it) => {
@@ -133,6 +140,7 @@ export default function Sino({ user, posicao = 'topo' }) {
     const r = push ? await desligarPush() : await ativarPush()
     setPush(push ? false : r.ok)
     setMsg(r.ok ? (push ? 'Notificações desligadas.' : 'Notificações ligadas neste aparelho.') : r.erro || 'Não deu.')
+    await carregarStatus()
     setBusy(false)
   }
 
@@ -146,11 +154,33 @@ export default function Sino({ user, posicao = 'topo' }) {
       })
       const d = await r.json().catch(() => ({}))
       setMsg(r.ok ? 'Enviado. Deve aparecer no Windows em segundos.' : d.error || 'Não deu para enviar.')
+      if (r.ok) carregarStatus()
     } catch {
       setMsg('Não deu para enviar o teste.')
     } finally {
       setBusy(false)
     }
+  }
+
+  const carregarStatus = async () => {
+    try {
+      const r = await fetch('/api/notifications/push/status', { headers: authHeaders() })
+      if (!r.ok) return
+      const d = await r.json()
+      setSubs(Number(d.subs) || 0)
+    } catch {
+      /* ignora */
+    }
+  }
+
+  const reativarPush = async () => {
+    setBusy(true)
+    setMsg('')
+    const r = await ativarPush()
+    setPush(r.ok)
+    setMsg(r.ok ? 'Notificações ligadas neste dispositivo.' : r.erro || 'Não deu para reativar.')
+    await carregarStatus()
+    setBusy(false)
   }
 
   return (
@@ -254,6 +284,22 @@ export default function Sino({ user, posicao = 'topo' }) {
                   className="mt-2 w-full rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-bold text-gray-300 transition hover:bg-white/10 hover:text-white disabled:opacity-60"
                 >
                   Testar notificação com som
+                </button>
+              )}
+              {push && subs !== null && (
+                <p className={`mt-1.5 text-center text-[10px] font-bold ${subs > 0 ? 'text-emerald-400' : 'text-amber-300'}`}>
+                  {subs > 0
+                    ? `${subs} dispositivo(s) ligado(s) no servidor`
+                    : 'Este dispositivo não está registado no servidor'}
+                </p>
+              )}
+              {push && subs === 0 && (
+                <button
+                  onClick={reativarPush}
+                  disabled={busy}
+                  className="mt-1.5 w-full rounded-full bg-emerald-500/90 px-4 py-1.5 text-[11px] font-black text-black transition hover:bg-emerald-400 disabled:opacity-60"
+                >
+                  Reativar neste dispositivo
                 </button>
               )}
               {msg && <p className="mt-2 text-center text-[11px] text-gray-400">{msg}</p>}

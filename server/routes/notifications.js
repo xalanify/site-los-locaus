@@ -144,6 +144,22 @@ router.post(
   }),
 );
 
+router.get(
+  '/push/status',
+  requireUser,
+  safe(async (req, res) => {
+    const db = getDb();
+    const row = await db
+      .prepare('SELECT count(*)::int AS n FROM push_subs WHERE user_id = ?')
+      .get(req.auth.uid);
+    res.json({
+      ok: true,
+      subs: Number(row && row.n) || 0,
+      pushAtivo: require('../notify').pushAtivo(),
+    });
+  }),
+);
+
 router.post(
   '/push/test',
   requireUser,
