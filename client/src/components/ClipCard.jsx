@@ -102,14 +102,7 @@ const NOME_QUAL = {
   tiny: '240p',
 }
 
-const qualGravada = () => {
-  try {
-    const q = localStorage.getItem('aj-clip-qual')
-    return !q || q === 'auto' ? 'max' : q
-  } catch {
-    return 'max'
-  }
-}
+const qualGravada = () => 'max'
 const gravarQual = (q) => {
   try {
     localStorage.setItem('aj-clip-qual', q || 'auto')
