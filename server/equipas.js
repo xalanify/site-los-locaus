@@ -339,10 +339,12 @@ const semTags = (s) =>
     .replace(/<br\s*\/?>/gi, ' ')
     .replace(/<[^>]*>/g, ' ')
     .replace(/&#160;|&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
     .replace(/&#58;/g, ':')
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+    .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/\s+/g, ' ')
@@ -381,7 +383,12 @@ function lerInfobox(html) {
     return m ? semTags(m[1]) : null;
   };
   const nomeM = box.match(/infobox-header[^>]*>([\s\S]*?)<\/div>/i);
-  out.nome = nomeM ? semTags(nomeM[1]).replace(/^\[\s*e\s*\]\s*\[\s*h\s*\]/i, '').trim() : null;
+  out.nome = nomeM
+    ? semTags(nomeM[1])
+        .replace(/^\[\s*e\s*\]\s*\[\s*h\s*\]\s*/i, '')
+        .replace(/\s*\[\s*e\s*\]\s*\[\s*h\s*\]\s*$/i, '')
+        .trim()
+    : null;
   out.pais = campo('Location');
   out.regiao = campo('Region');
   out.ceo = campo('CEO');
@@ -420,6 +427,94 @@ function lerPlantel(html) {
       capitao: /fa-crown/i.test(row),
     });
     if (out.length >= 12) break;
+  }
+  return out;
+}
+
+function lerPlantelFallback(html) {
+  const ini = html.indexOf('id="Player_Roster"');
+  if (ini < 0) return [];
+  let seg = html.slice(ini, ini + 90000);
+  const org = seg.indexOf('id="Organization"');
+  if (org > 0) seg = seg.slice(0, org);
+  const c2 = seg.indexOf('content2');
+  if (c2 > 0) seg = seg.slice(0, c2);
+
+  const re = /<a[^>]+href="\/rainbowsix\/([^"#?]+)"[^>]*title="([^"]+)"[^>]*>/gi;
+  const out = [];
+  const vistos = new Set();
+  let m;
+  while ((m = re.exec(seg))) {
+    const id = semTags(m[2]);
+    const chave = id.toLowerCase();
+    if (!id || vistos.has(chave)) continue;
+    if (/^(category|file|template|special|portal|help|main page|rainbow six)/i.test(id)) continue;
+    if (id.length > 32 || id.includes(':')) continue;
+    const antes = seg.slice(Math.max(0, m.index - 1200), m.index);
+    const pais = (antes.match(/<img[^>]+alt="([^"]+)"/gi) || [])
+      .map((x) => (x.match(/alt="([^"]+)"/i) || [])[1])
+      .filter((x) => x && x.length < 30)
+      .pop() || null;
+    const depois = semTags(seg.slice(m.index, m.index + 600));
+    const nome = depois
+      .replace(id, ' ')
+      .replace(/\[[^\]]*\]/g, ' ')
+      .replace(/\b(join(ed)?|joined|date|role|coach|captain)\b.*$/i, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60);
+    vistos.add(chave);
+    out.push({
+      id,
+      nome: nome && nome.length > 2 ? nome : null,
+      pais,
+      entrou: null,
+      capitao: /fa-crown/i.test(antes.slice(-300)),
+    });
+    if (out.length >= 10) break;
+  }
+  return out;
+}
+
+function lerTorneiosFallback(html, marcador, limite = 8) {
+  const ini = html.indexOf(marcador);
+  if (ini < 0) return [];
+  const seg = html.slice(ini, ini + 120000);
+  const re = /<a[^>]+href="\/rainbowsix\/([^"#?]+)"[^>]*title="([^"]+)"[^>]*>/gi;
+  const out = [];
+  const vistos = new Set();
+  let m;
+  while ((m = re.exec(seg))) {
+    const nome = semTags(m[2]);
+    const chave = nome.toLowerCase();
+    if (!nome || vistos.has(chave)) continue;
+    if (/^(category|file|template|special|portal|help|main page|rainbow six)/i.test(nome)) continue;
+    if (nome.length > 80 || nome.includes(':')) continue;
+    if (
+      !/\b(19|20)\d{2}\b|major|league|cup|series|invitational|open|pro|championship|tournament|masters|blast|six|qualifier/i.test(
+        nome,
+      )
+    ) {
+      continue;
+    }
+    const perto = semTags(seg.slice(m.index, m.index + 700));
+    const data = (perto.match(/\b\d{4}-\d{2}-\d{2}\b/) || [])[0] || null;
+    const datas =
+      (perto.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}[–-]\d{1,2}\b/i) || [])[0] ||
+      null;
+    const tier = (perto.match(/\b(S|A|B|C)-Tier\b/) || [])[0] || null;
+    const premio = (perto.match(/[$€£]\s?[\d.,]+/) || [])[0] || null;
+    vistos.add(chave);
+    out.push({
+      data: data || null,
+      datas,
+      posicao: null,
+      tier,
+      torneio: nome,
+      nome,
+      premio,
+    });
+    if (out.length >= limite) break;
   }
   return out;
 }
@@ -504,6 +599,9 @@ async function equipaR6(titulo) {
   if (!j.parse || !j.parse.text) throw new Error('Equipa não encontrada.');
   const html = j.parse.text;
   const info = lerInfobox(html);
+  const jogadores = lerPlantel(html);
+  const proximos = lerProximosTorneios(html);
+  const ultimos = lerUltimosTorneios(html);
   return {
     ok: true,
     jogo: 'r6',
@@ -520,9 +618,16 @@ async function equipaR6(titulo) {
     ganhos: info.ganhos,
     vitoriasTorneios: null,
     ganhos6m: 0,
-    jogadores: lerPlantel(html),
-    proximosTorneios: lerProximosTorneios(html),
-    ultimosTorneios: lerUltimosTorneios(html),
+    jogadores: jogadores.length ? jogadores : lerPlantelFallback(html),
+    proximosTorneios: proximos.length
+      ? proximos
+      : lerTorneiosFallback(html, 'Upcoming Tournaments', 8),
+    ultimosTorneios: ultimos.length
+      ? ultimos
+      : lerTorneiosFallback(html, 'Achievements', 10).map((x) => ({
+          ...x,
+          torneio: x.torneio,
+        })),
     conquistas: [],
     proximosJogos: [],
     ultimosJogos: [],
