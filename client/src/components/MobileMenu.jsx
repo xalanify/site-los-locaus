@@ -51,10 +51,13 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
     { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam', badge: 'Novo' },
-    { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
-    // Só o admin vê a aba de componentes (ainda em testes)
+    // PCs/Specs, Componentes e Ferramentas: só admin
     ...(isAdmin
-      ? [{ name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes' }]
+      ? [
+          { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
+          { name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes' },
+          { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
+        ]
       : []),
     { name: 'Conta', icon: User, path: user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil' },
   ]

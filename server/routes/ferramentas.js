@@ -12,7 +12,7 @@
 //    reservado ao admin, que é quem responde por isso.
 // ============================================================
 const express = require('express');
-const { requireAdmin, requireUser, requireUserOrAdmin } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/auth');
 const ferramentas = require('../ferramentas');
 const store = require('../usersStore');
 
@@ -45,7 +45,7 @@ async function eAdmin(req) {
   }
 }
 
-router.get('/', requireUserOrAdmin, async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   const admin = await eAdmin(req);
   res.json({
     podeLocal: ferramentas.podeLocal(),
@@ -55,7 +55,7 @@ router.get('/', requireUserOrAdmin, async (req, res) => {
   });
 });
 
-router.post('/run', requireUserOrAdmin, async (req, res) => {
+router.post('/run', requireAdmin, async (req, res) => {
   try {
     const { id, arg, acoes, restauro } = req.body || {};
     const admin = await eAdmin(req);
@@ -68,7 +68,7 @@ router.post('/run', requireUserOrAdmin, async (req, res) => {
 });
 
 // Pára a ferramenta que está a correr (mate o processo ou a tarefa)
-router.post('/stop', requireUserOrAdmin, (req, res) => {
+router.post('/stop', requireAdmin, (req, res) => {
   try {
     const r = ferramentas.parar();
     res.status(r.ok ? 200 : 400).json(r);
@@ -79,18 +79,18 @@ router.post('/stop', requireUserOrAdmin, (req, res) => {
 });
 
 // GET /api/ferramentas/instalados -> quais programas do catálogo já estão no PC
-router.get('/instalados', requireUserOrAdmin, async (req, res) => {
+router.get('/instalados', requireAdmin, async (req, res) => {
   const r = await ferramentas.detectarInstalados();
   res.status(r.ok ? 200 : 400).json(r);
 });
 
 // GET /api/ferramentas/discos -> letras dos discos fixos (seletor do scan de vírus)
-router.get('/discos', requireUserOrAdmin, (req, res) => {
+router.get('/discos', requireAdmin, (req, res) => {
   res.json(ferramentas.discosFixos());
 });
 
 // POST /api/ferramentas/desinstalar -> { ids: [...] } desinstala os selecionados (Revo)
-router.post('/desinstalar', requireUserOrAdmin, (req, res) => {
+router.post('/desinstalar', requireAdmin, (req, res) => {
   try {
     const { ids } = req.body || {};
     const r = ferramentas.desinstalar(Array.isArray(ids) ? ids : [], quem(req));
@@ -101,7 +101,7 @@ router.post('/desinstalar', requireUserOrAdmin, (req, res) => {
   }
 });
 
-router.get('/status', requireUserOrAdmin, (req, res) => {
+router.get('/status', requireAdmin, (req, res) => {
   res.json(ferramentas.estadoPublico());
 });
 

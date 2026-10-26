@@ -280,10 +280,18 @@ function App() {
                         isAdmin ? <ComponentesPage user={user} /> : <Navigate to="/" replace />
                       }
                     />
-                    {/* PCs dos membros: dashboard de specs — aberto a todos */}
-                    <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
-                    {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}
-                    <Route path="/ferramentas" element={<FerramentasPage isAdmin={isAdmin} />} />
+                    {/* PCs dos membros: dashboard de specs — só admin */}
+                    <Route
+                      path="/pcs"
+                      element={isAdmin ? <PcsPage isAdmin={isAdmin} /> : <Navigate to="/" replace />}
+                    />
+                    {/* Ferramentas Windows: scripts no PC do servidor — só admin */}
+                    <Route
+                      path="/ferramentas"
+                      element={
+                        isAdmin ? <FerramentasPage isAdmin={isAdmin} /> : <Navigate to="/" replace />
+                      }
+                    />
                     {/* /ligar: a app abria este endereço — manda para as ferramentas */}
                     <Route path="/ligar" element={<Navigate to="/ferramentas" replace />} />
                     {/* InfoAoVivo (beta) — app nativo de overlays do PC */}

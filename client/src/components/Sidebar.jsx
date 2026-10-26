@@ -66,21 +66,26 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos, badge: 'Novo' },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
-    // Jogos, Specs e Ferramentas: abertas a todos os membros
+    // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
-    { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
-    // Só o admin vê a aba de componentes (ainda em testes)
+    // PCs/Specs, Componentes e Ferramentas: só admin
     ...(isAdmin
       ? [
+          { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
           {
             name: 'Componentes e Periféricos',
             icon: CircuitBoard,
             action: () => navigate('/componentes'),
             active: isComponentes,
           },
+          {
+            name: 'Ferramentas Windows',
+            icon: Wrench,
+            action: () => navigate('/ferramentas'),
+            active: isFerramentas,
+          },
         ]
       : []),
-    { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
   ]
 
   return (
