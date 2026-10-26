@@ -197,9 +197,6 @@ export default function ChatPage({ user }) {
   const [stickerQuery, setStickerQuery] = useState('meme tiktok')
   const [stickersLoading, setStickersLoading] = useState(false)
   const [stickersErro, setStickersErro] = useState('')
-  const podeStickers =
-    typeof window !== 'undefined' &&
-    /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)
   const stickers = stickerPaginas[stickerPagina]?.itens || []
   const [emojiCat, setEmojiCat] = useState('recentes')
   const [clipsAberto, setClipsAberto] = useState(false)
@@ -514,7 +511,7 @@ export default function ChatPage({ user }) {
   }
 
   const enviarSticker = async (src) => {
-    if (!podeStickers || aEnviar) return
+    if (aEnviar) return
     setAEnviar(true)
     setErro('')
     try {
@@ -569,7 +566,7 @@ export default function ChatPage({ user }) {
   }
 
   useEffect(() => {
-    if (stickersAberto && podeStickers) {
+    if (stickersAberto) {
       setStickerPaginas([])
       setStickerPagina(0)
       setStickerQuery('meme tiktok')
@@ -1146,7 +1143,7 @@ export default function ChatPage({ user }) {
               </div>
             </div>
           )}
-          {stickersAberto && podeStickers && (
+          {stickersAberto && (
             <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-violet-400/20 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-violet-300">
@@ -1254,7 +1251,7 @@ export default function ChatPage({ user }) {
               )}
               <p className="px-3 pb-2 text-[9px] text-gray-500">
                 {stickerQuery.trim() ? 'Resultados da pesquisa' : 'Tendências'} · stickers animados
-                do Tenor · só em localhost.
+                do Tenor.
               </p>
             </div>
           )}
@@ -1293,22 +1290,20 @@ export default function ChatPage({ user }) {
             >
               <Smile className="h-5 w-5" />
             </button>
-            {podeStickers && (
-              <button
-                onClick={() => {
-                  setStickersAberto((v) => !v)
-                  setEmojiAberto(false)
-                }}
-                title="Stickers animados (localhost)"
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
-                  stickersAberto
-                    ? 'bg-violet-500/15 text-violet-300'
-                    : 'text-gray-400 hover:text-violet-300'
-                }`}
-              >
-                <Sticker className="h-5 w-5" />
-              </button>
-            )}
+            <button
+              onClick={() => {
+                setStickersAberto((v) => !v)
+                setEmojiAberto(false)
+              }}
+              title="Stickers animados"
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
+                stickersAberto
+                  ? 'bg-violet-500/15 text-violet-300'
+                  : 'text-gray-400 hover:text-violet-300'
+              }`}
+            >
+              <Sticker className="h-5 w-5" />
+            </button>
             <textarea
               ref={textareaRef}
               rows={1}

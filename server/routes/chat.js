@@ -562,11 +562,6 @@ router.post('/', requireUser, async (req, res) => {
     let mediaType = b.media_type ? String(b.media_type).toLowerCase() : null;
 
     if (sticker) {
-      const host = String(req.headers.host || '').toLowerCase();
-      const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);
-      if (!local) {
-        return res.status(403).json({ error: 'Os stickers só estão disponíveis em localhost.' });
-      }
       const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
       const svgLocal = /^\/stickers\/[a-z0-9-]+\.svg$/.test(sticker);
       const noBucket =
@@ -705,8 +700,7 @@ router.post('/typing', requireUser, async (req, res) => {
   }
 });
 
-/* GET /api/chat/stickers?q=... — stickers animados (Tenor).
-   Só em localhost, para testes. */
+/* GET /api/chat/stickers?q=... — stickers animados (Tenor). */
 const TENOR_KEY =
   process.env.TENOR_API_KEY || 'AIzaSyCZt6SSh5VgVPzD9fhyzG1DprdPRhtoaR4';
 const TENOR_CLIENT = process.env.TENOR_CLIENT_KEY || 'tenor_web';
@@ -714,11 +708,6 @@ const stickersCache = new Map();
 
 router.get('/stickers', requireUser, async (req, res) => {
   try {
-    const host = String(req.headers.host || '').toLowerCase();
-    const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);
-    if (!local) {
-      return res.status(403).json({ error: 'Os stickers só estão disponíveis em localhost.' });
-    }
     const q = String(req.query.q || '').trim().slice(0, 60);
     const pos = String(req.query.pos || '').trim().slice(0, 120);
     const chave = `${q ? `q:${q.toLowerCase()}` : 'featured'}:${pos || '0'}`;
