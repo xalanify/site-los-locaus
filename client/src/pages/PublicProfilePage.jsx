@@ -14,7 +14,7 @@ import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import Estado from '../components/Estado'
 import ProfilePage from './ProfilePage'
-import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
+import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { searchMice } from '../data/mice'
 import { gameLabel } from '../data/clipGames'
@@ -242,7 +242,7 @@ export default function PublicProfilePage({
   const badges = Array.isArray(p.badges) ? p.badges : []
   const distOc = distincoesOverclock(p.distincoes)
   const minhas = [
-    ...BADGES.filter((b) => badges.includes(b.id)),
+    ...badgesDe(badges),
     ...distOc,
   ]
 

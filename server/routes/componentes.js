@@ -19,6 +19,10 @@ const {
   buscarMaisVendidos,
   guardarPreco,
   listarPrecos,
+  listarHistorico,
+  listarAlertas,
+  guardarAlerta,
+  apagarAlerta,
   montarProdutos,
   garantirTabela,
 } = require('../componentes');
@@ -38,6 +42,60 @@ router.get('/', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Erro componentes GET:', error.message);
     res.status(500).json({ error: 'Não deu para carregar os componentes.' });
+  }
+});
+
+/* Histórico de preços de um produto. */
+router.get('/historico', requireAdmin, async (req, res) => {
+  try {
+    const produto_id = String((req.query && req.query.produto_id) || '');
+    if (!produto_id) return res.status(400).json({ error: 'Produto inválido.' });
+    res.json({ ok: true, pontos: await listarHistorico(produto_id) });
+  } catch (error) {
+    console.error('Erro componentes historico:', error.message);
+    res.status(500).json({ error: 'Não deu para carregar o histórico.' });
+  }
+});
+
+/* Alertas de descida de preço do admin. */
+router.get('/alertas', requireAdmin, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.json({ ok: true, alertas: [] });
+    res.json({ ok: true, alertas: await listarAlertas(uid) });
+  } catch (error) {
+    console.error('Erro componentes alertas:', error.message);
+    res.status(500).json({ error: 'Não deu para carregar os alertas.' });
+  }
+});
+
+router.post('/alerta', requireAdmin, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.status(400).json({ error: 'Entra com a conta de admin para criar alertas.' });
+    const produto_id = String((req.body && req.body.produto_id) || '');
+    const preco = Number(req.body && req.body.preco_alvo);
+    if (!CATALOGO.some((p) => p.id === produto_id) || !Number.isFinite(preco) || preco <= 0) {
+      return res.status(400).json({ error: 'Produto ou preço inválido.' });
+    }
+    await guardarAlerta(uid, produto_id, Math.round(preco * 100) / 100);
+    res.json({ ok: true, alertas: await listarAlertas(uid) });
+  } catch (error) {
+    console.error('Erro componentes alerta:', error.message);
+    res.status(500).json({ error: 'Não deu para guardar o alerta.' });
+  }
+});
+
+router.delete('/alerta', requireAdmin, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.json({ ok: true, alertas: [] });
+    const produto_id = String((req.query && req.query.produto_id) || '');
+    if (produto_id) await apagarAlerta(uid, produto_id);
+    res.json({ ok: true, alertas: await listarAlertas(uid) });
+  } catch (error) {
+    console.error('Erro componentes apagar alerta:', error.message);
+    res.status(500).json({ error: 'Não deu para apagar o alerta.' });
   }
 });
 

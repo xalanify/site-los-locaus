@@ -209,6 +209,11 @@ function RunJob($job) {
 }
 
 Show "A ligar ao site $Site ..." 'Yellow'
+for ($i = 0; $i -le 100; $i += 10) {
+  Write-Progress -Activity 'A ligar ao site' -Status ($i.ToString() + [char]37) -PercentComplete $i
+  Start-Sleep -Milliseconds 60
+}
+Write-Progress -Activity 'A ligar ao site' -Completed
 # Se este .bat ja foi usado antes, a sessao pode estar marcada para fechar.
 # Acorda-a para o utilizador nao ter de instalar/descarregar tudo outra vez.
 try { PostJson "$Site/api/agente/acordar" @{} | Out-Null } catch {}
@@ -249,3 +254,4 @@ while ($true) {
   }
 }
 Show 'Agente desligado.' 'Gray'
+try { PostJson "$Site/api/agente/desligar" @{} | Out-Null } catch {}

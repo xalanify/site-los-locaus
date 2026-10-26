@@ -367,6 +367,11 @@ function parseGlobalData(html) {
       const precoBloco = chunk.match(/class="price js-price"[\s\S]{0,2000}?content="([\d.]+)"/);
       const preco = numero((venda && venda[1]) || (precoBloco && precoBloco[1]) || data.price);
       if (!preco || !data.item_name) continue;
+      const pvpr = numero(precoBloco && precoBloco[1]);
+      const desconto =
+        pvpr && preco < pvpr
+          ? Math.round((1 - preco / pvpr) * 100)
+          : Number(data.discount) || 0;
       const href = (chunk.match(/href="([^"]+)"/) || [])[1];
       const img = (chunk.match(/<img[^>]+(?:data-src|src)="([^"]+)"/) || [])[1];
       out.push({
@@ -374,6 +379,8 @@ function parseGlobalData(html) {
         preco,
         url: absoluto(LOJAS.globaldata.base, href),
         imagem: img ? absoluto(LOJAS.globaldata.base, img).replace('sw=200', 'sw=500') : null,
+        stock: data.stock_status === 'in_stock' ? 'stock' : data.stock_status === 'out_of_stock' ? 'sem' : 'encomenda',
+        desconto,
       });
     } catch {
       /* tile inválido */
@@ -409,6 +416,8 @@ async function pesquisarPCComponentes(consulta, indice = PCC_INDEX) {
         imagem: img,
         categoriaLoja: (h.mainCategory && h.mainCategory.name) || '',
         marca: h.brandName || detectarMarca(h.name || ''),
+        stock: Number(h.stock) > 0 ? 'stock' : 'encomenda',
+        desconto: Number(h.discount) || 0,
       };
     })
     .filter((x) => x.titulo && x.preco && x.imagem);
@@ -438,6 +447,8 @@ function parseLDLC(html) {
       preco,
       url: absoluto(LOJAS.ldlc.base, href),
       imagem: img ? absoluto(LOJAS.ldlc.base, img) : null,
+      stock: /rupture|indisponible|[ée]puis[ée]/i.test(bloco) ? 'sem' : /dispo|en stock|stock/i.test(bloco) ? 'stock' : 'encomenda',
+      desconto: 0,
     });
   }
   return out;
@@ -457,6 +468,8 @@ function parseMaxGaming(html) {
       preco,
       url: absoluto(LOJAS.maxgaming.base, m[1]),
       imagem: absoluto(LOJAS.maxgaming.base, m[2]),
+      stock: /out of stock|sold out|esgotado/i.test(bloco) ? 'sem' : /in stock/i.test(bloco) ? 'stock' : 'encomenda',
+      desconto: 0,
     });
   }
   return out;
@@ -576,6 +589,7 @@ async function buscarTudo(consulta, { tipo = 'componente', categoria = '', lojas
             const ct = classificarTipo(x.titulo, x.categoriaLoja);
             if (tipo === 'componente' && ct === 'periferico') return false;
             if (tipo === 'periferico' && ct === 'componente') return false;
+            if (/(rato|raton|mouse(?!pad))/i.test(normalizar(x.titulo)) && x.preco < 30) return false;
             return true;
           })
           .map((x) => ({
@@ -640,6 +654,7 @@ async function buscarMaisVendidos({ tipo = 'componente', categoria = '', limite 
       if (!ct) return false;
       if (tipo === 'componente' && ct !== 'componente') return false;
       if (tipo === 'periferico' && ct !== 'periferico') return false;
+      if (/(rato|raton|mouse(?!pad))/i.test(t) && x.preco < 30) return false;
       if (categoria && !relevante(x.titulo, categoria, tipo)) return false;
       return true;
     })
@@ -707,9 +722,30 @@ function garantirTabela() {
           url text,
           imagem text,
           titulo text,
+          stock text,
+          desconto integer not null default 0,
           manual boolean not null default false,
           atualizado_em timestamptz not null default now(),
           primary key (produto_id, loja)
+        );
+        ALTER TABLE public.componentes_precos ADD COLUMN IF NOT EXISTS stock text;
+        ALTER TABLE public.componentes_precos ADD COLUMN IF NOT EXISTS desconto integer NOT NULL DEFAULT 0;
+        CREATE TABLE IF NOT EXISTS public.componentes_historico (
+          id bigint generated always as identity primary key,
+          produto_id text not null,
+          loja text not null,
+          preco numeric(10,2) not null,
+          criado_em timestamptz not null default now()
+        );
+        CREATE INDEX IF NOT EXISTS componentes_historico_produto_idx
+          ON public.componentes_historico (produto_id, criado_em DESC);
+        CREATE TABLE IF NOT EXISTS public.componentes_alertas (
+          user_id bigint not null references public.users(id) on delete cascade,
+          produto_id text not null,
+          preco_alvo numeric(10,2) not null,
+          criado_em timestamptz not null default now(),
+          avisado_em timestamptz,
+          primary key (user_id, produto_id)
         );
       `)
       .then(() => true)
@@ -724,28 +760,158 @@ function garantirTabela() {
 
 async function guardarPreco(produto_id, loja, dados, manual = false) {
   const db = getDb();
+  let anterior = null;
+  try {
+    anterior = await db
+      .prepare('SELECT preco FROM public.componentes_precos WHERE produto_id = ? AND loja = ?')
+      .get(produto_id, loja);
+  } catch {}
   await db
     .prepare(
       `INSERT INTO public.componentes_precos
-         (produto_id, loja, preco, url, imagem, titulo, manual, atualizado_em)
-       VALUES (?, ?, ?, ?, ?, ?, ?, now())
+         (produto_id, loja, preco, url, imagem, titulo, stock, desconto, manual, atualizado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now())
        ON CONFLICT (produto_id, loja) DO UPDATE
          SET preco = EXCLUDED.preco,
              url = COALESCE(EXCLUDED.url, public.componentes_precos.url),
              imagem = COALESCE(EXCLUDED.imagem, public.componentes_precos.imagem),
              titulo = COALESCE(EXCLUDED.titulo, public.componentes_precos.titulo),
+             stock = COALESCE(EXCLUDED.stock, public.componentes_precos.stock),
+             desconto = EXCLUDED.desconto,
              manual = EXCLUDED.manual,
              atualizado_em = now()`,
     )
-    .run(produto_id, loja, dados.preco, dados.url || null, dados.imagem || null, dados.titulo || null, manual);
+    .run(
+      produto_id,
+      loja,
+      dados.preco,
+      dados.url || null,
+      dados.imagem || null,
+      dados.titulo || null,
+      dados.stock || null,
+      Number(dados.desconto) || 0,
+      manual,
+    );
+
+  let temHistorico = false;
+  try {
+    temHistorico = Boolean(
+      await db
+        .prepare(
+          'SELECT 1 FROM public.componentes_historico WHERE produto_id = ? AND loja = ? LIMIT 1',
+        )
+        .get(produto_id, loja),
+    );
+  } catch {}
+  if (!temHistorico || (anterior && Number(anterior.preco) !== Number(dados.preco))) {
+    await db
+      .prepare(
+        'INSERT INTO public.componentes_historico (produto_id, loja, preco) VALUES (?, ?, ?)',
+      )
+      .run(produto_id, loja, dados.preco)
+      .catch(() => {});
+  }
+  verificarAlertas(produto_id, dados.preco).catch(() => {});
 }
+
+async function listarHistorico(produto_id) {
+  await garantirTabela();
+  try {
+    return await getDb()
+      .prepare(
+        `SELECT loja, preco, criado_em
+           FROM public.componentes_historico
+          WHERE produto_id = ?
+          ORDER BY criado_em ASC
+          LIMIT 400`,
+      )
+      .all(produto_id);
+  } catch {
+    return [];
+  }
+}
+
+async function listarAlertas(user_id) {
+  await garantirTabela();
+  try {
+    return await getDb()
+      .prepare(
+        `SELECT produto_id, preco_alvo, criado_em, avisado_em
+           FROM public.componentes_alertas
+          WHERE user_id = ?`,
+      )
+      .all(user_id);
+  } catch {
+    return [];
+  }
+}
+
+async function guardarAlerta(user_id, produto_id, preco_alvo) {
+  await garantirTabela();
+  await getDb()
+    .prepare(
+      `INSERT INTO public.componentes_alertas (user_id, produto_id, preco_alvo, avisado_em)
+       VALUES (?, ?, ?, NULL)
+       ON CONFLICT (user_id, produto_id) DO UPDATE
+         SET preco_alvo = EXCLUDED.preco_alvo, avisado_em = NULL`,
+    )
+    .run(user_id, produto_id, preco_alvo);
+  return { ok: true };
+}
+
+async function apagarAlerta(user_id, produto_id) {
+  await garantirTabela();
+  await getDb()
+    .prepare('DELETE FROM public.componentes_alertas WHERE user_id = ? AND produto_id = ?')
+    .run(user_id, produto_id);
+  return { ok: true };
+}
+
+async function verificarAlertas(produto_id, preco) {
+  try {
+    const db = getDb();
+    const alertas = await db
+      .prepare('SELECT user_id, preco_alvo, avisado_em FROM public.componentes_alertas WHERE produto_id = ?')
+      .all(produto_id);
+    if (!alertas.length) return;
+    const valor = Number(preco) || 0;
+    for (const a of alertas) {
+      const alvo = Number(a.preco_alvo) || 0;
+      if (!alvo) continue;
+      if (valor <= alvo && !a.avisado_em) {
+        await db
+          .prepare('UPDATE public.componentes_alertas SET avisado_em = now() WHERE user_id = ? AND produto_id = ?')
+          .run(a.user_id, produto_id)
+          .catch(() => {});
+        const { notify } = require('./notify');
+        await notify({
+          userId: a.user_id,
+          type: 'preco',
+          entity: 'componente',
+          entityId: null,
+          title: 'Preço baixou!',
+          body: `O produto que segues está a ${valor.toFixed(2)} € (o teu alvo era ${alvo.toFixed(2)} €).`,
+          link: '/componentes',
+        }).catch(() => {});
+      } else if (valor > alvo && a.avisado_em) {
+        await db
+          .prepare('UPDATE public.componentes_alertas SET avisado_em = NULL WHERE user_id = ? AND produto_id = ?')
+          .run(a.user_id, produto_id)
+          .catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.error('verificarAlertas:', e.message);
+  }
+}
+
 
 async function listarPrecos() {
   await garantirTabela();
   try {
     const rows = await getDb()
       .prepare(
-        `SELECT produto_id, loja, preco, url, imagem, titulo, manual, atualizado_em
+        `SELECT produto_id, loja, preco, url, imagem, titulo, stock, desconto, manual, atualizado_em
          FROM public.componentes_precos`,
       )
       .all();
@@ -769,6 +935,8 @@ function montarProdutos(rows) {
       url: r.url || null,
       imagem: r.imagem || null,
       titulo: r.titulo || null,
+      stock: r.stock || '',
+      desconto: Number(r.desconto) || 0,
       manual: Boolean(r.manual),
       atualizado_em: r.atualizado_em,
     });
@@ -781,7 +949,15 @@ function montarProdutos(rows) {
       (max, x) => (!max || (x.atualizado_em && x.atualizado_em > max) ? x.atualizado_em : max),
       null,
     );
-    return { ...p, precos, maisBarato, imagem, atualizado_em: atualizado };
+    return {
+      ...p,
+      precos,
+      maisBarato,
+      imagem,
+      stock: (maisBarato && maisBarato.stock) || '',
+      desconto: Math.max(0, ...precos.map((x) => Number(x.desconto) || 0)),
+      atualizado_em: atualizado,
+    };
   });
 }
 
@@ -795,6 +971,10 @@ module.exports = {
   buscarMaisVendidos,
   guardarPreco,
   listarPrecos,
+  listarHistorico,
+  listarAlertas,
+  guardarAlerta,
+  apagarAlerta,
   montarProdutos,
   garantirTabela,
 };

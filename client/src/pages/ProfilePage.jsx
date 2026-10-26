@@ -15,7 +15,7 @@ import {
   X,
   Sparkles,
 } from 'lucide-react'
-import { BadgeGem, BADGES, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
+import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import { searchMice } from '../data/mice'
@@ -247,7 +247,7 @@ export default function ProfilePage({
   /* chips em baixo: todas menos a DEV (essa fica só ao lado do nome) */
   const distOc = distincoesOverclock(me.distincoes)
   const minhas = [
-    ...BADGES.filter((b) => badges.includes(b.id) || (b.id === 'dev' && isAdmin)),
+    ...badgesDe([...badges, ...(isAdmin ? ['dev'] : [])]),
     ...distOc,
   ]
 

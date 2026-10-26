@@ -44,7 +44,8 @@ const ready = initDatabase()
     const { syncTop1Badge } = require('./top1');
     // 1.º nas previsões automático — líder da classificação ganha a distinção
     const { syncTop1Previsoes } = require('./previsoestop1');
-    return Promise.allSettled([syncTop1Badge(), syncTop1Previsoes()]);
+    const { syncStreaks } = require('./previsoesstreak');
+    return Promise.allSettled([syncTop1Badge(), syncTop1Previsoes(), syncStreaks()]);
   })
   .then((r) => {
     const cs2 = r && r[0] && r[0].status === 'fulfilled' ? r[0].value : null;

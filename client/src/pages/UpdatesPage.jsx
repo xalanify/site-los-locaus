@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, Users, Loader2 } from 'lucide-react'
-import { BADGES, BadgeGem, OVERCLOCK_BADGES } from '../components/BadgeGem'
+import { BADGES, BadgeGem, OVERCLOCK_BADGES, STREAK_BADGE } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import PageShell from '../components/PageShell'
 
@@ -116,6 +116,11 @@ export default function UpdatesPage() {
           'Overclock (automáticas)',
           'Ganhas conforme as specs reais: CPU acima do de fábrica, memórias com overclock e/ou XMP ligado.',
           OVERCLOCK_BADGES,
+        )}
+        {renderGroup(
+          'Acertos seguidos',
+          'A partir de 5 acertos consecutivos nas previsões. O número sobe para 6, 7, 8… e o ícone fica mais escuro com olhos mais brilhantes.',
+          [STREAK_BADGE],
         )}
     </PageShell>
   )

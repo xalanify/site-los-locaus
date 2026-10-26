@@ -57,9 +57,9 @@ router.get('/', requireUserOrAdmin, async (req, res) => {
 
 router.post('/run', requireUserOrAdmin, async (req, res) => {
   try {
-    const { id, arg, acoes } = req.body || {};
+    const { id, arg, acoes, restauro } = req.body || {};
     const admin = await eAdmin(req);
-    const r = ferramentas.executar(String(id || ''), arg, quem(req), admin, acoes);
+    const r = ferramentas.executar(String(id || ''), arg, quem(req), admin, acoes, Boolean(restauro));
     res.status(r.ok ? 200 : 400).json(r);
   } catch (e) {
     console.error('Erro /run:', e);

@@ -101,12 +101,8 @@ function gerarBat(site, token) {
     'set "PS=%TEMP%\\locaus-agente.ps1"',
     '',
     'cls',
-    'echo.',
-    'echo  ================================================',
-    'echo    LOCAUS PC  -  Liga o teu Windows ao site',
-    'echo  ================================================',
-    'echo.',
-    'echo  A descarregar o agente...',
+    'powershell -NoProfile -ExecutionPolicy Bypass -Command "Write-Host \'\'; Write-Host \'  ================================================\' -ForegroundColor DarkCyan; Write-Host \'    LOCAUS PC  -  Liga o teu Windows ao site\' -ForegroundColor Cyan; Write-Host \'  ================================================\' -ForegroundColor DarkCyan; Write-Host \'\'; for($i=0;$i -le 100;$i+=10){ Write-Progress -Activity \'A preparar o LOCAUS PC\' -Status ($i.ToString()+[char]37) -PercentComplete $i; Start-Sleep -Milliseconds 60 }; Write-Progress -Activity \'A preparar o LOCAUS PC\' -Completed; Write-Host \'  [OK] Interface pronta.\' -ForegroundColor Green"',
+    'powershell -NoProfile -Command "Write-Host \'  A descarregar o agente...\' -ForegroundColor Yellow"',
     'powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Invoke-WebRequest -Uri (\'%SITE%/api/agente/script\') -UseBasicParsing -OutFile (\'%PS%\') -ErrorAction Stop } catch { exit 1 }"',
     'if not exist "%PS%" (',
     '  echo.',
@@ -115,13 +111,10 @@ function gerarBat(site, token) {
     '  pause',
     '  exit /b 1',
     ')',
-    'echo.',
-    'echo  A ligar ao site... deixa esta janela aberta.',
-    'echo  fecha esta janela para desligar o PC do site.',
-    'echo.',
+    'powershell -NoProfile -Command "Write-Host \'\'; Write-Host \'  A ligar ao site... deixa esta janela aberta.\' -ForegroundColor Cyan; Write-Host \'  Fecha esta janela para desligar o PC do site.\' -ForegroundColor DarkGray; Write-Host \'\'"',
     'powershell -NoProfile -ExecutionPolicy Bypass -File "%PS%" -Site "%SITE%" -Token "%TOKEN%" -Chave "%CHAVE%"',
     'echo.',
-    'echo  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.',
+    'powershell -NoProfile -Command "Write-Host \'  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.\' -ForegroundColor DarkGray"',
     'pause',
     '',
   ].join('\r\n');
@@ -375,6 +368,15 @@ router.post('/acordar', requireAgente, async (req, res) => {
   } catch (e) {
     console.error('Agente /acordar:', e);
     res.status(500).json({ ok: false, erro: 'Não deu para acordar o agente.' });
+  }
+});
+
+router.post('/desligar', requireAgente, async (req, res) => {
+  try {
+    res.json(await agente.desligarSessao(req.agente.id));
+  } catch (e) {
+    console.error('Agente /desligar:', e);
+    res.status(500).json({ ok: false, erro: 'Não deu para desligar o agente.' });
   }
 });
 

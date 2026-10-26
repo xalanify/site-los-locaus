@@ -580,21 +580,15 @@ export default function ChatPage({ user }) {
 
   return (
     <PageShell className="!pb-6">
-      <div className="mx-auto w-full max-w-4xl">
-      <h1
-        className="mb-4 font-black gradient-text"
-        style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-      >
-        Chat
-      </h1>
-      <div className="flex h-[calc(100dvh-16rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-black/40 sm:h-[calc(100dvh-17rem)]" style={{ backgroundColor: t.bg + 'f2' }}>
+      <div className="mx-auto w-full max-w-6xl">
+      <div className="flex h-[min(78dvh,860px)] min-h-[460px] flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40" style={{ backgroundColor: t.bg + 'f2' }}>
         {/* cabeçalho */}
-        <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.06] to-transparent px-4 py-3">
-          <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${t.grad} text-white shadow-lg`}>
+        <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.07] to-transparent px-4 py-4 sm:px-5">
+          <span className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${t.grad} text-white shadow-lg`}>
             <MessageCircle className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-base font-black text-white">Chat geral</h1>
+            <h1 className="truncate text-lg font-black text-white">Chat geral</h1>
             <p className="truncate text-[11px] font-semibold text-gray-400">
               {typing.length
                 ? `${typing.map((t) => t.username).slice(0, 2).join(', ')}${typing.length > 2 ? ' e mais' : ''} a escrever…`
@@ -661,7 +655,7 @@ export default function ChatPage({ user }) {
         <div
           ref={listaRef}
           onScroll={onScroll}
-          className="chat-scroll flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
+          className="chat-scroll flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-5"
         >
           {loading && (
             <div className="flex h-full items-center justify-center text-sm font-semibold text-gray-400">
@@ -712,12 +706,12 @@ export default function ChatPage({ user }) {
                     </div>
                   )}
                   <div className={`group relative flex items-end gap-2 ${minha ? 'flex-row-reverse' : ''} ${seguida ? 'mt-0.5' : 'mt-3'}`}>
-                    <span className="w-8 shrink-0">
+                    <span className="w-9 shrink-0">
                       {!seguida && (
-                        <AvatarImg src={m.user.avatar_url} name={m.user.username} className="h-8 w-8" />
+                        <AvatarImg src={m.user.avatar_url} name={m.user.username} className="h-9 w-9" />
                       )}
                     </span>
-                    <div className={`max-w-[82%] sm:max-w-[74%] ${minha ? 'items-end' : 'items-start'} flex flex-col`}>
+                    <div className={`max-w-[84%] sm:max-w-[70%] ${minha ? 'items-end' : 'items-start'} flex flex-col`}>
                       {!seguida && (
                         <span className={`mb-1 px-1 text-[11px] font-bold ${minha ? t.cor : 'text-gray-400'}`}>
                           {minha ? 'Tu' : m.user.username} · {hora(m.created_at)}
@@ -731,7 +725,7 @@ export default function ChatPage({ user }) {
                         </div>
                       )}
                       <div
-                        className={`relative rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-sm ${
+                        className={`relative rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed shadow-sm ${
                           minha
                             ? `rounded-br-md bg-gradient-to-br ${t.grad} text-white shadow-lg`
                             : 'rounded-bl-md border border-white/10 bg-white/[0.08] text-gray-100 shadow-lg'
@@ -990,21 +984,21 @@ export default function ChatPage({ user }) {
               onClick={escolherImagem}
               disabled={aSubir}
               title="Enviar imagem ou GIF"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 disabled:opacity-40"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 disabled:opacity-40"
             >
               <ImagePlus className="h-5 w-5" />
             </button>
             <button
               onClick={abrirClips}
               title="Enviar um clip"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300"
             >
               <Clapperboard className="h-5 w-5" />
             </button>
             <button
               onClick={() => setEmojiAberto((v) => !v)}
               title="Emojis"
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 ${
                 emojiAberto ? 'bg-violet-500/15 text-violet-300' : 'text-gray-400 hover:text-violet-300'
               }`}
             >
@@ -1026,12 +1020,12 @@ export default function ChatPage({ user }) {
                 }
               }}
               placeholder="Mensagem…"
-              className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-violet-400/40 focus:bg-white/[0.07]"
+              className="max-h-28 min-h-[48px] flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-[13.5px] text-white placeholder-gray-500 outline-none transition focus:border-violet-400/40 focus:bg-white/[0.07]"
             />
             <button
               onClick={enviar}
               disabled={aEnviar || aSubir || (!texto.trim() && !pendingMedia && !pendingClip)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40"
               title="Enviar"
             >
               {aEnviar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

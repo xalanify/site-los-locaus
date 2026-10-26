@@ -22,7 +22,7 @@ import ClipCard from '../components/ClipCard'
 import AvatarImg from '../components/AvatarImg'
 import TabBar from '../components/TabBar'
 import Estado from '../components/Estado'
-import { BADGES, BadgeGem } from '../components/BadgeGem'
+import { badgesDe, BadgeGem } from '../components/BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { authHeaders, mmss, parseTime } from '../lib/auth'
 import PageShell from '../components/PageShell'
@@ -80,7 +80,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
   }, [name])
 
   const d = state.data
-  const badges = (d?.profile?.badges || []).map((id) => BADGES.find((b) => b.id === id)).filter(Boolean)
+  const badges = badgesDe(d?.profile?.badges)
   const accounts = d?.profile?.game_accounts || []
 
   return (

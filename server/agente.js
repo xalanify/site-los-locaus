@@ -20,7 +20,7 @@ const { getDb } = require('./database');
 const ferramentas = require('./ferramentas');
 
 const SESSAO_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias (renovado a cada heartbeat)
-const ONLINE_MS = 30 * 1000; // agente conta como ligado se falou nos últimos 30 s
+const ONLINE_MS = 12 * 1000; // agente conta como ligado se falou nos últimos 12 s
 
 const hashToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
 
@@ -185,6 +185,13 @@ async function acordarSessao(id) {
   return { ok: true };
 }
 
+async function desligarSessao(id) {
+  await getDb()
+    .prepare('UPDATE public.agente_sessoes SET encerrar = true, visto_em = null WHERE id = ?')
+    .run(id);
+  return { ok: true };
+}
+
 /* ---------------- construção de trabalhos ---------------- */
 
 function lerScript(nome) {
@@ -200,6 +207,7 @@ function prepararTrabalho(payload, soAdmin) {
       payload.arg,
       soAdmin,
       payload.acoes,
+      Boolean(payload.restauro),
     );
     if (!p.ok) return p;
     return { ...p, tipo: 'tool', ferramentaId: p.id };
@@ -451,6 +459,7 @@ module.exports = {
   estado,
   encerrarSessao,
   acordarSessao,
+  desligarSessao,
   criarJob,
   proximo,
   controlo,

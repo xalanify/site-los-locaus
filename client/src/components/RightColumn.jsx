@@ -4,7 +4,7 @@ import { Megaphone, Users, ChevronRight } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import UserBanner from './UserBanner'
 import { authHeaders } from '../lib/auth'
-import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
+import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 import { anunciosVisiveis } from '../lib/anuncios'
 
@@ -122,7 +122,7 @@ export default function RightColumn() {
             <ul className="space-y-1">
               {online.map((m) => {
                 const estaticas = (m.badges || [])
-                  .map((id) => BADGES.find((b) => b.id === id))
+                  .map(badgeDe)
                   .filter(Boolean)
                 const overclock = distincoesOverclock(m.distincoes)
                 const joias = [...estaticas, ...overclock].slice(0, 4)

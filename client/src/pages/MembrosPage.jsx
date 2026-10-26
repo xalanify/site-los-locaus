@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Loader2, X } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import { BADGES, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
+import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
@@ -130,7 +130,7 @@ export default function MembrosPage({ onProfile }) {
                       {/* Distinções do membro (estáticas + overclock) */}
                       <span className="flex max-w-[60%] shrink-0 flex-wrap items-center justify-end gap-1.5">
                         {m.badges.slice(0, 3).map((id) => {
-                          const b = BADGES.find((x) => x.id === id)
+                          const b = badgeDe(id)
                           return b ? <BadgeGem key={b.id} badge={b} size={22} /> : null
                         })}
                         {distincoesOverclock(m.distincoes).map((b) => (

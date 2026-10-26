@@ -6,6 +6,7 @@ const { getDb } = require('../database');
 const { attachAuth, requireUser } = require('../middleware/auth');
 const { sincronizar, proximoTorneio } = require('../r6previsoes');
 const { syncTop1Previsoes } = require('../previsoestop1');
+const { syncStreaks } = require('../previsoesstreak');
 const cs2 = require('../cs2previsoes');
 
 const router = express.Router();
@@ -261,6 +262,7 @@ router.get('/classificacao', async (req, res) => {
       .all();
     // atualiza a distinção de 1.º lugar em segundo plano (sem atrasar)
     syncTop1Previsoes().catch(() => {});
+    syncStreaks().catch(() => {});
 
     res.json({
       users: rows.map((r, i) => ({
@@ -523,6 +525,7 @@ router.get('/cs2/classificacao', async (req, res) => {
       })),
     });
     syncTop1Previsoes().catch(() => {});
+    syncStreaks().catch(() => {});
   } catch (e) {
     console.error('Erro classificação CS2:', e.message);
     res.status(500).json({ error: 'Erro interno' });
@@ -555,6 +558,7 @@ router.get('/classificacao-total', async (req, res) => {
       )
       .all();
     syncTop1Previsoes().catch(() => {});
+    syncStreaks().catch(() => {});
     res.json({
       users: rows.map((r, i) => ({
         pos: i + 1,

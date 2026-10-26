@@ -12,8 +12,7 @@
    ============================================================ */
 import { Cpu, MemoryStick } from 'lucide-react'
 
-export const BADGES = [
-  {
+export const BADGES = [  {
     id: 'dev',
     label: 'DEV',
     desc: 'Desenvolvedor do site',
@@ -56,6 +55,36 @@ export const BADGES = [
     arte: 'fortnite',
   },
 ]
+
+/* Distinção dinâmica de acertos seguidos: streak-5, streak-6, ... */
+export function badgeDe(id) {
+  const fixa = BADGES.find((b) => b.id === id)
+  if (fixa) return fixa
+  const m = /^streak-(\d+)$/.exec(String(id || ''))
+  if (!m) return null
+  const nivel = Math.max(5, Number(m[1]) || 5)
+  const intensidade = Math.min(1, (nivel - 5) / 12)
+  const luz = Math.max(18, Math.round(70 - intensidade * 52))
+  return {
+    id,
+    label: `${nivel} ACERTOS SEGUIDOS`,
+    desc: `Sequência de ${nivel} acertos consecutivos nas previsões`,
+    color: '#5B0A0A',
+    light: `#${luz.toString(16).padStart(2, '0')}0808`,
+    dark: '#050000',
+    glow: '#EF4444',
+    labelColor: '#FCA5A5',
+    anim: 'pulse',
+    arte: 'streak',
+    nivel,
+  }
+}
+
+export function badgesDe(ids = []) {
+  return (Array.isArray(ids) ? ids : []).map(badgeDe).filter(Boolean)
+}
+
+export const STREAK_BADGE = badgeDe('streak-5')
 
 /* Legenda DEV: branco → vermelho com brilho */
 export const devLabelClass =
@@ -157,6 +186,7 @@ export function BadgeGem({ badge, size = 56 }) {
   const fortnite = arte === 'fortnite'
   const cs2 = arte === 'cs2'
   const r6 = arte === 'r6'
+  const streak = arte === 'streak'
 
   // Paleta da gema: top1 é preta com olhos laranja; as outras usam a cor da distinção
   const gemLight = cs2 ? '#4B5563' : obsidian ? '#2A2A33' : top1 ? '#3A3A44' : badge.light
@@ -168,8 +198,10 @@ export function BadgeGem({ badge, size = 56 }) {
       ? '#FFFFFF'
       : top1
         ? '#FF8A1A'
-        : '#08080e'
-  const olhoGlow = obsidian ? '#A855F7' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : null
+        : streak
+          ? '#FF2D2D'
+          : '#08080e'
+  const olhoGlow = obsidian ? '#A855F7' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : streak ? '#FF0000' : null
   const glow = badge.glow || badge.color
 
   return (
@@ -214,7 +246,10 @@ export function BadgeGem({ badge, size = 56 }) {
           {/* brilho dos olhos (top1 / obsidian / fortnite) */}
           {olhoGlow && (
             <filter id={`og-${uid}`} x="-80%" y="-80%" width="260%" height="260%">
-              <feGaussianBlur stdDeviation="2.4" result="b" />
+              <feGaussianBlur
+                stdDeviation={streak ? 2.2 + Math.min(3, ((badge.nivel || 5) - 5) * 0.35) : 2.4}
+                result="b"
+              />
               <feMerge>
                 <feMergeNode in="b" />
                 <feMergeNode in="b" />
@@ -230,14 +265,14 @@ export function BadgeGem({ badge, size = 56 }) {
             <path
               d="M42,29 Q32,20 24,6 Q20,22 30,36 Z"
               fill={`url(#fh-${uid})`}
-              stroke={top1 || obsidian ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
+              stroke={top1 || obsidian || streak ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
               strokeWidth="1.5"
               strokeLinejoin="round"
             />
             <path
               d="M58,29 Q68,20 76,6 Q80,22 70,36 Z"
               fill={`url(#fh-${uid})`}
-              stroke={top1 || obsidian ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
+              stroke={top1 || obsidian || streak ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.45)'}
               strokeWidth="1.5"
               strokeLinejoin="round"
             />
@@ -249,12 +284,12 @@ export function BadgeGem({ badge, size = 56 }) {
 
         {/* facetas do cristal (recortadas à volta) */}
         <g clipPath={`url(#fc-${uid})`}>
-          <polygon points="22,46 50,34 42,64" fill="#fff" opacity={top1 || obsidian ? '0.07' : '0.16'} />
-          <polygon points="50,34 80,50 60,66" fill="#000" opacity={top1 || obsidian ? '0.30' : '0.14'} />
-          <polygon points="20,58 42,64 34,86" fill="#fff" opacity={top1 || obsidian ? '0.05' : '0.10'} />
-          <polygon points="42,64 60,66 54,88" fill="#000" opacity={top1 || obsidian ? '0.35' : '0.20'} />
-          <polygon points="60,66 82,60 70,86" fill="#fff" opacity={top1 || obsidian ? '0.06' : '0.12'} />
-          <polygon points="32,78 72,80 50,96" fill="#000" opacity={top1 || obsidian ? '0.40' : '0.24'} />
+          <polygon points="22,46 50,34 42,64" fill="#fff" opacity={top1 || obsidian || streak ? '0.07' : '0.16'} />
+          <polygon points="50,34 80,50 60,66" fill="#000" opacity={top1 || obsidian || streak ? '0.30' : '0.14'} />
+          <polygon points="20,58 42,64 34,86" fill="#fff" opacity={top1 || obsidian || streak ? '0.05' : '0.10'} />
+          <polygon points="42,64 60,66 54,88" fill="#000" opacity={top1 || obsidian || streak ? '0.35' : '0.20'} />
+          <polygon points="60,66 82,60 70,86" fill="#fff" opacity={top1 || obsidian || streak ? '0.06' : '0.12'} />
+          <polygon points="32,78 72,80 50,96" fill="#000" opacity={top1 || obsidian || streak ? '0.40' : '0.24'} />
           {/* brilho do vidro */}
           <ellipse
             cx="36"
@@ -262,7 +297,7 @@ export function BadgeGem({ badge, size = 56 }) {
             rx="13"
             ry="8"
             fill="#fff"
-            opacity={top1 || obsidian ? '0.10' : '0.25'}
+            opacity={top1 || obsidian || streak ? '0.10' : '0.25'}
             transform="rotate(-22 36 44)"
           />
         </g>
@@ -273,7 +308,7 @@ export function BadgeGem({ badge, size = 56 }) {
           cy="58"
           r="30"
           fill="none"
-          stroke={top1 || obsidian ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.55)'}
+          stroke={top1 || obsidian || streak ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.55)'}
           strokeWidth="2.5"
         />
 

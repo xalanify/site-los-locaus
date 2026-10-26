@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import { confirmar } from '../components/Feedback'
 import {
   Wrench,
@@ -39,6 +38,7 @@ import {
   Github,
   Globe,
   HardDrive,
+  MemoryStick,
   Hexagon,
   Image,
   Joystick,
@@ -126,20 +126,25 @@ const XALANA_ACOES = {
   'xalana-a17': { nome: 'USB e input nunca dormem', desc: 'Rato/teclado respondem sempre; sem suspensão seletiva.', nivel: 'minima' },
   'xalana-a5': { nome: 'Telemetria DiagTrack parada', desc: 'Menos disco e CPU em fundo.', nivel: 'normal' },
   'xalana-a6': { nome: 'Aplicações em segundo plano suspensas', desc: 'Apps deixam de correr às costas.', nivel: 'normal' },
-  'xalana-a7': { nome: 'Xbox Game Bar e GameDVR desligados', desc: 'Sem overlay nem gravação de fundo.', nivel: 'normal' },
   'xalana-a8': { nome: 'Sugestões do Início desligadas', desc: 'Menu Início sem apps promovidas.', nivel: 'normal' },
   'xalana-a9': { nome: 'Transparência e demoras de menu desligadas', desc: 'Sem transparência; menus abrem de estalar.', nivel: 'normal' },
   'xalana-a10': { nome: 'Tarefas de diagnóstico desativadas', desc: '5 tarefas de telemetria paradas.', nivel: 'normal' },
   'xalana-a18': { nome: 'Latência: Nagle desligado', desc: 'Menos atraso de pacotes em todas as interfaces de rede.', nivel: 'normal' },
   'xalana-a19': { nome: 'DNS rápido (1.1.1.1 + 8.8.8.8)', desc: 'Resolução de sites mais rápida, cache limpa.', nivel: 'normal' },
   'xalana-a15': { nome: 'Feedback e relatórios desligados', desc: 'Painéis do Feedback, WER e avisos dos Mapas fora.', nivel: 'normal' },
-  'xalana-a11': { nome: 'Debloat: apps pré-instaladas removidas', desc: 'Xbox, Widgets, Cortana, Solitaire, Maps, etc.', nivel: 'extremo' },
-  'xalana-a12': { nome: 'Serviços pesados parados e desligados', desc: 'SysMain, Pesquisa, Xbox, DoSvc, TrkWks, Fax, Mapas...', nivel: 'extremo' },
+  'xalana-a24': { nome: 'Dicas e sugestões do Windows: desligadas', desc: 'Sem dicas, apps promovidas nem sugestões no ecrã de bloqueio.', nivel: 'normal' },
+  'xalana-a25': { nome: 'Histórico de ficheiros recentes: desligado', desc: 'O Início e o Explorador deixam de guardar recentes.', nivel: 'normal' },
+  'xalana-a11': { nome: 'Debloat: apps pré-instaladas removidas', desc: 'Widgets, Cortana, Solitaire, Maps, etc.', nivel: 'extremo' },
+  'xalana-a12': { nome: 'Serviços pesados parados e desligados', desc: 'SysMain, Pesquisa, DoSvc, TrkWks, Fax, Mapas...', nivel: 'extremo' },
   'xalana-a13': { nome: 'Perfil multimédia/jogo sem limitações', desc: 'Rede sem limitação; jogos em prioridade alta.', nivel: 'extremo' },
   'xalana-a20': { nome: 'Tuning TCP no máximo', desc: 'RSS ligado, timestamps e RSC fora, ACKs rápidos.', nivel: 'extremo' },
   'xalana-a21': { nome: 'GPU prioritária nos jogos', desc: 'Windows dá a GPU dedicada sempre aos jogos.', nivel: 'extremo' },
   'xalana-a14': { nome: 'Prioridade de processos: desempenho', desc: 'CPU dá prioridade a correr programas.', nivel: 'extremo' },
   'xalana-a22': { nome: 'Hibernação e arranque rápido desligados', desc: 'Liberta hiberfil.sys; o PC desliga mesmo.', nivel: 'extremo' },
+  'xalana-a26': { nome: 'Power throttling desligado', desc: 'O Windows deixa de limitar processos em segundo plano.', nivel: 'extremo' },
+  'xalana-a27': { nome: 'Arranque mais rápido: timeout 3s', desc: 'O menu de arranque espera apenas 3 segundos.', nivel: 'extremo' },
+  'xalana-a28': { nome: 'ID de publicidade desligado', desc: 'Menos rastreio e publicidade personalizada.', nivel: 'extremo' },
+  'xalana-a23': { nome: 'Atraso de arranque das apps: 0', desc: 'As apps abrem sem o atraso artificial do Windows.', nivel: 'minima' },
 }
 
 const PERIGO = {
@@ -181,6 +186,14 @@ export default function FerramentasPage({ isAdmin = false }) {
   const [instalados, setInstalados] = useState(new Set())
   // filtro: mostrar só os programas já instalados no PC
   const [soInstalados, setSoInstalados] = useState(false)
+  // ponto de restauro antes de otimizar (opcional, desligado por defeito)
+  const [restauroAtivo, setRestauroAtivo] = useState(() => {
+    try {
+      return localStorage.getItem('locaus:restauro') === '1'
+    } catch {
+      return false
+    }
+  })
   const [aDetectar, setADetectar] = useState(false)
   const [logosFalha, setLogosFalha] = useState(new Set())
   // fila de execução (as selecionadas correm uma de cada vez)
@@ -201,19 +214,20 @@ export default function FerramentasPage({ isAdmin = false }) {
   /* Ações selecionadas por nível do Otimizador by Xalana.
      Cada nível PARTE do anterior: normal = mínimo + extras,
      extremo = tudo. O que se corrige depois é só exceção. */
-  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4']
+  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4', 'xalana-a23']
   const PRESET_XALANA = {
     minima: XALANA_MINIMA,
     normal: [
       ...XALANA_MINIMA,
-      'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9',
-      'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15',
+      'xalana-a5', 'xalana-a6', 'xalana-a8', 'xalana-a9',
+      'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15', 'xalana-a24', 'xalana-a25',
     ],
     extremo: [
       ...XALANA_MINIMA,
-      'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9',
-      'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15',
+      'xalana-a5', 'xalana-a6', 'xalana-a8', 'xalana-a9',
+      'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15', 'xalana-a24', 'xalana-a25',
       'xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a20', 'xalana-a21', 'xalana-a14', 'xalana-a22',
+      'xalana-a26', 'xalana-a27', 'xalana-a28',
     ],
   }
   const [xalanaSel, setXalanaSel] = useState(PRESET_XALANA)
@@ -560,7 +574,7 @@ export default function FerramentasPage({ isAdmin = false }) {
         return
       }
       try {
-        const job = await pedirTrabalho({ tipo: 'tool', id, arg, acoes })
+        const job = await pedirTrabalho({ tipo: 'tool', id, arg, acoes, restauro: restauroAtivo })
         setNomeCorrer(job.nome || alvo?.nome || 'Ferramenta')
         seguirTrabalho(job)
       } catch (e) {
@@ -573,7 +587,7 @@ export default function FerramentasPage({ isAdmin = false }) {
       const r = await fetch('/api/ferramentas/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ id, arg, acoes }),
+        body: JSON.stringify({ id, arg, acoes, restauro: restauroAtivo }),
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok) {
@@ -711,15 +725,6 @@ export default function FerramentasPage({ isAdmin = false }) {
   const podeLocal = dados?.podeLocal
   const podeExecutar = Boolean(podeLocal || agente.online)
 
-  if (!isAdmin) {
-    return (
-      <EmDesenvolvimento
-        titulo="Ferramentas Windows"
-        descricao="As ferramentas de otimização, limpeza e diagnóstico ainda estão a ser testadas. Em breve ficam disponíveis para todos os membros."
-      />
-    )
-  }
-
   /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
   /* A página só abre quando a app deste utilizador está ligada ao site
      (ou quando o servidor corre com PowerShell local). A verificação
@@ -784,6 +789,43 @@ export default function FerramentasPage({ isAdmin = false }) {
               Não removemos a <b>Microsoft Store</b> nem a <b>Xbox</b>. Podes remover Cortana,
               OneDrive, apps de consumo e limpar a RAM/cache em segurança.
             </span>
+          </div>
+          <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] font-bold text-gray-300">
+            <input
+              type="checkbox"
+              checked={restauroAtivo}
+              onChange={(e) => {
+                const v = e.target.checked
+                setRestauroAtivo(v)
+                try {
+                  localStorage.setItem('locaus:restauro', v ? '1' : '0')
+                } catch {}
+              }}
+              className="h-4 w-4 rounded border border-white/20 bg-white/10"
+            />
+            Criar ponto de restauro antes de otimizar
+            <span className="font-semibold text-gray-500">(recomendado)</span>
+          </label>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { nome: 'Limpar RAM', busca: 'Limpar RAM', Icone: MemoryStick },
+              { nome: 'Temporários', busca: 'Limpar ficheiros temporários', Icone: Eraser },
+              { nome: 'DNS', busca: 'Limpar a cache de DNS', Icone: Globe },
+              { nome: 'Reciclagem', busca: 'Esvaziar a reciclagem', Icone: Trash2 },
+            ].map((q) => (
+              <button
+                key={q.nome}
+                type="button"
+                onClick={() => {
+                  setCat('Limpeza')
+                  setSubCat('Todas')
+                  setBusca(q.busca)
+                }}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2 py-2 text-[10px] font-black uppercase tracking-wide text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <q.Icone className="h-3.5 w-3.5 text-violet-300" /> {q.nome}
+              </button>
+            ))}
           </div>
         </motion.div>
 

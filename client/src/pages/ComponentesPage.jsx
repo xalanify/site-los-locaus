@@ -28,6 +28,11 @@ import {
   Sparkles,
   Store,
   SlidersHorizontal,
+  History,
+  Bell,
+  Gauge,
+  TrendingDown,
+  Trash2,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import { authHeaders } from '../lib/auth'
@@ -61,6 +66,40 @@ const ICONES = {
 
 const eur = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
 const precoFmt = (v) => (Number(v) > 0 ? eur.format(Number(v)) : '—')
+
+/* Pesquisa por marca dentro de uma categoria — evita juntar termos
+   contraditórios como "geforce rtx radeon" quando se escolhe AMD. */
+const MARCA_QUERY = {
+  gpu: {
+    AMD: 'AMD Radeon RX',
+    NVIDIA: 'NVIDIA GeForce RTX',
+    Intel: 'Intel Arc',
+  },
+  cpu: {
+    AMD: 'AMD Ryzen',
+    Intel: 'Intel Core',
+  },
+  motherboard: {
+    ASUS: 'ASUS motherboard',
+    MSI: 'MSI motherboard',
+    Gigabyte: 'Gigabyte motherboard',
+    ASRock: 'ASRock motherboard',
+  },
+  rato: {
+    Logitech: 'Logitech mouse',
+    Razer: 'Razer mouse',
+    Lamzu: 'Lamzu mouse',
+    Pulsar: 'Pulsar mouse',
+    Zowie: 'Zowie mouse',
+    WLmouse: 'WLmouse',
+  },
+  teclado: {
+    Wooting: 'Wooting keyboard',
+    Razer: 'Razer keyboard',
+    Keychron: 'Keychron keyboard',
+    Logitech: 'Logitech keyboard',
+  },
+}
 
 const dataFmt = (iso) => {
   if (!iso) return null
@@ -110,6 +149,12 @@ export default function ComponentesPage({ user }) {
   const [carregandoVendidos, setCarregandoVendidos] = useState(false)
   const [marcasAtivas, setMarcasAtivas] = useState([])
   const [ramTipo, setRamTipo] = useState('todas')
+  const [stockFiltro, setStockFiltro] = useState('todas')
+  const [soPromocoes, setSoPromocoes] = useState(false)
+  const [historicoProduto, setHistoricoProduto] = useState(null)
+  const [alertaProduto, setAlertaProduto] = useState(null)
+  const [alertas, setAlertas] = useState([])
+  const [bottleneckAberto, setBottleneckAberto] = useState(false)
 
   const carregar = async () => {
     setCarregando(true)
@@ -131,6 +176,20 @@ export default function ComponentesPage({ user }) {
     else setCarregando(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin])
+
+  useEffect(() => {
+    if (!isAdmin) return undefined
+    let vivo = true
+    fetch('/api/componentes/alertas', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => vivo && setAlertas(Array.isArray(d?.alertas) ? d.alertas : []))
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [isAdmin])
+
+  const alertaDe = (id) => alertas.find((a) => a.produto_id === id) || null
 
   useEffect(() => {
     if (!aviso) return undefined
@@ -158,7 +217,11 @@ export default function ComponentesPage({ user }) {
   }, [lojas, tipo])
 
   const modoBusca = Boolean(qAtiva) || categoria !== 'todas'
-  const termo = qAtiva || (categoria !== 'todas' ? (dados?.categoriaQuery || {})[categoria] || categoria : '')
+  const termoBase = qAtiva || (categoria !== 'todas' ? (dados?.categoriaQuery || {})[categoria] || categoria : '')
+  const termo =
+    !qAtiva && categoria !== 'todas' && marcasAtivas.length === 1
+      ? MARCA_QUERY[categoria]?.[marcasAtivas[0]] || `${marcasAtivas[0]} ${termoBase}`
+      : termoBase
 
   // Pesquisa ao vivo nas lojas
   useEffect(() => {
@@ -190,7 +253,7 @@ export default function ComponentesPage({ user }) {
       vivo = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, modoBusca, termo, tipo, categoria, lojasAtivas.join(',')])
+  }, [isAdmin, modoBusca, termo, tipo, categoria, lojasAtivas.join(','), marcasAtivas.join(',')])
 
   // Mais vendidos nas lojas (entrada da página, sem pesquisa)
   useEffect(() => {
@@ -224,6 +287,16 @@ export default function ComponentesPage({ user }) {
 
   const passaFiltros = (item) => {
     if (marcasAtivas.length && !marcasAtivas.includes(item.marca)) return false
+    const stockItem =
+      item.stock ||
+      (item.maisBarato && item.maisBarato.stock) ||
+      (item.precos || []).find((p) => p.stock)?.stock ||
+      ''
+    if (stockFiltro !== 'todas' && stockItem !== stockFiltro) return false
+    const desconto =
+      Number(item.desconto) ||
+      Math.max(0, ...(item.precos || []).map((p) => Number(p.desconto) || 0))
+    if (soPromocoes && desconto <= 0) return false
     return ramCombina(item)
   }
 
@@ -237,7 +310,7 @@ export default function ComponentesPage({ user }) {
         (!marcasAtivas.length || marcasAtivas.includes(p.marca)) &&
         (categoria !== 'ram' || ramTipo === 'todas' || `${p.nome} ${p.spec}`.toLowerCase().replace(/×/g, 'x').replace(/\s+/g, '').includes(ramTipo)),
     )
-  }, [dados, tipo, categoria, marcasAtivas, ramTipo])
+  }, [dados, tipo, categoria, marcasAtivas, ramTipo, stockFiltro, soPromocoes])
 
   const marcasDisponiveis = useMemo(() => {
     const set = new Set()
@@ -259,7 +332,7 @@ export default function ComponentesPage({ user }) {
     else arr.sort((a, b) => b.pontos - a.pontos || a.preco - b.preco)
     return arr
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resultados, ordenar, marcasAtivas, ramTipo, categoria])
+  }, [resultados, ordenar, marcasAtivas, ramTipo, categoria, stockFiltro, soPromocoes])
 
   const maisBaratoBusca = useMemo(() => {
     if (!resultadosFiltrados.length) return null
@@ -271,7 +344,7 @@ export default function ComponentesPage({ user }) {
       .filter(passaFiltros)
       .filter((r) => !lojasAtivas.length || lojasAtivas.includes(r.loja))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maisVendidos, marcasAtivas, ramTipo, categoria, lojasAtivas.join(',')])
+  }, [maisVendidos, marcasAtivas, ramTipo, categoria, lojasAtivas.join(','), stockFiltro, soPromocoes])
 
   const maisBaratoVendidos = useMemo(() => {
     if (!vendidosFiltrados.length) return null
@@ -288,6 +361,8 @@ export default function ComponentesPage({ user }) {
     setLojasAtivas([])
     setMarcasAtivas([])
     setRamTipo('todas')
+    setStockFiltro('todas')
+    setSoPromocoes(false)
     setMaisVendidos([])
   }
 
@@ -368,6 +443,13 @@ export default function ComponentesPage({ user }) {
           Pesquisa qualquer produto nas lojas — GlobalData, PCComponentes, MaxGaming e LDLC — ou
           vê os destaques com comparação de preços. A loja mais barata fica sempre destacada.
         </p>
+        <button
+          type="button"
+          onClick={() => setBottleneckAberto(true)}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-violet-400/25 bg-violet-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-violet-200 transition-colors hover:bg-violet-500/20"
+        >
+          <Gauge className="h-3.5 w-3.5" /> Calculadora de bottleneck
+        </button>
       </motion.div>
 
       {/* Tipo */}
@@ -498,6 +580,42 @@ export default function ComponentesPage({ user }) {
                 </div>
               </>
             )}
+
+            <p className="mb-2 mt-4 text-[10px] font-black uppercase tracking-wider text-gray-500">
+              Stock e promoções
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {[
+                { id: 'todas', nome: 'Tudo' },
+                { id: 'stock', nome: 'Em stock' },
+                { id: 'encomenda', nome: 'Encomenda' },
+                { id: 'sem', nome: 'Sem stock' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setStockFiltro(s.id)}
+                  className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                    stockFiltro === s.id
+                      ? 'bg-white text-black'
+                      : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  {s.nome}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setSoPromocoes((v) => !v)}
+                className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
+                  soPromocoes
+                    ? 'bg-emerald-500 text-black'
+                    : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <TrendingDown className="h-2.5 w-2.5" /> Promoções
+              </button>
+            </div>
 
             {marcasDisponiveis.length > 0 && (
               <>
@@ -729,9 +847,12 @@ export default function ComponentesPage({ user }) {
                   key={p.id}
                   produto={p}
                   lojas={lojas}
+                  alerta={alertaDe(p.id)}
                   aAtualizar={aAtualizar.includes(p.id)}
                   onAtualizar={() => atualizar([p.id])}
                   onEditar={() => setEditar(p)}
+                  onHistorico={() => setHistoricoProduto(p)}
+                  onAlerta={() => setAlertaProduto(p)}
                 />
               ))}
             </div>
@@ -759,6 +880,27 @@ export default function ComponentesPage({ user }) {
             }}
           />
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {historicoProduto && (
+          <ModalHistorico produto={historicoProduto} onFechar={() => setHistoricoProduto(null)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {alertaProduto && (
+          <ModalAlerta
+            produto={alertaProduto}
+            alerta={alertaDe(alertaProduto.id)}
+            onFechar={() => setAlertaProduto(null)}
+            onGuardado={(lista) => setAlertas(lista || [])}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {bottleneckAberto && <BottleneckModal onFechar={() => setBottleneckAberto(false)} />}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -814,6 +956,26 @@ function CartaoLoja({ r, maisBarato }) {
               {r.lojaNome}
             </span>
             <span className="text-xl font-black text-white">{precoFmt(r.preco)}</span>
+            <span className="mt-1 flex flex-wrap items-center gap-1">
+              {r.stock && (
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide ${
+                    r.stock === 'stock'
+                      ? 'bg-emerald-400/15 text-emerald-300'
+                      : r.stock === 'sem'
+                        ? 'bg-red-400/15 text-red-300'
+                        : 'bg-amber-400/15 text-amber-300'
+                  }`}
+                >
+                  {r.stock === 'stock' ? 'Em stock' : r.stock === 'sem' ? 'Sem stock' : 'Encomenda'}
+                </span>
+              )}
+              {Number(r.desconto) > 0 && (
+                <span className="rounded-full bg-red-400/15 px-1.5 py-0.5 text-[8px] font-black text-red-300">
+                  -{r.desconto}%
+                </span>
+              )}
+            </span>
           </div>
           <a
             href={r.url}
@@ -831,7 +993,7 @@ function CartaoLoja({ r, maisBarato }) {
 
 /* ---------------- Cartão de destaque (comparação) ---------------- */
 
-function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
+function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEditar, onHistorico, onAlerta }) {
   const Icone = ICONES[produto.categoria] || Cpu
   const maisBarato = produto.maisBarato
   const precos = new Map((produto.precos || []).map((p) => [p.loja, p]))
@@ -861,6 +1023,24 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
           {produto.marca}
         </span>
         <div className="absolute right-2 top-2 flex gap-1">
+          <button
+            type="button"
+            onClick={onHistorico}
+            title="Histórico de preços"
+            className="grid h-7 w-7 place-items-center rounded-full bg-black/60 text-gray-300 ring-1 ring-white/10 transition-colors hover:bg-black hover:text-white"
+          >
+            <History className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onAlerta}
+            title={alerta ? `Alerta ativo: ${precoFmt(alerta.preco_alvo)}` : 'Criar alerta de descida'}
+            className={`grid h-7 w-7 place-items-center rounded-full ring-1 ring-white/10 transition-colors hover:bg-black ${
+              alerta ? 'bg-amber-400/90 text-black' : 'bg-black/60 text-gray-300 hover:text-white'
+            }`}
+          >
+            <Bell className="h-3.5 w-3.5" />
+          </button>
           <button
             type="button"
             onClick={onAtualizar}
@@ -907,6 +1087,35 @@ function CartaoProduto({ produto, lojas, aAtualizar, onAtualizar, onEditar }) {
                   >
                     abrir <ExternalLink className="h-3 w-3" />
                   </a>
+                )}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                {produto.stock && (
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide ${
+                      produto.stock === 'stock'
+                        ? 'bg-emerald-400/15 text-emerald-300'
+                        : produto.stock === 'sem'
+                          ? 'bg-red-400/15 text-red-300'
+                          : 'bg-amber-400/15 text-amber-300'
+                    }`}
+                  >
+                    {produto.stock === 'stock'
+                      ? 'Em stock'
+                      : produto.stock === 'sem'
+                        ? 'Sem stock'
+                        : 'Encomenda'}
+                  </span>
+                )}
+                {Number(produto.desconto) > 0 && (
+                  <span className="rounded-full bg-red-400/15 px-1.5 py-0.5 text-[8px] font-black text-red-300">
+                    -{produto.desconto}%
+                  </span>
+                )}
+                {alerta && (
+                  <span className="rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[8px] font-black text-amber-300">
+                    Alerta {precoFmt(alerta.preco_alvo)}
+                  </span>
                 )}
               </div>
             </>
@@ -1138,6 +1347,431 @@ function ModalPrecos({ produto, lojas, onFechar, onGuardado }) {
             {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
             Guardar
           </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+/* ---------------- Histórico de preços ---------------- */
+
+function ModalHistorico({ produto, onFechar }) {
+  const [pontos, setPontos] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let vivo = true
+    setLoading(true)
+    fetch(`/api/componentes/historico?produto_id=${encodeURIComponent(produto.id)}`, {
+      headers: authHeaders(),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => vivo && setPontos(Array.isArray(d?.pontos) ? d.pontos : []))
+      .catch(() => vivo && setPontos([]))
+      .finally(() => vivo && setLoading(false))
+    return () => {
+      vivo = false
+    }
+  }, [produto.id])
+
+  const serie = useMemo(() => {
+    const porDia = new Map()
+    for (const p of pontos) {
+      const d = new Date(p.criado_em)
+      if (Number.isNaN(d.getTime())) continue
+      const k = d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' })
+      const v = Number(p.preco) || 0
+      if (v > 0 && (!porDia.has(k) || v < porDia.get(k))) porDia.set(k, v)
+    }
+    return [...porDia.entries()].map(([data, preco]) => ({ data, preco }))
+  }, [pontos])
+
+  const vals = serie.map((x) => x.preco)
+  const min = vals.length ? Math.min(...vals) : 0
+  const max = vals.length ? Math.max(...vals) : 0
+  const atual = vals.length ? vals[vals.length - 1] : 0
+  const W = 560
+  const H = 170
+  const pad = 18
+  const span = max - min || 1
+  const coords = serie.map((p, i) => {
+    const x = serie.length === 1 ? W / 2 : pad + (i * (W - pad * 2)) / (serie.length - 1)
+    const y = H - pad - ((p.preco - min) / span) * (H - pad * 2)
+    return `${x},${y}`
+  })
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[125] flex items-end justify-center bg-black/80 p-0 sm:items-center sm:p-5"
+      onClick={onFechar}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 30, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+      >
+        <div className="mb-1 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-black text-white">Histórico de preços</h2>
+            <p className="truncate text-[11px] font-semibold text-gray-500">
+              {produto.marca} · {produto.nome}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="rounded-full bg-white/[0.12] p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+            aria-label="Fechar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+          </div>
+        ) : !serie.length ? (
+          <p className="py-10 text-center text-sm text-gray-400">
+            Ainda não há alterações registadas. O histórico começa a partir de agora — sempre que um
+            preço mudar, fica guardado aqui.
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-center">
+                <p className="text-[9px] font-black uppercase tracking-wider text-gray-500">Atual</p>
+                <p className="text-sm font-black text-white">{precoFmt(atual)}</p>
+              </div>
+              <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/[0.06] p-2.5 text-center">
+                <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Mínimo</p>
+                <p className="text-sm font-black text-emerald-300">{precoFmt(min)}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-center">
+                <p className="text-[9px] font-black uppercase tracking-wider text-gray-500">Máximo</p>
+                <p className="text-sm font-black text-gray-200">{precoFmt(max)}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-xl border border-white/10 bg-black/30 p-2">
+              <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full">
+                <defs>
+                  <linearGradient id="hist-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {serie.length > 1 && (
+                  <polygon
+                    points={`${pad},${H - pad} ${coords.join(' ')} ${W - pad},${H - pad}`}
+                    fill="url(#hist-fill)"
+                  />
+                )}
+                <polyline
+                  points={coords.join(' ')}
+                  fill="none"
+                  stroke="#A78BFA"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+                {coords.map((c, i) => {
+                  const [x, y] = c.split(',')
+                  return <circle key={i} cx={x} cy={y} r="3" fill="#C4B5FD" />
+                })}
+              </svg>
+              <div className="flex justify-between px-2 pb-1 text-[9px] font-bold text-gray-600">
+                <span>{serie[0].data}</span>
+                <span>{serie[serie.length - 1].data}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-1">
+              {serie
+                .slice(-6)
+                .reverse()
+                .map((p) => (
+                  <div
+                    key={p.data}
+                    className="flex items-center justify-between rounded-lg bg-white/[0.03] px-2.5 py-1.5 text-[11px]"
+                  >
+                    <span className="font-semibold text-gray-400">{p.data}</span>
+                    <span className="font-black text-gray-200">{precoFmt(p.preco)}</span>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
+      </motion.div>
+    </motion.div>
+  )
+}
+
+/* ---------------- Alerta de descida ---------------- */
+
+function ModalAlerta({ produto, alerta, onFechar, onGuardado }) {
+  const [preco, setPreco] = useState(
+    alerta
+      ? String(alerta.preco_alvo).replace('.', ',')
+      : produto.maisBarato
+        ? String(produto.maisBarato.preco).replace('.', ',')
+        : '',
+  )
+  const [guardando, setGuardando] = useState(false)
+  const [erro, setErro] = useState('')
+
+  const guardar = async () => {
+    const n = Number(String(preco).replace(',', '.'))
+    if (!Number.isFinite(n) || n <= 0) {
+      setErro('Escreve um preço válido.')
+      return
+    }
+    setGuardando(true)
+    setErro('')
+    try {
+      const r = await fetch('/api/componentes/alerta', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ produto_id: produto.id, preco_alvo: n }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não deu para guardar.')
+      onGuardado(d?.alertas || [])
+      onFechar()
+    } catch (e) {
+      setErro(e.message || 'Não deu para guardar.')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const remover = async () => {
+    setGuardando(true)
+    try {
+      const r = await fetch(
+        `/api/componentes/alerta?produto_id=${encodeURIComponent(produto.id)}`,
+        { method: 'DELETE', headers: authHeaders() },
+      )
+      const d = await r.json().catch(() => null)
+      onGuardado(d?.alertas || [])
+      onFechar()
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[125] flex items-end justify-center bg-black/80 p-0 sm:items-center sm:p-5"
+      onClick={onFechar}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 30, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+      >
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-black text-white">Alerta de descida</h2>
+            <p className="truncate text-[11px] font-semibold text-gray-500">
+              {produto.marca} · {produto.nome}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="rounded-full bg-white/[0.12] p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+            aria-label="Fechar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <p className="mb-3 text-[12px] leading-relaxed text-gray-400">
+          Avisamos-te no sino quando o preço mais barato descer até ao teu alvo.
+          {produto.maisBarato ? ` Agora está a ${precoFmt(produto.maisBarato.preco)}.` : ''}
+        </p>
+
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Euro className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <input
+              value={preco}
+              onChange={(e) => setPreco(e.target.value)}
+              inputMode="decimal"
+              placeholder="Preço alvo"
+              className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-9 pr-3 text-sm font-bold text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={guardar}
+            disabled={guardando}
+            className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-xs font-black text-white hover:bg-violet-400 disabled:opacity-60"
+          >
+            {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+            Guardar
+          </button>
+        </div>
+
+        {erro && (
+          <p className="mt-2 rounded-lg bg-red-500/15 px-3 py-2 text-[11px] font-bold text-red-300">
+            {erro}
+          </p>
+        )}
+
+        {alerta && (
+          <button
+            type="button"
+            onClick={remover}
+            disabled={guardando}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-red-400/20 bg-red-500/10 py-2 text-[11px] font-black text-red-300 hover:bg-red-500/20 disabled:opacity-60"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Remover alerta
+          </button>
+        )}
+      </motion.div>
+    </motion.div>
+  )
+}
+
+/* ---------------- Calculadora de bottleneck ---------------- */
+
+const CPUS_BOTTLENECK = [
+  { nome: 'Ryzen 7 9800X3D', score: 100 },
+  { nome: 'Ryzen 7 9700X', score: 88 },
+  { nome: 'Ryzen 5 7600X', score: 78 },
+  { nome: 'Ryzen 5 9600X', score: 84 },
+  { nome: 'Core Ultra 9 285K', score: 96 },
+  { nome: 'Core i5-14600K', score: 82 },
+  { nome: 'Core i7-14700K', score: 90 },
+]
+
+const GPUS_BOTTLENECK = [
+  { nome: 'RTX 5090', score: 100 },
+  { nome: 'RTX 5080', score: 90 },
+  { nome: 'RTX 5070 Ti', score: 82 },
+  { nome: 'RTX 5070', score: 72 },
+  { nome: 'RTX 5060 Ti', score: 60 },
+  { nome: 'RX 9070 XT', score: 80 },
+  { nome: 'RX 9060 XT', score: 62 },
+]
+
+function BottleneckModal({ onFechar }) {
+  const [cpuIdx, setCpuIdx] = useState(0)
+  const [gpuIdx, setGpuIdx] = useState(2)
+  const cpu = CPUS_BOTTLENECK[cpuIdx]
+  const gpu = GPUS_BOTTLENECK[gpuIdx]
+  const diff = gpu.score - cpu.score
+  const pct = Math.round((Math.abs(diff) / Math.max(gpu.score, cpu.score)) * 100)
+  const lado = diff > 8 ? 'CPU' : diff < -8 ? 'GPU' : 'Equilibrado'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[125] flex items-end justify-center bg-black/80 p-0 sm:items-center sm:p-5"
+      onClick={onFechar}
+      role="presentation"
+    >
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 30, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+      >
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-base font-black text-white">
+              <Gauge className="h-4 w-4 text-violet-300" /> Calculadora de bottleneck
+            </h2>
+            <p className="text-[11px] font-semibold text-gray-500">
+              Estimativa rápida para 1080p/1440p. Depende sempre do jogo e dos settings.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="rounded-full bg-white/[0.12] p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+            aria-label="Fechar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-gray-500">
+              Processador
+            </span>
+            <select
+              value={cpuIdx}
+              onChange={(e) => setCpuIdx(Number(e.target.value))}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-violet-500/50 focus:outline-none"
+            >
+              {CPUS_BOTTLENECK.map((c, i) => (
+                <option key={c.nome} value={i} className="bg-[#171122]">
+                  {c.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-[10px] font-black uppercase tracking-wider text-gray-500">
+              Placa gráfica
+            </span>
+            <select
+              value={gpuIdx}
+              onChange={(e) => setGpuIdx(Number(e.target.value))}
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-violet-500/50 focus:outline-none"
+            >
+              {GPUS_BOTTLENECK.map((g, i) => (
+                <option key={g.nome} value={i} className="bg-[#171122]">
+                  {g.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+          <p className="text-[10px] font-black uppercase tracking-wider text-gray-500">
+            Resultado estimado
+          </p>
+          <p className="mt-1 text-3xl font-black text-white">{pct}%</p>
+          <p className="text-sm font-bold text-violet-300">
+            {lado === 'Equilibrado'
+              ? 'Configuração equilibrada'
+              : `Bottleneck do ${lado}`}
+          </p>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className={`h-full rounded-full ${
+                pct > 20 ? 'bg-amber-400' : pct > 10 ? 'bg-violet-400' : 'bg-emerald-400'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
+            />
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
+            {lado === 'CPU'
+              ? 'A CPU está a limitar a gráfica. Um CPU mais forte deve dar mais FPS.'
+              : lado === 'GPU'
+                ? 'A gráfica está a limitar o CPU. Baixar settings ou subir de GPU ajuda.'
+                : 'Boa combinação: CPU e GPU estão próximos em desempenho.'}
+          </p>
         </div>
       </motion.div>
     </motion.div>

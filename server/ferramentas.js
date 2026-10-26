@@ -1363,16 +1363,90 @@ try {
   Write-Output '  [ok] hiberfil.sys libertado; o PC desliga mesmo.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
+  'xalana-a23': {
+    nome: 'Atraso de arranque das apps: 0',
+    desc: 'As apps abrem sem o atraso artificial do Windows.',
+    nivel: 'minima',
+    script: `Write-Output 'Atraso de arranque das apps: 0'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name StartupDelayInMSec -Value 0 -Type DWord
+  Write-Output '  [ok] Apps arrancam sem atraso artificial.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a24': {
+    nome: 'Dicas e sugestões do Windows: desligadas',
+    desc: 'Sem dicas, apps promovidas nem ecrã de bloqueio com sugestões.',
+    nivel: 'normal',
+    script: `Write-Output 'Dicas e sugestoes do Windows: desligadas'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name SoftLandingEnabled -Value 0 -Type DWord
+  Set-ItemProperty -Path $p -Name SubscribedContent-338387Enabled -Value 0 -Type DWord
+  Set-ItemProperty -Path $p -Name RotatingLockScreenOverlayEnabled -Value 0 -Type DWord
+  Write-Output '  [ok] Sem dicas/sugestoes do Windows.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a25': {
+    nome: 'Histórico de ficheiros recentes: desligado',
+    desc: 'O Início e o Explorador deixam de guardar ficheiros recentes.',
+    nivel: 'normal',
+    script: `Write-Output 'Historico de ficheiros recentes: desligado'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced'
+  Set-ItemProperty -Path $p -Name Start_TrackDocs -Value 0 -Type DWord
+  Write-Output '  [ok] Inicio sem historico de ficheiros recentes.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a26': {
+    nome: 'Power throttling desligado',
+    desc: 'O Windows deixa de limitar processos em segundo plano.',
+    nivel: 'extremo',
+    script: `Write-Output 'Power throttling: desligado'
+try {
+  $p = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name PowerThrottlingOff -Value 1 -Type DWord
+  Write-Output '  [ok] Windows deixa de limitar processos em segundo plano.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a27': {
+    nome: 'Arranque mais rápido: timeout 3s',
+    desc: 'O menu de arranque espera apenas 3 segundos.',
+    nivel: 'extremo',
+    script: `Write-Output 'Arranque mais rapido: timeout 3s'
+try {
+  bcdedit /timeout 3 | Out-Null
+  Write-Output '  [ok] Menu de arranque espera 3s.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+  'xalana-a28': {
+    nome: 'ID de publicidade desligado',
+    desc: 'Menos rastreio/publicidade personalizada.',
+    nivel: 'extremo',
+    script: `Write-Output 'ID de publicidade: desligado'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name Enabled -Value 0 -Type DWord
+  $q = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo'
+  New-Item -Path $q -Force | Out-Null
+  Set-ItemProperty -Path $q -Name DisabledByGroupPolicy -Value 1 -Type DWord
+  Write-Output '  [ok] ID de publicidade desligado.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
 };
 
 /* Ordem das ações por nível (para mostrar no frontend). */
 const XALANA_NIVEIS = {
-  minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4'],
+  minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4', 'xalana-a23'],
   normal: [
-    'xalana-a5', 'xalana-a6', 'xalana-a7', 'xalana-a8', 'xalana-a9',
-    'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15',
+    'xalana-a5', 'xalana-a6', 'xalana-a8', 'xalana-a9',
+    'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15', 'xalana-a24', 'xalana-a25',
   ],
-  extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a20', 'xalana-a21', 'xalana-a14', 'xalana-a22'],
+  extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a20', 'xalana-a21', 'xalana-a14', 'xalana-a22', 'xalana-a26', 'xalana-a27', 'xalana-a28'],
 };
 
 const XALANA_HEADER = `Write-Output '=== OTIMIZADOR BY XALANA ==='
@@ -1638,8 +1712,10 @@ FERRAMENTAS.push({
   perigo: 'baixo',
   tempo: 90000,
   cmd: `$ErrorActionPreference='Continue'
-$antes = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
-Write-Output ("RAM livre antes: {0} MB" -f $antes)
+$memAntes = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
+$cacheAntes = if ($memAntes) { [math]::Round($memAntes.CacheBytes/1MB) } else { 0 }
+$livreAntes = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
+Write-Output ("RAM livre antes: {0} MB - cache do sistema: {1} MB" -f $livreAntes, $cacheAntes)
 $code = @'
 using System;
 using System.Runtime.InteropServices;
@@ -1651,13 +1727,17 @@ public class LocausMem {
 }
 '@
 try { Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue } catch {}
-try {
+function Clear-MemList([int]$cmd) {
   $info = [System.Runtime.InteropServices.Marshal]::AllocHGlobal(4)
-  [System.Runtime.InteropServices.Marshal]::WriteInt32($info, 4)
+  [System.Runtime.InteropServices.Marshal]::WriteInt32($info, $cmd)
   [LocausMem]::NtSetSystemInformation(80, $info, 4) | Out-Null
   [System.Runtime.InteropServices.Marshal]::FreeHGlobal($info)
-  Write-Output 'Standby memory limpa.'
-} catch { Write-Output ('Standby: ' + $_.Exception.Message) }
+}
+$limpos = 0
+foreach ($cmd in @(2,3,4,5,6)) {
+  try { Clear-MemList $cmd; $limpos++ } catch {}
+}
+Write-Output ("Listas de memoria limpas: {0}/5 (working sets, modified, standby, prioridade 0 e baixa)." -f $limpos)
 $n = 0
 Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
   try { if ([LocausMem]::EmptyWorkingSet($_.Handle) -ne 0) { $n++ } } catch {}
@@ -1673,12 +1753,17 @@ public class LocausCache {
 }
 '@
   Add-Type -TypeDefinition $sig -ErrorAction SilentlyContinue
-  [LocausCache]::SetSystemFileCacheSize([IntPtr](-1), [IntPtr](-1), 0) | Out-Null
-  Write-Output 'Cache de ficheiros do sistema libertada.'
+  [LocausCache]::SetSystemFileCacheSize([IntPtr]0, [IntPtr]0, 0) | Out-Null
+  Write-Output 'Cache de ficheiros do sistema limpa.'
 } catch { Write-Output ('Cache: ' + $_.Exception.Message) }
-Start-Sleep -Milliseconds 600
-$depois = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
-Write-Output ("RAM livre depois: {0} MB (libertados {1} MB)" -f $depois, ($depois - $antes))`,
+Start-Sleep -Milliseconds 800
+foreach ($cmd in @(4,5,6)) { try { Clear-MemList $cmd } catch {} }
+Start-Sleep -Milliseconds 500
+$memDepois = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
+$cacheDepois = if ($memDepois) { [math]::Round($memDepois.CacheBytes/1MB) } else { 0 }
+$livreDepois = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
+Write-Output ("RAM livre depois: {0} MB (libertados {1} MB)" -f $livreDepois, ($livreDepois - $livreAntes))
+Write-Output ("Cache do sistema: {0} MB -> {1} MB (libertados {2} MB)" -f $cacheAntes, $cacheDepois, ($cacheAntes - $cacheDepois))`,
 });
 
 /* ---------------------------------------------------------------
@@ -1924,7 +2009,7 @@ let procAtual = null;
 /* Prepara o comando sem correr. É usado pelo agente local quando o
    site está na nuvem: o servidor monta o script (só a partir do
    catálogo, nunca a partir de texto do browser) e o PC executa-o. */
-function preparar(id, arg, soAdmin, acoes) {
+function preparar(id, arg, soAdmin, acoes, restauro = false) {
   const f = FERRAMENTAS.find((x) => x.id === id);
   if (!f) return { ok: false, erro: 'Ferramenta desconhecida.' };
   if (f.soAdmin && !soAdmin) {
@@ -1976,6 +2061,19 @@ Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
     cmd = cmd.replace('{{DISCO}}', v);
   }
 
+  if (
+    restauro &&
+    id !== 'scan-virus' &&
+    !String(id).startsWith('scan') &&
+    ['Otimizador by Xalana', 'Limpeza', 'Debloat'].includes(f.cat)
+  ) {
+    const desc = String(f.nome || id).replace(/'/g, "''");
+    cmd =
+      `Write-Output 'A criar ponto de restauro antes de otimizar...'\n` +
+      `try { Checkpoint-Computer -Description 'Locaus: ${desc}' -RestorePointType 'MODIFY_SETTINGS' -ErrorAction Stop; Write-Output '  [ok] ponto de restauro criado.' } catch { Write-Output ('  [!] ponto de restauro: ' + $_.Exception.Message) }\n` +
+      cmd;
+  }
+
   return {
     ok: true,
     id,
@@ -1991,13 +2089,13 @@ Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
   };
 }
 
-function executar(id, arg, quem, soAdmin, acoes) {
+function executar(id, arg, quem, soAdmin, acoes, restauro = false) {
   if (!podeLocal()) {
     return { ok: false, erro: 'Este servidor não está num PC Windows (a Vercel não tem PowerShell).' };
   }
   if (estado.aCorrer) return { ok: false, erro: 'Já há uma ferramenta em curso.' };
 
-  const p = preparar(id, arg, soAdmin, acoes);
+  const p = preparar(id, arg, soAdmin, acoes, restauro);
   if (!p.ok) return p;
   if (p.soAdmin) console.log('[xalana] a correr', id, '->', quem);
 
@@ -2074,6 +2172,31 @@ try {
   else { Write-Output ("  winget nao saqueou (" + $LASTEXITCODE + ") - a limpar direto, estilo Revo.") }
 } catch { Write-Output ("  winget falhou: " + $_.Exception.Message) }
 
+# 1b) segunda tentativa: alguns programas ficam no perfil do utilizador
+if (-not $removido) {
+  try {
+    $r2 = & $wingetExe uninstall --id "${f.wingetId}" -e --silent --force --scope user --accept-package-agreements --accept-source-agreements --disable-interactivity 2>&1
+    if ($LASTEXITCODE -eq 0) { Write-Output '  [ok] desinstalado pelo winget (scope user)'; $removido = $true }
+  } catch {}
+}
+
+# 1c) Apps da Microsoft Store / MSIX (ex.: ImageGlass instalado por Appx)
+try {
+  $appx = @(Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -like "*$nb*" -or $_.Name -like "*$cnome*" -or $_.PackageFullName -like "*$nome*"
+  })
+  foreach ($a in $appx) {
+    Write-Output ("  Appx: " + $a.Name)
+    try { Remove-AppxPackage -Package $a.PackageFullName -ErrorAction Stop; $removido = $true } catch { Write-Output ("  Appx falhou: " + $_.Exception.Message) }
+  }
+  $appxAll = @(Get-AppxPackage -AllUsers -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -like "*$nb*" -or $_.Name -like "*$cnome*" -or $_.PackageFullName -like "*$nome*"
+  })
+  foreach ($a in $appxAll) {
+    try { Remove-AppxPackage -Package $a.PackageFullName -AllUsers -ErrorAction Stop; $removido = $true } catch {}
+  }
+} catch {}
+
 # 2) registo: apanha as entradas de desinstalação, mata processos
 #    do programa, corre o MSI silencioso (sem janelas) e apaga a chave
 $chaves = @(
@@ -2106,6 +2229,19 @@ foreach ($chave in $chaves) {
       $guid = ($str | Select-String -Pattern '[{][0-9A-Fa-f-]+[}]').Matches[0].Value
       Write-Output "  a desinstalar MSI ($guid) sem janelas..."
       try { Start-Process msiexec.exe -ArgumentList '/x', $guid, '/qn', '/norestart' -Wait -ErrorAction Stop } catch {}
+    } elseif ($str) {
+      $exe = $str.Trim()
+      if ($exe -match '^"([^"]+)"(.*)$') { $exePath = $matches[1]; $exeArgs = $matches[2] } else { $exePath = $exe; $exeArgs = '' }
+      if (Test-Path $exePath) {
+        Write-Output "  a correr o desinstalador oficial em modo silencioso..."
+        $argLine = ($exeArgs + ' /VERYSILENT /SUPPRESSMSGBOXES /NORESTART').Trim()
+        try {
+          Start-Process -FilePath $exePath -ArgumentList $argLine -Wait -NoNewWindow -ErrorAction Stop
+          $removido = $true
+        } catch {
+          try { Start-Process -FilePath $exePath -ArgumentList ($exeArgs + ' /S') -Wait -NoNewWindow -ErrorAction Stop; $removido = $true } catch {}
+        }
+      }
     } else {
       Write-Output "  sem desinstalador silencioso - limpeza direta das pastas e do registo."
     }
@@ -2171,6 +2307,10 @@ foreach ($chave in $chaves) {
   if (Get-ItemProperty $chave -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" }) { $continua = $true }
 }
 if ($lugar -and (Test-Path $lugar)) { $continua = $true }
+foreach ($pasta in ($pastas | Select-Object -Unique)) { if ($pasta -and (Test-Path $pasta)) { $continua = $true } }
+try {
+  if (Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$nb*" -or $_.Name -like "*$cnome*" -or $_.PackageFullName -like "*$nome*" }) { $continua = $true }
+} catch {}
 
 # 7b) SE continuar: 2ª PASSAGEM à força (estilo Revo) — mata processos,
 #     apaga pastas e registo outra vez, e verifica de novo
@@ -2202,6 +2342,10 @@ if ($continua) {
     if (Get-ItemProperty $chave -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -and $_.DisplayName -like "*$nome*" }) { $continua = $true }
   }
   if ($lugar -and (Test-Path $lugar)) { $continua = $true }
+foreach ($pasta in ($pastas | Select-Object -Unique)) { if ($pasta -and (Test-Path $pasta)) { $continua = $true } }
+try {
+  if (Get-AppxPackage -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$nb*" -or $_.Name -like "*$cnome*" -or $_.PackageFullName -like "*$nome*" }) { $continua = $true }
+} catch {}
 }
 
 if (-not $continua) { Write-Output "=== ${f.nome}: [ok] saiu do PC (verificado) ===" }
