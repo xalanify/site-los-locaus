@@ -192,13 +192,15 @@ export default function ChatPage({ user }) {
   const [pendingClip, setPendingClip] = useState(null)
   const [emojiAberto, setEmojiAberto] = useState(false)
   const [stickersAberto, setStickersAberto] = useState(false)
-  const [stickers, setStickers] = useState([])
+  const [stickerPaginas, setStickerPaginas] = useState([])
+  const [stickerPagina, setStickerPagina] = useState(0)
   const [stickerQuery, setStickerQuery] = useState('')
   const [stickersLoading, setStickersLoading] = useState(false)
   const [stickersErro, setStickersErro] = useState('')
   const podeStickers =
     typeof window !== 'undefined' &&
     /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname)
+  const stickers = stickerPaginas[stickerPagina]?.itens || []
   const [emojiCat, setEmojiCat] = useState('recentes')
   const [clipsAberto, setClipsAberto] = useState(false)
   const [clips, setClips] = useState([])
@@ -534,20 +536,32 @@ export default function ChatPage({ user }) {
     }
   }
 
-  const carregarStickers = async (q = '') => {
+  const carregarStickers = async (q = '', pagina = 0, forcar = false) => {
+    if (!forcar && pagina < stickerPaginas.length) {
+      setStickerPagina(pagina)
+      return
+    }
+    const pos = pagina > 0 ? stickerPaginas[pagina - 1]?.next : ''
+    if (pagina > 0 && !pos) return
     setStickersLoading(true)
     setStickersErro('')
     try {
-      const r = await fetch(`/api/chat/stickers?q=${encodeURIComponent(q)}`, {
+      const params = new URLSearchParams({ q, pos: pos || '' })
+      const r = await fetch(`/api/chat/stickers?${params.toString()}`, {
         headers: authHeaders(),
       })
       const d = await r.json().catch(() => null)
       if (!r.ok || !d || d.ok === false) {
         throw new Error((d && d.error) || 'Não deu para carregar os stickers.')
       }
-      setStickers(Array.isArray(d.stickers) ? d.stickers : [])
+      const itens = Array.isArray(d.stickers) ? d.stickers : []
+      setStickerPaginas((prev) => {
+        const next = prev.slice(0, pagina)
+        next[pagina] = { itens, next: d.next || null }
+        return next
+      })
+      setStickerPagina(pagina)
     } catch (e) {
-      setStickers([])
       setStickersErro(e.message || 'Não deu para carregar os stickers.')
     } finally {
       setStickersLoading(false)
@@ -555,7 +569,11 @@ export default function ChatPage({ user }) {
   }
 
   useEffect(() => {
-    if (stickersAberto && podeStickers) carregarStickers('')
+    if (stickersAberto && podeStickers) {
+      setStickerPaginas([])
+      setStickerPagina(0)
+      carregarStickers('', 0, true)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stickersAberto])
 
@@ -1144,7 +1162,9 @@ export default function ChatPage({ user }) {
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  carregarStickers(stickerQuery)
+                  setStickerPaginas([])
+                  setStickerPagina(0)
+                  carregarStickers(stickerQuery, 0, true)
                 }}
                 className="flex gap-1.5 border-b border-white/10 p-2"
               >
@@ -1183,8 +1203,57 @@ export default function ChatPage({ user }) {
                   ))}
                 </div>
               )}
+              {!stickersErro && !stickersLoading && stickerPaginas.length > 0 && (
+                <div className="flex items-center justify-between gap-1 border-t border-white/10 px-2 py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => carregarStickers(stickerQuery, stickerPagina - 1)}
+                    disabled={stickerPagina === 0}
+                    className="rounded-md px-2 py-1 text-xs font-black text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30"
+                    aria-label="Página anterior"
+                  >
+                    ‹
+                  </button>
+                  <div className="flex min-w-0 gap-1 overflow-x-auto">
+                    {Array.from({ length: stickerPaginas.length }, (_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => carregarStickers(stickerQuery, i)}
+                        className={`min-w-6 rounded-md px-1.5 py-1 text-[10px] font-black ${
+                          stickerPagina === i
+                            ? 'bg-violet-500 text-white'
+                            : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    {stickerPaginas[stickerPaginas.length - 1]?.next && (
+                      <button
+                        type="button"
+                        onClick={() => carregarStickers(stickerQuery, stickerPaginas.length)}
+                        disabled={stickersLoading}
+                        className="min-w-6 rounded-md bg-white/5 px-1.5 py-1 text-[10px] font-black text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-50"
+                      >
+                        {stickerPaginas.length + 1}
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => carregarStickers(stickerQuery, stickerPagina + 1)}
+                    disabled={!stickerPaginas[stickerPagina]?.next || stickersLoading}
+                    className="rounded-md px-2 py-1 text-xs font-black text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30"
+                    aria-label="Página seguinte"
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
               <p className="px-3 pb-2 text-[9px] text-gray-500">
-                Stickers animados do Tenor. Só aparece em localhost.
+                {stickerQuery.trim() ? 'Resultados da pesquisa' : 'Tendências'} · stickers animados
+                do Tenor · só em localhost.
               </p>
             </div>
           )}

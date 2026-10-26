@@ -720,11 +720,17 @@ router.get('/stickers', requireUser, async (req, res) => {
       return res.status(403).json({ error: 'Os stickers só estão disponíveis em localhost.' });
     }
     const q = String(req.query.q || '').trim().slice(0, 60);
-    const chave = q ? `q:${q.toLowerCase()}` : 'featured';
+    const pos = String(req.query.pos || '').trim().slice(0, 120);
+    const chave = `${q ? `q:${q.toLowerCase()}` : 'featured'}:${pos || '0'}`;
     const agora = Date.now();
     const cacheado = stickersCache.get(chave);
     if (cacheado && agora - cacheado.t < 10 * 60 * 1000) {
-      return res.json({ ok: true, fonte: 'Tenor', stickers: cacheado.dados });
+      return res.json({
+        ok: true,
+        fonte: 'Tenor',
+        stickers: cacheado.dados.itens,
+        next: cacheado.dados.next,
+      });
     }
 
     const endpoint = q ? 'search' : 'featured';
@@ -737,6 +743,7 @@ router.get('/stickers', requireUser, async (req, res) => {
       contentfilter: 'high',
     });
     if (q) params.set('q', q);
+    if (pos) params.set('pos', pos);
     const url = `https://tenor.googleapis.com/v2/${endpoint}?${params.toString()}`;
     const r = await fetch(url, { signal: AbortSignal.timeout(12000) });
     if (!r.ok) throw new Error(`Tenor ${r.status}`);
@@ -758,12 +765,13 @@ router.get('/stickers', requireUser, async (req, res) => {
       })
       .filter(Boolean);
 
-    stickersCache.set(chave, { t: agora, dados: stickers });
+    const next = d.next || null;
+    stickersCache.set(chave, { t: agora, dados: { itens: stickers, next } });
     if (stickersCache.size > 40) {
       const primeira = stickersCache.keys().next().value;
       stickersCache.delete(primeira);
     }
-    res.json({ ok: true, fonte: 'Tenor', stickers });
+    res.json({ ok: true, fonte: 'Tenor', stickers, next });
   } catch (e) {
     console.error('Erro stickers:', e.message);
     res.status(502).json({ ok: false, error: 'Não foi possível carregar os stickers.', stickers: [] });
