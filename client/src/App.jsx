@@ -274,7 +274,12 @@ function App() {
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     {/* Componentes e Periféricos — só admin (em testes) */}
-                    <Route path="/componentes" element={<ComponentesPage user={user} />} />
+                    <Route
+                      path="/componentes"
+                      element={
+                        isAdmin ? <ComponentesPage user={user} /> : <Navigate to="/" replace />
+                      }
+                    />
                     {/* PCs dos membros: dashboard de specs — aberto a todos */}
                     <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
                     {/* Ferramentas Windows: scripts no PC do servidor — aberto a todos */}

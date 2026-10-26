@@ -4,7 +4,7 @@
    as secções. A janela volta a aparecer quando a versão muda.
    ============================================================ */
 
-export const NOVIDADES_VERSAO = '2026-10-26-3'
+export const NOVIDADES_VERSAO = '2026-10-26-4'
 
 export const NOVIDADES = {
   versao: NOVIDADES_VERSAO,
@@ -15,8 +15,8 @@ export const NOVIDADES = {
     {
       titulo: 'Novos banners de perfil',
       tipo: 'banners',
-      texto: 'Há 8 banners novos para escolheres no editar perfil.',
-      ids: ['g20', 'g21', 'g22', 'g23', 'g24', 'g25', 'g26', 'g27'],
+      texto: 'Há 6 banners novos para escolheres no editar perfil.',
+      ids: ['g20', 'g21', 'g22', 'g25', 'g26', 'g27'],
     },
     {
       titulo: 'Novos fundos de perfil',

@@ -65,18 +65,6 @@ export const BANNERS = [
     cor: '#94a3b8',
   },
   {
-    id: 'g23',
-    nome: 'Rosas',
-    ficheiro: '/perfil/cardbanner/23.webp',
-    cor: '#ef4444',
-  },
-  {
-    id: 'g24',
-    nome: 'Lobo',
-    ficheiro: '/perfil/cardbanner/24.webp',
-    cor: '#a3a3a3',
-  },
-  {
     id: 'g25',
     nome: 'Lâmina',
     ficheiro: '/perfil/cardbanner/25.webp',
