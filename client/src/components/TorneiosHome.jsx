@@ -332,7 +332,7 @@ export default function TorneiosHome() {
 
   if (!carregado) {
     return (
-      <section className="mb-8">
+      <section className="mx-auto mb-8 w-full max-w-5xl px-4 sm:px-6 lg:px-8">
         <div className="mb-4">
           <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
             <Radio className="h-3 w-3" /> em tempo real
@@ -356,7 +356,7 @@ export default function TorneiosHome() {
 
   if (!infoR6 && !infoCs2) {
     return (
-      <section className="mb-8">
+      <section className="mx-auto mb-8 w-full max-w-5xl px-4 sm:px-6 lg:px-8">
         <div className="mb-4">
           <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
             <Radio className="h-3 w-3" /> em tempo real
@@ -375,7 +375,7 @@ export default function TorneiosHome() {
   }
 
   return (
-    <section className="mb-8">
+    <section className="mx-auto mb-8 w-full max-w-5xl px-4 sm:px-6 lg:px-8">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">

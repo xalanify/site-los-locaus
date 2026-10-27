@@ -1937,10 +1937,10 @@ FERRAMENTAS.push({
   perigo: 'baixo',
   tempo: 90000,
   cmd: `$ErrorActionPreference='Continue'
-$memAntes = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
-$cacheAntes = if ($memAntes) { [math]::Round($memAntes.CacheBytes/1MB) } else { 0 }
-$livreAntes = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
-Write-Output ("RAM livre antes: {0} MB - cache do sistema: {1} MB" -f $livreAntes, $cacheAntes)
+$elevado = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $elevado) {
+  Write-Output '  [!] Sem administrador: a standby/cache do sistema nao pode ser limpa. Abre o LOCAUS-PC.bat como admin.'
+}
 $code = @'
 using System;
 using System.Runtime.InteropServices;
@@ -1949,25 +1949,79 @@ public class LocausMem {
   public static extern uint NtSetSystemInformation(int InfoClass, IntPtr Info, int Length);
   [DllImport("psapi.dll")]
   public static extern int EmptyWorkingSet(IntPtr hProcess);
+  [DllImport("advapi32.dll", SetLastError=true)]
+  public static extern bool OpenProcessToken(IntPtr ProcessHandle, uint DesiredAccess, out IntPtr TokenHandle);
+  [DllImport("advapi32.dll", SetLastError=true)]
+  public static extern bool LookupPrivilegeValue(string lpSystemName, string lpName, out long lpLuid);
+  [DllImport("advapi32.dll", SetLastError=true)]
+  public static extern bool AdjustTokenPrivileges(IntPtr TokenHandle, bool DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, int BufferLength, IntPtr PreviousState, IntPtr ReturnLength);
+  [StructLayout(LayoutKind.Sequential)]
+  public struct LUID { public uint LowPart; public int HighPart; }
+  [StructLayout(LayoutKind.Sequential)]
+  public struct LUID_AND_ATTRIBUTES { public LUID Luid; public uint Attributes; }
+  [StructLayout(LayoutKind.Sequential)]
+  public struct TOKEN_PRIVILEGES { public int PrivilegeCount; public LUID_AND_ATTRIBUTES Privilege; }
+  public static bool EnablePrivilege(string name) {
+    IntPtr token;
+    if (!OpenProcessToken(System.Diagnostics.Process.GetCurrentProcess().Handle, 0x0020 | 0x0008, out token)) return false;
+    TOKEN_PRIVILEGES tp = new TOKEN_PRIVILEGES();
+    tp.PrivilegeCount = 1;
+    tp.Privilege.Attributes = 0x00000002;
+    long luid;
+    if (!LookupPrivilegeValue(null, name, out luid)) return false;
+    tp.Privilege.Luid.LowPart = (uint)luid;
+    tp.Privilege.Luid.HighPart = (int)(luid >> 32);
+    bool ok = AdjustTokenPrivileges(token, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero);
+    return ok && Marshal.GetLastWin32Error() == 0;
+  }
 }
 '@
 try { Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue } catch {}
+$p1 = [LocausMem]::EnablePrivilege('SeProfileSingleProcessPrivilege')
+$p2 = [LocausMem]::EnablePrivilege('SeIncreaseQuotaPrivilege')
+Write-Output ("Privilegios: perfil={0} quota={1}" -f $p1, $p2)
 function Clear-MemList([int]$cmd) {
   $info = [System.Runtime.InteropServices.Marshal]::AllocHGlobal(4)
   [System.Runtime.InteropServices.Marshal]::WriteInt32($info, $cmd)
-  [LocausMem]::NtSetSystemInformation(80, $info, 4) | Out-Null
-  [System.Runtime.InteropServices.Marshal]::FreeHGlobal($info)
+  try { return [LocausMem]::NtSetSystemInformation(80, $info, 4) } finally { [System.Runtime.InteropServices.Marshal]::FreeHGlobal($info) }
 }
-$limpos = 0
-foreach ($cmd in @(2,3,4,5,6)) {
-  try { Clear-MemList $cmd; $limpos++ } catch {}
+function Get-MemInfo {
+  $m = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
+  $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+  $ws = 0
+  try { $ws = [math]::Round((Get-Process -ErrorAction SilentlyContinue | Measure-Object WorkingSet64 -Sum).Sum / 1MB) } catch {}
+  $standby = 0
+  $cache = 0
+  if ($m) {
+    $standby = [math]::Round((([double]$m.StandbyCacheNormalPriorityBytes + [double]$m.StandbyCacheReserveBytes + [double]$m.StandbyCacheCoreBytes) / 1MB))
+    $cache = [math]::Round(([double]$m.CacheBytes / 1MB))
+  }
+  $livre = 0
+  $total = 0
+  if ($os) {
+    $livre = [math]::Round($os.FreePhysicalMemory / 1024)
+    $total = [math]::Round($os.TotalVisibleMemorySize / 1024)
+  }
+  [pscustomobject]@{ EmUso = $ws; Standby = $standby; Cache = $cache; Livre = $livre; Total = $total }
 }
-Write-Output ("Listas de memoria limpas: {0}/5 (working sets, modified, standby, prioridade 0 e baixa)." -f $limpos)
+$antes = Get-MemInfo
+Write-Output ("Antes: em uso {0} MB | standby {1} MB | cache sistema {2} MB | livre {3} MB" -f $antes.EmUso, $antes.Standby, $antes.Cache, $antes.Livre)
+$resultados = @()
+foreach ($cmd in @(2,3,4,5)) {
+  $st = Clear-MemList $cmd
+  $resultados += ("{0}:{1}" -f $cmd, $st)
+}
+Write-Output ("NtSetSystemInformation: " + ($resultados -join ' '))
 $n = 0
-Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
-  try { if ([LocausMem]::EmptyWorkingSet($_.Handle) -ne 0) { $n++ } } catch {}
+$falhas = 0
+Get-Process -ErrorAction SilentlyContinue | Where-Object {
+  $_.Id -ne $PID -and $_.ProcessName -notin @('System','Idle','Registry','csrss','wininit','services','lsass','smss','winlogon','fontdrvhost','dwm')
+} | ForEach-Object {
+  try {
+    if ([LocausMem]::EmptyWorkingSet($_.Handle) -ne 0) { $n++ } else { $falhas++ }
+  } catch { $falhas++ }
 }
-Write-Output ("Working sets reduzidos em $n processos.")
+Write-Output ("Working sets: {0} reduzidos, {1} sem acesso." -f $n, $falhas)
 try {
   $sig = @'
 using System;
@@ -1978,17 +2032,15 @@ public class LocausCache {
 }
 '@
   Add-Type -TypeDefinition $sig -ErrorAction SilentlyContinue
-  [LocausCache]::SetSystemFileCacheSize([IntPtr]0, [IntPtr]0, 0) | Out-Null
-  Write-Output 'Cache de ficheiros do sistema limpa.'
+  $okCache = [LocausCache]::SetSystemFileCacheSize([IntPtr]::Zero, [IntPtr]::Zero, 0)
+  Write-Output ("Cache de ficheiros limpa: {0}" -f $okCache)
 } catch { Write-Output ('Cache: ' + $_.Exception.Message) }
-Start-Sleep -Milliseconds 800
-foreach ($cmd in @(4,5,6)) { try { Clear-MemList $cmd } catch {} }
-Start-Sleep -Milliseconds 500
-$memDepois = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction SilentlyContinue
-$cacheDepois = if ($memDepois) { [math]::Round($memDepois.CacheBytes/1MB) } else { 0 }
-$livreDepois = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)
-Write-Output ("RAM livre depois: {0} MB (libertados {1} MB)" -f $livreDepois, ($livreDepois - $livreAntes))
-Write-Output ("Cache do sistema: {0} MB -> {1} MB (libertados {2} MB)" -f $cacheAntes, $cacheDepois, ($cacheAntes - $cacheDepois))`,
+Start-Sleep -Milliseconds 1200
+foreach ($cmd in @(4,5)) { [void](Clear-MemList $cmd) }
+Start-Sleep -Milliseconds 600
+$depois = Get-MemInfo
+Write-Output ("Depois: em uso {0} MB | standby {1} MB | cache sistema {2} MB | livre {3} MB" -f $depois.EmUso, $depois.Standby, $depois.Cache, $depois.Livre)
+Write-Output ("Diferenca: em uso {0} MB | standby {1} MB | cache {2} MB | livre +{3} MB" -f ($antes.EmUso-$depois.EmUso), ($antes.Standby-$depois.Standby), ($antes.Cache-$depois.Cache), ($depois.Livre-$antes.Livre))`,
 });
 
 /* ---------------------------------------------------------------

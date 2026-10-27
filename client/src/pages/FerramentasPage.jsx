@@ -911,34 +911,6 @@ export default function FerramentasPage({ isAdmin = false }) {
             Criar ponto de restauro antes de otimizar
             <span className="font-semibold text-gray-500">(recomendado)</span>
           </label>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              {
-                nome: 'Estado do PC',
-                valor: podeLocal === true ? 'Local' : agente.online ? 'Ligado' : 'Offline',
-                Icone: Monitor,
-                cor: podeLocal === true || agente.online ? 'text-emerald-300' : 'text-amber-300',
-              },
-              { nome: 'Ferramentas', valor: ferramentas.length, Icone: Wrench, cor: 'text-violet-300' },
-              { nome: 'Nesta vista', valor: visiveis.length, Icone: Boxes, cor: 'text-sky-300' },
-              { nome: 'Instalados', valor: instalados.size, Icone: Package, cor: 'text-fuchsia-300' },
-            ].map((s) => (
-              <div
-                key={s.nome}
-                className="glass flex items-center gap-2.5 rounded-2xl border border-white/10 px-3 py-2.5"
-              >
-                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] ${s.cor}`}>
-                  <s.Icone className="h-4 w-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[9px] font-black uppercase tracking-wider text-gray-500">
-                    {s.nome}
-                  </span>
-                  <span className="block truncate text-sm font-black text-white">{s.valor}</span>
-                </span>
-              </div>
-            ))}
-          </div>
         </motion.div>
 
         {/* aviso: PC ligado ao servidor local (só no modo local) */}
@@ -1409,36 +1381,6 @@ export default function FerramentasPage({ isAdmin = false }) {
               )
             })}
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-            <div>
-              <p className="text-xs font-black text-white">Todas as otimizações</p>
-              <p className="text-[11px] text-gray-500">
-                Vê o que está aplicado, o que falta e reverte num clique.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setOtimizacoesAberto(true)
-                  carregarTweaks()
-                }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[11px] font-black text-violet-200 transition-colors hover:bg-violet-500/25"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" /> Ver todas as otimizações
-              </button>
-              {xalanaAplicadas.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => executar('xalana-reverter')}
-                  disabled={aCorrer || !podeExecutar}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-400/30 bg-red-500/15 px-3 py-2 text-[11px] font-black text-red-200 transition-colors hover:bg-red-500/25 disabled:opacity-40"
-                >
-                  <RefreshCcw className="h-3.5 w-3.5" /> Reverter
-                </button>
-              )}
-            </div>
-          </div>
           </>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -1606,23 +1548,7 @@ export default function FerramentasPage({ isAdmin = false }) {
           </div>
         )}
 
-        {/* ---------------- Aviso único com animação ---------------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: [0.85, 1, 0.85], y: 0 }}
-          transition={{
-            opacity: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
-          }}
-          className="glass mb-6 flex items-center gap-3 rounded-2xl border border-violet-500/25 px-4 py-3"
-        >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-violet-500/15 ring-1 ring-violet-500/30">
-            <Sparkles className="h-4 w-4 animate-pulse text-violet-400" />
-          </span>
-          <p className="text-[13px] font-bold text-gray-300">
-            Otimizações e opções ainda serão melhoradas e adicionadas.
-          </p>
-        </motion.div>
-
+        {/* Resumo da vista */}
         <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-gray-600">
           <Terminal className="h-3 w-3" />
           {busca.trim()
