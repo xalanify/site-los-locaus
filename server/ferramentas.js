@@ -101,6 +101,19 @@ if (Test-Path -LiteralPath $braveRoot) {
 Set-ItemProperty $personalize -Name AppsUseLightTheme -Value 0 -Type DWord
 Set-ItemProperty $personalize -Name SystemUsesLightTheme -Value 0 -Type DWord
 try { Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue } catch {}
+
+# Tarefa de arranque: se o Windows voltar a mudar para claro, repoe no logon.
+try {
+  $cmdTema = "Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name AppsUseLightTheme -Value 0 -Type DWord; Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name SystemUsesLightTheme -Value 0 -Type DWord"
+  $acaoTema = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -WindowStyle Hidden -Command "' + $cmdTema + '"')
+  $gatilhoTema = New-ScheduledTaskTrigger -AtLogOn
+  $principalTema = New-ScheduledTaskPrincipal -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
+  Register-ScheduledTask -TaskName 'LocausDarkMode' -Action $acaoTema -Trigger $gatilhoTema -Principal $principalTema -Force | Out-Null
+  Write-Output '  [ok] Tarefa de arranque criada para manter o tema escuro.'
+} catch {
+  Write-Output '  [!] Nao foi possivel criar a tarefa de arranque; o tema escuro fica aplicado agora.'
+}
+
 Write-Output '  [ok] Windows em tema escuro (apps e sistema).'
 Write-Output '       Se o Brave ainda estiver claro, fecha-o e abre outra vez.'
 `;
