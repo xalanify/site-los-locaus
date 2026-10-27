@@ -42,6 +42,41 @@ if (-not $elevado) { Write-Output 'Aviso: sem privilegios de administrador - ope
    (a rota filtra; serve para testar e ver logs na consola).
    ============================================================ */
 
+/* ---- tema escuro: Windows + apps + navegadores Chromium ---- */
+const FORCAR_DARK_PS = `
+$personalize = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+New-Item -Path $personalize -Force | Out-Null
+Set-ItemProperty $personalize -Name AppsUseLightTheme -Value 0 -Type DWord
+Set-ItemProperty $personalize -Name SystemUsesLightTheme -Value 0 -Type DWord
+Set-ItemProperty $personalize -Name EnableTransparency -Value 0 -Type DWord -ErrorAction SilentlyContinue
+
+# Politicas dos navegadores (Brave/Chrome/Edge): UI sempre escura
+$navegadores = @(
+  'HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave',
+  'HKCU:\\Software\\Policies\\BraveSoftware\\Brave',
+  'HKLM:\\SOFTWARE\\Policies\\Chromium',
+  'HKCU:\\Software\\Policies\\Chromium',
+  'HKLM:\\SOFTWARE\\Policies\\Google\\Chrome',
+  'HKCU:\\Software\\Policies\\Google\\Chrome',
+  'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge',
+  'HKCU:\\Software\\Policies\\Microsoft\\Edge'
+)
+foreach ($n in $navegadores) {
+  try {
+    New-Item -Path $n -Force | Out-Null
+    Set-ItemProperty -Path $n -Name BrowserColorScheme -Value 2 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $n -Name BrowserThemeColor -Value '#0a0813' -Type String -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $n -Name ForceDarkModeEnabled -Value 1 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $n -Name AutoDarkModeEnabled -Value 1 -Type DWord -ErrorAction SilentlyContinue
+  } catch {}
+}
+
+# Reinicia o Explorer para o tema entrar de imediato
+try { Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue } catch {}
+Write-Output '  [ok] Tema escuro forcado no Windows, apps e navegadores (Brave/Chrome/Edge).'
+Write-Output '       Se o navegador ainda estiver claro, fecha-o e abre outra vez.'
+`;
+
 /* ---- bloco 1: sempre igual (o nível 1) ---- */
 const XALANA_BASE = `
 Write-Output '=== OTIMIZACAO XALANA - NIVEL 1: MINIMA ==='
@@ -93,6 +128,12 @@ try {
   Get-ChildItem -Path $env:TEMP -Force -ErrorAction SilentlyContinue |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
   Write-Output ('  [ok] %TEMP% limpo (ficaram so ficheiros em uso).')
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }
+
+Write-Output ''
+Write-Output '[tema] Forcar tema escuro no Windows, apps e navegadores'
+try {
+${FORCAR_DARK_PS}
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }
 `;
 
@@ -762,9 +803,7 @@ Write-Output 'Feito.'`,
     perigo: 'baixo',
     tempo: 60000,
     cmd: `try {
-  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name AppsUseLightTheme -Value 0 -Type DWord
-  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name SystemUsesLightTheme -Value 0 -Type DWord
-  Write-Output 'Modo escuro aplicado.'
+${FORCAR_DARK_PS}
 } catch { Write-Output ("Erro: " + $_.Exception.Message) }
 Write-Output 'Feito.'`,
   },
@@ -1443,11 +1482,7 @@ try {
     nivel: 'minima',
     script: `Write-Output 'Modo escuro forcado'
 try {
-  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
-  New-Item -Path $p -Force | Out-Null
-  Set-ItemProperty -Path $p -Name AppsUseLightTheme -Value 0 -Type DWord
-  Set-ItemProperty -Path $p -Name SystemUsesLightTheme -Value 0 -Type DWord
-  Write-Output '  [ok] Modo escuro ativo.'
+${FORCAR_DARK_PS}
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
 };
