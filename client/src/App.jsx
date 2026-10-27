@@ -10,6 +10,7 @@ import Hero from './components/Hero'
 import BetaBadge from './components/BetaBadge'
 import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
+import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
@@ -263,6 +264,8 @@ function App() {
                           <Hero onVerVideos={() => setShowVideos(true)} />
                           {/* Só no telemóvel: instalar o site como app */}
                           <InstalarApp />
+                          {/* Próximos torneios com contagem ao vivo (R6 e CS2) */}
+                          <TorneiosHome />
                         </>
                       }
                     />

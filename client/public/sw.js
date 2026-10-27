@@ -7,7 +7,7 @@
    • recebe os pushes do servidor e mostra a notificação
    ============================================================ */
 
-const CACHE = 'locaus-v9';
+const CACHE = 'locaus-v10';
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -45,7 +45,12 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE).then((c) => c.put('/index.html', copia)).catch(() => {});
           return r;
         })
-        .catch(() => caches.match('/index.html').then((r) => r || caches.match('/'))),
+        .catch(() =>
+          caches
+            .match('/index.html')
+            .then((r) => r || caches.match('/'))
+            .then((r) => r || new Response('Sem ligação', { status: 503, headers: { 'Content-Type': 'text/plain' } })),
+        ),
     );
     return;
   }
@@ -62,7 +67,11 @@ self.addEventListener('fetch', (e) => {
         }
         return r;
       })
-      .catch(() => caches.match(req)),
+      .catch(() =>
+        caches
+          .match(req)
+          .then((r) => r || new Response('Sem ligação', { status: 503, headers: { 'Content-Type': 'text/plain' } })),
+      ),
   );
 });
 
