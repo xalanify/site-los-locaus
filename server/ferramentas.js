@@ -1550,12 +1550,12 @@ try {
   Set-ItemProperty 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo' -Name DisabledByGroupPolicy -Value 0 -Type DWord
   Write-Output '  [ok]'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
-  'xalana-a29': `Write-Output 'Tema claro: padrao'
+  'xalana-a29': `Write-Output 'Tema escuro: mantido'
 try {
   $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
-  Set-ItemProperty $p -Name AppsUseLightTheme -Value 1 -Type DWord
-  Set-ItemProperty $p -Name SystemUsesLightTheme -Value 1 -Type DWord
-  Write-Output '  [ok]'
+  Set-ItemProperty $p -Name AppsUseLightTheme -Value 0 -Type DWord
+  Set-ItemProperty $p -Name SystemUsesLightTheme -Value 0 -Type DWord
+  Write-Output '  [ok] Tema escuro mantido.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
 };
 
@@ -1590,9 +1590,9 @@ try {
 try {
   $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
   Set-ItemProperty $p -Name EnableTransparency -Value 1 -Type DWord
-  Set-ItemProperty $p -Name AppsUseLightTheme -Value 1 -Type DWord
-  Set-ItemProperty $p -Name SystemUsesLightTheme -Value 1 -Type DWord
-  Write-Output '  [ok] Transparencia e tema claro.'
+  Set-ItemProperty $p -Name AppsUseLightTheme -Value 0 -Type DWord
+  Set-ItemProperty $p -Name SystemUsesLightTheme -Value 0 -Type DWord
+  Write-Output '  [ok] Transparencia do Windows; tema escuro mantido.'
 } catch {}
 try { Set-ItemProperty 'HKCU:\\Control Panel\\Desktop' -Name MenuShowDelay -Value '400'; Write-Output '  [ok] Demora dos menus.' } catch {}
 try {
@@ -1658,6 +1658,8 @@ try {
   netsh int tcp set global autotuninglevel=normal rss=enabled ecn=default timestamps=disabled rsc=enabled | Out-Null
   Write-Output '  [ok] TCP do Windows.'
 } catch {}
+Write-Output 'A garantir tema escuro no Windows e navegadores...'
+${FORCAR_DARK_PS}
 Write-Output 'Revertersao concluida. Reinicia o PC para aplicar tudo.'
 `;
 
