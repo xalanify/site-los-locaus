@@ -50,7 +50,7 @@ Set-ItemProperty $personalize -Name AppsUseLightTheme -Value 0 -Type DWord
 Set-ItemProperty $personalize -Name SystemUsesLightTheme -Value 0 -Type DWord
 Set-ItemProperty $personalize -Name EnableTransparency -Value 0 -Type DWord -ErrorAction SilentlyContinue
 
-# Politicas dos navegadores (Brave/Chrome/Edge): UI sempre escura
+# Remove politicas antigas que faziam o Brave dizer "gerido pela organizacao".
 $navegadores = @(
   'HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave',
   'HKCU:\\Software\\Policies\\BraveSoftware\\Brave',
@@ -62,19 +62,47 @@ $navegadores = @(
   'HKCU:\\Software\\Policies\\Microsoft\\Edge'
 )
 foreach ($n in $navegadores) {
-  try {
-    New-Item -Path $n -Force | Out-Null
-    Set-ItemProperty -Path $n -Name BrowserColorScheme -Value 2 -Type DWord -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $n -Name BrowserThemeColor -Value '#0a0813' -Type String -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $n -Name ForceDarkModeEnabled -Value 1 -Type DWord -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $n -Name AutoDarkModeEnabled -Value 1 -Type DWord -ErrorAction SilentlyContinue
-  } catch {}
+  foreach ($nome in @('BrowserColorScheme','BrowserThemeColor','ForceDarkModeEnabled','AutoDarkModeEnabled')) {
+    try { Remove-ItemProperty -Path $n -Name $nome -ErrorAction SilentlyContinue } catch {}
+  }
 }
 
-# Reinicia o Explorer para o tema entrar de imediato
+# Brave: tema escuro no proprio perfil (sem politica e sem "gerido pela organizacao").
+$braveRoot = Join-Path $env:LOCALAPPDATA 'BraveSoftware\\Brave-Browser\\User Data'
+if (Test-Path -LiteralPath $braveRoot) {
+  $braveAberto = Get-Process -Name brave -ErrorAction SilentlyContinue
+  if ($braveAberto) {
+    Write-Output '  [!] Fecha o Brave e corre esta otimizacao outra vez para aplicar o tema escuro no navegador.'
+  } else {
+    $perfis = Get-ChildItem -LiteralPath $braveRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Default' -or $_.Name -like 'Profile *' }
+    foreach ($perfil in $perfis) {
+      $prefs = Join-Path $perfil.FullName 'Preferences'
+      if (-not (Test-Path -LiteralPath $prefs)) { continue }
+      try {
+        Copy-Item -LiteralPath $prefs -Destination ($prefs + '.locaus.bak') -Force -ErrorAction SilentlyContinue
+        $json = Get-Content -LiteralPath $prefs -Raw | ConvertFrom-Json
+        if (-not $json.browser) {
+          $json | Add-Member -NotePropertyName browser -NotePropertyValue ([pscustomobject]@{}) -Force
+        }
+        if ($json.browser.PSObject.Properties.Name -contains 'color_scheme') {
+          $json.browser.color_scheme = 2
+        } else {
+          $json.browser | Add-Member -NotePropertyName color_scheme -NotePropertyValue 2 -Force
+        }
+        $texto = $json | ConvertTo-Json -Depth 100 -Compress
+        [System.IO.File]::WriteAllText($prefs, $texto, [System.Text.UTF8Encoding]::new($false))
+      } catch {}
+    }
+    Write-Output '  [ok] Brave configurado para tema escuro (perfil).'
+  }
+}
+
+# Reforca o tema escuro do Windows e reinicia o Explorer.
+Set-ItemProperty $personalize -Name AppsUseLightTheme -Value 0 -Type DWord
+Set-ItemProperty $personalize -Name SystemUsesLightTheme -Value 0 -Type DWord
 try { Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue } catch {}
-Write-Output '  [ok] Tema escuro forcado no Windows, apps e navegadores (Brave/Chrome/Edge).'
-Write-Output '       Se o navegador ainda estiver claro, fecha-o e abre outra vez.'
+Write-Output '  [ok] Windows em tema escuro (apps e sistema).'
+Write-Output '       Se o Brave ainda estiver claro, fecha-o e abre outra vez.'
 `;
 
 /* ---- bloco 1: sempre igual (o nível 1) ---- */
