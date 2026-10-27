@@ -252,9 +252,6 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
                 title="Volume"
               />
             </div>
-            {bloqueado && (
-              <p className="text-[9px] font-semibold text-amber-300">Clica no play para ouvir</p>
-            )}
           </div>
         </div>,
         document.body,

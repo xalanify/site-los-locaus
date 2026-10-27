@@ -14,7 +14,16 @@ import {
   ZoomIn,
   X,
   Sparkles,
+  Image as ImageIcon,
+  Palette,
+  Music,
+  User,
+  Share2,
+  Radio,
 } from 'lucide-react'
+import LiveBadge from '../components/LiveBadge'
+import SocialLinks from '../components/SocialLinks'
+import PlatformIcon from '../components/PlatformIcon'
 import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
@@ -37,6 +46,7 @@ import {
 } from '../data/temasPerfil'
 import { CORES_NOME, EFEITOS_NOME, classesCard, classesNome } from '../data/nomeEfeitos'
 import { extrairCores } from '../lib/coresFundo'
+import { useLive } from '../lib/live'
 
 /* ============================================================
    Perfil da conta — abre ao clicar no ícone de Conta.
@@ -54,6 +64,31 @@ const authHeaders = () => ({
 
 const TOKEN = () => localStorage.getItem('userToken') || localStorage.getItem('adminToken')
 
+const SECOES_EDIT = [
+  { id: 'perfil', nome: 'Perfil', Icon: User },
+  { id: 'banner', nome: 'Banner', Icon: ImageIcon },
+  { id: 'fundo', nome: 'Fundo', Icon: ImageIcon },
+  { id: 'estilo', nome: 'Estilo', Icon: Palette },
+  { id: 'musica', nome: 'Música', Icon: Music },
+  { id: 'redes', nome: 'Redes & live', Icon: Share2 },
+]
+
+const REDES_SOCIAIS = [
+  { id: 'youtube', nome: 'YouTube', placeholder: '@canal ou link do canal' },
+  { id: 'twitch', nome: 'Twitch', placeholder: '@canal ou link da twitch' },
+  { id: 'tiktok', nome: 'TikTok', placeholder: '@perfil ou link do tiktok' },
+  { id: 'kick', nome: 'Kick', placeholder: '@canal ou link da kick' },
+  { id: 'instagram', nome: 'Instagram', placeholder: '@perfil ou link' },
+  { id: 'x', nome: 'X / Twitter', placeholder: '@perfil ou link' },
+]
+
+const PLATAFORMAS_LIVE = [
+  { id: 'youtube', nome: 'YouTube' },
+  { id: 'twitch', nome: 'Twitch' },
+  { id: 'tiktok', nome: 'TikTok' },
+  { id: 'kick', nome: 'Kick' },
+]
+
 const formDe = (u) => ({
   game_nick: u?.game_nick || '',
   mouse: u?.mouse || '',
@@ -67,6 +102,7 @@ const formDe = (u) => ({
   name_color: u?.name_color || '',
   name_effect: u?.name_effect || '',
   borda_cor: u?.borda_cor || 'banner',
+  socials: u?.socials && typeof u.socials === 'object' ? u.socials : {},
 })
 
 const CROP = 288
@@ -86,6 +122,7 @@ export default function ProfilePage({
   const location = useLocation()
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(Boolean(standaloneEdit))
+  const [secaoEdit, setSecaoEdit] = useState('perfil')
   const [previewTema, setPreviewTema] = useState(null)
   const [musicaQ, setMusicaQ] = useState('')
   const [musicaResultados, setMusicaResultados] = useState([])
@@ -108,6 +145,8 @@ export default function ProfilePage({
   const [ordemClips, setOrdemClips] = useState('recentes')
   const [jogoClips, setJogoClips] = useState('')
   const [err, setErr] = useState('')
+  const { liveByUser } = useLive()
+  const minhaLive = me?.username ? liveByUser[String(me.username).toLowerCase()] : null
   const fileRef = useRef(null)
 
   /* Sempre que o perfil abre: dados frescos (distinções atribuídas
@@ -254,6 +293,7 @@ export default function ProfilePage({
     setRemoveAvatar(false)
     setErr('')
     setMusicaAlterada(false)
+    setSecaoEdit('perfil')
     setEdit(true)
   }
 
@@ -435,6 +475,7 @@ export default function ProfilePage({
             }
           : {}),
         borda_cor: form.borda_cor,
+        socials: form.socials,
         musica_alterada: musicaAlterada,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
@@ -518,8 +559,27 @@ export default function ProfilePage({
                 </button>
               </div>
 
+              {/* separadores do editor */}
+              <div className="flex gap-1.5 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-1.5">
+                {SECOES_EDIT.filter((s) => s.id !== 'redes' || me?.is_admin).map(({ id, nome, Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setSecaoEdit(id)}
+                    className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[11px] font-black transition-colors ${
+                      secaoEdit === id
+                        ? 'bg-violet-500 text-white shadow-lg shadow-violet-900/30'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {nome}
+                  </button>
+                ))}
+              </div>
+
               {/* Foto de perfil */}
-              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'perfil' ? '' : 'hidden'}`}>
                 <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
                   Foto de perfil
                 </h3>
@@ -688,7 +748,7 @@ export default function ProfilePage({
                 )}
 
               {/* Rato + DPI */}
-              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'perfil' ? '' : 'hidden'}`}>
                 <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
                   Rato e DPI
                 </h3>
@@ -748,16 +808,16 @@ export default function ProfilePage({
               </section>
 
               {/* Banner animado do perfil */}
-              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'banner' || secaoEdit === 'fundo' ? '' : 'hidden'}`}>
                 <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
-                  Banner e fundo
+                  {secaoEdit === 'banner' ? 'Banner do perfil' : 'Fundo da página'}
                 </h3>
-              <div>
+              <div className={secaoEdit === 'banner' ? '' : 'hidden'}>
                 <label className="block text-xs font-bold text-gray-400">Banner do perfil</label>
                 <p className="mb-2 text-[11px] text-gray-500">
                   O mesmo tema aparece no teu cartão em Membros e Membros online.
                 </p>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {BANNERS.map((b) => (
                     <div key={b.id} className="relative">
                       <button
@@ -774,10 +834,10 @@ export default function ProfilePage({
                             src={b.ficheiro}
                             alt=""
                             loading="lazy"
-                            className="block h-12 w-full rounded-md object-cover"
+                            className="block h-16 w-full rounded-md object-cover sm:h-20"
                           />
                         ) : (
-                          <span className="block h-12 w-full rounded-md bg-gradient-to-br from-[#1b1230] to-[#0b0716]" />
+                          <span className="block h-16 w-full rounded-md bg-gradient-to-br from-[#1b1230] to-[#0b0716] sm:h-20" />
                         )}
                         <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
                           {b.nome}
@@ -799,12 +859,12 @@ export default function ProfilePage({
               </div>
 
               {/* Fundo da página do perfil */}
-              <div>
+              <div className={secaoEdit === 'fundo' ? '' : 'hidden'}>
                 <label className="block text-xs font-bold text-gray-400">Fundo da página</label>
                 <p className="mb-2 text-[11px] text-gray-500">
                   Muda o ambiente quando alguém abre o teu perfil.
                 </p>
-                <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                   {FUNDOS.map((f) => (
                     <div key={f.id || 'padrao'} className="relative">
                       <button
@@ -822,11 +882,11 @@ export default function ProfilePage({
                             src={f.imagem}
                             alt=""
                             loading="lazy"
-                            className="block h-9 w-full rounded-md object-cover"
+                            className="block h-20 w-full rounded-md object-cover sm:h-24"
                           />
                         ) : (
                           <span
-                            className="block h-9 w-full rounded-md"
+                            className="block h-20 w-full rounded-md sm:h-24"
                             style={{ background: 'linear-gradient(135deg, #1b1230, #0b0716)' }}
                           />
                         )}
@@ -851,7 +911,7 @@ export default function ProfilePage({
               </section>
 
               {/* Cor das linhas / brilho do cartão e do avatar */}
-              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'estilo' ? '' : 'hidden'}`}>
                 <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
                   Estilo do perfil
                 </h3>
@@ -911,7 +971,7 @@ export default function ProfilePage({
               </section>
 
               {/* Música do perfil */}
-              <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'musica' ? '' : 'hidden'}`}>
                 <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
                   Música do perfil
                 </h3>
@@ -1041,7 +1101,7 @@ export default function ProfilePage({
               </section>
 
               {(isAdmin || me.is_admin) && (
-                <div className="rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">
+                <div className={`rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3 ${secaoEdit === 'estilo' ? '' : 'hidden'}`}>
                   <p className="text-xs font-black uppercase tracking-wider text-amber-300">
                     Efeitos de nome (admin)
                   </p>
@@ -1091,6 +1151,77 @@ export default function ProfilePage({
                 </div>
               )}
 
+              {/* Redes sociais + live (só admin, para testes) */}
+              {me?.is_admin && (
+                <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'redes' ? '' : 'hidden'}`}>
+                  <h3 className="mb-1 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                    Redes sociais
+                  </h3>
+                  <p className="mb-3 text-[11px] leading-relaxed text-gray-500">
+                    Cola o link ou escreve o @. Os ícones aparecem ao lado do teu nome no perfil.
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {REDES_SOCIAIS.map((rede) => (
+                      <label key={rede.id} className="block">
+                        <span className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
+                          <PlatformIcon platform={rede.id} className="h-3 w-3" />
+                          {rede.nome}
+                        </span>
+                        <input
+                          value={(form.socials && form.socials[rede.id]) || ''}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              socials: { ...(f.socials || {}), [rede.id]: e.target.value },
+                            }))
+                          }
+                          placeholder={rede.placeholder}
+                          maxLength={300}
+                          className={inputCls}
+                        />
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <h4 className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-gray-300">
+                      <Radio className="h-3.5 w-3.5 text-red-400" /> Live automática
+                    </h4>
+
+                    {minhaLive ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`live-badge live-${minhaLive.platform}`}>
+                          <span className="live-pulso" aria-hidden="true" />
+                          <PlatformIcon platform={minhaLive.platform} className="h-3 w-3" />
+                          em live
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          Estás em live na{' '}
+                          {PLATAFORMAS_LIVE.find((p) => p.id === minhaLive.platform)?.nome ||
+                            minhaLive.platform}
+                          .
+                        </span>
+                        <a
+                          href={minhaLive.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="ui-btn ui-btn-ghost ui-btn-sm ml-auto"
+                        >
+                          Abrir live
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] leading-relaxed text-gray-400">
+                        Deteção automática ativa. Quando começares a transmitir num dos canais
+                        ligados, o selo “em live” aparece sozinho no teu perfil, chat, membros e
+                        clips.
+                      </p>
+                    )}
+                  </div>
+                </section>
+              )}
+
+
               {err && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
                   {err}
@@ -1106,7 +1237,7 @@ export default function ProfilePage({
                 <button
                   onClick={guardar}
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-sm font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+                  className="ui-btn ui-btn-primary"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -1218,6 +1349,8 @@ export default function ProfilePage({
                 >
                   {me.username}
                 </span>
+                <LiveBadge username={me.username} />
+                <SocialLinks socials={me.socials} />
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
                 <span>Membro desde {criado}</span>
@@ -1355,7 +1488,7 @@ export default function ProfilePage({
             <div className="space-y-5">
               {feedMostrado.map((f) =>
                 f.tipo === 'clip' ? (
-                  <div key={f.chave} className="mx-auto w-full max-w-3xl">
+                  <div key={f.chave} className="mx-auto w-full max-w-4xl">
                     <ClipCard
                       clip={f.item}
                       user={me}
@@ -1387,7 +1520,7 @@ export default function ProfilePage({
           {isAdmin && (
             <button
               onClick={onPanelClick}
-              className="flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all hover:bg-violet-400 glow-violet"
+              className="ui-btn ui-btn-primary"
             >
               <LayoutDashboard className="h-4 w-4" />
               Painel Admin
@@ -1395,21 +1528,21 @@ export default function ProfilePage({
           )}
           <button
             onClick={abrirEditar}
-            className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="ui-btn ui-btn-ghost"
           >
             <Camera className="h-4 w-4" />
             Editar perfil
           </button>
           <button
             onClick={() => onProfile?.(me.username)}
-            className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="ui-btn ui-btn-ghost"
           >
             <Sparkles className="h-4 w-4" />
             Ver perfil público
           </button>
           <button
             onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
-            className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="ui-btn ui-btn-ghost"
           >
             <Sparkles className="h-4 w-4" />
             Novidades

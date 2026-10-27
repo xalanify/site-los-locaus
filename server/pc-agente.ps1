@@ -153,7 +153,7 @@ function RunJob($job) {
       $status = if ($codigo -eq 0) { 'concluido' } else { 'erro' }
       $erro = if ($codigo -eq 0) { $null } else { "O script saiu com codigo $codigo." }
       $saida = ''
-      if ($job.tipo -in @('specs', 'saude', 'instalados', 'discos')) {
+      if ($job.tipo -in @('specs', 'saude', 'instalados', 'discos', 'tweaks')) {
         try { $saida = [System.IO.File]::ReadAllText($out) } catch {}
         if ($saida.Length -gt 400000) { $saida = $saida.Substring($saida.Length - 400000) }
       }

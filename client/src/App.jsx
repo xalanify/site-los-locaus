@@ -10,7 +10,6 @@ import Hero from './components/Hero'
 import BetaBadge from './components/BetaBadge'
 import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
-import NoticiasHome from './components/NoticiasHome'
 import VideosModal from './components/VideosModal'
 import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
@@ -18,7 +17,6 @@ import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
-import NovidadesModal from './components/NovidadesModal'
 import BootScreen from './components/BootScreen'
 import ErrorBoundary from './components/ErrorBoundary'
 import { Toasts, Dialogos } from './components/Feedback'
@@ -265,8 +263,6 @@ function App() {
                           <Hero onVerVideos={() => setShowVideos(true)} />
                           {/* Só no telemóvel: instalar o site como app */}
                           <InstalarApp />
-                          {/* As últimas notícias (atualizadas de hora a hora) */}
-                          <NoticiasHome />
                         </>
                       }
                     />
@@ -361,7 +357,6 @@ function App() {
                 </main>
                 <Footer />
                 <BackToTop />
-                <NovidadesModal user={user} />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}

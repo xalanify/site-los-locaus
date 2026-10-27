@@ -223,6 +223,9 @@ function prepararTrabalho(payload, soAdmin) {
   if (tipo === 'instalados') {
     return { ...ferramentas.prepararInstalados(), tipo: 'instalados', ferramentaId: 'instalados' };
   }
+  if (tipo === 'tweaks') {
+    return { ...ferramentas.prepararTweaks(), tipo: 'tweaks', ferramentaId: 'tweaks' };
+  }
   if (tipo === 'specs') {
     return {
       ok: true,
@@ -360,6 +363,9 @@ function extrairResultado(tipo, saida, logs) {
   }
   if (tipo === 'instalados') {
     return ferramentas.parseInstalados(texto);
+  }
+  if (tipo === 'tweaks') {
+    return ferramentas.parseTweaks(texto);
   }
   if (tipo === 'specs' || tipo === 'saude') {
     // o script escreve o JSON na última linha

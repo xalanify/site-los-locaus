@@ -145,6 +145,7 @@ const XALANA_ACOES = {
   'xalana-a26': { nome: 'Power throttling desligado', desc: 'O Windows deixa de limitar processos em segundo plano.', nivel: 'extremo' },
   'xalana-a27': { nome: 'Arranque mais rápido: timeout 3s', desc: 'O menu de arranque espera apenas 3 segundos.', nivel: 'extremo' },
   'xalana-a28': { nome: 'ID de publicidade desligado', desc: 'Menos rastreio e publicidade personalizada.', nivel: 'extremo' },
+  'xalana-a29': { nome: 'Forçar modo escuro', desc: 'Windows e apps passam a usar o tema escuro.', nivel: 'minima' },
   'xalana-a23': { nome: 'Atraso de arranque das apps: 0', desc: 'As apps abrem sem o atraso artificial do Windows.', nivel: 'minima' },
 }
 
@@ -216,7 +217,7 @@ export default function FerramentasPage({ isAdmin = false }) {
   /* Ações selecionadas por nível do Otimizador by Xalana.
      Cada nível PARTE do anterior: normal = mínimo + extras,
      extremo = tudo. O que se corrige depois é só exceção. */
-  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4', 'xalana-a23']
+  const XALANA_MINIMA = ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4', 'xalana-a23', 'xalana-a29']
   const PRESET_XALANA = {
     minima: XALANA_MINIMA,
     normal: [
@@ -236,6 +237,28 @@ export default function FerramentasPage({ isAdmin = false }) {
   /* painel "o que vai fazer" — fechado por defeito
      (ninguém quer 15 checkboxes à cara logo) */
   const [xalanaAberto, setXalanaAberto] = useState(null)
+  const [otimizacoesAberto, setOtimizacoesAberto] = useState(false)
+  const [tweaksStatus, setTweaksStatus] = useState({})
+  const [tweaksLoading, setTweaksLoading] = useState(false)
+  const [tweaksSel, setTweaksSel] = useState(new Set())
+  const [xalanaAplicadas, setXalanaAplicadas] = useState(() => {
+    try {
+      const l = JSON.parse(localStorage.getItem('locaus:xalana-aplicadas') || '[]')
+      return Array.isArray(l) ? l : []
+    } catch {
+      return []
+    }
+  })
+
+  const guardarAplicadas = (ids) => {
+    const lista = Array.isArray(ids) ? ids : []
+    setXalanaAplicadas(lista)
+    try {
+      localStorage.setItem('locaus:xalana-aplicadas', JSON.stringify(lista))
+    } catch {
+      /* sem armazenamento */
+    }
+  }
 
   const toggleXalanaAcao = (nivel, id) => {
     setXalanaSel((p) => {
@@ -421,6 +444,38 @@ export default function FerramentasPage({ isAdmin = false }) {
     throw new Error('O PC demorou demasiado a responder.')
   }
 
+  const carregarTweaks = async () => {
+    setTweaksLoading(true)
+    setTweaksSel(new Set())
+    try {
+      if (dados?.podeLocal === false) {
+        if (!agente.online) {
+          setTweaksStatus({})
+          return
+        }
+        const job = await esperarTrabalho({ tipo: 'tweaks' }, 45000)
+        setTweaksStatus(job?.resultado?.tweaks || {})
+      } else {
+        const r = await fetch('/api/ferramentas/tweaks', { headers: authHeaders() })
+        const d = await r.json().catch(() => ({}))
+        setTweaksStatus(d?.tweaks || {})
+      }
+    } catch {
+      setTweaksStatus({})
+    } finally {
+      setTweaksLoading(false)
+    }
+  }
+
+  const alternarTweaks = (id) => {
+    setTweaksSel((prev) => {
+      const novo = new Set(prev)
+      if (novo.has(id)) novo.delete(id)
+      else novo.add(id)
+      return novo
+    })
+  }
+
   const pedirDiscos = async () => {
     try {
       const j = await esperarTrabalho({ tipo: 'discos' }, 40000)
@@ -601,6 +656,10 @@ export default function FerramentasPage({ isAdmin = false }) {
 
   const executar = async (id, argOverride, acoes) => {
     if (aCorrer) return
+    if (id === 'xalana-reverter') {
+      const sel = Array.isArray(acoes) ? acoes : []
+      guardarAplicadas(sel.length ? xalanaAplicadas.filter((a) => !sel.includes(a)) : [])
+    } else if (id.startsWith('xalana-') && Array.isArray(acoes) && acoes.length) guardarAplicadas(acoes)
     setAviso(null)
     const alvo = ferramentas.find((f) => f.id === id)
     const arg = argOverride !== undefined ? argOverride : alvo?.disco ? discoSel : idLivre
@@ -800,7 +859,7 @@ export default function FerramentasPage({ isAdmin = false }) {
               type="button"
               onClick={ligarPc}
               disabled={aLigarPc}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-black text-white transition-colors hover:bg-violet-500 disabled:opacity-60"
+              className="ui-btn ui-btn-primary ui-btn-lg mt-5 w-full"
             >
               {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {aLigarPc ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
@@ -852,25 +911,32 @@ export default function FerramentasPage({ isAdmin = false }) {
             Criar ponto de restauro antes de otimizar
             <span className="font-semibold text-gray-500">(recomendado)</span>
           </label>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { nome: 'Limpar RAM', busca: 'Limpar RAM', Icone: MemoryStick },
-              { nome: 'Temporários', busca: 'Limpar ficheiros temporários', Icone: Eraser },
-              { nome: 'DNS', busca: 'Limpar a cache de DNS', Icone: Globe },
-              { nome: 'Reciclagem', busca: 'Esvaziar a reciclagem', Icone: Trash2 },
-            ].map((q) => (
-              <button
-                key={q.nome}
-                type="button"
-                onClick={() => {
-                  setCat('Limpeza')
-                  setSubCat('Todas')
-                  setBusca(q.busca)
-                }}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2 py-2 text-[10px] font-black uppercase tracking-wide text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+              {
+                nome: 'Estado do PC',
+                valor: podeLocal === true ? 'Local' : agente.online ? 'Ligado' : 'Offline',
+                Icone: Monitor,
+                cor: podeLocal === true || agente.online ? 'text-emerald-300' : 'text-amber-300',
+              },
+              { nome: 'Ferramentas', valor: ferramentas.length, Icone: Wrench, cor: 'text-violet-300' },
+              { nome: 'Nesta vista', valor: visiveis.length, Icone: Boxes, cor: 'text-sky-300' },
+              { nome: 'Instalados', valor: instalados.size, Icone: Package, cor: 'text-fuchsia-300' },
+            ].map((s) => (
+              <div
+                key={s.nome}
+                className="glass flex items-center gap-2.5 rounded-2xl border border-white/10 px-3 py-2.5"
               >
-                <q.Icone className="h-3.5 w-3.5 text-violet-300" /> {q.nome}
-              </button>
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] ${s.cor}`}>
+                  <s.Icone className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[9px] font-black uppercase tracking-wider text-gray-500">
+                    {s.nome}
+                  </span>
+                  <span className="block truncate text-sm font-black text-white">{s.valor}</span>
+                </span>
+              </div>
             ))}
           </div>
         </motion.div>
@@ -1026,7 +1092,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                     executar(ids[0])
                   }}
                   disabled={aCorrer || !podeExecutar}
-                  className="rounded-lg bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+                  className="ui-btn ui-btn-primary ui-btn-sm"
                   title="Corre os selecionados um de cada vez, por ordem"
                 >
                   <Play className="h-3.5 w-3.5" /> Executar selecionados ({selecionados.size})
@@ -1195,7 +1261,7 @@ export default function FerramentasPage({ isAdmin = false }) {
               {busca.trim() && (
                 <button
                   onClick={() => setBusca('')}
-                  className="flex items-center gap-1.5 rounded-full bg-violet-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400"
+                  className="ui-btn ui-btn-primary ui-btn-sm"
                 >
                   <X className="h-3.5 w-3.5" /> Limpar pesquisa
                 </button>
@@ -1213,6 +1279,7 @@ export default function FerramentasPage({ isAdmin = false }) {
             </div>
           </div>
         ) : cat === 'Otimizador by Xalana' ? (
+          <>
           <div className="grid grid-cols-1 gap-4 py-10">
             {(['minima', 'normal', 'extremo']).map((nivel) => {
               const nivelLabel = { minima: 'Mínima', normal: 'Normal', extremo: 'Extremo' }[nivel]
@@ -1256,7 +1323,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                       executar(`xalana-${nivel}`, null, ids)
                     }}
                     disabled={aCorrer || !podeExecutar}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
+                    className="ui-btn ui-btn-primary w-full"
                   >
                     <Play className="h-4 w-4" fill="currentColor" />
                     {aCorrer ? 'A correr…' : `Executar nível ${nivelLabel}`}
@@ -1342,6 +1409,37 @@ export default function FerramentasPage({ isAdmin = false }) {
               )
             })}
           </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+            <div>
+              <p className="text-xs font-black text-white">Todas as otimizações</p>
+              <p className="text-[11px] text-gray-500">
+                Vê o que está aplicado, o que falta e reverte num clique.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setOtimizacoesAberto(true)
+                  carregarTweaks()
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[11px] font-black text-violet-200 transition-colors hover:bg-violet-500/25"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" /> Ver todas as otimizações
+              </button>
+              {xalanaAplicadas.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => executar('xalana-reverter')}
+                  disabled={aCorrer || !podeExecutar}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-red-400/30 bg-red-500/15 px-3 py-2 text-[11px] font-black text-red-200 transition-colors hover:bg-red-500/25 disabled:opacity-40"
+                >
+                  <RefreshCcw className="h-3.5 w-3.5" /> Reverter
+                </button>
+              )}
+            </div>
+          </div>
+          </>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {visiveis.map((f, i) => {
@@ -1465,7 +1563,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                       <button
                         onClick={() => executar(f.id)}
                         disabled={ocupado || !discoSel}
-                        className="flex items-center gap-1.5 rounded-lg bg-violet-500 px-3 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+                        className="ui-btn ui-btn-primary ui-btn-sm"
                       >
                         <Search className="h-3.5 w-3.5" /> Scan
                       </button>
@@ -1482,7 +1580,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                       <button
                         onClick={() => executar(f.id)}
                         disabled={ocupado || !idLivre.trim()}
-                        className="flex items-center gap-1.5 rounded-lg bg-violet-500 px-3 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+                        className="ui-btn ui-btn-primary ui-btn-sm"
                       >
                         <Search className="h-3.5 w-3.5" /> Instalar
                       </button>
@@ -1491,7 +1589,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                     <button
                       onClick={() => executar(f.id)}
                       disabled={ocupado || !(podeLocal || agente.online)}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 text-[13px] font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-40 disabled:hover:bg-violet-500"
+                      className="ui-btn ui-btn-primary w-full"
                     >
                       {aCorrer === f.id ? (
                         <Loader2 className="h-4 w-4 animate-spin text-white/80" />
@@ -1533,6 +1631,189 @@ export default function FerramentasPage({ isAdmin = false }) {
           {aCorrer ? 'a correr' : (podeLocal || agente.online) ? 'pronto para executar' : 'PC desligado'}
         </p>
       </div>
+
+      {/* -------- janela flutuante: todas as otimizações -------- */}
+      <AnimatePresence>
+        {otimizacoesAberto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-5"
+            onClick={() => setOtimizacoesAberto(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.98 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-violet-500/30 shadow-2xl"
+            >
+              <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
+                <div>
+                  <h2 className="flex items-center gap-2 font-display text-lg font-black text-white">
+                    <SlidersHorizontal className="h-4 w-4 text-violet-300" /> Todas as otimizações
+                  </h2>
+                  <p className="mt-0.5 text-[11px] text-gray-500">
+                    Otimizações aplicadas no teu PC e reversão das selecionadas.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOtimizacoesAberto(false)}
+                  className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
+                  aria-label="Fechar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <p className="text-[11px] text-gray-400">
+                    Estado lido do Windows. Só otimizações — nada de programas.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={carregarTweaks}
+                    disabled={tweaksLoading}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-violet-400/30 bg-violet-500/10 px-2.5 py-1.5 text-[10px] font-black text-violet-200 hover:bg-violet-500/20 disabled:opacity-40"
+                  >
+                    {tweaksLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="h-3 w-3" />
+                    )}
+                    Atualizar estado
+                  </button>
+                </div>
+
+                {tweaksLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
+                    <Loader2 className="h-4 w-4 animate-spin text-violet-300" /> A ler o estado do PC…
+                  </div>
+                ) : Object.keys(tweaksStatus).length === 0 ? (
+                  <p className="rounded-xl border border-amber-400/20 bg-amber-500/[0.06] px-3 py-3 text-[11px] text-amber-200">
+                    Não consegui ler o estado do Windows. Liga o PC pelo LOCAUS-PC.bat e clica em
+                    “Atualizar estado”.
+                  </p>
+                ) : (
+                  ['minima', 'normal', 'extremo'].map((nivel) => {
+                    const label = { minima: 'Mínima', normal: 'Normal', extremo: 'Extremo' }[nivel]
+                    const acoes = Object.entries(XALANA_ACOES).filter(([, a]) => a.nivel === nivel)
+                    return (
+                      <section key={nivel}>
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-violet-300">
+                            {label}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-500">
+                            {acoes.length} opções
+                          </span>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {acoes.map(([id, acao]) => {
+                            const estado = tweaksStatus[id] ?? tweaksStatus[id.replace('xalana-', '')]
+                            const aplicada = estado === true
+                            const desconhecida = estado === undefined
+                            const selecionada = tweaksSel.has(id)
+                            return (
+                              <label
+                                key={id}
+                                className={`flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 transition-colors ${
+                                  aplicada
+                                    ? 'border-emerald-400/30 bg-emerald-500/[0.07]'
+                                    : 'border-white/10 bg-white/[0.02]'
+                                } ${aplicada ? '' : 'cursor-default'}`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selecionada}
+                                  disabled={!aplicada}
+                                  onChange={() => alternarTweaks(id)}
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border border-white/20 bg-white/10 disabled:opacity-25"
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-[11.5px] font-bold leading-tight text-white">
+                                    {acao.nome}
+                                  </p>
+                                  <p className="mt-0.5 text-[10px] leading-snug text-gray-500">
+                                    {acao.desc}
+                                  </p>
+                                  <p
+                                    className={`mt-1 text-[9px] font-black uppercase tracking-wider ${
+                                      aplicada
+                                        ? 'text-emerald-300'
+                                        : desconhecida
+                                          ? 'text-gray-500'
+                                          : 'text-gray-600'
+                                    }`}
+                                  >
+                                    {aplicada
+                                      ? 'aplicada no PC'
+                                      : desconhecida
+                                        ? 'não detetada'
+                                        : 'não aplicada'}
+                                  </p>
+                                </div>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </section>
+                    )
+                  })
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 px-4 py-3 sm:px-5">
+                <p className="text-[10px] text-gray-500">
+                  Seleciona as que queres reverter ({tweaksSel.size} selecionada
+                  {tweaksSel.size === 1 ? '' : 's'}).
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const todas = new Set(
+                        Object.entries(tweaksStatus)
+                          .filter(([, v]) => v === true)
+                          .map(([id]) => (id.startsWith('xalana-') ? id : `xalana-${id}`)),
+                      )
+                      setTweaksSel(todas)
+                    }}
+                    disabled={tweaksLoading}
+                    className="rounded-xl border border-white/15 px-3 py-2 text-[11px] font-bold text-gray-300 hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Selecionar aplicadas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sel = [...tweaksSel]
+                      if (!sel.length) return
+                      setOtimizacoesAberto(false)
+                      executar('xalana-reverter', null, sel)
+                      setTimeout(carregarTweaks, 3000)
+                    }}
+                    disabled={aCorrer || !podeExecutar || tweaksSel.size === 0}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-red-500 px-3 py-2 text-[11px] font-black text-white hover:bg-red-400 disabled:opacity-40"
+                  >
+                    <RefreshCcw className="h-3.5 w-3.5" /> Reverter selecionadas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOtimizacoesAberto(false)}
+                    className="rounded-xl border border-white/15 px-3 py-2 text-[11px] font-bold text-gray-300 hover:bg-white/10"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* -------- aviso flutuante quando uma ferramenta termina -------- */}
       <AnimatePresence>

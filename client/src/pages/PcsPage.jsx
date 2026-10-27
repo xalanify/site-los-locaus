@@ -609,7 +609,7 @@ export default function PcsPage({ isAdmin = false }) {
         {/* ---------------- Tabela ---------------- */}
         <div className="glass mb-6 overflow-hidden rounded-2xl">
           <div className="flex flex-col items-start gap-1 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
+            <h2 className="ui-section-title font-display">
               Máquinas do grupo
             </h2>
             <span className="text-[11px] font-bold text-gray-400">
@@ -849,7 +849,7 @@ export default function PcsPage({ isAdmin = false }) {
             <button
               onClick={carregarSaude}
               disabled={saude.aCarregar}
-              className="flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-sm font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-60"
+              className="ui-btn ui-btn-primary"
             >
               <Activity className={`h-4 w-4 ${saude.aCarregar ? 'animate-pulse' : ''}`} />
               {saude.aCarregar ? 'A ler…' : saude.dados ? 'Atualizar saúde' : 'Ver saúde do PC'}

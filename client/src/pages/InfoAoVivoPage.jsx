@@ -274,7 +274,7 @@ export default function InfoAoVivoPage() {
               <button
                 onClick={instalar}
                 disabled={aInstalar}
-                className="flex items-center gap-2 rounded-xl bg-violet-500 px-6 py-3.5 font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+                className="ui-btn ui-btn-primary ui-btn-lg"
               >
                 {aInstalar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 Instalar e abrir agora

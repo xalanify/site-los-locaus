@@ -20,10 +20,8 @@ import {
   MapPin,
   Crown,
   Star,
-  Shield,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import EquipasEsports from '../components/EquipasEsports'
 import { R6_TORNEIOS } from '../data/r6Torneios'
 import { CS2_TORNEIOS } from '../data/cs2Torneios'
 import { authHeaders } from '../lib/auth'
@@ -742,7 +740,7 @@ function FortniteTorneiosTab() {
 
       <section className="rounded-2xl border border-white/10 bg-[#120d20]/80 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-400">
+          <h2 className="ui-section-title font-display">
             <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
           </h2>
           <div className="flex items-center gap-2">
@@ -1022,7 +1020,7 @@ function CS2PrevisoesTab({ user }) {
 
       {abaCs2 === 'proximos' ? (
       <section>
-        <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+        <h2 className="ui-section-title font-display mb-2">
           <Target className="h-4 w-4 text-sky-300" /> Próximos jogos CS2
           <span className="ml-auto rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-500">
             Atualiza sozinho
@@ -1062,7 +1060,7 @@ function CS2PrevisoesTab({ user }) {
         <>
       {resultados.length > 0 && (
         <section>
-          <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+          <h2 className="ui-section-title font-display mb-2">
             <Trophy className="h-4 w-4 text-amber-300" /> Resultados CS2
           </h2>
           <div className="space-y-3">
@@ -1074,7 +1072,7 @@ function CS2PrevisoesTab({ user }) {
       )}
 
       <section>
-        <h2 className="mb-2 flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+        <h2 className="ui-section-title font-display mb-2">
           <Star className="h-4 w-4 text-amber-300" /> Últimos vencedores CS2
         </h2>
         <div className="overflow-x-auto pb-1">
@@ -1108,7 +1106,6 @@ export default function PrevisoesPage({ user }) {
   const [classificacao, setClassificacao] = useState([])
   const [classLoading, setClassLoading] = useState(false)
   const [classificacaoAberta, setClassificacaoAberta] = useState(false)
-  const [equipasAberto, setEquipasAberto] = useState(false)
   const [classTotal, setClassTotal] = useState([])
   const [classModalLoading, setClassModalLoading] = useState(false)
   const [resultadosNovos, setResultadosNovos] = useState([])
@@ -1335,16 +1332,7 @@ export default function PrevisoesPage({ user }) {
         >
           <Medal className="h-4 w-4" /> Ver classificações
         </button>
-        <button
-          type="button"
-          onClick={() => setEquipasAberto(true)}
-          className="flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-sky-200 transition-colors hover:bg-sky-500/20"
-        >
-          <Shield className="h-4 w-4" /> Pesquisar equipas
-        </button>
       </div>
-
-      <EquipasEsports aberto={equipasAberto} onFechar={() => setEquipasAberto(false)} />
 
       {jogo === 'fortnite' && <FortniteTorneiosTab />}
 
@@ -1535,7 +1523,7 @@ export default function PrevisoesPage({ user }) {
           </section>
 
           <div>
-            <h2 className="mb-2 flex items-center gap-2 px-1 font-display text-sm font-black uppercase tracking-wider text-gray-400">
+            <h2 className="ui-section-title font-display mb-2 px-1">
               <Swords className="h-4 w-4 text-violet-400" /> Jogos já jogados
             </h2>
             {resultadosFiltrados.length ? (
@@ -1562,7 +1550,7 @@ export default function PrevisoesPage({ user }) {
             <>
               <Podium users={classificacao} />
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025]">
-                <div className="hidden grid-cols-[48px_1fr_70px_70px_70px_80px] gap-2 border-b border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-gray-500 sm:grid">
+                <div className="hidden grid-cols-[56px_1fr_90px_90px_90px_110px] gap-2 border-b border-white/10 px-4 py-3 text-xs font-black uppercase tracking-wider text-gray-500 sm:grid">
                   <span>#</span>
                   <span>Membro</span>
                   <span className="text-center">Acertos</span>
@@ -1573,25 +1561,25 @@ export default function PrevisoesPage({ user }) {
                 {classificacao.map((u) => (
                   <div
                     key={u.id}
-                    className={`grid grid-cols-[32px_1fr_auto] items-center gap-2 border-b border-white/5 px-3 py-2.5 last:border-0 sm:grid-cols-[48px_1fr_70px_70px_70px_80px] sm:px-4 ${
+                    className={`grid grid-cols-[36px_1fr_auto] items-center gap-2 border-b border-white/5 px-3 py-3.5 last:border-0 sm:grid-cols-[56px_1fr_90px_90px_90px_110px] sm:px-4 ${
                       u.id === Number(meuNome) ? 'bg-violet-500/[0.08]' : ''
                     }`}
                   >
-                    <span className={`text-sm font-black ${u.pos <= 3 ? 'text-amber-300' : 'text-gray-500'}`}>{u.pos}</span>
-                    <span className="flex min-w-0 items-center gap-2">
-                      <AvatarImg src={u.avatar_url} name={u.username} className="h-7 w-7" />
-                      <span className="truncate text-xs font-bold text-white">
+                    <span className={`text-base font-black ${u.pos <= 3 ? 'text-amber-300' : 'text-gray-500'}`}>{u.pos}</span>
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <AvatarImg src={u.avatar_url} name={u.username} className="h-8 w-8" />
+                      <span className="truncate text-sm font-bold text-white">
                         {u.username}
                         {u.id === Number(meuNome) ? <span className="ml-1 text-violet-300">(tu)</span> : null}
                       </span>
                     </span>
-                    <span className="hidden text-center text-xs font-bold text-emerald-300 sm:block">{u.acertos}</span>
-                    <span className="hidden text-center text-xs font-bold text-red-300 sm:block">{u.falhas}</span>
-                    <span className="hidden text-center text-xs font-semibold text-gray-400 sm:block">{u.total}</span>
-                    <span className="hidden text-center text-xs font-black text-white sm:block">
+                    <span className="hidden text-center text-sm font-bold text-emerald-300 sm:block">{u.acertos}</span>
+                    <span className="hidden text-center text-sm font-bold text-red-300 sm:block">{u.falhas}</span>
+                    <span className="hidden text-center text-sm font-semibold text-gray-400 sm:block">{u.total}</span>
+                    <span className="hidden text-center text-sm font-black text-white sm:block">
                       {u.acertos + u.falhas ? Math.round((u.acertos / (u.acertos + u.falhas)) * 100) : 0}%
                     </span>
-                    <span className="flex items-center gap-2 text-[10px] font-bold sm:hidden">
+                    <span className="flex items-center gap-2 text-[11px] font-bold sm:hidden">
                       <span className="text-emerald-300">{u.acertos} ✓</span>
                       <span className="text-red-300">{u.falhas} ✗</span>
                       <span className="text-gray-500">{u.total} jogos</span>
@@ -1632,7 +1620,7 @@ export default function PrevisoesPage({ user }) {
           onClick={() => setClassificacaoAberta(false)}
         >
           <div
-            className="w-full max-w-lg overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60"
+            className="w-full max-w-3xl overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
@@ -1656,7 +1644,7 @@ export default function PrevisoesPage({ user }) {
               Classificação total · R6 + CS2
             </div>
 
-            <div className="max-h-[55dvh] overflow-y-auto p-3">
+            <div className="max-h-[75dvh] overflow-y-auto p-3 sm:p-4">
               {classModalLoading ? (
                 <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
                   <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
@@ -1676,14 +1664,14 @@ export default function PrevisoesPage({ user }) {
                       {lista.map((u) => (
                         <div
                           key={u.id}
-                          className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2 ${
+                          className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
                             u.pos === 1
                               ? 'border-amber-400/30 bg-amber-500/[0.07]'
                               : 'border-white/5 bg-white/[0.025]'
                           }`}
                         >
                           <span
-                            className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-black ${
+                            className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-black ${
                               u.pos === 1
                                 ? 'bg-amber-400 text-black'
                                 : u.pos === 2
@@ -1695,16 +1683,16 @@ export default function PrevisoesPage({ user }) {
                           >
                             {u.pos}
                           </span>
-                          <AvatarImg src={u.avatar_url} name={u.username} className="h-7 w-7" />
+                          <AvatarImg src={u.avatar_url} name={u.username} className="h-8 w-8" />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-black text-white">{u.username}</p>
-                            <p className="text-[10px] font-semibold text-gray-500">
+                            <p className="truncate text-sm font-black text-white">{u.username}</p>
+                            <p className="text-[11px] font-semibold text-gray-500">
                               R6 {u.r6 || 0} · CS2 {u.cs2 || 0}
                             </p>
                           </div>
                           <span className="shrink-0 text-right">
-                            <span className="block text-sm font-black text-emerald-300">{u.acertos}</span>
-                            <span className="block text-[8px] font-black uppercase tracking-wider text-gray-500">
+                            <span className="block text-base font-black text-emerald-300">{u.acertos}</span>
+                            <span className="block text-[9px] font-black uppercase tracking-wider text-gray-500">
                               acertos
                             </span>
                           </span>
@@ -1722,7 +1710,7 @@ export default function PrevisoesPage({ user }) {
       {/* janela flutuante de resultados */}
       {modalResultados && resultadosNovos.length > 0 && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60">
+          <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60">
             <div className="relative overflow-hidden bg-gradient-to-br from-violet-600/30 to-fuchsia-600/10 px-5 pb-4 pt-5 text-center">
               <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-500/20 blur-2xl" />
               <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-amber-300 ring-1 ring-white/20">
@@ -1735,7 +1723,7 @@ export default function PrevisoesPage({ user }) {
                 {resultadosNovos.filter((r) => r.correct).length} de {resultadosNovos.length} certas.
               </p>
             </div>
-            <div className="max-h-[45dvh] space-y-2 overflow-y-auto p-3">
+            <div className="max-h-[65dvh] space-y-2 overflow-y-auto p-4">
               {resultadosNovos.map((r) => (
                 <div
                   key={r.match_id}
@@ -1772,7 +1760,7 @@ export default function PrevisoesPage({ user }) {
               </button>
               <button
                 onClick={fecharResultados}
-                className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-2.5 text-xs font-black text-white hover:brightness-110"
+                className="ui-btn ui-btn-primary flex-1"
               >
                 Fechar
               </button>

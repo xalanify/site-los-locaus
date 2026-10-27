@@ -33,7 +33,7 @@ export const BANNERS = [
       ficheiro: `/perfil/cardbanner/${n}.webp?v=2`,
       cor: CORES_BANNER[i % CORES_BANNER.length] || '#a855f7',
     }
-  }),
+  }).filter((b) => b.id !== 'g07' && b.id !== 'g12'),
   {
     id: 'g18',
     nome: 'War 01',

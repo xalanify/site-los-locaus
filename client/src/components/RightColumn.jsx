@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Megaphone, Users, ChevronRight } from 'lucide-react'
 import AvatarImg from './AvatarImg'
+import LiveBadge from './LiveBadge'
 import { authHeaders } from '../lib/auth'
 import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
@@ -158,6 +159,7 @@ export default function RightColumn() {
                       >
                         {m.display_name || m.username}
                       </span>
+                      <LiveBadge username={m.username} compacto />
                       {/* Distinções: só as gemas (o nome fica no título) */}
                       {joias.length > 0 && (
                         <span className="flex shrink-0 items-center gap-1">

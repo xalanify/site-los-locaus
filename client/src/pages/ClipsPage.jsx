@@ -1042,7 +1042,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
   const bitrateOrig = file && dur > 0 ? (file.size * 8) / dur : 0
   const base = bitrateOrig > 0 ? bitrateOrig : 6000000
   // alvo: 75% do limite para o vídeo (o resto fica para o áudio e para a margem)
-  const bitrateMax = sel > 0 ? Math.max(300000, (MAXB * 0.75 * 8) / sel - 128000) : Infinity
+  const bitrateMax = vaiParaYT ? Infinity : sel > 0 ? Math.max(300000, (MAXB * 0.75 * 8) / sel - 128000) : Infinity
   const vbps = Math.round(Math.max(Math.min(500000, base), Math.min(base, bitrateMax)))
   // sem compressão a fazer, o corte sai com o tamanho do original
   const aComprimir = !vaiParaYT && bitrateOrig > 0 && bitrateOrig * sel > MAXB * 0.75 * 8
@@ -1289,21 +1289,27 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
     try {
       let blob = null
-      for (let tent = 1; tent <= 4; tent++) {
-        blob = await gravar(escala, FPS, tent)
-        if (blob.size <= MAXB || tent === 4) break
-        // ficou acima do limite: baixa a resolução (mantendo os 60 fps),
-        // mas NUNCA abaixo de metade — abaixo disso a qualidade fica má
-        const novoEscala = Math.max(0.5, escala * 0.75)
-        if (novoEscala === escala) break // já no mínimo — não baixa mais
-        escala = novoEscala
+      if (vaiParaYT) {
+        // YouTube não tem o limite de 50 MB: grava na qualidade máxima,
+        // sem reduzir resolução para "caber" no Supabase.
+        blob = await gravar(1, FPS, 1)
+      } else {
+        for (let tent = 1; tent <= 4; tent++) {
+          blob = await gravar(escala, FPS, tent)
+          if (blob.size <= MAXB || tent === 4) break
+          // ficou acima do limite: baixa a resolução (mantendo os 60 fps),
+          // mas NUNCA abaixo de metade — abaixo disso a qualidade fica má
+          const novoEscala = Math.max(0.5, escala * 0.75)
+          if (novoEscala === escala) break // já no mínimo — não baixa mais
+          escala = novoEscala
+        }
       }
       if (graph) graph.monitor.gain.value = 1
       setTrimming(null)
       if (!blob || !blob.size) return setError('O corte não deu resultado — tenta outra vez.')
 
       const ficou = Math.round((blob.size / 1048576) * 10) / 10
-      if (blob.size > MAXB) {
+      if (!vaiParaYT && blob.size > MAXB) {
         return setError(
           `Mesmo a reduzir a resolução ficou em ${ficou} MB (limite ${maxMB} MB) — escolhe menos segundos do vídeo.`,
         )
@@ -1403,7 +1409,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             </div>
             <button
               onClick={abrirPublicar}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-violet-900/30 transition-all hover:brightness-110 hover:shadow-violet-800/40"
+              className="ui-btn ui-btn-primary ui-btn-lg"
             >
               <Plus className="h-4 w-4" /> Publicar
             </button>
@@ -1545,7 +1551,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   <button
                     type="submit"
                     disabled={msgEnviando}
-                    className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2 text-[12px] font-black text-white hover:bg-violet-400 disabled:opacity-50"
+                    className="ui-btn ui-btn-primary"
                   >
                     {msgEnviando ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -1809,14 +1815,14 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       <button
                         onClick={playSelection}
                         disabled={!!trimming || dur <= 0}
-                        className="rounded-full bg-white/10 px-3.5 py-2 text-xs font-bold text-gray-200 hover:bg-white/20 disabled:opacity-40"
+                        className="ui-btn ui-btn-ghost ui-btn-sm"
                       >
                         Ver só o trecho
                       </button>
                       <button
                         onClick={cutVideo}
                         disabled={!!trimming || dur <= 0}
-                        className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3.5 py-2 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-40"
+                        className="ui-btn ui-btn-primary ui-btn-sm"
                       >
                         <Scissors className="h-3.5 w-3.5" />
                         {trimming ? 'A cortar…' : over ? 'Cortar para caber' : 'Cortar vídeo'}
@@ -1959,14 +1965,14 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         setShowForm(false)
                         resetForm()
                       }}
-                      className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-gray-300 hover:bg-white/20"
+                      className="ui-btn ui-btn-ghost"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={submit}
                       disabled={progress >= 0}
-                      className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2 text-sm font-bold text-white hover:bg-violet-600 disabled:opacity-50"
+                      className="ui-btn ui-btn-primary"
                     >
                       {progress >= 0 ? (
                         <>

@@ -160,7 +160,7 @@ export default function NoticiaModal({ noticia, onFechar }) {
                 href={noticia.link}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2 text-xs font-black text-white transition hover:brightness-110"
+                className="ui-btn ui-btn-primary ui-btn-sm"
               >
                 Ler notícia completa <ExternalLink className="h-3.5 w-3.5" />
               </a>

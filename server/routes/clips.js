@@ -46,6 +46,19 @@ function clipUrl(clip) {
   }
 }
 
+function lerPlaylist(valor) {
+  if (Array.isArray(valor)) return valor;
+  if (typeof valor === 'string') {
+    try {
+      const p = JSON.parse(valor);
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 /* ============================================================
    Otimização em segundo plano (1080p H.264 + som)
 
@@ -106,7 +119,62 @@ async function decorate(db, rows, auth) {
   const likedSet = new Set(liked.map((r) => Number(r.clip_id)));
   const savedSet = new Set(saved.map((r) => Number(r.clip_id)));
 
-  return visible.map((c) => ({
+  // Clips que fazem parte de playlists (edição com vários clips)
+  const playlistIds = [
+    ...new Set(
+      visible.flatMap((c) =>
+        lerPlaylist(c.playlist)
+          .map((p) => Number(p && p.id !== undefined ? p.id : p))
+          .filter((n) => Number.isFinite(n) && n > 0),
+      ),
+    ),
+  ];
+  let playlistPorId = new Map();
+  if (playlistIds.length) {
+    const rows = await db
+      .prepare(SELECT_SQL + ' WHERE c.id = ANY(?::int[])')
+      .all(playlistIds);
+    playlistPorId = new Map(rows.map((r) => [Number(r.id), r]));
+  }
+
+  return visible.map((c) => {
+    const playlist = lerPlaylist(c.playlist);
+    const items = playlist
+      .map((p) => {
+        if (p && p.file) {
+          const file = String(p.file)
+          if (!/^[a-f0-9]{32}\.[a-z0-9]{2,5}$/i.test(file)) return null
+          return {
+            id: null,
+            title: p.title || 'Clip',
+            url: storage.publicUrl(BUCKET, file),
+            remoto: null,
+            thumb_url: null,
+            start: Math.max(0, Number(p.start) || 0),
+            end: p.end == null ? null : Number(p.end),
+          }
+        }
+        const pid = Number(p && p.id !== undefined ? p.id : p);
+        const r = playlistPorId.get(pid);
+        if (!r) return null;
+        if (r.visibility === 'private' && !(uid && Number(r.user_id) === uid)) return null;
+        return {
+          id: Number(r.id),
+          title: r.title,
+          url: clipUrl(r),
+          remoto: r.youtube_id || null,
+          thumb_url: r.thumb || null,
+          start: p && p.start != null ? Number(p.start) : Number(r.start_sec) || 0,
+          end:
+            p && p.end != null
+              ? Number(p.end)
+              : r.end_sec == null
+                ? null
+                : Number(r.end_sec),
+        };
+      })
+      .filter(Boolean);
+    return {
     id: Number(c.id),
     title: c.title,
     game: c.game || null,
@@ -132,8 +200,13 @@ async function decorate(db, rows, auth) {
     mine: !!(uid && Number(c.user_id) === uid),
     liked: !!(uid && likedSet.has(Number(c.id))),
     saved: !!(uid && savedSet.has(Number(c.id))),
+    playlist,
+    items,
+    music_url: c.music_url || null,
+    music_volume: c.music_volume == null ? 0.25 : Number(c.music_volume),
     created_at: c.created_at,
-  }));
+    }
+  });
 }
 
 const SELECT_SQL = `
@@ -357,11 +430,60 @@ router.post('/confirm', requireUserOrAdmin, async (req, res) => {
     if (!uid) return res.status(401).json({ error: 'Inicia sessão para continuares' });
 
     const meta = metaFromQuery(b);
+    let playlist = [];
+    if (Array.isArray(b.playlist) && b.playlist.length) {
+      for (const item of b.playlist.slice(0, 10)) {
+        const f = String((item && item.file) || '');
+        if (!/^[a-f0-9]{32}\.[a-z0-9]{2,5}$/i.test(f)) {
+          return res.status(400).json({ error: 'Um dos clips da sequência é inválido.' });
+        }
+        const u = storage.publicUrl(BUCKET, f);
+        const h = await fetch(u, { method: 'HEAD' });
+        if (!h.ok) {
+          return res.status(400).json({ error: 'Um dos clips não chegou ao Supabase — tenta outra vez.' });
+        }
+        const bytesItem = Number(h.headers.get('content-length') || 0);
+        if (bytesItem > MAX_BYTES) {
+          storage.remove(BUCKET, f).catch(() => {});
+          return res.status(413).json({ error: `Um dos clips é demasiado grande (máx. ${MAX_MB} MB).` });
+        }
+        const startItem = Math.max(0, Math.min(86400, Number(item.start) || 0));
+        const endItemBruto = item.end == null || item.end === '' ? null : Number(item.end);
+        const endItem =
+          endItemBruto == null || !Number.isFinite(endItemBruto) || endItemBruto <= startItem
+            ? null
+            : Math.min(86400, endItemBruto);
+        playlist.push({
+          file: f,
+          title: String(item.title || '').trim().slice(0, 100) || title,
+          start: startItem,
+          end: endItem,
+        });
+      }
+    }
+
+    const musicUrl = String(b.music_url || '').trim() || null;
+    if (musicUrl && !/^\/perfil\/musicas\/[a-z0-9_-]+\.mp3$/i.test(musicUrl) && !/^yt:[a-z0-9_-]{6,20}$/i.test(musicUrl)) {
+      return res.status(400).json({ error: 'Música inválida.' });
+    }
+    const musicVolume = Math.max(0, Math.min(1, Number(b.music_volume) || 0));
+
     const result = await db
       .prepare(
-        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id',
+        'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, playlist, music_url, music_volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?) RETURNING id',
       )
-      .run(uid, title, game, file, meta.start, meta.end, meta.visibility);
+      .run(
+        uid,
+        title,
+        game,
+        file,
+        meta.start,
+        meta.end,
+        meta.visibility,
+        JSON.stringify(playlist),
+        musicUrl,
+        musicVolume,
+      );
 
     const row = await db
       .prepare(SELECT_SQL + ' WHERE c.id = ?')
@@ -369,7 +491,8 @@ router.post('/confirm', requireUserOrAdmin, async (req, res) => {
     if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
     res.json((await decorate(db, [row], req.auth))[0]);
     // em segundo plano: passa a 720p H.264 (pesa menos no telemóvel)
-    otimizarClip(file);
+    if (playlist.length) for (const item of playlist) otimizarClip(item.file);
+    else otimizarClip(file);
   } catch (error) {
     console.error('Erro clips confirm:', error.message);
     res.status(500).json({ error: 'Erro ao guardar o clip.' });
@@ -1229,9 +1352,57 @@ router.patch('/:id', attachAuth, async (req, res) => {
           ? 'private'
           : 'public';
 
+    let playlist = lerPlaylist(clip.playlist);
+    if (b.playlist !== undefined) {
+      const arr = Array.isArray(b.playlist) ? b.playlist.slice(0, 20) : [];
+      const ids = [
+        ...new Set(
+          arr
+            .map((p) => Number(p && p.id !== undefined ? p.id : p))
+            .filter((n) => Number.isFinite(n) && n > 0),
+        ),
+      ];
+      let permitidos = new Set();
+      if (ids.length) {
+        const rows = await db
+          .prepare('SELECT id FROM clips WHERE id = ANY(?::int[]) AND user_id = ?')
+          .all(ids, clip.user_id);
+        permitidos = new Set(rows.map((r) => Number(r.id)));
+      }
+      playlist = arr
+        .map((p) => {
+          const idItem = Number(p && p.id !== undefined ? p.id : p);
+          if (!permitidos.has(idItem)) return null;
+          const start = Math.max(0, Math.min(86400, Number(p.start) || 0));
+          const endBruto = p.end == null || p.end === '' ? null : Number(p.end);
+          const end =
+            endBruto == null || !Number.isFinite(endBruto) || endBruto <= start
+              ? null
+              : Math.min(86400, endBruto);
+          return { id: idItem, start, end };
+        })
+        .filter(Boolean);
+    }
+
+    const musicUrl =
+      b.music_url === undefined
+        ? clip.music_url
+        : String(b.music_url || '').trim() || null;
+    if (musicUrl && !/^\/perfil\/musicas\/[a-z0-9_-]+\.mp3$/i.test(musicUrl) && !/^yt:[a-z0-9_-]{6,20}$/i.test(musicUrl)) {
+      return res.status(400).json({ error: 'Música inválida.' });
+    }
+    const musicVolume =
+      b.music_volume === undefined
+        ? clip.music_volume == null
+          ? 0.25
+          : Number(clip.music_volume)
+        : Math.max(0, Math.min(1, Number(b.music_volume) || 0));
+
     await db
-      .prepare('UPDATE clips SET title = ?, game = ?, visibility = ? WHERE id = ?')
-      .run(title, game, visibility, id);
+      .prepare(
+        'UPDATE clips SET title = ?, game = ?, visibility = ?, playlist = ?::jsonb, music_url = ?, music_volume = ? WHERE id = ?',
+      )
+      .run(title, game, visibility, JSON.stringify(playlist), musicUrl, musicVolume, id);
 
     const row = await db.prepare(SELECT_SQL + ' WHERE c.id = ?').get(id);
     if (!row) return res.status(500).json({ error: 'Erro ao guardar' });

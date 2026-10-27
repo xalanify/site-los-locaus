@@ -411,6 +411,7 @@ export default function SteamStorePage() {
   const [genero, setGenero] = useState('')
   const [maxpreco, setMaxpreco] = useState('')
   const [ordenar, setOrdenar] = useState('relevancia')
+  const [soPromo, setSoPromo] = useState(false)
   const [pagina, setPagina] = useState(1)
   const [paginas, setPaginas] = useState(1)
   const [ficha, setFicha] = useState(null)
@@ -460,7 +461,7 @@ export default function SteamStorePage() {
     setPagina(page)
     setPesquisa((p) => ({ ...p, loading: true, erro: '' }))
     try {
-      const params = new URLSearchParams({ q, genero, maxpreco, ordenar, pagina: String(page) })
+      const params = new URLSearchParams({ q, genero, maxpreco, ordenar, pagina: String(page), promo: soPromo ? '1' : '' })
       const r = await fetch(`/api/games/steam/procurar?${params}`)
       const d = await r.json()
       setPaginas(Number(d?.paginas) || 1)
@@ -526,7 +527,7 @@ export default function SteamStorePage() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-violet-400" />
-              <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
+              <h2 className="ui-section-title font-display">
                 Em breve
               </h2>
             </div>
@@ -557,7 +558,7 @@ export default function SteamStorePage() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <Flame className="h-4 w-4 shrink-0 text-orange-400" />
-              <h2 className="min-w-0 font-display text-sm font-black uppercase tracking-wider text-gray-300">
+              <h2 className="min-w-0 ui-section-title font-display">
                 Top 10 mais jogados agora na Steam
               </h2>
             </div>
@@ -633,7 +634,7 @@ export default function SteamStorePage() {
               />
               <button
                 type="submit"
-                className="rounded-lg bg-violet-500 px-3 py-1.5 text-[11px] font-black text-white hover:bg-violet-400"
+                className="ui-btn ui-btn-primary ui-btn-sm"
               >
                 Procurar
               </button>
@@ -673,6 +674,15 @@ export default function SteamStorePage() {
                 ))}
               </select>
             </div>
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.05] px-3 py-2 text-[11px] font-bold text-emerald-200">
+              <input
+                type="checkbox"
+                checked={soPromo}
+                onChange={(e) => setSoPromo(e.target.checked)}
+                className="h-4 w-4 rounded border border-white/20 bg-white/10"
+              />
+              Só mostrar jogos em promoção
+            </label>
           </form>
 
           {!q.trim() && pesquisa.jogos.length === 0 && maisComprados.jogos.length > 0 && (
@@ -755,7 +765,7 @@ export default function SteamStorePage() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Newspaper className="h-4 w-4 text-violet-400" />
-              <h2 className="font-display text-sm font-black uppercase tracking-wider text-gray-300">
+              <h2 className="ui-section-title font-display">
                 Notícias de gaming
               </h2>
             </div>

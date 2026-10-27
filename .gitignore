@@ -33,6 +33,10 @@ _*.html
 _check*
 _imgtest*
 *.log
+# Panorama 360 original (23 MB) — usamos as versões otimizadas em client/public/boot/
+/Ampleben_Sternenhimmel_Panorama.jpg
+/qwantani_dusk_2_8k.hdr
+/LOCAUS3D.gltf
 
 # ================== Sistema / editor ==================
 Thumbs.db

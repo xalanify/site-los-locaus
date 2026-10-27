@@ -213,7 +213,7 @@ export default function NovidadesModal({ user }) {
               <button
                 type="button"
                 onClick={fechar}
-                className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-black text-white transition-all hover:brightness-110"
+                className="ui-btn ui-btn-primary"
               >
                 OK
               </button>

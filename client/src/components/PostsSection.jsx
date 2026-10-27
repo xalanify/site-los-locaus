@@ -147,7 +147,7 @@ export default function PostsSection({ isAdmin }) {
           <div className="mb-8 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-3 text-sm font-bold text-white transition-all duration-300 hover:scale-105 hover:bg-violet-600 glow-violet sm:px-6 sm:text-base"
+              className="ui-btn ui-btn-primary ui-btn-lg"
             >
               <Plus className="h-5 w-5" />
               Nova Publicação

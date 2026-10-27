@@ -517,20 +517,31 @@ router.get('/bf-live', async (req, res) => {
       jogadores.map(async (x) => {
         const handle = x.handle || x.name;
         const r = await gtoolsStatsFor(g, handle);
-        if (!r.ok) {
-          // fallback: snapshot tracker.gg de uma só pessoa
+        if (!r.ok || (Number(r.kills) || 0) === 0) {
+          // fallback: snapshot tracker.gg (BD ou ficheiro)
           try {
-            const snap = tracker.readJson(tracker.BF_FILES[g]);
+            const snap =
+              g === 'bf6'
+                ? await require('../bfstore').ler()
+                : tracker.readJson(tracker.BF_FILES[g]);
             const o = snap?.overview || {};
             return {
               ok: true, fonte: 'snapshot', handle, nome: x.nome || handle,
-              rank: o.rank ?? o.careerPlayerRank ?? null,
+              rank: o.careerPlayerRank ?? o.rank ?? null,
               kd: o.kdRatio ?? null, kills: o.kills ?? null, deaths: o.deaths ?? null,
-              wins: o.wins ?? o.matchesWon ?? null,
-              losses: o.losses ?? o.matchesLost ?? null,
+              wins: o.matchesWon ?? o.wins ?? null,
+              losses: o.matchesLost ?? o.losses ?? null,
               score: o.score ?? null, spm: o.scorePerMinute ?? null,
               segundos: o.timePlayed ?? null,
-              armas: comArmas ? [] : undefined,
+              winPct: o.wlPercentage ?? null,
+              killsMin: o.killsPerMinute ?? null,
+              armas: comArmas
+                ? (Array.isArray(snap?.weapons) ? snap.weapons : []).map((w) => ({
+                    nome: w.name || w.nome,
+                    kills: w.kills,
+                    tipo: 'arma',
+                  }))
+                : undefined,
             };
           } catch {
             return { ok: false, handle, erro: r.erro || 'indisponível' };
@@ -722,6 +733,7 @@ router.get('/steam/procurar', async (req, res) => {
       maxpreco: req.query.maxpreco,
       ordenar: req.query.ordenar,
       pagina: req.query.pagina,
+      promo: req.query.promo === '1',
     });
     res.setHeader('Cache-Control', 'no-store');
     res.json(dados);
@@ -1079,4 +1091,4 @@ router.get('/cs2-inventario', async (req, res) => {
   }
 });
 
-module.exports = { gamesRouter: router };
+module.exports = { gamesRouter: router, limparCacheBf: () => BF_LIVE_CACHE.clear() };

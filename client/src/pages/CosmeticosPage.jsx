@@ -317,7 +317,7 @@ function Cartao({ item, disponiveis, aComprar, aAplicar, onComprar, onAplicar })
               type="button"
               onClick={onAplicar}
               disabled={aAplicar}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-violet-500 py-2 text-[11px] font-black text-white transition hover:bg-violet-400 disabled:opacity-60"
+              className="ui-btn ui-btn-primary ui-btn-sm w-full"
             >
               {aAplicar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
               Aplicar no perfil

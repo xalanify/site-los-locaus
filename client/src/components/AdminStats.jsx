@@ -43,7 +43,7 @@ function Cartao({ Icon, cor, valor, rotulo, trend, corLinha = '#a78bfa' }) {
   }, [valor])
 
   return (
-    <div className="glass relative overflow-hidden rounded-xl p-3 text-center">
+    <div className="ui-card relative overflow-hidden text-center">
       <span className={`mx-auto mb-1.5 flex h-8 w-8 items-center justify-center rounded-full ${cor}`}>
         <Icon className="h-4 w-4" />
       </span>
@@ -133,7 +133,7 @@ export default function AdminStats() {
     <div className="space-y-6">
       {/* Resumo */}
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-gray-300">
+        <h3 className="mb-3 flex items-center gap-2 ui-section-title">
           <TrendingUp className="h-4 w-4 text-violet-300" /> Resumo geral
         </h3>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
@@ -155,8 +155,8 @@ export default function AdminStats() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         {/* Clips por jogo */}
-        <div className="glass rounded-2xl p-4">
-          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-gray-300">
+        <div className="ui-card">
+          <h3 className="ui-section-title mb-3">
             Clips por jogo
           </h3>
           {porJogo.length === 0 ? (
@@ -177,8 +177,8 @@ export default function AdminStats() {
         </div>
 
         {/* Top clips */}
-        <div className="glass rounded-2xl p-4">
-          <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-gray-300">
+        <div className="ui-card">
+          <h3 className="ui-section-title mb-3">
             Clips mais vistos
           </h3>
           {topClips.length === 0 ? (
@@ -220,9 +220,9 @@ export default function AdminStats() {
       </div>
 
       {/* 14 dias */}
-      <div className="glass rounded-2xl p-4">
+      <div className="ui-card">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-black uppercase tracking-wide text-gray-300">
+          <h3 className="ui-section-title">
             Últimos 14 dias
           </h3>
           <span className="flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
@@ -267,8 +267,8 @@ export default function AdminStats() {
       </div>
 
       {/* Top comentaristas */}
-      <div className="glass rounded-2xl p-4">
-        <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-gray-300">
+      <div className="ui-card">
+        <h3 className="ui-section-title mb-3">
           Quem mais comenta
         </h3>
         {topAutores.length === 0 ? (

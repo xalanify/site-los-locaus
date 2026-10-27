@@ -1,1 +1,91 @@
-{"source":"tracker.gg","game":"bf6","handle":"xalanix","avatar":null,"updated":null,"overview":{"score":137735,"careerPlayerRank":20,"matchesPlayed":49,"matchesWon":22,"matchesLost":27,"timePlayed":32008,"kills":849,"weaponKills":843,"vehicleTimePlayed":125,"deployments":623,"kitDeployments":609,"vehicleDeployments":14,"playerKills":848,"meleeKills":2,"vehicleKills":0,"gadgetKills":4,"headshotKills":264,"bodyKills":579,"adsKills":665,"hipfireKills":178,"multiKills":85,"takedownKills":0,"weaponMultiKills":85,"vehicleMultiKills":0,"gadgetMultiKills":0,"roadKills":0,"assists":333,"vehicleAssists":2,"passengerAssists":2,"driverAssists":0,"revives":12,"deaths":592,"damageDealt":96769,"weaponDamageDealt":96545,"vehicleDamageDealt":0,"gadgetDamageDealt":224,"shotsFired":15599,"shotsHit":3558,"vehiclesDestroyed":0,"vehicleCallIns":0,"gadgetUses":139,"repairs":0,"defendedObjectives":24,"objectiveTime":962,"objectivesDestroyed":0,"objectivesCaptured":4,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":7,"healthRestored":75,"playersResupplied":1,"spots":0,"scorePerMinute":258.19,"killsPerMinute":1.59,"killsPerMatch":17.33,"damagePerMinute":181.4,"damagePerMatch":1974.88,"kdRatio":1.43,"kdaRatio":2,"playerKd":1.43,"playerKillsPerMinute":1.59,"headshotPercentage":31.32,"wlPercentage":44.9,"objectiveTimePct":3.01,"killsLongDist":234},"modes":[{"key":"gm_cq","name":"Conquest","stats":{"matchesPlayed":0,"matchesWon":0,"matchesLost":0,"timePlayed":3225,"kills":33,"deaths":23,"assists":17,"revives":0,"score":7375,"headshotKills":7,"killsWithVehicles":0,"damageDealt":4144,"healthRestored":0,"defendedObjectives":2,"objectiveTime":119,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.61,"killsPerMatch":33,"damagePerMinute":77.1,"wlPercentage":0,"objectiveTimePct":3.69,"kdRatio":1.43,"kdaRatio":2.17,"scorePerMinute":137.21}},{"key":"gm_bt","name":"Breakthrough","stats":{"matchesPlayed":9,"matchesWon":6,"matchesLost":3,"timePlayed":17187,"kills":202,"deaths":136,"assists":164,"revives":6,"score":48930,"headshotKills":81,"killsWithVehicles":0,"damageDealt":24579,"healthRestored":0,"defendedObjectives":18,"objectiveTime":655,"objectivesDestroyed":0,"objectivesCaptured":3,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.71,"killsPerMatch":22.44,"damagePerMinute":85.81,"wlPercentage":66.67,"objectiveTimePct":3.81,"kdRatio":1.49,"kdaRatio":2.69,"scorePerMinute":170.82}},{"key":"gm_tdm","name":"Team Deathmatch","stats":{"matchesPlayed":19,"matchesWon":8,"matchesLost":11,"timePlayed":11986,"kills":239,"deaths":197,"assists":75,"revives":4,"score":30110,"headshotKills":81,"killsWithVehicles":0,"damageDealt":27280,"healthRestored":75,"defendedObjectives":0,"objectiveTime":0,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":1,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":1.2,"killsPerMatch":12.58,"damagePerMinute":136.56,"wlPercentage":42.11,"objectiveTimePct":0,"kdRatio":1.21,"kdaRatio":1.59,"scorePerMinute":150.73}},{"key":"gm_sdm","name":"Squad Deathmatch","stats":{"matchesPlayed":8,"matchesWon":1,"matchesLost":7,"timePlayed":3594,"kills":122,"deaths":78,"assists":17,"revives":1,"score":14935,"headshotKills":31,"killsWithVehicles":0,"damageDealt":12696,"healthRestored":0,"defendedObjectives":0,"objectiveTime":0,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":2,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":2.04,"killsPerMatch":15.25,"damagePerMinute":211.95,"wlPercentage":12.5,"objectiveTimePct":0,"kdRatio":1.56,"kdaRatio":1.78,"scorePerMinute":249.33}},{"key":"gm_dom","name":"Domination","stats":{"matchesPlayed":7,"matchesWon":3,"matchesLost":4,"timePlayed":4089,"kills":129,"deaths":94,"assists":37,"revives":0,"score":17680,"headshotKills":24,"killsWithVehicles":0,"damageDealt":14910,"healthRestored":0,"defendedObjectives":4,"objectiveTime":143,"objectivesDestroyed":0,"objectivesCaptured":1,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":5,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":1.89,"killsPerMatch":18.43,"damagePerMinute":218.78,"wlPercentage":42.86,"objectiveTimePct":3.5,"kdRatio":1.37,"kdaRatio":1.77,"scorePerMinute":259.43}},{"key":"gm_koth","name":"King of the Hill","stats":{"matchesPlayed":6,"matchesWon":4,"matchesLost":2,"timePlayed":3697,"kills":124,"deaths":64,"assists":52,"revives":1,"score":18705,"headshotKills":40,"killsWithVehicles":0,"damageDealt":13284,"healthRestored":0,"defendedObjectives":0,"objectiveTime":45,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":2.01,"killsPerMatch":20.67,"damagePerMinute":215.59,"wlPercentage":66.67,"objectiveTimePct":1.22,"kdRatio":1.94,"kdaRatio":2.75,"scorePerMinute":303.57}}],"kits":[{"key":"kit_assault","name":"Assault","stats":{"timePlayed":5323,"deployments":127,"kills":157,"assists":53,"revives":1,"deaths":118,"score":25390,"masteryLevel":1,"killsPerMinute":1.77,"kdRatio":1.33,"kdaRatio":1.78,"scorePerMinute":286.19}},{"key":"kit_engineer","name":"Engineer","stats":{"timePlayed":3434,"deployments":86,"kills":135,"assists":33,"revives":2,"deaths":81,"score":18890,"masteryLevel":0,"killsPerMinute":2.36,"kdRatio":1.67,"kdaRatio":2.07,"scorePerMinute":330.05}},{"key":"kit_support","name":"Support","stats":{"timePlayed":7341,"deployments":179,"kills":271,"assists":60,"revives":6,"deaths":182,"score":36125,"masteryLevel":0,"killsPerMinute":2.21,"kdRatio":1.49,"kdaRatio":1.82,"scorePerMinute":295.26}},{"key":"kit_recon","name":"Recon","stats":{"timePlayed":15910,"deployments":217,"kills":286,"assists":187,"revives":3,"deaths":211,"score":53130,"masteryLevel":1,"killsPerMinute":1.08,"kdRatio":1.36,"kdaRatio":2.24,"scorePerMinute":200.36}}],"matches":[{"id":"01a0fc0b-98e2-79d4-8d35-04504e3189c0","ts":"2026-10-02T09:56:53.602966+00:00","map":null,"mapImg":null,"mode":null,"server":null,"stats":{"score":72585,"careerPlayerRank":20,"matchesPlayed":33,"matchesWon":13,"matchesLost":20,"timePlayed":19951,"kills":471,"weaponKills":466,"vehicleTimePlayed":35,"deployments":356,"kitDeployments":354,"vehicleDeployments":2,"playerKills":471,"meleeKills":1,"vehicleKills":0,"gadgetKills":4,"headshotKills":178,"bodyKills":288,"adsKills":362,"hipfireKills":104,"multiKills":44,"takedownKills":0,"weaponMultiKills":44,"vehicleMultiKills":0,"gadgetMultiKills":0,"roadKills":0,"assists":185,"vehicleAssists":1,"passengerAssists":1,"driverAssists":0,"revives":3,"deaths":343,"damageDealt":53377,"weaponDamageDealt":53173,"vehicleDamageDealt":0,"gadgetDamageDealt":204,"shotsFired":7235,"shotsHit":1668,"vehiclesDestroyed":0,"vehicleCallIns":0,"gadgetUses":88,"repairs":0,"defendedObjectives":10,"objectiveTime":393,"objectivesDestroyed":0,"objectivesCaptured":2,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":5,"healthRestored":75,"playersResupplied":1,"spots":0,"scorePerMinute":218.29,"killsPerMinute":1.42,"killsPerMatch":14.27,"damagePerMinute":160.52,"damagePerMatch":1617.48,"kdRatio":1.37,"kdaRatio":1.91,"headshotPercentage":38.2,"wlPercentage":39.39,"objectiveTimePct":1.97},"gamemodes":[{"name":"Conquest","stats":{"matchesPlayed":0,"matchesWon":0,"matchesLost":0,"timePlayed":916,"kills":6,"deaths":6,"assists":3,"revives":0,"score":1290,"headshotKills":3,"killsWithVehicles":0,"damageDealt":775,"healthRestored":0,"defendedObjectives":0,"objectiveTime":49,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.39,"killsPerMatch":6,"damagePerMinute":50.76,"wlPercentage":0,"objectiveTimePct":5.35,"kdRatio":1,"kdaRatio":1.5,"scorePerMinute":84.5}},{"name":"Breakthrough","stats":{"matchesPlayed":4,"matchesWon":3,"matchesLost":1,"timePlayed":7896,"kills":83,"deaths":47,"assists":85,"revives":3,"score":21305,"headshotKills":50,"killsWithVehicles":0,"damageDealt":10446,"healthRestored":0,"defendedObjectives":8,"objectiveTime":260,"objectivesDestroyed":0,"objectivesCaptured":2,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.63,"killsPerMatch":20.75,"damagePerMinute":79.38,"wlPercentage":75,"objectiveTimePct":3.29,"kdRatio":1.77,"kdaRatio":3.57,"scorePerMinute":161.89}},{"name":"Team Deathmatch","stats":{"matchesPlayed":15,"matchesWon":6,"matchesLost":9,"timePlayed":10192,"kills":166,"deaths":143,"assists":57,"revives":0,"score":21225,"headshotKills":69,"killsWithVehicles":0,"damageDealt":18822,"healthRestored":75,"defendedObjectives":0,"objectiveTime":0,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":1,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.98,"killsPerMatch":11.07,"damagePerMinute":110.8,"wlPercentage":40,"objectiveTimePct":0,"kdRatio":1.16,"kdaRatio":1.56,"scorePerMinute":124.95}},{"name":"Squad Deathmatch","stats":{"matchesPlayed":6,"matchesWon":1,"matchesLost":5,"timePlayed":2557,"kills":76,"deaths":55,"assists":15,"revives":0,"score":9710,"headshotKills":23,"killsWithVehicles":0,"damageDealt":8350,"healthRestored":0,"defendedObjectives":0,"objectiveTime":0,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":1,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":1.78,"killsPerMatch":12.67,"damagePerMinute":195.93,"wlPercentage":16.67,"objectiveTimePct":0,"kdRatio":1.38,"kdaRatio":1.65,"scorePerMinute":227.85}},{"name":"Domination","stats":{"matchesPlayed":5,"matchesWon":1,"matchesLost":4,"timePlayed":2919,"kills":84,"deaths":63,"assists":18,"revives":0,"score":10680,"headshotKills":14,"killsWithVehicles":0,"damageDealt":9424,"healthRestored":0,"defendedObjectives":2,"objectiveTime":69,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":4,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":1.73,"killsPerMatch":16.8,"damagePerMinute":193.71,"wlPercentage":20,"objectiveTimePct":2.36,"kdRatio":1.33,"kdaRatio":1.62,"scorePerMinute":219.53}},{"name":"King of the Hill","stats":{"matchesPlayed":3,"matchesWon":2,"matchesLost":1,"timePlayed":1440,"kills":56,"deaths":29,"assists":17,"revives":0,"score":8375,"headshotKills":19,"killsWithVehicles":0,"damageDealt":5660,"healthRestored":0,"defendedObjectives":0,"objectiveTime":15,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":2.33,"killsPerMatch":18.67,"damagePerMinute":235.83,"wlPercentage":66.67,"objectiveTimePct":1.04,"kdRatio":1.93,"kdaRatio":2.52,"scorePerMinute":348.96}}]},{"id":"019f5b19-a153-771c-af26-ae64e1cd3a1f","ts":"2026-07-13T10:50:34.195755+00:00","map":null,"mapImg":null,"mode":null,"server":null,"stats":{"score":65150,"careerPlayerRank":10,"matchesPlayed":16,"matchesWon":9,"matchesLost":7,"timePlayed":12057,"kills":378,"weaponKills":377,"vehicleTimePlayed":90,"deployments":267,"kitDeployments":255,"vehicleDeployments":12,"playerKills":377,"meleeKills":1,"vehicleKills":0,"gadgetKills":0,"headshotKills":86,"bodyKills":291,"adsKills":303,"hipfireKills":74,"multiKills":41,"takedownKills":0,"weaponMultiKills":41,"vehicleMultiKills":0,"gadgetMultiKills":0,"roadKills":0,"assists":148,"vehicleAssists":1,"passengerAssists":1,"driverAssists":0,"revives":9,"deaths":249,"damageDealt":43392,"weaponDamageDealt":43372,"vehicleDamageDealt":0,"gadgetDamageDealt":20,"shotsFired":8364,"shotsHit":1890,"vehiclesDestroyed":0,"vehicleCallIns":0,"gadgetUses":51,"repairs":0,"defendedObjectives":14,"objectiveTime":569,"objectivesDestroyed":0,"objectivesCaptured":2,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":2,"healthRestored":0,"playersResupplied":0,"spots":0,"scorePerMinute":324.21,"killsPerMinute":1.88,"killsPerMatch":23.62,"damagePerMinute":215.93,"damagePerMatch":2712,"kdRatio":1.52,"kdaRatio":2.11,"headshotPercentage":22.81,"wlPercentage":56.25,"objectiveTimePct":4.72},"gamemodes":[{"name":"Conquest","stats":{"matchesPlayed":0,"matchesWon":0,"matchesLost":0,"timePlayed":2309,"kills":27,"deaths":17,"assists":14,"revives":0,"score":6085,"headshotKills":4,"killsWithVehicles":0,"damageDealt":3369,"healthRestored":0,"defendedObjectives":2,"objectiveTime":70,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.7,"killsPerMatch":27,"damagePerMinute":87.54,"wlPercentage":0,"objectiveTimePct":3.03,"kdRatio":1.59,"kdaRatio":2.41,"scorePerMinute":158.12}},{"name":"Breakthrough","stats":{"matchesPlayed":5,"matchesWon":3,"matchesLost":2,"timePlayed":9291,"kills":119,"deaths":89,"assists":79,"revives":3,"score":27625,"headshotKills":31,"killsWithVehicles":0,"damageDealt":14133,"healthRestored":0,"defendedObjectives":10,"objectiveTime":395,"objectivesDestroyed":0,"objectivesCaptured":1,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":0.77,"killsPerMatch":23.8,"damagePerMinute":91.27,"wlPercentage":60,"objectiveTimePct":4.25,"kdRatio":1.34,"kdaRatio":2.22,"scorePerMinute":178.4}},{"name":"Team Deathmatch","stats":{"matchesPlayed":4,"matchesWon":2,"matchesLost":2,"timePlayed":1794,"kills":73,"deaths":54,"assists":18,"revives":4,"score":8885,"headshotKills":12,"killsWithVehicles":0,"damageDealt":8458,"healthRestored":0,"defendedObjectives":0,"objectiveTime":0,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":2.44,"killsPerMatch":18.25,"damagePerMinute":282.88,"wlPercentage":50,"objectiveTimePct":0,"kdRatio":1.35,"kdaRatio":1.69,"scorePerMinute":297.16}},{"name":"Squad Deathmatch","stats":{"matchesPlayed":2,"matchesWon":0,"matchesLost":2,"timePlayed":1037,"kills":46,"deaths":23,"assists":2,"revives":1,"score":5225,"headshotKills":8,"killsWithVehicles":0,"damageDealt":4346,"healthRestored":0,"defendedObjectives":0,"objectiveTime":0,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":1,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":2.66,"killsPerMatch":23,"damagePerMinute":251.46,"wlPercentage":0,"objectiveTimePct":0,"kdRatio":2,"kdaRatio":2.09,"scorePerMinute":302.31}},{"name":"Domination","stats":{"matchesPlayed":2,"matchesWon":2,"matchesLost":0,"timePlayed":1170,"kills":45,"deaths":31,"assists":19,"revives":0,"score":7000,"headshotKills":10,"killsWithVehicles":0,"damageDealt":5486,"healthRestored":0,"defendedObjectives":2,"objectiveTime":74,"objectivesDestroyed":0,"objectivesCaptured":1,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":1,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":2.31,"killsPerMatch":22.5,"damagePerMinute":281.33,"wlPercentage":100,"objectiveTimePct":6.32,"kdRatio":1.45,"kdaRatio":2.06,"scorePerMinute":358.97}},{"name":"King of the Hill","stats":{"matchesPlayed":3,"matchesWon":2,"matchesLost":1,"timePlayed":2257,"kills":68,"deaths":35,"assists":35,"revives":1,"score":10330,"headshotKills":21,"killsWithVehicles":0,"damageDealt":7624,"healthRestored":0,"defendedObjectives":0,"objectiveTime":30,"objectivesDestroyed":0,"objectivesCaptured":0,"objectivesArmed":0,"objectivesDisarmed":0,"intelPickedUp":0,"defendedSectors":0,"playersResupplied":0,"spots":0,"vehiclesDestroyed":0,"killsPerMinute":1.81,"killsPerMatch":22.67,"damagePerMinute":202.68,"wlPercentage":66.67,"objectiveTimePct":1.33,"kdRatio":1.94,"kdaRatio":2.94,"scorePerMinute":274.61}}]}],"matchesSupported":true}
+{
+  "source": "tracker.gg",
+  "game": "bf6",
+  "handle": "Default Xalana",
+  "profileId": "1019542320647",
+  "avatar": null,
+  "updated": "2026-10-27T11:51:53.172Z",
+  "overview": {
+    "careerPlayerRank": 23,
+    "matchesPlayed": 58,
+    "matchesWon": 29,
+    "matchesLost": 29,
+    "timePlayed": 36000,
+    "kills": 1008,
+    "deaths": 680,
+    "assists": 373,
+    "revives": 14,
+    "objectivesCaptured": 4,
+    "objectivesDestroyed": 0,
+    "scorePerMinute": 257.14,
+    "kdRatio": 1.48,
+    "wlPercentage": 50,
+    "killsPerMinute": 1.64,
+    "headshotPercentage": 29.2,
+    "damagePerMinute": 185.51,
+    "objectiveTimePct": 2.7
+  },
+  "modes": [],
+  "kits": [
+    {
+      "key": "kit_recon",
+      "name": "Recon",
+      "stats": {
+        "timePlayed": 16920,
+        "kdaRatio": 2.21,
+        "kills": 311,
+        "deaths": 230,
+        "assists": 197
+      }
+    },
+    {
+      "key": "kit_support",
+      "name": "Support",
+      "stats": {
+        "timePlayed": 10860,
+        "kdaRatio": 2.04,
+        "kills": 396,
+        "deaths": 236,
+        "assists": 86
+      }
+    },
+    {
+      "key": "kit_assault",
+      "name": "Assault",
+      "stats": {
+        "timePlayed": 5520,
+        "kdaRatio": 1.73,
+        "kills": 160,
+        "deaths": 124,
+        "assists": 54
+      }
+    },
+    {
+      "key": "kit_engineer",
+      "name": "Engineer",
+      "stats": {
+        "timePlayed": 3780,
+        "kdaRatio": 2.02,
+        "kills": 146,
+        "deaths": 90,
+        "assists": 36
+      }
+    }
+  ],
+  "weapons": [
+    {
+      "name": "M433",
+      "kills": 166
+    },
+    {
+      "name": "M2010 ESR",
+      "kills": 164
+    },
+    {
+      "name": "M4A1",
+      "kills": 148
+    }
+  ],
+  "matches": [],
+  "matchesSupported": false
+}

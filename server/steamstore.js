@@ -303,11 +303,11 @@ const ORDENAR = {
   nome: 'Name_ASC',
 };
 
-async function procurar({ q, genero, maxpreco, ordenar, pagina }) {
+async function procurar({ q, genero, maxpreco, ordenar, pagina, promo }) {
   const termo = String(q || '').trim().slice(0, 80);
   const pag = Math.max(1, Number(pagina) || 1);
   const porPagina = 25;
-  const chave = `procurar:${termo}|${genero || ''}|${maxpreco || ''}|${ordenar || ''}|${pag}`;
+  const chave = `procurar:${termo}|${genero || ''}|${maxpreco || ''}|${ordenar || ''}|${pag}|${promo ? 'promo' : ''}`;
   const hit = ler(chave);
   if (hit) return hit;
 
@@ -320,6 +320,7 @@ async function procurar({ q, genero, maxpreco, ordenar, pagina }) {
   if (genero && GENEROS[genero]) params.category1 = String(GENEROS[genero]);
   if (String(maxpreco) === '0') params.maxprice = 'free';
   else if (Number(maxpreco) > 0) params.maxprice = String(Number(maxpreco));
+  if (promo) params.specials = '1';
 
   const r = await fetch(
     `https://store.steampowered.com/search/results/?${new URLSearchParams({

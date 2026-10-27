@@ -391,7 +391,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                         <button
                           onClick={() => handleComment(post.id)}
                           disabled={sending[post.id]}
-                          className="flex items-center justify-center gap-1.5 rounded-lg bg-violet-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+                          className="ui-btn ui-btn-primary"
                         >
                           <Send className="h-4 w-4" />
                           Enviar

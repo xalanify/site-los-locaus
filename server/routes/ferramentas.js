@@ -105,6 +105,12 @@ router.get('/status', requireAdmin, (req, res) => {
   res.json(ferramentas.estadoPublico());
 });
 
+// GET /api/ferramentas/tweaks -> estado real de algumas otimizações no Windows
+router.get('/tweaks', requireAdmin, async (req, res) => {
+  const r = await ferramentas.detectarTweaks();
+  res.status(r.ok ? 200 : 400).json(r);
+});
+
 /* Registo de auditoria — vê-se SÓ no painel de admin.
    (A rota já exige requireAdmin; aqui ainda filtramos o limite.) */
 router.get('/historico', requireAdmin, async (req, res) => {

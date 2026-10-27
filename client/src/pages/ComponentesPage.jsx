@@ -763,7 +763,7 @@ export default function ComponentesPage({ user }) {
       ) : modoBusca ? (
         <section>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
+            <h2 className="ui-section-title">
               <SlidersHorizontal className="h-4 w-4 text-violet-400" />
               Resultados ao vivo
               <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
@@ -838,7 +838,7 @@ export default function ComponentesPage({ user }) {
           ) : vendidosFiltrados.length > 0 ? (
             <section className="mb-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
+                <h2 className="ui-section-title">
                   <Store className="h-4 w-4 text-emerald-400" />
                   Mais vendidos nas lojas
                   <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
@@ -862,7 +862,7 @@ export default function ComponentesPage({ user }) {
           ) : null}
 
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-300">
+            <h2 className="ui-section-title">
               <Sparkles className="h-4 w-4 text-violet-400" />
               Destaques
               <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
@@ -1487,7 +1487,7 @@ function ModalPrecos({ produto, lojas, onFechar, onGuardado }) {
             type="button"
             onClick={guardar}
             disabled={guardando}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-violet-500 py-2.5 text-xs font-black text-white hover:bg-violet-400 disabled:opacity-60"
+            className="ui-btn ui-btn-primary flex-1"
           >
             {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
             Guardar
@@ -1763,7 +1763,7 @@ function ModalAlerta({ produto, alerta, onFechar, onGuardado }) {
             type="button"
             onClick={guardar}
             disabled={guardando}
-            className="flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-xs font-black text-white hover:bg-violet-400 disabled:opacity-60"
+            className="ui-btn ui-btn-primary"
           >
             {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
             Guardar

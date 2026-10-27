@@ -19,6 +19,10 @@ const PASSOS = [
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS youtube_thumb text',
   // Capa NOSSA do clip: um frame do próprio vídeo (tirado no browser)
   'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS thumb text',
+  // Edição: vários clips em sequência + música de fundo
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS playlist jsonb',
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS music_url text',
+  'ALTER TABLE public.clips ADD COLUMN IF NOT EXISTS music_volume numeric',
   // Experimentação: banner do perfil + cor/efeito do nome
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS banner_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS background_id text',
@@ -31,6 +35,13 @@ const PASSOS = [
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_effect text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS borda_cor text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS fonte_perfil text',
+  // Redes sociais + estado "em live" (manual e automático)
+  "ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS socials jsonb NOT NULL DEFAULT '{}'::jsonb",
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_platform text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_url text',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_since timestamptz',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_until timestamptz',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_auto boolean NOT NULL DEFAULT true',
   // Fonte do perfil removida: todos voltam à fonte Locaus padrão
   "UPDATE public.user_profiles SET fonte_perfil = '' WHERE COALESCE(fonte_perfil, '') <> ''",
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS mouse text',

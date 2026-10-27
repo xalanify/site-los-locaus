@@ -13,6 +13,8 @@ import {
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import Estado from '../components/Estado'
+import LiveBadge from '../components/LiveBadge'
+import SocialLinks from '../components/SocialLinks'
 import ProfilePage from './ProfilePage'
 import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
@@ -307,6 +309,8 @@ export default function PublicProfilePage({
                 >
                   {p.username}
                 </span>
+                <LiveBadge username={p.username} />
+                <SocialLinks socials={p.socials} />
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
                 <span>Membro desde {criado}</span>
@@ -440,7 +444,7 @@ export default function PublicProfilePage({
             <div className="space-y-5">
               {feedMostrado.map((f) =>
                 f.tipo === 'clip' ? (
-                  <div key={f.chave} className="mx-auto w-full max-w-3xl">
+                  <div key={f.chave} className="mx-auto w-full max-w-4xl">
                     <ClipCard
                       clip={f.item}
                       user={user}
@@ -479,7 +483,7 @@ export default function PublicProfilePage({
               <button
                 type="button"
                 onClick={onPanelClick}
-                className="flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all hover:bg-violet-400 glow-violet"
+                className="ui-btn ui-btn-primary"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 Painel Admin

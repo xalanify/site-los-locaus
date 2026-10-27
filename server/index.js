@@ -12,6 +12,7 @@ const { postsRouter } = require('./routes/posts');
 const { statsRouter } = require('./routes/stats');
 const { gamesRouter } = require('./routes/games');
 const { usersRouter } = require('./routes/users');
+const { liveRouter } = require('./routes/live');
 const { clipsRouter } = require('./routes/clips');
 const { adminRouter } = require('./routes/admin');
 const { notificationsRouter } = require('./routes/notifications');
@@ -191,6 +192,7 @@ app.use('/api/infoaovivo', infoaovivoRouter);
 // seria interpretado como um :username.
 app.use('/api/users/specs', specsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/live', liveRouter);
 app.use('/api/clips', clipsRouter);
 // Chat geral (polling curto; funciona na Vercel e no telemóvel)
 const { chatRouter } = require('./routes/chat');
@@ -198,9 +200,6 @@ app.use('/api/chat', chatRouter);
 // Previsões R6 (dados oficiais da Ubisoft)
 const { previsoesRouter } = require('./routes/previsoes');
 app.use('/api/previsoes', previsoesRouter);
-// Equipas de esports (CS2 / R6) — pesquisa e ficha
-const { equipasRouter } = require('./routes/equipas');
-app.use('/api/equipas', equipasRouter);
 // Loja de cosméticos (só admin, paga com acertos das previsões)
 const { cosmeticosRouter } = require('./routes/cosmeticos');
 app.use('/api/cosmeticos', cosmeticosRouter);

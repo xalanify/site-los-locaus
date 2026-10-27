@@ -78,44 +78,74 @@ function xorCodifica(texto, chave) {
 }
 
 function gerarBat(site, token) {
-  // O token NÃO fica legível no .bat: vai com XOR(uma chave aleatória
-  // própria deste .bat) + base64. Abrir o ficheiro só mostra "lixo".
+  // O código do .bat fica dentro de um comando PowerShell codificado
+  // (UTF-16LE + base64). Quem abrir o ficheiro no Notepad vê apenas a
+  // chamada codificada — não consegue ler nem editar a lógica.
   const chave = require('crypto').randomBytes(16).toString('hex');
   const tokenCod = Buffer.from(xorCodifica(String(token), chave), 'binary').toString('base64');
+  const siteEsc = String(site).replace(/'/g, "''");
+  const script = `
+$ErrorActionPreference = 'Stop'
+$site = '${siteEsc}'
+$tokenCod = '${tokenCod}'
+$chave = '${chave}'
+$ps = Join-Path $env:TEMP 'locaus-agente.ps1'
+function DescodificarToken {
+  $bytes = [Convert]::FromBase64String($tokenCod)
+  $sb = New-Object System.Text.StringBuilder
+  for ($i = 0; $i -lt $bytes.Length; $i++) {
+    [void]$sb.Append([char]($bytes[$i] -bxor [int][char]$chave[$i % $chave.Length]))
+  }
+  return $sb.ToString()
+}
+$token = DescodificarToken
+Write-Host ''
+Write-Host '  ================================================' -ForegroundColor DarkCyan
+Write-Host '    LOCAUS PC  -  Liga o teu Windows ao site' -ForegroundColor Cyan
+Write-Host '  ================================================' -ForegroundColor DarkCyan
+Write-Host ''
+for ($i = 0; $i -le 100; $i += 10) {
+  Write-Progress -Activity 'A preparar o LOCAUS PC' -Status ($i.ToString() + [char]37) -PercentComplete $i
+  Start-Sleep -Milliseconds 60
+}
+Write-Progress -Activity 'A preparar o LOCAUS PC' -Completed
+Write-Host '  [OK] Interface pronta.' -ForegroundColor Green
+Write-Host '  A descarregar o agente...' -ForegroundColor Yellow
+try {
+  Invoke-WebRequest -Uri ($site + '/api/agente/script') -UseBasicParsing -OutFile $ps -ErrorAction Stop
+} catch {
+  Write-Host ''
+  Write-Host '  [ERRO] Nao deu para descarregar o agente.' -ForegroundColor Red
+  Write-Host '  Verifica a ligacao a internet e tenta outra vez.' -ForegroundColor Red
+  Read-Host
+  exit 1
+}
+if (-not (Test-Path $ps)) {
+  Write-Host '  [ERRO] O agente nao ficou guardado.' -ForegroundColor Red
+  Read-Host
+  exit 1
+}
+Write-Host ''
+Write-Host '  A ligar ao site... deixa esta janela aberta.' -ForegroundColor Cyan
+Write-Host '  Fecha esta janela para desligar o PC do site.' -ForegroundColor DarkGray
+Write-Host ''
+& powershell -NoProfile -ExecutionPolicy Bypass -File $ps -Site $site -Token $token -Chave $chave
+Write-Host ''
+Write-Host '  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.' -ForegroundColor DarkGray
+Read-Host
+`;
+  const encoded = Buffer.from(script, 'utf16le').toString('base64');
   return [
     '@echo off',
-    'setlocal EnableDelayedExpansion',
+    'setlocal',
     'title LOCAUS PC - Ligar ao site',
     'color 0A',
-    '',
-    'REM pede administrador uma vez e relanca-se elevado',
     'net session >nul 2>&1',
     'if not "%errorlevel%"=="0" (',
     '  powershell -NoProfile -Command "Start-Process -FilePath \'%~f0\' -Verb RunAs"',
     '  exit /b',
     ')',
-    '',
-    `set "SITE=${site}"`,
-    `set "TOKEN=${tokenCod}"`,
-    `set "CHAVE=${chave}"`,
-    'set "PS=%TEMP%\\locaus-agente.ps1"',
-    '',
-    'cls',
-    'powershell -NoProfile -ExecutionPolicy Bypass -Command "Write-Host \'\'; Write-Host \'  ================================================\' -ForegroundColor DarkCyan; Write-Host \'    LOCAUS PC  -  Liga o teu Windows ao site\' -ForegroundColor Cyan; Write-Host \'  ================================================\' -ForegroundColor DarkCyan; Write-Host \'\'; for($i=0;$i -le 100;$i+=10){ Write-Progress -Activity \'A preparar o LOCAUS PC\' -Status ($i.ToString()+[char]37) -PercentComplete $i; Start-Sleep -Milliseconds 60 }; Write-Progress -Activity \'A preparar o LOCAUS PC\' -Completed; Write-Host \'  [OK] Interface pronta.\' -ForegroundColor Green"',
-    'powershell -NoProfile -Command "Write-Host \'  A descarregar o agente...\' -ForegroundColor Yellow"',
-    'powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Invoke-WebRequest -Uri (\'%SITE%/api/agente/script\') -UseBasicParsing -OutFile (\'%PS%\') -ErrorAction Stop } catch { exit 1 }"',
-    'if not exist "%PS%" (',
-    '  echo.',
-    '  echo  [ERRO] Nao deu para descarregar o agente.',
-    '  echo  Verifica a ligacao a internet e tenta outra vez.',
-    '  pause',
-    '  exit /b 1',
-    ')',
-    'powershell -NoProfile -Command "Write-Host \'\'; Write-Host \'  A ligar ao site... deixa esta janela aberta.\' -ForegroundColor Cyan; Write-Host \'  Fecha esta janela para desligar o PC do site.\' -ForegroundColor DarkGray; Write-Host \'\'"',
-    'powershell -NoProfile -ExecutionPolicy Bypass -File "%PS%" -Site "%SITE%" -Token "%TOKEN%" -Chave "%CHAVE%"',
-    'echo.',
-    'powershell -NoProfile -Command "Write-Host \'  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.\' -ForegroundColor DarkGray"',
-    'pause',
+    `powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${encoded}`,
     '',
   ].join('\r\n');
 }
@@ -380,4 +410,4 @@ router.post('/desligar', requireAgente, async (req, res) => {
   }
 });
 
-module.exports = { agenteRouter: router };
+module.exports = { agenteRouter: router, gerarBat };

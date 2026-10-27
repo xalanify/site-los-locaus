@@ -579,6 +579,53 @@ router.get('/fortnite/status', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------- Battlefield 6: importar página guardada do tracker.gg ---------- */
+router.post(
+  '/bf/import',
+  express.json({ limit: '40mb' }),
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { parseBattlefield } = require('../bfauto');
+      const bfstore = require('../bfstore');
+      const body = req.body || {};
+      const textos = Array.isArray(body.textos)
+        ? body.textos
+        : Array.isArray(body)
+          ? body
+          : [body.texto || body.html || body];
+      const resultados = [];
+      let guardado = null;
+      for (const txt of textos) {
+        const r = parseBattlefield(txt);
+        if (r.ok) {
+          await bfstore.guardar(r.dados);
+          guardado = r.dados;
+        }
+        resultados.push({
+          ok: r.ok,
+          erro: r.erro,
+          handle: r.dados?.handle,
+          matches: r.dados?.overview?.matchesPlayed,
+        });
+      }
+      if (guardado) {
+        try {
+          require('./games').limparCacheBf();
+        } catch {
+          /* cache limpa no próximo pedido */
+        }
+      }
+      const ok = resultados.filter((r) => r.ok).length;
+      res.json({ ok: ok > 0, importados: ok, total: resultados.length, resultados });
+    } catch (error) {
+      console.error('Erro bf/import:', error.message);
+      res.status(500).json({ ok: false, error: 'Não foi possível importar o Battlefield.' });
+    }
+  },
+);
+
+
 router.post('/r6/refresh', requireAdmin, async (req, res) => {
   try {
     const r6 = require('../r6auto');

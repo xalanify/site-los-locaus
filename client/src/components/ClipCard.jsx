@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Heart,
   MessageCircle,
@@ -19,9 +20,15 @@ import {
   Maximize,
   Minimize,
   Settings,
+  Plus,
+  ArrowUp,
+  ArrowDown,
+  Music,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
+import LiveBadge from './LiveBadge'
 import Estado from './Estado'
+import ClipPlaylistPlayer from './ClipPlaylistPlayer'
 import { authHeaders, mmss } from '../lib/auth'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { confirmar, toast } from './Feedback'
@@ -742,7 +749,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         <button
           type="button"
           onClick={() => setProcessando(null)}
-          className="rounded-full bg-violet-600 px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-500"
+          className="ui-btn ui-btn-primary ui-btn-sm"
         >
           Já deve estar — tentar outra vez
         </button>
@@ -1080,11 +1087,17 @@ export default function ClipCard({
 
   // edição (só para o dono do clip)
   const [editando, setEditando] = useState(false)
+  const [editorAberto, setEditorAberto] = useState(false)
   const [novoTitulo, setNovoTitulo] = useState('')
   const [novoJogo, setNovoJogo] = useState('')
   const [novaVis, setNovaVis] = useState('public')
   const [errEdit, setErrEdit] = useState('')
   const [salvando, setSalvando] = useState(false)
+  const [meusClips, setMeusClips] = useState([])
+  const [playlistEdit, setPlaylistEdit] = useState([])
+  const [playlistFixa, setPlaylistFixa] = useState(false)
+  const [musicaClip, setMusicaClip] = useState('')
+  const [volumeClip, setVolumeClip] = useState(0.25)
 
   useEffect(() => setC(clip), [clip])
 
@@ -1339,7 +1352,26 @@ export default function ClipCard({
     setNovoJogo(c.game || '')
     setNovaVis(c.visibility === 'private' ? 'private' : 'public')
     setErrEdit('')
-    setEditando(true)
+    const listaPlaylist = Array.isArray(c.playlist) ? c.playlist : []
+    const temFicheiros = listaPlaylist.some((p) => p && p.file)
+    setPlaylistFixa(temFicheiros)
+    const inicial = temFicheiros
+      ? []
+      : listaPlaylist.length
+        ? listaPlaylist.map((p) => ({
+            id: Number(p.id !== undefined ? p.id : p),
+            start: Number(p.start) || 0,
+            end: p.end == null ? null : Number(p.end),
+          }))
+        : []
+    setPlaylistEdit(inicial)
+    setMusicaClip(c.music_url || '')
+    setVolumeClip(c.music_volume == null ? 0.25 : Number(c.music_volume))
+    setEditorAberto(true)
+    fetch('/api/clips?mine=1&limit=50', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setMeusClips(Array.isArray(d) ? d : Array.isArray(d?.clips) ? d.clips : []))
+      .catch(() => {})
   }
 
   const guardarEdicao = async () => {
@@ -1349,10 +1381,15 @@ export default function ClipCard({
     setSalvando(true)
     setErrEdit('')
     try {
+      const body = {
+        title: t,
+        game: novoJogo || undefined,
+        visibility: novaVis,
+      }
       const res = await fetch(`/api/clips/${c.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ title: t, game: novoJogo || undefined, visibility: novaVis }),
+        body: JSON.stringify(body),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
@@ -1360,12 +1397,46 @@ export default function ClipCard({
         return
       }
       update({ ...c, ...data })
+      setEditorAberto(false)
       setEditando(false)
     } catch {
       setErrEdit('Sem rede — tenta outra vez.')
     } finally {
       setSalvando(false)
     }
+  }
+
+  const moverClip = (i, dir) => {
+    setPlaylistEdit((prev) => {
+      const lista = [...prev]
+      const j = i + dir
+      if (j < 0 || j >= lista.length) return prev
+      ;[lista[i], lista[j]] = [lista[j], lista[i]]
+      return lista
+    })
+  }
+
+  const removerDoPlaylist = (i) => {
+    setPlaylistEdit((prev) => prev.filter((_, idx) => idx !== i))
+  }
+
+  const juntarAoPlaylist = (id) => {
+    const n = Number(id)
+    if (!n) return
+    setPlaylistEdit((prev) => {
+      if (prev.some((p) => Number(p.id) === n)) return prev
+      return [...prev, { id: n, start: 0, end: null }]
+    })
+  }
+
+  const alterarTrim = (i, campo, valor) => {
+    setPlaylistEdit((prev) =>
+      prev.map((p, idx) => {
+        if (idx !== i) return p
+        if (campo === 'end') return { ...p, end: valor === '' ? null : Number(valor) }
+        return { ...p, start: Math.max(0, Number(valor) || 0) }
+      }),
+    )
   }
 
   const removeClip = async () => {
@@ -1415,6 +1486,7 @@ export default function ClipCard({
             >
               {cm.author}
             </button>
+            <LiveBadge username={cm.author} />
             <span className="text-[10px] text-gray-500">{fmtComment(cm.created_at)}</span>
           </div>
           <p className="mt-0.5 break-words text-sm text-gray-200">{cm.content}</p>
@@ -1475,6 +1547,7 @@ export default function ClipCard({
             {c.author}
           </span>
         </button>
+        <LiveBadge username={c.author} />
         {c.game && (
           <span className="flex items-center gap-1.5 rounded-full bg-violet-500/15 px-2.5 py-1 text-[11px] font-bold text-violet-300 ring-1 ring-violet-500/30">
             <Gamepad2 className="h-3 w-3" /> {gameLabel(c.game)}
@@ -1488,7 +1561,7 @@ export default function ClipCard({
         )}
         {c.mine && (
           <div className={`flex items-center gap-1 ${c.visibility === 'private' ? '' : 'ml-auto'}`}>
-            {!editando && (
+            {!editando && !editorAberto && (
               <button
                 onClick={abrirEdicao}
                 title="Editar clip"
@@ -1555,7 +1628,7 @@ export default function ClipCard({
               <button
                 onClick={guardarEdicao}
                 disabled={salvando}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-violet-500 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-50"
+                className="ui-btn ui-btn-primary ui-btn-sm flex-1"
               >
                 {salvando ? (
                   <>
@@ -1578,7 +1651,14 @@ export default function ClipCard({
         ) : (
           <h3 className="font-bold text-white">{c.title}</h3>
         )}
-        {c.remoto ? (
+        {c.items && c.items.length && c.items.every((i) => i.url) ? (
+          <ClipPlaylistPlayer
+            items={c.items}
+            musicUrl={c.music_url}
+            volume={c.music_volume}
+            onPlay={() => registarVista(c.id, setC)}
+          />
+        ) : c.remoto ? (
           <VideoRemoto
             id={c.remoto}
             titulo={c.title}
@@ -1627,7 +1707,7 @@ export default function ClipCard({
             className="mt-3 max-h-[65vh] w-full rounded-xl bg-black"
           />
         )}
-        {(start > 0 || end != null) && (
+        {!(c.items && c.items.length) && (start > 0 || end != null) && (
           <p className="mt-1.5 text-xs text-gray-500">
             Trecho: {mmss(start)} – {end != null ? mmss(end) : 'fim'}
           </p>
@@ -1652,20 +1732,24 @@ export default function ClipCard({
           <MessageCircle className="h-4 w-4" />
           {c.comments_count || 0}
         </button>
-        {/* transferir — serve o ficheiro nosso OU o remoto (à máxima) */}
-        <button
-          onClick={download}
-          className={actionCls(false)}
-          title={baixando ? 'A transferir…' : 'Transferir o vídeo (máxima qualidade)'}
-          disabled={baixando || busy}
-        >
-          {baixando ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
-          {baixando ? 'A transferir…' : c.downloads || 0}
-        </button>
+        {/* transferir — serve o ficheiro nosso OU o remoto (à máxima).
+            Em publicações com vários clips, o download é o do 1.º clip;
+            escondemos para não induzir em erro. */}
+        {!(c.items && c.items.length > 1) && (
+          <button
+            onClick={download}
+            className={actionCls(false)}
+            title={baixando ? 'A transferir…' : 'Transferir o vídeo (máxima qualidade)'}
+            disabled={baixando || busy}
+          >
+            {baixando ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {baixando ? 'A transferir…' : c.downloads || 0}
+          </button>
+        )}
       </div>
 
       {/* Comentários */}
@@ -1728,6 +1812,96 @@ export default function ClipCard({
           )}
         </div>
       )}
+
+      {editorAberto &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm sm:p-5"
+            onClick={() => !salvando && setEditorAberto(false)}
+          >
+            <div
+              className="glass flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-violet-500/30 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
+                <div>
+                  <h2 className="font-display text-lg font-black text-white">Editar publicação</h2>
+                  <p className="mt-0.5 text-[11px] text-gray-500">
+                    Título, jogo e visibilidade da publicação.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditorAberto(false)}
+                  disabled={salvando}
+                  className="rounded-full bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white disabled:opacity-40"
+                  aria-label="Fechar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input
+                    value={novoTitulo}
+                    onChange={(e) => setNovoTitulo(e.target.value)}
+                    maxLength={100}
+                    placeholder="Título da publicação"
+                    className="w-full rounded-xl bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-violet-500/50 sm:col-span-2"
+                  />
+                  <select
+                    value={novoJogo}
+                    onChange={(e) => setNovoJogo(e.target.value)}
+                    className="cursor-pointer rounded-xl bg-black/40 px-3 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+                  >
+                    {!novoJogo && <option value="">Escolher jogo…</option>}
+                    {CLIP_GAMES.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.label}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={novaVis}
+                    onChange={(e) => setNovaVis(e.target.value)}
+                    className="cursor-pointer rounded-xl bg-black/40 px-3 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+                  >
+                    <option value="public">Público — vê toda a gente</option>
+                    <option value="private">Privado — vês só tu</option>
+                  </select>
+                </div>
+
+                {errEdit && (
+                  <p className="rounded-lg bg-red-500/15 px-3 py-2 text-xs font-bold text-red-300">
+                    {errEdit}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-white/10 px-4 py-3 sm:px-5">
+                <button
+                  type="button"
+                  onClick={() => setEditorAberto(false)}
+                  disabled={salvando}
+                  className="rounded-xl border border-white/15 px-4 py-2 text-xs font-bold text-gray-300 hover:bg-white/10 disabled:opacity-40"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={guardarEdicao}
+                  disabled={salvando}
+                  className="ui-btn ui-btn-primary ui-btn-sm"
+                >
+                  {salvando ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }

@@ -70,6 +70,9 @@ function extrairResultado(tipo, saida, logs) {
   if (tipo === 'instalados') {
     return ferramentas.parseInstalados(texto);
   }
+  if (tipo === 'tweaks') {
+    return ferramentas.parseTweaks(texto);
+  }
   if (tipo === 'specs' || tipo === 'saude') {
     for (let i = linhas.length - 1; i >= 0; i--) {
       try {
@@ -107,6 +110,9 @@ function prepararTrabalho(payload, soAdmin) {
   }
   if (tipo === 'instalados') {
     return { ...ferramentas.prepararInstalados(), tipo: 'instalados', ferramentaId: 'instalados' };
+  }
+  if (tipo === 'tweaks') {
+    return { ...ferramentas.prepararTweaks(), tipo: 'tweaks', ferramentaId: 'tweaks' };
   }
   if (tipo === 'specs') {
     return {

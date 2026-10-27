@@ -78,7 +78,7 @@ export default function ItadPrecos({ titulo }) {
               href={melhor.url || d.link}
               target="_blank"
               rel="noreferrer"
-              className="ml-auto flex items-center gap-1 rounded-full bg-violet-500 px-3 py-1.5 text-[10px] font-black text-white hover:bg-violet-400"
+              className="ui-btn ui-btn-primary ui-btn-sm ml-auto"
             >
               Abrir loja <ExternalLink className="h-3 w-3" />
             </a>

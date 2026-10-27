@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Heart, Trash2, CalendarDays } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
+import LiveBadge from './LiveBadge'
 import { confirmar, toast } from './Feedback'
 
 function dataCurta(valor) {
@@ -79,7 +80,10 @@ export default function UserPostCard({ post, viewer, onDelete, onUpdate, autor }
           }}
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-black text-white">{nome}</p>
+          <p className="flex items-center gap-1.5 truncate text-[13px] font-black text-white">
+            {nome}
+            <LiveBadge username={nome} compacto />
+          </p>
           <p className="flex items-center gap-1 text-[10px] font-semibold text-gray-500">
             <CalendarDays className="h-3 w-3" /> {dataCurta(post.created_at)}
           </p>

@@ -7,6 +7,7 @@ import { authHeaders } from '../lib/auth'
 import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import ProfileBanner from '../components/ProfileBanner'
+import LiveBadge from '../components/LiveBadge'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
@@ -81,7 +82,7 @@ export default function MembrosPage({ onProfile }) {
             {query.trim() && (
               <button
                 onClick={() => setQuery('')}
-                className="flex items-center gap-1.5 rounded-full bg-violet-500 px-4 py-2 text-[12px] font-black text-white transition-colors hover:bg-violet-400"
+                className="ui-btn ui-btn-primary ui-btn-sm"
               >
                 <X className="h-3.5 w-3.5" /> Limpar pesquisa
               </button>
@@ -110,13 +111,16 @@ export default function MembrosPage({ onProfile }) {
                         />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span
-                          className={`block truncate text-sm font-bold ${
-                            classesNome(m.name_color, m.name_effect) ||
-                            (temPrevisao1(m.badges) ? nomeDouradoClass : 'text-white')
-                          }`}
-                        >
-                          {m.username}
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span
+                            className={`truncate text-sm font-bold ${
+                              classesNome(m.name_color, m.name_effect) ||
+                              (temPrevisao1(m.badges) ? nomeDouradoClass : 'text-white')
+                            }`}
+                          >
+                            {m.username}
+                          </span>
+                          <LiveBadge username={m.username} />
                         </span>
                         <span
                           className={`block text-xs ${m.online ? 'text-emerald-400/90' : 'text-gray-500'}`}

@@ -455,6 +455,524 @@ button[class~='border-white/15']:active {
 }
 
 /* ============================================================
+   Sistema de UI comum (admin + páginas)
+   ------------------------------------------------------------
+   Cartões, botões e espaçamentos iguais em todo o site.
+   ============================================================ */
+:root {
+  --ui-radius: 18px;
+  --ui-gap: 12px;
+  --ui-btn-h: 40px;
+}
+.ui-card {
+  border-radius: var(--ui-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 16px;
+}
+.ui-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ui-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #d1d5db;
+}
+.ui-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  border-radius: var(--ui-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  padding: 14px;
+}
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: var(--ui-btn-h);
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.ui-btn:active {
+  transform: scale(0.97);
+}
+.ui-btn:disabled {
+  opacity: 0.45;
+}
+.ui-btn-sm {
+  min-height: 32px;
+  padding: 0 11px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.ui-btn-lg {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+.ui-btn-icon {
+  min-height: 40px;
+  width: 40px;
+  padding: 0;
+}
+.ui-btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #d946ef);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(124, 58, 237, 0.25);
+}
+.ui-btn-primary:hover {
+  filter: brightness(1.08);
+}
+.ui-btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: #d1d5db;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.ui-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.ui-btn-danger {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.25);
+}
+.ui-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #fecaca;
+}
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 9999px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ui-live-dot {
+  position: relative;
+  display: inline-flex;
+  height: 8px;
+  width: 8px;
+}
+.ui-live-dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: #34d399;
+  opacity: 0.7;
+  animation: uiPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.ui-live-dot::after {
+  content: '';
+  position: relative;
+  display: block;
+  height: 8px;
+  width: 8px;
+  border-radius: 9999px;
+  background: #34d399;
+}
+@keyframes uiPing {
+  75%, 100% { transform: scale(2.2); opacity: 0; }
+}
+@media (max-width: 640px) {
+  .ui-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+  .ui-btn {
+    min-height: 42px;
+    padding: 0 13px;
+  }
+  .ui-btn-sm {
+    min-height: 34px;
+    padding: 0 11px;
+  }
+  .ui-btn-lg {
+    min-height: 46px;
+  }
+  .ui-section-title {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  .tabbar {
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabbar::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-item {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ============================================================
+   Selos "em live" e ligações sociais
+   ============================================================ */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  padding: 3px 8px;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+}
+.live-badge:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+}
+.live-pulso {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: livePulso 1.7s ease-out infinite;
+}
+@keyframes livePulso {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+    opacity: 0.75;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+  }
+}
+.live-youtube {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.42);
+}
+.live-twitch {
+  background: rgba(145, 70, 255, 0.18);
+  color: #d8b4fe;
+  border-color: rgba(145, 70, 255, 0.48);
+}
+.live-tiktok {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.live-kick {
+  background: rgba(83, 252, 24, 0.14);
+  color: #86efac;
+  border-color: rgba(83, 252, 24, 0.42);
+}
+.live-instagram {
+  background: rgba(236, 72, 153, 0.14);
+  color: #f9a8d4;
+  border-color: rgba(236, 72, 153, 0.38);
+}
+.live-x {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.social-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: #9ca3af;
+  transition: transform 0.15s ease, color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+.social-icon:hover {
+  transform: translateY(-1px);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+.social-youtube:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.42);
+  color: #fca5a5;
+}
+.social-twitch:hover {
+  background: rgba(145, 70, 255, 0.22);
+  border-color: rgba(145, 70, 255, 0.48);
+  color: #d8b4fe;
+}
+.social-tiktok:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+.social-kick:hover {
+  background: rgba(83, 252, 24, 0.18);
+  border-color: rgba(83, 252, 24, 0.42);
+  color: #86efac;
+}
+.social-instagram:hover {
+  background: rgba(236, 72, 153, 0.18);
+  border-color: rgba(236, 72, 153, 0.4);
+  color: #f9a8d4;
+}
+.social-x:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+/* ============================================================
+   Página de entrada / login
+   ============================================================ */
+.auth-screen {
+  background: #050308;
+}
+.auth-fundo {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.auth-veu {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 55% at 50% 42%, rgba(5, 3, 8, 0.12), rgba(5, 3, 8, 0.72) 78%, rgba(5, 3, 8, 0.95) 100%),
+    linear-gradient(180deg, rgba(5, 3, 8, 0.55), rgba(5, 3, 8, 0.2) 35%, rgba(5, 3, 8, 0.8) 100%);
+}
+.auth-card {
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================================
+   Entrada do site — panorama 360° + botão Entrar
+   ============================================================ */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #050308;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.boot-sair {
+  opacity: 0;
+  transform: scale(1.035);
+  pointer-events: none;
+}
+.boot-veu {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 60% at 50% 44%, rgba(5, 3, 8, 0.08), rgba(5, 3, 8, 0.5) 72%, rgba(5, 3, 8, 0.92) 100%),
+    linear-gradient(180deg, rgba(5, 3, 8, 0.62), rgba(5, 3, 8, 0.12) 38%, rgba(5, 3, 8, 0.72) 100%);
+}
+.boot-conteudo {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  height: 100%;
+  height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 4vh, 3rem) 1.25rem;
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  text-align: center;
+  color: #fff;
+}
+.boot-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  animation: bootEntrada 0.8s ease both;
+}
+.boot-titulo {
+  font-family: 'Archivo', 'Inter', sans-serif;
+  font-size: clamp(2rem, 7vw, 4.2rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.85);
+}
+.boot-e {
+  font-weight: 400;
+  font-style: italic;
+  text-transform: lowercase;
+  color: rgb(var(--aj-300));
+}
+.boot-meio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  animation: bootEntrada 0.8s ease 0.15s both;
+}
+.boot-entrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: min(320px, 82vw);
+  min-height: 56px;
+  padding: 0 2rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #7c3aed, #d946ef);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow:
+    0 18px 50px rgba(124, 58, 237, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.boot-entrar:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.08);
+  box-shadow: 0 24px 60px rgba(124, 58, 237, 0.55);
+}
+.boot-entrar:active {
+  transform: scale(0.98);
+}
+.boot-entrar:disabled {
+  opacity: 0.7;
+}
+.boot-beta {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.32rem 0.72rem;
+  border-radius: 9999px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.boot-fundo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  animation: bootEntrada 0.8s ease 0.3s both;
+}
+.boot-dica {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+.boot-dica-touch {
+  display: none;
+}
+.boot-gyro {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.15rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.boot-gyro:active {
+  transform: scale(0.97);
+}
+@keyframes bootEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (hover: none) {
+  .boot-dica-pc {
+    display: none;
+  }
+  .boot-dica-touch {
+    display: inline;
+  }
+  .boot-gyro {
+    display: inline-flex;
+  }
+}
+@media (max-width: 640px) {
+  .boot-conteudo {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .boot-titulo {
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+  .boot-entrar {
+    min-height: 54px;
+    font-size: 0.95rem;
+  }
+}
+
+/* ============================================================
    Barra de abas em segmentos (TabBar) — pista sólida e a pílula
    ativa em violeta chapado.
    ============================================================ */

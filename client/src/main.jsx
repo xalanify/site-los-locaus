@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
+import { LiveProvider } from './lib/live'
 import './index.css'
 import { registarSW } from './lib/pwa'
 
@@ -57,7 +58,9 @@ if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <LiveProvider>
+        <App />
+      </LiveProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

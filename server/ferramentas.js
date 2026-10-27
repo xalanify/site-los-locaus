@@ -1437,17 +1437,207 @@ try {
   Write-Output '  [ok] ID de publicidade desligado.'
 } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
   },
+  'xalana-a29': {
+    nome: 'Forçar modo escuro',
+    desc: 'Windows e apps passam a usar o tema escuro.',
+    nivel: 'minima',
+    script: `Write-Output 'Modo escuro forcado'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty -Path $p -Name AppsUseLightTheme -Value 0 -Type DWord
+  Set-ItemProperty -Path $p -Name SystemUsesLightTheme -Value 0 -Type DWord
+  Write-Output '  [ok] Modo escuro ativo.'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  },
+};
+
+/* Reversão por ação — usada pelo botão "Reverter selecionadas". */
+const XALANA_REVERSO_ACOES = {
+  'xalana-a1': `Write-Output 'Plano de energia: equilibrado'
+try { powercfg /setactive SCHEME_BALANCED | Out-Null; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a2': `Write-Output 'Efeitos visuais: padrao'
+try { Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects' -Name VisualFXSetting -Value 0 -Type DWord; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a3': `Write-Output 'Rato: aceleracao padrao'
+try {
+  $m = 'HKCU:\\Control Panel\\Mouse'
+  Set-ItemProperty $m -Name MouseSpeed -Value '1'
+  Set-ItemProperty $m -Name MouseThreshold1 -Value '6'
+  Set-ItemProperty $m -Name MouseThreshold2 -Value '10'
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a5': `Write-Output 'DiagTrack: automatico'
+try { Set-Service DiagTrack -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service DiagTrack -ErrorAction SilentlyContinue; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a6': `Write-Output 'Apps em segundo plano: padrao'
+try { Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications' -Name GlobalUserDisabled -Value 0 -Type DWord; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a8': `Write-Output 'Sugestoes do Inicio: padrao'
+try { Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager' -Name SystemPaneSuggestionsEnabled -Value 1 -Type DWord; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a9': `Write-Output 'Transparencia: padrao'
+try {
+  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name EnableTransparency -Value 1 -Type DWord
+  Set-ItemProperty 'HKCU:\\Control Panel\\Desktop' -Name MenuShowDelay -Value '400'
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a12': `Write-Output 'SysMain e Pesquisa: automatico'
+try {
+  foreach ($s in @('SysMain','WSearch')) { Set-Service -Name $s -StartupType Automatic -ErrorAction SilentlyContinue; Start-Service -Name $s -ErrorAction SilentlyContinue }
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a16': `Write-Output 'Animacoes: padrao'
+try {
+  Set-ItemProperty 'HKCU:\\Control Panel\\Desktop\\WindowMetrics' -Name MinAnimate -Value 1
+  $adv = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced'
+  Set-ItemProperty $adv -Name TaskbarAnimations -Value 1 -Type DWord
+  Set-ItemProperty $adv -Name ListviewAlphaSelect -Value 1 -Type DWord
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a22': `Write-Output 'Hibernacao: ligada'
+try { powercfg /h on | Out-Null; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a23': `Write-Output 'Atraso de arranque: padrao'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty $p -Name StartupDelayInMSec -Value 400 -Type DWord
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a25': `Write-Output 'Ficheiros recentes: padrao'
+try { Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced' -Name Start_TrackDocs -Value 1 -Type DWord; Write-Output '  [ok]' } catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a26': `Write-Output 'Power throttling: padrao'
+try {
+  $p = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling'
+  New-Item -Path $p -Force | Out-Null
+  Set-ItemProperty $p -Name PowerThrottlingOff -Value 0 -Type DWord
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a28': `Write-Output 'ID de publicidade: padrao'
+try {
+  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo' -Name Enabled -Value 1 -Type DWord
+  Set-ItemProperty 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo' -Name DisabledByGroupPolicy -Value 0 -Type DWord
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
+  'xalana-a29': `Write-Output 'Tema claro: padrao'
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+  Set-ItemProperty $p -Name AppsUseLightTheme -Value 1 -Type DWord
+  Set-ItemProperty $p -Name SystemUsesLightTheme -Value 1 -Type DWord
+  Write-Output '  [ok]'
+} catch { Write-Output ('  [!] ' + $_.Exception.Message) }`,
 };
 
 /* Ordem das ações por nível (para mostrar no frontend). */
 const XALANA_NIVEIS = {
-  minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4', 'xalana-a23'],
+  minima: ['xalana-a1', 'xalana-a2', 'xalana-a3', 'xalana-a16', 'xalana-a17', 'xalana-a4', 'xalana-a23', 'xalana-a29'],
   normal: [
     'xalana-a5', 'xalana-a6', 'xalana-a8', 'xalana-a9',
     'xalana-a18', 'xalana-a19', 'xalana-a10', 'xalana-a15', 'xalana-a24', 'xalana-a25',
   ],
   extremo: ['xalana-a11', 'xalana-a12', 'xalana-a13', 'xalana-a20', 'xalana-a21', 'xalana-a14', 'xalana-a22', 'xalana-a26', 'xalana-a27', 'xalana-a28'],
 };
+
+/* Reversão das otimizações mais comuns. Não repõe apps debloatadas
+   (isso teria de ser feito app a app), mas devolve o Windows a um
+   estado equilibrado e seguro. */
+const XALANA_REVERSO = `
+$ErrorActionPreference = 'Continue'
+Write-Output 'A reverter otimizacoes...'
+try { powercfg /setactive SCHEME_BALANCED | Out-Null; Write-Output '  [ok] Plano de energia equilibrado.' } catch {}
+try {
+  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects' -Name VisualFXSetting -Value 0 -Type DWord
+  Write-Output '  [ok] Efeitos visuais do Windows.'
+} catch {}
+try {
+  $m = 'HKCU:\\Control Panel\\Mouse'
+  Set-ItemProperty $m -Name MouseSpeed -Value '1'
+  Set-ItemProperty $m -Name MouseThreshold1 -Value '6'
+  Set-ItemProperty $m -Name MouseThreshold2 -Value '10'
+  Write-Output '  [ok] Rato com aceleracao padrao.'
+} catch {}
+try {
+  $p = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+  Set-ItemProperty $p -Name EnableTransparency -Value 1 -Type DWord
+  Set-ItemProperty $p -Name AppsUseLightTheme -Value 1 -Type DWord
+  Set-ItemProperty $p -Name SystemUsesLightTheme -Value 1 -Type DWord
+  Write-Output '  [ok] Transparencia e tema claro.'
+} catch {}
+try { Set-ItemProperty 'HKCU:\\Control Panel\\Desktop' -Name MenuShowDelay -Value '400'; Write-Output '  [ok] Demora dos menus.' } catch {}
+try {
+  Set-ItemProperty 'HKCU:\\Control Panel\\Desktop\\WindowMetrics' -Name MinAnimate -Value 1
+  $adv = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced'
+  Set-ItemProperty $adv -Name TaskbarAnimations -Value 1 -Type DWord
+  Set-ItemProperty $adv -Name ListviewAlphaSelect -Value 1 -Type DWord
+  Write-Output '  [ok] Animacoes do Windows.'
+} catch {}
+try {
+  foreach ($s in @('DiagTrack','SysMain','WSearch')) {
+    Set-Service -Name $s -StartupType Automatic -ErrorAction SilentlyContinue
+    Start-Service -Name $s -ErrorAction SilentlyContinue
+  }
+  Write-Output '  [ok] Servicos de diagnostico, SysMain e Pesquisa.'
+} catch {}
+try {
+  Set-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications' -Name GlobalUserDisabled -Value 0 -Type DWord
+  Write-Output '  [ok] Apps em segundo plano.'
+} catch {}
+try {
+  $cdm = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager'
+  foreach ($n in @('SystemPaneSuggestionsEnabled','SoftLandingEnabled','SubscribedContent-338388Enabled','SubscribedContent-338389Enabled','SubscribedContent-353694Enabled','SubscribedContent-353696Enabled')) {
+    Set-ItemProperty $cdm -Name $n -Value 1 -Type DWord -ErrorAction SilentlyContinue
+  }
+  Write-Output '  [ok] Sugestoes do Windows.'
+} catch {}
+try {
+  $sp = 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile'
+  Set-ItemProperty $sp -Name NetworkThrottlingIndex -Value 10 -Type DWord
+  Set-ItemProperty $sp -Name SystemResponsiveness -Value 20 -Type DWord
+  Set-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl' -Name PrioritySeparation -Value 2 -Type DWord
+  Write-Output '  [ok] Perfil multimidia e prioridade.'
+} catch {}
+try { powercfg /h on | Out-Null; Write-Output '  [ok] Hibernacao reposta.' } catch {}
+try {
+  $ser = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize'
+  New-Item -Path $ser -Force | Out-Null
+  Set-ItemProperty $ser -Name StartupDelayInMSec -Value 400 -Type DWord
+  Write-Output '  [ok] Atraso de arranque das apps.'
+} catch {}
+try {
+  $pt = 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling'
+  New-Item -Path $pt -Force | Out-Null
+  Set-ItemProperty $pt -Name PowerThrottlingOff -Value 0 -Type DWord
+  Write-Output '  [ok] Power throttling.'
+} catch {}
+try {
+  $ai = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo'
+  Set-ItemProperty $ai -Name Enabled -Value 1 -Type DWord
+  $aip = 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo'
+  Set-ItemProperty $aip -Name DisabledByGroupPolicy -Value 0 -Type DWord
+  Write-Output '  [ok] ID de publicidade.'
+} catch {}
+try { bcdedit /timeout 30 | Out-Null; Write-Output '  [ok] Timeout do arranque.' } catch {}
+try {
+  Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' } | ForEach-Object {
+    Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ResetServerAddresses -ErrorAction SilentlyContinue
+  }
+  Write-Output '  [ok] DNS automatico.'
+} catch {}
+try {
+  netsh int tcp set global autotuninglevel=normal rss=enabled ecn=default timestamps=disabled rsc=enabled | Out-Null
+  Write-Output '  [ok] TCP do Windows.'
+} catch {}
+Write-Output 'Revertersao concluida. Reinicia o PC para aplicar tudo.'
+`;
+
+FERRAMENTAS.push({
+  id: 'xalana-reverter',
+  cat: 'Otimizador by Xalana',
+  sub: 'Reversão',
+  nome: 'Reverter otimizações',
+  desc: 'Repõe o plano de energia, efeitos visuais, rato, animações, serviços e tema do Windows.',
+  perigo: 'medio',
+  tempo: 120000,
+  icone: 'RefreshCcw',
+  cmd: XALANA_REVERSO,
+});
+
 
 const XALANA_HEADER = `Write-Output '=== OTIMIZADOR BY XALANA ==='
 `;
@@ -1972,29 +2162,168 @@ function discosFixos() {
 }
 
 /* ---------------------------------------------------------------
-   Programas já instalados no PC (via winget list)
+   Programas já instalados no PC
    ---------------------------------------------------------------
-   Corre `winget list` uma vez e devolve que IDs do catálogo já
-   estão instalados. O frontend usa isto para marcar os cards e
-   mostrar o botão de desinstalar os selecionados. */
+   Lê as chaves Uninstall do Windows (64-bit, 32-bit e por
+   utilizador) e usa o winget como complemento. Isto apanha
+   programas instalados fora do winget (ex.: foobar2000) e
+   instalações per-user/32-bit. */
+const PS_LISTAR_INSTALADOS = `
+$ErrorActionPreference = 'SilentlyContinue'
+$paths = @(
+  'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
+  'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
+  'HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'
+)
+$reg = @(Get-ItemProperty $paths | Where-Object { $_.DisplayName } | Select-Object DisplayName, Publisher, InstallLocation)
+$winget = ''
+try { $winget = (winget list --disable-interactivity 2>$null | Out-String) } catch {}
+@{ registry = $reg; winget = $winget } | ConvertTo-Json -Compress -Depth 3
+`
+
+const normalizarPrograma = (s) =>
+  String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+
+const ALIASES_INSTALADOS = {
+  'instalar-foobar': ['foobar2000'],
+  'instalar-whatsapp': ['whatsapp'],
+  'instalar-teams': ['microsoft teams'],
+  'instalar-vscode': ['visual studio code'],
+  'instalar-office': ['microsoft office'],
+  'instalar-libreoffice': ['libreoffice'],
+  'instalar-gimp': ['gimp'],
+}
+
+const extrairJson = (texto) => {
+  const s = String(texto || '').trim()
+  if (!s) return null
+  const linhas = s.split(/\r?\n/).reverse()
+  for (const linha of linhas) {
+    const t = linha.trim()
+    if (!t.startsWith('{') || !t.endsWith('}')) continue
+    try {
+      return JSON.parse(t)
+    } catch {
+      /* tenta a linha anterior */
+    }
+  }
+  try {
+    return JSON.parse(s)
+  } catch {
+    return null
+  }
+}
+
+const programaInstalado = (programa, entradas, wingetTexto) => {
+  if (programa.wingetId && wingetTexto.includes(String(programa.wingetId).toLowerCase())) {
+    return true
+  }
+  const nomes = [programa.nome, ...(ALIASES_INSTALADOS[programa.id] || [])]
+    .map(normalizarPrograma)
+    .filter((n) => n.length >= 3)
+  if (!nomes.length) return false
+
+  for (const entrada of entradas) {
+    const display = normalizarPrograma(entrada && entrada.DisplayName)
+    if (!display) continue
+    for (const alvo of nomes) {
+      if (display === alvo) return true
+      if (Math.min(display.length, alvo.length) >= 4 && (display.includes(alvo) || alvo.includes(display))) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+const PS_ESTADO_TWEAKS = `
+$ErrorActionPreference = 'SilentlyContinue'
+$r = @{}
+try { $r.a1 = ((powercfg /getactivescheme) -match '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c') } catch {}
+try { $r.a2 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects' -Name VisualFXSetting).VisualFXSetting -eq 2) } catch {}
+try { $r.a3 = ((Get-ItemProperty 'HKCU:\\Control Panel\\Mouse' -Name MouseSpeed).MouseSpeed -eq '0') } catch {}
+try { $r.a5 = ((Get-Service DiagTrack).StartType -eq 'Disabled') } catch {}
+try { $r.a6 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications' -Name GlobalUserDisabled).GlobalUserDisabled -eq 1) } catch {}
+try { $r.a8 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager' -Name SystemPaneSuggestionsEnabled).SystemPaneSuggestionsEnabled -eq 0) } catch {}
+try { $r.a9 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name EnableTransparency).EnableTransparency -eq 0) } catch {}
+try { $r.a12 = (((Get-Service SysMain).StartType -eq 'Disabled') -and ((Get-Service WSearch).StartType -eq 'Disabled')) } catch {}
+try { $r.a16 = ((Get-ItemProperty 'HKCU:\\Control Panel\\Desktop\\WindowMetrics' -Name MinAnimate).MinAnimate -eq '0') } catch {}
+try { $r.a22 = -not (Test-Path (Join-Path $env:SystemDrive 'hiberfil.sys')) } catch {}
+try { $r.a23 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize' -Name StartupDelayInMSec).StartupDelayInMSec -eq 0) } catch {}
+try { $r.a25 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced' -Name Start_TrackDocs).Start_TrackDocs -eq 0) } catch {}
+try { $r.a26 = ((Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling' -Name PowerThrottlingOff).PowerThrottlingOff -eq 1) } catch {}
+try { $r.a28 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo' -Name Enabled).Enabled -eq 0) } catch {}
+try { $r.a29 = ((Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize' -Name AppsUseLightTheme).AppsUseLightTheme -eq 0) } catch {}
+$r | ConvertTo-Json -Compress
+`
+
+function detectarTweaks() {
+  return new Promise((resolve) => {
+    if (!podeLocal()) return resolve({ ok: false, erro: 'Sem PowerShell local.' })
+    const p = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', PS_ESTADO_TWEAKS], {
+      windowsHide: true,
+    })
+    let out = ''
+    const limite = setTimeout(() => { try { p.kill() } catch { /* já saiu */ } }, 30000)
+    p.stdout.on('data', (b) => (out += String(b)))
+    p.on('error', () => { clearTimeout(limite); resolve({ ok: false, erro: 'PowerShell indisponível.' }) })
+    p.on('close', () => {
+      clearTimeout(limite)
+      const dados = extrairJson(out) || {}
+      resolve({ ok: true, tweaks: dados })
+    })
+  })
+}
+
+function prepararTweaks() {
+  return {
+    ok: true,
+    id: 'tweaks',
+    nome: 'Estado das otimizações',
+    tempo: 30000,
+    comando: PS_ESTADO_TWEAKS,
+    tipoResultado: 'tweaks',
+  }
+}
+
+function parseTweaks(texto) {
+  const dados = extrairJson(texto) || {}
+  return { ok: true, tweaks: dados }
+}
+
 function detectarInstalados() {
   return new Promise((resolve) => {
     if (!podeLocal()) return resolve({ ok: false, erro: 'Sem PowerShell local.' });
-    const alvos = PROGRAMAS_CATALOGO.filter((p) => p.wingetId).map((p) => p.wingetId.toLowerCase());
-    if (!alvos.length) return resolve({ ok: true, instalados: [] });
 
-    const p = spawn('winget.exe', ['list', '--disable-interactivity'], { windowsHide: true });
+    const p = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', PS_LISTAR_INSTALADOS], {
+      windowsHide: true,
+    });
     let out = '';
     let err = '';
     const limite = setTimeout(() => { try { p.kill(); } catch { /* já saiu */ } }, 60000);
     p.stdout.on('data', (b) => (out += String(b)));
     p.stderr.on('data', (b) => (err += String(b)));
-    p.on('error', () => { clearTimeout(limite); resolve({ ok: false, erro: 'winget indisponível.' }); });
+    p.on('error', () => { clearTimeout(limite); resolve({ ok: false, erro: 'PowerShell indisponível.' }); });
     p.on('close', () => {
       clearTimeout(limite);
-      const baixo = out.toLowerCase();
+      const dados = extrairJson(out);
+      if (!dados) {
+        // fallback antigo: winget list
+        const alvos = PROGRAMAS_CATALOGO.filter((x) => x.wingetId).map((x) => x.wingetId.toLowerCase());
+        const baixo = out.toLowerCase();
+        const instalados = PROGRAMAS_CATALOGO
+          .filter((x) => x.wingetId && alvos.includes(x.wingetId.toLowerCase()) && baixo.includes(x.wingetId.toLowerCase()))
+          .map((x) => x.id);
+        return resolve({ ok: true, instalados, _err: err.trim() ? err.trim().slice(0, 120) : null });
+      }
+      const entradas = Array.isArray(dados.registry) ? dados.registry : [];
+      const wingetTexto = String(dados.winget || '').toLowerCase();
       const instalados = PROGRAMAS_CATALOGO
-        .filter((x) => x.wingetId && baixo.includes(x.wingetId.toLowerCase()))
+        .filter((x) => programaInstalado(x, entradas, wingetTexto))
         .map((x) => x.id);
       resolve({ ok: true, instalados, _err: err.trim() ? err.trim().slice(0, 120) : null });
     });
@@ -2022,7 +2351,18 @@ function preparar(id, arg, soAdmin, acoes, restauro = false) {
      `acoes` é um array de IDs (ex.: ['xalana-a1','xalana-a3']) — pode
      misturar níveis (o Extremo toca no mínimo e normal também). Se não
      vier, corre o nível completo (compatível com o anterior). */
-  if (id.startsWith('xalana-') && Array.isArray(acoes) && acoes.length > 0) {
+  if (id === 'xalana-reverter' && Array.isArray(acoes) && acoes.length > 0) {
+    const validos = acoes.filter((a) => XALANA_REVERSO_ACOES[a]);
+    if (!validos.length) {
+      return { ok: false, erro: 'Nenhuma otimização selecionada é reversível.' };
+    }
+    cmd = [
+      XALANA_HEADER,
+      `Write-Output 'A reverter ${validos.length} otimizacao(oes) selecionada(s)...'`,
+      ...validos.map((a) => XALANA_REVERSO_ACOES[a]),
+      XALANA_FOOTER,
+    ].join('\n');
+  } else if (id.startsWith('xalana-') && Array.isArray(acoes) && acoes.length > 0) {
     const ordemNivel = { minima: 0, normal: 1, extremo: 2 };
     const validos = acoes.filter((a) => XALANA_ACOES[a]);
     if (validos.length === 0) {
@@ -2128,15 +2468,24 @@ function prepararInstalados() {
     id: 'instalados',
     nome: 'Programas instalados',
     tempo: 90000,
-    comando: 'winget list --disable-interactivity',
+    comando: PS_LISTAR_INSTALADOS,
     tipoResultado: 'instalados',
   };
 }
 
 function parseInstalados(texto) {
-  const baixo = String(texto || '').toLowerCase();
+  const dados = extrairJson(texto);
+  if (!dados) {
+    const baixo = String(texto || '').toLowerCase();
+    const instalados = PROGRAMAS_CATALOGO
+      .filter((x) => x.wingetId && baixo.includes(x.wingetId.toLowerCase()))
+      .map((x) => x.id);
+    return { ok: true, instalados };
+  }
+  const entradas = Array.isArray(dados.registry) ? dados.registry : [];
+  const wingetTexto = String(dados.winget || '').toLowerCase();
   const instalados = PROGRAMAS_CATALOGO
-    .filter((x) => x.wingetId && baixo.includes(x.wingetId.toLowerCase()))
+    .filter((x) => programaInstalado(x, entradas, wingetTexto))
     .map((x) => x.id);
   return { ok: true, instalados };
 }
@@ -2567,6 +2916,9 @@ module.exports = {
   prepararDiscos,
   prepararInstalados,
   parseInstalados,
+  prepararTweaks,
+  parseTweaks,
+  detectarTweaks,
   executar,
   desinstalar,
   detectarInstalados,

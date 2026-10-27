@@ -28,11 +28,13 @@ import {
   ScrollText,
   Bell,
   Flame,
+  Target,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
 import Estado from './Estado'
 import AdminStats from './AdminStats'
+import AdminDashboard from './AdminDashboard'
 import { BADGES, BadgeGem } from './BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { confirmar, toast } from './Feedback'
@@ -113,7 +115,7 @@ function EmailRow({ user, onSaved }) {
         <button
           onClick={save}
           disabled={busy}
-          className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+          className="ui-btn ui-btn-primary ui-btn-sm"
         >
           {busy && <Loader2 className="h-3 w-3 animate-spin" />}
           Guardar
@@ -366,6 +368,39 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
       })
     } catch {
       setFnImportMsg({ ok: false, texto: 'Sem ligação ao servidor.' })
+    }
+  }
+
+  /* ---------- Battlefield 6: importar página guardada do tracker.gg ---------- */
+  const bfFileRef = useRef(null)
+  const [bfImportMsg, setBfImportMsg] = useState(null)
+  const importarBf = async (ev) => {
+    const ficheiros = Array.from(ev.target.files || [])
+    if (!ficheiros.length) return
+    setBfImportMsg(null)
+    const textos = []
+    for (const f of ficheiros) {
+      try {
+        textos.push(await f.text())
+      } catch {}
+    }
+    if (!textos.length) return
+    try {
+      const res = await fetch('/api/admin/bf/import', {
+        method: 'POST',
+        headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ textos }),
+      })
+      const d = await res.json().catch(() => ({}))
+      const bons = (d.resultados || []).filter((r) => r.ok)
+      setBfImportMsg({
+        ok: Boolean(d.ok),
+        texto: d.ok
+          ? `Battlefield importado: ${bons.map((r) => `${r.handle || 'jogador'} (${r.matches || 0} jogos)`).join(', ')}.`
+          : (d.resultados || [])[0]?.erro || 'Não deu para importar.',
+      })
+    } catch {
+      setBfImportMsg({ ok: false, texto: 'Sem ligação ao servidor.' })
     }
   }
 
@@ -892,7 +927,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="glass rounded-2xl p-6 sm:p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+        className="glass rounded-2xl p-6 sm:p-8 w-full max-w-5xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -927,90 +962,20 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
               { id: 'fortnite', label: 'Fortnite', Icon: Flame },
+              { id: 'bf', label: 'Battlefield', Icon: Target },
               { id: 'ferramentas', label: 'Auditoria', Icon: ScrollText },
             ]}
           />
         </div>
 
         {tab === 'painel' ? (
-          loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
-            </div>
-          ) : (
-            <>
-              {/* Visão geral de tudo */}
-              <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-                {OVERVIEW_CARDS.map((c) => (
-                  <div key={c.key} className="glass rounded-xl p-4 text-center">
-                    <div
-                      className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full ${c.bg}`}
-                    >
-                      <c.Icon className={`h-5 w-5 ${c.color}`} />
-                    </div>
-                    <div className="text-2xl font-bold text-white">
-                      {overview ? overview[c.key] ?? 0 : '—'}
-                    </div>
-                    <div className="text-xs text-gray-400">{c.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Visitantes */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                {statCards.map((stat) => (
-                  <div key={stat.label} className="glass rounded-xl p-4 text-center">
-                    <div
-                      className={`w-12 h-12 rounded-full ${stat.bgColor} flex items-center justify-center mx-auto mb-3`}
-                    >
-                      <div className={stat.color}>{stat.icon}</div>
-                    </div>
-                    <div className="text-2xl font-bold text-white">
-                      {stat.value.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-400">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="glass rounded-xl p-6 text-center">
-                <h3 className="text-lg font-semibold text-gray-300 mb-2">Total de Visitantes</h3>
-                <div className="text-4xl font-black gradient-text">
-                  {(stats?.total || 0).toLocaleString()}
-                </div>
-              </div>
-
-              {/* Ações rápidas */}
-              <div className="mt-4 flex flex-wrap justify-center gap-3">
-                <button
-                  onClick={limparChat}
-                  disabled={chatLimparBusy}
-                  title="Apaga todas as mensagens do chat geral"
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-500/15 px-4 py-2.5 text-sm font-bold text-red-300 ring-1 ring-red-500/30 transition-colors hover:bg-red-500/25 hover:text-red-200 disabled:opacity-50"
-                >
-                  {chatLimparBusy ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                  Limpar chat
-                </button>
-              </div>
-              {chatLimparMsg && (
-                <p
-                  className={`mt-3 text-center text-xs font-semibold ${
-                    chatLimparOk ? 'text-emerald-300' : 'text-red-300'
-                  }`}
-                >
-                  {chatLimparMsg}
-                </p>
-              )}
-
-              <div className="mt-6 text-center text-sm text-gray-400">
-                Os dados são atualizados automaticamente a cada 30 segundos
-              </div>
-            </>
-          )
+          <AdminDashboard
+            onTab={setTab}
+            onLimparChat={limparChat}
+            chatLimparBusy={chatLimparBusy}
+            chatLimparMsg={chatLimparMsg}
+            chatLimparOk={chatLimparOk}
+          />
         ) : tab === 'utilizadores' ? (
           /* ---------- UTILIZADORES: contas + distinções ---------- */
           <div>
@@ -1026,7 +991,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             )}
 
             {/* ----- Pedidos de recuperação de palavra-passe ----- */}
-            <div className="glass mb-5 rounded-xl p-4">
+            <div className="ui-card mb-5">
               <h3 className="mb-2 flex items-center gap-2 font-bold text-white">
                 <KeyRound className="h-4 w-4 text-violet-400" /> Pedidos de recuperação
               </h3>
@@ -1093,7 +1058,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             ) : (
               <div className="space-y-3">
                 {userList.map((u) => (
-                  <div key={u.id} className="glass rounded-xl p-4">
+                  <div key={u.id} className="ui-card">
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-violet-500/20 text-sm font-black text-white">
                         {u.username.slice(0, 2).toUpperCase()}
@@ -1284,7 +1249,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                           <button
                             onClick={() => addGameAccount(u)}
                             disabled={accBusy || !accForm.nick.trim()}
-                            className="flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+                            className="ui-btn ui-btn-primary ui-btn-sm"
                           >
                             {accBusy && <Loader2 className="h-3 w-3 animate-spin" />} Ligar
                           </button>
@@ -1304,7 +1269,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         ) : tab === 'anuncios' ? (
           /* ---------- ANÚNCIOS (só admin cria) ---------- */
           <div>
-            <div className="glass rounded-xl p-4">
+            <div className="ui-card">
               <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
                 <Plus className="h-4 w-4 text-violet-400" /> Novo anúncio
               </h3>
@@ -1340,7 +1305,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   <button
                     onClick={createPost}
                     disabled={saving}
-                    className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2 text-sm font-bold text-white hover:bg-violet-600 disabled:opacity-50"
+                    className="ui-btn ui-btn-primary"
                   >
                     <StickyNote className="h-4 w-4" />
                     {saving ? 'A guardar…' : 'Publicar anúncio'}
@@ -1379,11 +1344,11 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </div>
             )}
           </div>
-        ) : tab === 'r6' || tab === 'fortnite' ? (
-          /* ---------- RAINBOW SIX / FORTNITE: atualização manual ---------- */
+        ) : tab === 'r6' || tab === 'fortnite' || tab === 'bf' ? (
+          /* ---------- RAINBOW SIX / FORTNITE / BATTLEFIELD: atualização manual ---------- */
           <div>
             {tab === 'r6' && (
-            <div className="glass rounded-xl p-4">
+            <div className="ui-card">
               <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
                 <Gamepad2 className="h-4 w-4 text-violet-400" /> Rainbow Six — tracker.gg
               </h3>
@@ -1480,7 +1445,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
             {/* ---------- Fortnite: tracker.gg (save as) ---------- */}
             {tab === 'fortnite' && (
-            <div className="glass rounded-xl p-4">
+            <div className="ui-card">
               <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
                 <Flame className="h-4 w-4 text-fuchsia-400" /> Fortnite — tracker.gg
               </h3>
@@ -1537,8 +1502,46 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             </div>
             )}
 
+            {/* ---------- Battlefield 6: tracker.gg (save as) ---------- */}
+            {tab === 'bf' && (
+              <div className="ui-card">
+                <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
+                  <Target className="h-4 w-4 text-sky-400" /> Battlefield 6 — tracker.gg
+                </h3>
+                <p className="text-[13px] text-gray-400">
+                  Abre o teu perfil no tracker.gg, usa <b>Guardar como…</b> e importa aqui o HTML.
+                  O site atualiza as estatísticas do Battlefield 6 com esses números.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => bfFileRef.current && bfFileRef.current.click()}
+                    className="rounded-full bg-sky-500 px-4 py-2 text-[12px] font-black text-black hover:bg-sky-400"
+                  >
+                    Importar página do tracker
+                  </button>
+                  <input
+                    ref={bfFileRef}
+                    type="file"
+                    accept=".html,.htm,.json,.txt"
+                    multiple
+                    onChange={importarBf}
+                    className="hidden"
+                  />
+                </div>
+                {bfImportMsg && (
+                  <p
+                    className={`mt-2 text-[12px] font-bold ${
+                      bfImportMsg.ok ? 'text-emerald-400' : 'text-red-400'
+                    }`}
+                  >
+                    {bfImportMsg.texto}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* ---------- Notificações: teste de push ---------- */}
-            <div className="glass mt-4 rounded-xl p-4">
+            <div className="ui-card mt-4">
               <h3 className="mb-1 flex items-center gap-2 font-bold text-white">
                 <Bell className="h-4 w-4 text-amber-400" /> Notificações
               </h3>
@@ -1580,7 +1583,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             {tab === 'r6' && (
               <>
             {(r6ACorrer || (r6?.trabalho?.logs?.length ?? 0) > 0) && (
-              <div className="glass mt-4 rounded-xl p-4">
+              <div className="ui-card mt-4">
                 <div className="mb-2 flex items-center justify-between gap-2 text-[11px] font-black uppercase tracking-wider">
                   <span className={r6ACorrer ? 'text-emerald-400' : 'text-gray-400'}>
                     {r6ACorrer ? 'A ir buscar…' : 'Última atualização'}
@@ -1615,7 +1618,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             )}
 
             {/* quem está a ser seguido */}
-            <div className="glass mt-4 rounded-xl p-4">
+            <div className="ui-card mt-4">
               <h4 className="mb-2 text-[11px] font-black uppercase tracking-wider text-gray-400">
                 Esquadrão · {r6?.jogadores?.length || 0} jogadores
               </h4>
@@ -1643,7 +1646,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           /* ---------- AUDITORIA DAS FERRAMENTAS WINDOWS ---------- */
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-wider text-gray-400">
+              <h3 className="ui-section-title">
                 <ScrollText className="mr-1.5 inline h-4 w-4 text-violet-400" />
                 Registo de execuções
               </h3>
@@ -1686,7 +1689,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                     Boolean(r.erro) ||
                     (r.codigo != null && r.codigo !== '' && Number(r.codigo) !== 0)
                   return (
-                    <div key={r.id} className="glass rounded-xl p-3.5">
+                    <div key={r.id} className="ui-card">
                       <div className="flex flex-wrap items-center gap-2 text-[13px]">
                         <span
                           className={`inline-flex h-2 w-2 shrink-0 rounded-full ${
@@ -1735,10 +1738,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </div>
             )}
           </div>
-        ) : (
+        ) : tab === 'clips' ? (
           /* ---------- CLIPS DE TESTE (admin publica direto) ---------- */
           <div>
-            <div className="glass rounded-xl p-4">
+            <div className="ui-card">
               <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
                 <Film className="h-4 w-4 text-violet-400" /> Novo clip (teste)
               </h3>
@@ -1875,7 +1878,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                   <button
                     onClick={submitClip}
                     disabled={clipProg >= 0}
-                    className="flex items-center gap-2 rounded-full bg-violet-500 px-5 py-2 text-sm font-bold text-white hover:bg-violet-600 disabled:opacity-50"
+                    className="ui-btn ui-btn-primary"
                   >
                     {clipProg >= 0 ? (
                       <>
@@ -1931,7 +1934,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </div>
             )}
           </div>
-        )}
+        ) : null}
       </motion.div>
     </motion.div>
   )

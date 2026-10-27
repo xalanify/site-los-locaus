@@ -187,32 +187,37 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
       : 'Conta para entrar'
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black px-4 py-8">
-      {/* Brilho violeta subtil */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-[110px]" />
-      </div>
+    <div className="auth-screen fixed inset-0 z-[70] overflow-y-auto px-4 py-8">
+      <div
+        className="auth-fundo"
+        style={{ backgroundImage: "url('/boot/qwantani-2048.jpg')" }}
+        aria-hidden="true"
+      />
+      <div className="auth-veu" aria-hidden="true" />
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-sm"
+        className="relative z-10 mx-auto flex min-h-full w-full max-w-md flex-col justify-center"
       >
         {/* Marca */}
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
-            <ShieldCheck className="h-6 w-6 text-violet-400" />
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/20 ring-1 ring-violet-400/40 shadow-[0_0_34px_rgba(139,92,246,0.35)]">
+            <ShieldCheck className="h-7 w-7 text-violet-200" />
           </span>
-          <h1 className="gradient-text font-display text-2xl font-black uppercase tracking-wide">
-            Locaus
+          <h1 className="font-display text-3xl font-black uppercase tracking-wide text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.65)]">
+            Ashow <span className="italic text-violet-300">e</span> Jazer
           </h1>
-          <p className="mt-1.5 text-[11px] uppercase tracking-[0.3em] text-gray-500">
+          <p className="mt-1 font-display text-sm font-black tracking-[0.28em] text-white/70">
+            locaus.fun
+          </p>
+          <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.3em] text-white/45">
             {subtitle}
           </p>
         </div>
 
-        <div className="glass rounded-2xl p-6">
+        <div className="auth-card rounded-3xl border border-white/12 bg-[#0d0918]/85 p-6 shadow-2xl backdrop-blur-xl sm:p-7">
           {/* ------------- "Esqueci a pass" (pedido ao admin) ------------- */}
           {isForgot ? (
             sentInfo ? (
@@ -272,7 +277,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                 <button
                   type="submit"
                   disabled={busy || !username.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+                  className="ui-btn ui-btn-primary ui-btn-lg w-full"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Pedir recuperação'}
                 </button>
@@ -334,7 +339,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
               <button
                 type="submit"
                 disabled={busy || !username.trim() || !password || !confirm}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+                className="ui-btn ui-btn-primary ui-btn-lg w-full"
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar nova palavra-passe'}
               </button>
@@ -425,7 +430,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                     !password ||
                     (mode === 'register' && !email.trim())
                   }
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+                  className="ui-btn ui-btn-primary ui-btn-lg w-full"
                 >
                   {busy ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -449,6 +454,10 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
             </>
           )}
         </div>
+
+        <p className="mt-5 text-center text-[10px] font-bold uppercase tracking-[0.25em] text-white/30">
+          em beta · conta pessoal
+        </p>
       </motion.div>
     </div>
   )

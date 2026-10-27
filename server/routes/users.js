@@ -54,11 +54,25 @@ const signUser = (u) =>
   );
 
 /* Dados extras do perfil (foto + nick no CS2) — guardados no Supabase. */
+const parseSocials = (valor) => {
+  if (!valor) return {};
+  if (typeof valor === 'string') {
+    try {
+      const d = JSON.parse(valor);
+      return d && typeof d === 'object' ? d : {};
+    } catch {
+      return {};
+    }
+  }
+  return typeof valor === 'object' ? valor : {};
+};
+
 const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil,
+                socials, live_platform, live_url, live_since, live_until, live_auto
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -78,6 +92,18 @@ const profileOf = async (userId) => {
       name_effect: (row && row.name_effect) || null,
       borda_cor: (row && row.borda_cor) || null,
       fonte_perfil: null,
+      socials: parseSocials(row && row.socials),
+      live_auto: row && row.live_auto != null ? Boolean(row.live_auto) : true,
+      live:
+        row && row.live_url && row.live_until && new Date(row.live_until).getTime() > Date.now()
+          ? {
+              platform: row.live_platform || 'youtube',
+              url: row.live_url,
+              since: row.live_since || null,
+              until: row.live_until,
+              manual: true,
+            }
+          : null,
     };
   } catch {
     return {
@@ -96,6 +122,9 @@ const profileOf = async (userId) => {
       name_effect: null,
       borda_cor: null,
       fonte_perfil: null,
+      socials: {},
+      live_auto: true,
+      live: null,
     };
   }
 };
@@ -392,6 +421,8 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasNameColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
     const hasNameEffect = Object.prototype.hasOwnProperty.call(body, 'name_effect');
     const hasBorda = Object.prototype.hasOwnProperty.call(body, 'borda_cor');
+    const hasSocials = Object.prototype.hasOwnProperty.call(body, 'socials');
+    const hasLiveAuto = Object.prototype.hasOwnProperty.call(body, 'live_auto');
     const musicaAlterada = Boolean(body.musica_alterada);
     if (
       !hasNick &&
@@ -407,7 +438,9 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       !hasDynamic &&
       !hasNameColor &&
       !hasNameEffect &&
-      !hasBorda
+      !hasBorda &&
+      !hasSocials &&
+      !hasLiveAuto
     ) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
@@ -589,6 +622,56 @@ router.put('/me/profile', attachAuth, async (req, res) => {
             .run(efeito || null, uid);
         }
       }
+    }
+
+    if (hasSocials) {
+      const entrada = body.socials && typeof body.socials === 'object' ? body.socials : {};
+      const permitidas = {
+        youtube: ['youtube.com', 'youtu.be'],
+        twitch: ['twitch.tv'],
+        tiktok: ['tiktok.com'],
+        kick: ['kick.com'],
+        instagram: ['instagram.com'],
+        x: ['x.com', 'twitter.com'],
+      };
+      const limpo = {};
+      for (const [rede, valor] of Object.entries(entrada)) {
+        const dominios = permitidas[rede];
+        if (!dominios) continue;
+        const bruto = String(valor || '').trim().slice(0, 300);
+        if (!bruto) continue;
+        if (!/^https?:\/\//i.test(bruto)) {
+          const handle = bruto.replace(/^@/, '');
+          if (!/^[A-Za-z0-9._-]{1,60}$/.test(handle)) {
+            return res.status(400).json({ error: `O link de ${rede} não é válido.` });
+          }
+          limpo[rede] = handle;
+          continue;
+        }
+        let host = '';
+        try {
+          host = new URL(bruto).hostname.replace(/^www\./i, '').toLowerCase();
+        } catch {
+          return res.status(400).json({ error: `O link de ${rede} não é válido.` });
+        }
+        const ok = dominios.some((d) => host === d || host.endsWith(`.${d}`));
+        if (!ok) {
+          return res.status(400).json({ error: `O link de ${rede} tem de ser do ${dominios[0]}.` });
+        }
+        limpo[rede] = bruto;
+      }
+      await db
+        .prepare(
+          'UPDATE user_profiles SET socials = ?::jsonb, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(JSON.stringify(limpo), uid);
+    }
+    if (hasLiveAuto) {
+      await db
+        .prepare(
+          'UPDATE user_profiles SET live_auto = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        )
+        .run(Boolean(body.live_auto), uid);
     }
 
     const user = await store.findById(uid);
@@ -813,6 +896,7 @@ router.get('/list', attachAuth, async (req, res) => {
         `SELECT u.id, u.username,
                 (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
                 p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
+                p.socials, p.live_platform, p.live_url, p.live_since, p.live_until, p.live_auto,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 p2.last_seen,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
@@ -848,6 +932,18 @@ router.get('/list', attachAuth, async (req, res) => {
         name_effect: r.name_effect || null,
         borda_cor: r.borda_cor || null,
         fonte_perfil: null,
+        socials: parseSocials(r.socials),
+        live_auto: r.live_auto != null ? Boolean(r.live_auto) : true,
+        live:
+          r.live_url && r.live_until && new Date(r.live_until).getTime() > Date.now()
+            ? {
+                platform: r.live_platform || 'youtube',
+                url: r.live_url,
+                since: r.live_since || null,
+                until: r.live_until,
+                manual: true,
+              }
+            : null,
         online: Boolean(r.online),
         last_seen: r.last_seen ? new Date(r.last_seen).toISOString() : null,
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,

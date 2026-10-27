@@ -1066,6 +1066,7 @@ function FortniteStats() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fixos, setFixos] = useState([])
+  const [fixosLoading, setFixosLoading] = useState(true)
   const [trackerAberto, setTrackerAberto] = useState(null)
 
   useEffect(() => {
@@ -1077,6 +1078,9 @@ function FortniteStats() {
           if (vivo) setFixos(Array.isArray(d?.jogadores) ? d.jogadores : [])
         })
         .catch(() => {})
+        .finally(() => {
+          if (vivo) setFixosLoading(false)
+        })
     carregar()
     const iv = setInterval(carregar, 60000) // atualiza sozinho a cada minuto
     return () => {
@@ -1155,11 +1159,16 @@ function FortniteStats() {
       </form>
 
       {/* Jogadores do esquadrão (fixos) */}
-      {fixos.length > 0 && (
+      {(fixosLoading || fixos.length > 0) && (
         <div className="space-y-3">
-          <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-400">
+          <h3 className="ui-section-title">
             <Users className="h-4 w-4" /> Esquadrão
           </h3>
+          {fixosLoading ? (
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-8 text-sm font-semibold text-gray-400">
+              <Loader2 className="h-4 w-4 animate-spin text-violet-300" /> A carregar jogadores…
+            </div>
+          ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {fixos.map((j) => {
               const dd = j.data
@@ -1311,6 +1320,7 @@ function FortniteStats() {
               )
             })}
           </div>
+          )}
         </div>
       )}
 
@@ -1387,13 +1397,11 @@ function FortnitePage() {
    se a API estiver fora, cai no snapshot tracker.gg guardado.
    ============================================================ */
 const BF_JOGOS = [
-  { id: 'bf1', nome: 'Battlefield 1', cor: 'text-amber-300', fundo: 'bg-amber-500/15' },
-  { id: 'bfv', nome: 'Battlefield V', cor: 'text-emerald-300', fundo: 'bg-emerald-500/15' },
   { id: 'bf6', nome: 'Battlefield 6', cor: 'text-sky-300', fundo: 'bg-sky-500/15' },
 ]
 
 function BattlefieldStats({ aoMudarJogo }) {
-  const [jogo, setJogo] = useState('bf1')
+  const [jogo, setJogo] = useState('bf6')
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
   const [aCarregar, setACarregar] = useState(true)
@@ -3247,7 +3255,7 @@ function R6Stats() {
         <div className="mt-5 text-center">
           <button
             onClick={load}
-            className="rounded-full bg-violet-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-violet-600"
+            className="ui-btn ui-btn-primary"
           >
             Tentar novamente
           </button>
@@ -3399,7 +3407,7 @@ function R6StatsPage() {
 export default function GamesPage() {
   const [tab, setTab] = useState(null)
   /* qual dos três Battlefield está selecionado — muda a foto de fundo */
-  const [bfJogo, setBfJogo] = useState('bf1')
+  const [bfJogo, setBfJogo] = useState('bf6')
 
   /* marca o body quando um jogo com fundo está ativo
      (as colunas fixas ganham translucidez via CSS .painel-fixo) */
@@ -3407,7 +3415,7 @@ export default function GamesPage() {
     const jogosComFundo = ['cs2', 'r6', 'fortnite', 'bf']
     document.body.classList.toggle('in-jogo', jogosComFundo.includes(tab))
     // temática de cores por jogo
-    const tema = tab === null ? 'default' : tab === 'bf' ? 'bf1' : tab
+    const tema = tab === null ? 'default' : tab === 'bf' ? 'bf6' : tab
     document.body.dataset.theme = tema
     return () => {
       document.body.classList.remove('in-jogo')

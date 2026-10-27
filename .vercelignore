@@ -19,3 +19,8 @@ client/dist
 _check*.html
 .tmp
 **/.tmp
+
+# ficheiros-fonte grandes (as versões otimizadas estão em client/public/boot)
+Ampleben_Sternenhimmel_Panorama.jpg
+qwantani_dusk_2_8k.hdr
+LOCAUS3D.gltf

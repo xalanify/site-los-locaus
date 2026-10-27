@@ -109,7 +109,7 @@ export default function RecuperarPage({ onAuthed }) {
               <p className="text-sm font-bold text-red-300">{erro}</p>
               <button
                 onClick={() => navigate('/')}
-                className="rounded-full bg-violet-500 px-5 py-2 text-sm font-black text-white hover:bg-violet-600"
+                className="ui-btn ui-btn-primary"
               >
                 Voltar ao site
               </button>
@@ -144,7 +144,7 @@ export default function RecuperarPage({ onAuthed }) {
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-violet-400 disabled:opacity-50"
+                className="ui-btn ui-btn-primary ui-btn-lg w-full"
               >
                 {busy ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Definir nova palavra-passe'}
               </button>

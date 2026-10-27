@@ -27,6 +27,7 @@ import {
   Sticker,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import LiveBadge from '../components/LiveBadge'
 import { authHeaders } from '../lib/auth'
 import { tocarSom } from '../lib/sons'
 import { vistoPorUltimo } from '../lib/tempo'
@@ -782,6 +783,7 @@ export default function ChatPage({ user }) {
                       {!seguida && (
                         <span className={`mb-1 px-1 text-[11px] font-bold ${minha ? t.cor : 'text-gray-400'}`}>
                           {minha ? 'Tu' : m.user.username} · {hora(m.created_at)}
+                          <LiveBadge username={m.user.username} className="ml-1.5" />
                         </span>
                       )}
                       {m.reply && (
@@ -1069,7 +1071,7 @@ export default function ChatPage({ user }) {
                 <button
                   type="submit"
                   disabled={stickersLoading}
-                  className="rounded-lg bg-violet-500 px-3 py-1.5 text-[10px] font-black text-white hover:bg-violet-400 disabled:opacity-50"
+                  className="ui-btn ui-btn-primary ui-btn-sm"
                 >
                   {stickersLoading ? '…' : 'Procurar'}
                 </button>
@@ -1352,6 +1354,7 @@ export default function ChatPage({ user }) {
                         <span className="min-w-0 flex-1 truncate text-sm font-bold text-white">
                           {u.username}
                         </span>
+                        <LiveBadge username={u.username} />
                         <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-400">
                           {u.plataforma === 'mobile' ? 'Telemóvel' : u.plataforma === 'pc' ? 'PC' : 'Online'}
                         </span>
@@ -1385,6 +1388,7 @@ export default function ChatPage({ user }) {
                             <span className="min-w-0 flex-1 truncate text-sm font-bold text-gray-300">
                               {u.username}
                             </span>
+                            <LiveBadge username={u.username} compacto />
                             <span
                               className="shrink-0 text-[10px] font-semibold text-gray-500"
                               title={u.last_seen ? new Date(u.last_seen).toLocaleString('pt-PT') : ''}

@@ -1,107 +1,90 @@
 import { useEffect, useRef, useState } from 'react'
+import { ArrowRight } from 'lucide-react'
+import Panorama360 from './Panorama360'
 
 /* ============================================================
-   ENTRADA — clean
+   ENTRADA — panorama 360°
    ------------------------------------------------------------
-   Sem janela de terminal: só o nome do site + uma barra de
-   progresso suave e umas "janelas" de estado.
-   · entra sozinho ~3,2 s;
-   · clique/toque depois de 0,8 s entra já;
-   · timers limpos — nada a fugir.
+   A imagem equirretangular é o fundo. No PC acompanha o rato;
+   no telemóvel usa o giroscópio (com autorização) e o arrasto.
+   Só se entra no site ao clicar em "Entrar" — sem barra nem
+   temporizador automático.
    ============================================================ */
 
-const DURACAO = 3200
-const MARCOS = ['a ligar', 'a verificar sessão', 'a abrir o site']
+const PANO_DESKTOP = '/boot/qwantani-4096.jpg'
+const PANO_MOBILE = '/boot/qwantani-2048.jpg'
 
 export default function BootScreen({ visible, onEnter }) {
-  const [agora, setAgora] = useState(0)
+  const [aEntrar, setAEntrar] = useState(false)
   const entrou = useRef(false)
-  const timers = useRef([])
-  const inicioRef = useRef(0)
+
+  useEffect(() => {
+    if (visible) {
+      setAEntrar(false)
+      entrou.current = false
+    }
+  }, [visible])
 
   useEffect(() => {
     if (!visible) return undefined
-    entrou.current = false
-    inicioRef.current = Date.now()
-    setAgora(0)
-
-    const iv = setInterval(() => {
-      setAgora(Date.now() - inicioRef.current)
-    }, 50)
-    timers.current.push(iv)
-
-    const fim = setTimeout(() => {
-      if (entrou.current) return
-      entrou.current = true
-      setAgora(DURACAO)
-      onEnter && onEnter()
-    }, DURACAO)
-    timers.current.push(fim)
-
-    return () => {
-      timers.current.forEach((t) => {
-        clearInterval(t)
-        clearTimeout(t)
-      })
-      timers.current = []
+    const aoTeclar = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        entrar()
+      }
     }
+    window.addEventListener('keydown', aoTeclar)
+    return () => window.removeEventListener('keydown', aoTeclar)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible])
+  }, [visible, aEntrar])
+
+  const entrar = () => {
+    if (entrou.current) return
+    entrou.current = true
+    setAEntrar(true)
+    // deixa a animação de saída correr antes de montar o site
+    window.setTimeout(() => onEnter && onEnter(), 420)
+  }
 
   if (!visible) return null
 
-  const progresso = Math.min(100, (agora / DURACAO) * 100)
-  const indice = Math.min(2, Math.floor((agora / DURACAO) * MARCOS.length))
-
-  const saltar = () => {
-    if (agora < 800 || entrou.current) return
-    entrou.current = true
-    setAgora(DURACAO)
-    onEnter && onEnter()
-  }
-
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050308] px-6 py-10"
-      onClick={saltar}
-      role="presentation"
+      className={`boot-screen ${aEntrar ? 'boot-sair' : ''}`}
+      role="dialog"
+      aria-label="Entrada no site"
     >
-      {/* brilho violeta ao fundo */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(60rem 32rem at 50% 42%, rgba(139,92,246,.16) 0%, rgba(5,3,8,0) 70%)',
-        }}
-      />
+      <Panorama360 desktopSrc={PANO_DESKTOP} mobileSrc={PANO_MOBILE} />
 
-      <div className="relative w-full max-w-sm">
-        {/* marca */}
-        <h1 className="text-center font-display text-3xl font-black uppercase tracking-wide text-white">
-          <span className="gradient-text">Locaus</span>
-        </h1>
-        <p className="mt-1 text-center font-mono text-[10px] uppercase tracking-[0.28em] text-gray-500">
-          Locaus · site da comunidade
-        </p>
+      {/* véu para o texto ficar legível sobre o céu */}
+      <div className="boot-veu" aria-hidden="true" />
 
-        {/* barra de progresso */}
-        <div className="mt-7">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 transition-[width] duration-100"
-              style={{ width: `${progresso}%` }}
-            />
-          </div>
-          <div className="mt-1.5 flex items-center justify-between font-mono text-[10px] text-gray-600">
-            <span>{MARCOS[indice]}</span>
-            <span className="tabular-nums">{Math.round(progresso)}%</span>
-          </div>
-        </div>
+      <div className="boot-conteudo">
+        <header className="boot-topo">
+          <h1 className="boot-titulo">
+            Ashow <span className="boot-e">e</span> Jazer
+          </h1>
+        </header>
 
-        <p className="mt-5 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-gray-700 sm:text-[10px]">
-          clica para entrar já
-        </p>
+        <main className="boot-meio">
+          <button type="button" onClick={entrar} className="boot-entrar" disabled={aEntrar}>
+            <span>Entrar</span>
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <span className="boot-beta">em beta</span>
+        </main>
+
+        <footer className="boot-fundo">
+          <span className="boot-dica boot-dica-pc">move o rato para explorar</span>
+          <span className="boot-dica boot-dica-touch">arrasta para explorar</span>
+          <button
+            type="button"
+            className="boot-gyro"
+            onClick={() => window.dispatchEvent(new Event('locaus:pedir-gyro'))}
+          >
+            ativar movimento
+          </button>
+        </footer>
       </div>
     </div>
   )

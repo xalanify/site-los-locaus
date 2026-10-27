@@ -110,7 +110,7 @@ export default function InstalarApp() {
         <button
           type="button"
           onClick={instalar}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-400"
+          className="ui-btn ui-btn-primary mt-3 w-full"
         >
           <Download className="h-4 w-4" />
           Instalar app

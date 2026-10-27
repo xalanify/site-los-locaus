@@ -116,7 +116,7 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
           <button
             type="submit"
             disabled={busy || !username.trim() || !password}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500 py-3 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+            className="ui-btn ui-btn-primary ui-btn-lg w-full"
           >
             {busy ? (
               <Loader2 className="h-4 w-4 animate-spin" />
