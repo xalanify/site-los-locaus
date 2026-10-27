@@ -12,6 +12,10 @@ const notify = require('../notify');
 
 const router = express.Router();
 
+// Cache do próximo torneio (a home pede a cada minuto; o calendário da
+// Ubisoft não muda assim tão depressa).
+let cacheProxTorneio = { at: 0, dados: null };
+
 /* Avisa no Windows/PWA quando um jogo entra ao vivo (uma vez por jogo). */
 function avisarAoVivo(jogo, lista) {
   const agora = Date.now();
@@ -347,9 +351,13 @@ router.post('/resultados-vistos', requireUser, async (req, res) => {
 /* Próximo torneio (contagem decrescente) — automático do calendário oficial */
 router.get('/proximo-torneio', async (req, res) => {
   try {
+    if (cacheProxTorneio.dados && Date.now() - cacheProxTorneio.at < 5 * 60 * 1000) {
+      return res.json(cacheProxTorneio.dados);
+    }
     const t = await proximoTorneio();
-    if (!t) return res.json({ ok: true, torneio: null });
-    res.json({ ok: true, torneio: t });
+    const dados = { ok: true, torneio: t || null };
+    cacheProxTorneio = { at: Date.now(), dados };
+    res.json(dados);
   } catch (error) {
     console.error('Erro proximo-torneio:', error.message);
     res.status(502).json({ ok: false, error: 'Sem ligação ao calendário da Ubisoft.' });
