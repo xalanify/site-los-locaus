@@ -1,13 +1,11 @@
 import PlatformIcon from './PlatformIcon'
 
-const ORDEM = ['youtube', 'twitch', 'tiktok', 'kick', 'instagram', 'x']
+const ORDEM = ['youtube', 'twitch', 'tiktok', 'kick']
 const NOMES = {
   youtube: 'YouTube',
   twitch: 'Twitch',
   tiktok: 'TikTok',
   kick: 'Kick',
-  instagram: 'Instagram',
-  x: 'X',
 }
 
 function urlDe(rede, valor) {
@@ -16,8 +14,6 @@ function urlDe(rede, valor) {
   if (rede === 'twitch') return `https://www.twitch.tv/${h}`
   if (rede === 'tiktok') return `https://www.tiktok.com/@${h}`
   if (rede === 'kick') return `https://kick.com/${h}`
-  if (rede === 'instagram') return `https://www.instagram.com/${h}`
-  if (rede === 'x') return `https://x.com/${h}`
   return null
 }
 

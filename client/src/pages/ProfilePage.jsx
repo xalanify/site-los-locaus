@@ -78,8 +78,6 @@ const REDES_SOCIAIS = [
   { id: 'twitch', nome: 'Twitch', placeholder: '@canal ou link da twitch' },
   { id: 'tiktok', nome: 'TikTok', placeholder: '@perfil ou link do tiktok' },
   { id: 'kick', nome: 'Kick', placeholder: '@canal ou link da kick' },
-  { id: 'instagram', nome: 'Instagram', placeholder: '@perfil ou link' },
-  { id: 'x', nome: 'X / Twitter', placeholder: '@perfil ou link' },
 ]
 
 const PLATAFORMAS_LIVE = [

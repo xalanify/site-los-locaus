@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Crosshair, Radio, Shield, Target, Users } from 'lucide-react'
+import { ArrowRight, Crosshair, Loader2, Radio, Shield, Target, Users } from 'lucide-react'
 
 /* ============================================================
    Próximos torneios — contagem ao vivo (R6 e CS2)
@@ -333,6 +333,18 @@ export default function TorneiosHome() {
   if (!carregado) {
     return (
       <section className="mb-8">
+        <div className="mb-4">
+          <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
+            <Radio className="h-3 w-3" /> em tempo real
+          </span>
+          <h2 className="mt-2 font-display text-xl font-black uppercase tracking-wide text-white sm:text-2xl">
+            Próximos torneios
+          </h2>
+          <p className="mt-1 flex items-center gap-2 text-xs font-semibold text-gray-400">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-300" />
+            A carregar os próximos torneios…
+          </p>
+        </div>
         <div className="grid gap-4 lg:grid-cols-2">
           {[0, 1].map((i) => (
             <div key={i} className="glass h-56 animate-pulse rounded-3xl" />
@@ -342,7 +354,25 @@ export default function TorneiosHome() {
     )
   }
 
-  if (!infoR6 && !infoCs2) return null
+  if (!infoR6 && !infoCs2) {
+    return (
+      <section className="mb-8">
+        <div className="mb-4">
+          <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
+            <Radio className="h-3 w-3" /> em tempo real
+          </span>
+          <h2 className="mt-2 font-display text-xl font-black uppercase tracking-wide text-white sm:text-2xl">
+            Próximos torneios
+          </h2>
+        </div>
+        <div className="ui-card py-6 text-center">
+          <p className="text-sm font-semibold text-gray-400">
+            Sem torneios agendados de momento. Assim que houver jogos, aparecem aqui.
+          </p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="mb-8">

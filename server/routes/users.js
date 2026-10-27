@@ -625,14 +625,17 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     }
 
     if (hasSocials) {
+      const conta = await store.findById(uid);
+      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+      if (!souAdmin) {
+        return res.status(403).json({ error: 'Só o admin pode configurar as redes/live.' });
+      }
       const entrada = body.socials && typeof body.socials === 'object' ? body.socials : {};
       const permitidas = {
         youtube: ['youtube.com', 'youtu.be'],
         twitch: ['twitch.tv'],
         tiktok: ['tiktok.com'],
         kick: ['kick.com'],
-        instagram: ['instagram.com'],
-        x: ['x.com', 'twitter.com'],
       };
       const limpo = {};
       for (const [rede, valor] of Object.entries(entrada)) {

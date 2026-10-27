@@ -701,16 +701,6 @@ button[class~='border-white/15']:active {
   color: #86efac;
   border-color: rgba(83, 252, 24, 0.42);
 }
-.live-instagram {
-  background: rgba(236, 72, 153, 0.14);
-  color: #f9a8d4;
-  border-color: rgba(236, 72, 153, 0.38);
-}
-.live-x {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
-  border-color: rgba(255, 255, 255, 0.28);
-}
 .social-links {
   display: inline-flex;
   flex-wrap: wrap;
@@ -753,16 +743,6 @@ button[class~='border-white/15']:active {
   background: rgba(83, 252, 24, 0.18);
   border-color: rgba(83, 252, 24, 0.42);
   color: #86efac;
-}
-.social-instagram:hover {
-  background: rgba(236, 72, 153, 0.18);
-  border-color: rgba(236, 72, 153, 0.4);
-  color: #f9a8d4;
-}
-.social-x:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
 }
 
 /* ============================================================
