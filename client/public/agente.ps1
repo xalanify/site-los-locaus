@@ -15,6 +15,7 @@ $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
+$Token = (([string]$Token) -replace '[\x00-\x1F\x7F]', '').Trim()
 $Site = $Site.TrimEnd('/')
 $Headers = @{ Authorization = "Bearer $Token" }
 $UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
@@ -30,7 +31,9 @@ function Log([string]$msg) {
 }
 
 # Evita dois agentes iguais (o mesmo BAT aberto duas vezes).
-$mutexName = 'LocausPC-' + $Token.Substring(0, [Math]::Min(24, $Token.Length))
+$mutexNome = ($Token -replace '[^A-Za-z0-9]', '')
+if ($mutexNome.Length -gt 40) { $mutexNome = $mutexNome.Substring(0, 40) }
+$mutexName = 'LocausPC-' + $mutexNome
 try {
   $mutex = New-Object System.Threading.Mutex($false, ('Global\' + $mutexName))
 } catch {

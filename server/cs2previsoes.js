@@ -88,8 +88,44 @@ async function sincronizar({ forcar = false } = {}) {
         });
       }
 
-      const db = getDb();
+      // A lista global só traz alguns jogos. A página de cada torneio
+      // atual/próximo traz TODAS as rondas (incluindo Round 5 e playoffs).
+      try {
+        const listaTorneios = await json(
+          `${BASE}/tournaments?page=1&limit=10&sort=start_date&filter[tournaments.status][in]=current,upcoming&filter[tournaments.tier][in]=s,a`,
+        );
+        const torneios = (listaTorneios.results || []).slice(0, 6);
+        for (const t of torneios) {
+          try {
+            const det = await json(`${BASE}/tournaments/${encodeURIComponent(t.slug)}`);
+            const info = {
+              name: det.name || t.name,
+              image_url: det.image_url || t.image_url,
+              region: det.region || t.region,
+            };
+            for (const stage of det.stages || []) {
+              for (const round of stage.rounds || []) {
+                for (const m of round.matches || []) {
+                  if (m && m.id) detalhes.push({ ...m, tournament: info });
+                }
+              }
+            }
+          } catch {
+            /* torneio sem detalhes — segue com os outros */
+          }
+        }
+      } catch {
+        /* segue com os jogos da lista global */
+      }
+
+      const porId = new Map();
       for (const d of detalhes) {
+        if (d && d.id) porId.set(Number(d.id), d);
+      }
+      const finais = [...porId.values()];
+
+      const db = getDb();
+      for (const d of finais) {
         const torneio = d.tournament || {};
         const stream =
           (Array.isArray(d.streams) ? d.streams : []).map((s) => s && (s.url || s.embed_url)).find(Boolean) ||

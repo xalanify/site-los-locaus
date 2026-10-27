@@ -90,15 +90,6 @@ $site = '${siteEsc}'
 $tokenCod = '${tokenCod}'
 $chave = '${chave}'
 $ps = Join-Path $env:TEMP 'locaus-agente.ps1'
-function DescodificarToken {
-  $bytes = [Convert]::FromBase64String($tokenCod)
-  $sb = New-Object System.Text.StringBuilder
-  for ($i = 0; $i -lt $bytes.Length; $i++) {
-    [void]$sb.Append([char]($bytes[$i] -bxor [int][char]$chave[$i % $chave.Length]))
-  }
-  return $sb.ToString()
-}
-$token = DescodificarToken
 Write-Host ''
 Write-Host '  ================================================' -ForegroundColor DarkCyan
 Write-Host '    LOCAUS PC  -  Liga o teu Windows ao site' -ForegroundColor Cyan
@@ -129,7 +120,7 @@ Write-Host ''
 Write-Host '  A ligar ao site... deixa esta janela aberta.' -ForegroundColor Cyan
 Write-Host '  Fecha esta janela para desligar o PC do site.' -ForegroundColor DarkGray
 Write-Host ''
-& powershell -NoProfile -ExecutionPolicy Bypass -File $ps -Site $site -Token $token -Chave $chave
+& powershell -NoProfile -ExecutionPolicy Bypass -File $ps -Site $site -Token $tokenCod -Chave $chave
 Write-Host ''
 Write-Host '  O agente terminou. Para ligar outra vez, abre este ficheiro de novo.' -ForegroundColor DarkGray
 Read-Host

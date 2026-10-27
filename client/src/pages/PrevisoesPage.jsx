@@ -425,6 +425,7 @@ function Podium({ users }) {
    ============================================================ */
 function ProximoTorneio() {
   const [t, setT] = useState(null)
+  const [aberto, setAberto] = useState(false)
   const [, setTick] = useState(0)
 
   useEffect(() => {
@@ -469,8 +470,8 @@ function ProximoTorneio() {
             Próximo torneio{t.regiao ? ` · ${t.regiao}` : ''}
           </p>
           <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">{t.nome}</h3>
-          {t.campeonato && t.campeonato !== t.nome && (
-            <p className="truncate text-[11px] font-semibold text-gray-400">{t.campeonato}</p>
+          {t.fase && (
+            <p className="truncate text-[11px] font-semibold text-gray-400">{t.fase}</p>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -486,6 +487,52 @@ function ProximoTorneio() {
           ))}
         </div>
       </div>
+
+      <div className="relative mt-3 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setAberto((v) => !v)}
+          className="ui-btn ui-btn-ghost ui-btn-sm"
+          aria-expanded={aberto}
+        >
+          <Users className="h-3.5 w-3.5" />
+          {aberto
+            ? 'Esconder equipas'
+            : `Ver equipas${Array.isArray(t.equipas) && t.equipas.length ? ` (${t.equipas.length})` : ''}`}
+        </button>
+      </div>
+
+      {aberto && (
+        <div className="relative mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+          {Array.isArray(t.equipas) && t.equipas.length ? (
+            <div className="flex flex-wrap gap-1.5">
+              {t.equipas.map((e) => (
+                <span
+                  key={e.nome}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold text-gray-200"
+                >
+                  {e.logo && (
+                    <img
+                      src={e.logo}
+                      alt=""
+                      className="h-4 w-4 object-contain"
+                      loading="lazy"
+                      onError={(ev) => {
+                        ev.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  )}
+                  {e.nome}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[11px] font-semibold text-gray-400">
+              Equipas ainda por anunciar para este torneio.
+            </p>
+          )}
+        </div>
+      )}
     </motion.section>
   )
 }
@@ -875,6 +922,7 @@ function CS2PrevisoesTab({ user }) {
   const [votando, setVotando] = useState(0)
   const [abaCs2, setAbaCs2] = useState('proximos')
   const [regiaoCs2, setRegiaoCs2] = useState('Todas')
+  const [abertoProx, setAbertoProx] = useState(false)
 
   const carregar = async () => {
     try {
@@ -948,6 +996,18 @@ function CS2PrevisoesTab({ user }) {
     ),
   )
 
+  const equipasProx = prox
+    ? [
+        ...new Map(
+          dados.matches
+            .filter((m) => m.competition === prox.competition)
+            .flatMap((m) => [m.team_a, m.team_b])
+            .filter((t) => t && t.name)
+            .map((t) => [t.name, t.logo || null]),
+        ).entries(),
+      ].map(([nome, logo]) => ({ nome, logo }))
+    : []
+
   return (
     <div className="space-y-4">
       {prox && (
@@ -962,13 +1022,19 @@ function CS2PrevisoesTab({ user }) {
             )}
             <div className="min-w-0 flex-1">
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">
-                Próximo torneio CS2
+                {prox.status === 2 ? 'Torneio ao vivo' : 'Próximo torneio CS2'}
               </p>
               <h3 className="truncate text-sm font-black text-white">
                 {prox.competition || 'CS2'}
               </h3>
             </div>
-            <Countdown inicio={prox.start_time} />
+            {prox.status === 2 ? (
+              <span className="ui-chip bg-red-500/15 text-red-300 ring-1 ring-red-400/35">
+                <span className="live-pulso" aria-hidden="true" /> ao vivo
+              </span>
+            ) : (
+              <Countdown inicio={prox.start_time} />
+            )}
           </div>
           <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
             <div className="flex min-w-0 items-center justify-end gap-2 text-right">
@@ -981,14 +1047,63 @@ function CS2PrevisoesTab({ user }) {
               <span className="truncate text-xs font-black text-white">{prox.team_b?.name || 'A definir'}</span>
             </div>
           </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAbertoProx((v) => !v)}
+              className="ui-btn ui-btn-ghost ui-btn-sm"
+              aria-expanded={abertoProx}
+            >
+              <Users className="h-3.5 w-3.5" />
+              {abertoProx
+                ? 'Esconder equipas'
+                : `Ver equipas${equipasProx.length ? ` (${equipasProx.length})` : ''}`}
+            </button>
+          </div>
+
+          {abertoProx && (
+            <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+              {equipasProx.length ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {equipasProx.map((e) => (
+                    <span
+                      key={e.nome}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold text-gray-200"
+                    >
+                      {e.logo && (
+                        <img
+                          src={e.logo}
+                          alt=""
+                          className="h-4 w-4 object-contain"
+                          loading="lazy"
+                          onError={(ev) => {
+                            ev.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      )}
+                      {e.nome}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] font-semibold text-gray-400">
+                  Equipas ainda por anunciar para este torneio.
+                </p>
+              )}
+            </div>
+          )}
         </section>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <label className="flex shrink-0 items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
+          <MapPin className="h-3.5 w-3.5 text-violet-400" /> Região
+        </label>
         <select
           value={regiaoCs2}
           onChange={(e) => setRegiaoCs2(e.target.value)}
-          className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-xs font-semibold text-white outline-none sm:max-w-[220px]"
+          className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-violet-400/40"
         >
           <option value="Todas" className="bg-[#171122]">Todas as regiões</option>
           {regioesCs2.map((r) => (
@@ -997,25 +1112,41 @@ function CS2PrevisoesTab({ user }) {
             </option>
           ))}
         </select>
-        <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-[#120d20]/90 p-1">
+      </div>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#120d20]/90 p-1 shadow-inner shadow-black/30">
           {[
-            { id: 'proximos', label: 'Próximos' },
-            { id: 'resultados', label: 'Resultados' },
+            { id: 'proximos', label: 'Próximos', Icon: Target, count: proximos.length },
+            { id: 'resultados', label: 'Resultados', Icon: Trophy, count: resultados.length },
           ].map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setAbaCs2(t.id)}
-              className={`rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
                 abaCs2 === t.id
-                  ? 'bg-sky-500 text-white'
-                  : 'text-gray-400 hover:bg-white/10 hover:text-white'
+                  ? 'bg-gradient-to-b from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-950/50'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              {t.label}
+              <t.Icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t.label}</span>
+              {t.count ? (
+                <span className={`rounded-full px-1.5 text-[9px] tabular-nums ${abaCs2 === t.id ? 'bg-white/25' : 'bg-white/10'}`}>
+                  {t.count}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
+        <button
+          onClick={() => carregar()}
+          title="Atualizar resultados"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#120d20]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </button>
       </div>
 
       {abaCs2 === 'proximos' ? (

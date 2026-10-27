@@ -350,20 +350,52 @@ async function proximoTorneio() {
         const inicio = segundos(et.startTimestamp);
         const fim = segundos(et.endTimestamp);
         if (inicio > agora) {
+          const compId = et.singleCompetition && Number(et.singleCompetition.id);
           candidatos.push({
             nome: et.name || camp.name || 'Torneio',
             campeonato: camp.name || '',
             regiao: reg.name || '',
             inicio: new Date(inicio * 1000).toISOString(),
             fim: fim ? new Date(fim * 1000).toISOString() : null,
-            logo: camp.logoUrl || camp.darkLogoUrl || null,
+            logo: camp.logo || camp.darkLogo || camp.icon || null,
+            competitionId: compId || null,
           });
         }
       }
     }
   }
   candidatos.sort((a, b) => new Date(a.inicio) - new Date(b.inicio));
-  return candidatos[0] || null;
+  const torneio = candidatos[0] || null;
+  if (!torneio) return null;
+
+  // A página da competição traz as equipas qualificadas (com logos).
+  if (torneio.competitionId) {
+    try {
+      const p = await getData(
+        `/competition/${torneio.competitionId}`,
+        `?competitionAndPhaseIds=${torneio.competitionId}`,
+      );
+      const equipas = (p.teams || [])
+        .map((t) => ({
+          nome: t.name,
+          logo: t.darkLogoUrl || t.logoUrl || t.logoForDarkBackgroundUrl || null,
+          pais: t.countryCode || null,
+        }))
+        .filter((t) => t.nome);
+      torneio.equipas = equipas;
+      if (p.competition) {
+        torneio.fase = p.competition.name || null;
+        if (!torneio.logo) {
+          torneio.logo =
+            p.competition.darkLogo || p.competition.logo || p.competition.icon || null;
+        }
+      }
+    } catch {
+      torneio.equipas = [];
+    }
+  }
+
+  return torneio;
 }
 
 module.exports = { sincronizar, proximoTorneio };

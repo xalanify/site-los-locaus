@@ -607,8 +607,10 @@ router.get('/cs2/proximo', async (req, res) => {
     const row = await db
       .prepare(
         `SELECT * FROM cs2_matches
-          WHERE status = 1 AND tier IN ('s', 'a') AND start_time > now()
-          ORDER BY start_time ASC LIMIT 1`,
+          WHERE status IN (1, 2) AND tier IN ('s', 'a')
+            AND (status = 2 OR start_time > now())
+          ORDER BY CASE WHEN status = 2 THEN 0 ELSE 1 END, start_time ASC
+          LIMIT 1`,
       )
       .get();
     if (!row) return res.json({ ok: true, jogo: null });
@@ -621,6 +623,7 @@ router.get('/cs2/proximo', async (req, res) => {
         team_a: { name: row.team_a || '', logo: row.team_a_logo || null },
         team_b: { name: row.team_b || '', logo: row.team_b_logo || null },
         start_time: row.start_time,
+        status: Number(row.status),
         stream_url: row.stream_url || null,
       },
     });

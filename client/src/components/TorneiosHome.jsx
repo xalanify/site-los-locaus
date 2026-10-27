@@ -307,13 +307,16 @@ export default function TorneiosHome() {
     if (!r6Torneio?.inicio) return null
     const nome = r6Torneio.nome || r6Torneio.campeonato || 'BLAST R6 Major'
     const equipas =
-      equipasDoTorneio(r6 || [], nome).length > 0
-        ? equipasDoTorneio(r6 || [], nome)
-        : equipasDoTorneio(r6 || [], r6Torneio.campeonato)
+      Array.isArray(r6Torneio.equipas) && r6Torneio.equipas.length > 0
+        ? r6Torneio.equipas
+        : equipasDoTorneio(r6 || [], nome).length > 0
+          ? equipasDoTorneio(r6 || [], nome)
+          : equipasDoTorneio(r6 || [], r6Torneio.campeonato)
     return {
       match: {
         competition: nome,
         championship: r6Torneio.campeonato || nome,
+        phase: r6Torneio.fase || '',
         region: r6Torneio.regiao || '',
         start_time: r6Torneio.inicio,
         status: 1,

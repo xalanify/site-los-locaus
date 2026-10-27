@@ -17,7 +17,12 @@ $ProgressPreference = 'SilentlyContinue'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
 # O .bat envia o token codificado (XOR com a chave + base64) — descodifica aqui.
-if ($Chave) {
+# BATs antigos enviavam já o token em texto (64 hex) + chave: nesse caso não
+# se descodifica outra vez (era o que corrompia o token e o mutex).
+$Token = ([string]$Token).Trim()
+if ($Token -match '^[0-9a-fA-F]{64}$') {
+  # token já em texto — usa-se como está
+} elseif ($Chave) {
   try {
     $bytes = [Convert]::FromBase64String($Token)
     $xor = [System.Text.Encoding]::ASCII.GetString($bytes)
@@ -28,10 +33,9 @@ if ($Chave) {
     }
     $Token = $sb.ToString()
   } catch {}
-} else {
-  # compatibilidade: se vier só em base64 (bat antigo), descodifica só o base64
-  try { $Token = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Token)) } catch {}
 }
+# Nunca deixar caracteres de controlo entrarem no header Authorization.
+$Token = ($Token -replace '[\x00-\x1F\x7F]', '').Trim()
 
 $Site = $Site.TrimEnd('/')
 $Headers = @{ Authorization = "Bearer $Token" }
@@ -54,7 +58,11 @@ function Show([string]$msg, [string]$cor) {
 }
 
 # Evita dois agentes iguais (o mesmo BAT aberto duas vezes).
-$mutexName = 'LocausPC-' + $Token.Substring(0, [Math]::Min(24, $Token.Length))
+# O nome do mutex só pode ter caracteres seguros — o token pode vir
+# codificado e nunca deve entrar cru no nome.
+$mutexNome = ($Token -replace '[^A-Za-z0-9]', '')
+if ($mutexNome.Length -gt 40) { $mutexNome = $mutexNome.Substring(0, 40) }
+$mutexName = 'LocausPC-' + $mutexNome
 try {
   $mutex = New-Object System.Threading.Mutex($false, ('Global\' + $mutexName))
 } catch {
