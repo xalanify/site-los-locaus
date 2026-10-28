@@ -13,8 +13,6 @@ import {
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import Estado from '../components/Estado'
-import LiveBadge from '../components/LiveBadge'
-import SocialLinks from '../components/SocialLinks'
 import ProfilePage from './ProfilePage'
 import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
@@ -22,7 +20,8 @@ import { searchMice } from '../data/mice'
 import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
-import ProfileBanner from '../components/ProfileBanner'
+import ProfileHero from '../components/ProfileHero'
+import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
 import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
 import { extrairCores } from '../lib/coresFundo'
@@ -167,7 +166,7 @@ export default function PublicProfilePage({
   if (!carregado) {
     return (
       <section className="flex min-h-screen flex-col items-center justify-center gap-3 pt-14">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
         <p className="text-sm text-gray-500">A abrir o perfil…</p>
       </section>
     )
@@ -196,9 +195,28 @@ export default function PublicProfilePage({
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
   const corBorda = corBordaDe(p.borda_cor, tema.cor)
+  const CARD_ACCENTS = {
+    license: '#e4e4e7',
+    kova: '#a1a1aa',
+    dvd: '#ff4d4d',
+    felony: '#c084fc',
+    neon: '#e879f9',
+    blood: '#ff3b3b',
+    cosmic: '#60a5fa',
+    crimson: '#ef4444',
+    violet: '#c084fc',
+  }
+  const corCarta = p.card_style && CARD_ACCENTS[p.card_style] ? CARD_ACCENTS[p.card_style] : null
   const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
   const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
+  const jogosPerfil = [
+    ...new Set([
+      ...(p.game_accounts || []),
+      ...jogosClips,
+      ...Object.keys(p.game_ranks || {}),
+    ]),
+  ].filter((g) => g !== 'csgo')
   let clipsMostrados = [...clips]
   if (jogoClips) clipsMostrados = clipsMostrados.filter((c) => c.game === jogoClips)
   if (ordemClips === 'views') clipsMostrados.sort((a, b) => (b.views || 0) - (a.views || 0))
@@ -238,132 +256,36 @@ export default function PublicProfilePage({
     ...distOc,
   ]
 
-  const avatarSrc = p.avatar_url || svgAvatar(p.username, '#8B5CF6')
+  const avatarSrc = p.avatar_url || svgAvatar(p.username, '#a1a1aa')
   /* margem de casal: 0/1 clip público da até aparecer cheio */
 
   return (
-    <PageShell background={estiloFundo(fundoAtual)}>
-        {/* ---------------- Saudação (igual ao perfil normal) ---------------- */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 font-black gradient-text"
-          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-        >
-          {souEu ? (
-            <>Bem-vindo</>
-          ) : (
-            <>
-              Perfil de <span className="text-violet-400">{p.username}</span>
-            </>
-          )}
-        </motion.h1>
-
-        {/* ---------------- Cartão da conta (igual ao perfil normal) ---------------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(p.name_effect)}`}
-          style={{
-            borderColor: `${corBorda}66`,
-            boxShadow: `0 0 40px ${corBorda}22, inset 0 0 0 1px ${corBorda}18`,
-          }}
-        >
-          <ProfileBanner bannerId={p.banner_id} />
-          {/* letra fantasma ao fundo */}
-          <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
-            {p.username}
-          </span>
-
-          <div className="relative flex items-center gap-4">
-            <div className="relative shrink-0">
-              <img
-                src={avatarSrc}
-                alt={p.username}
-                className="h-16 w-16 rounded-full object-cover"
-                style={{ boxShadow: `0 0 0 2px ${corBorda}99, 0 0 26px ${corBorda}66` }}
-                onError={(e) => {
-                  if (e.currentTarget.dataset.fb) return
-                  e.currentTarget.dataset.fb = '1'
-                  e.currentTarget.src = svgAvatar(p.username, '#8B5CF6')
-                }}
-              />
-              {souEu && (
-                <button
-                  type="button"
-                  onClick={() => setEditOpen(true)}
-                  title="Editar foto e perfil"
-                  className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
-                >
-                  <Camera className="h-3 w-3" />
-                </button>
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={`truncate font-display text-xl font-black uppercase ${
-                    nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
-                  }`}
-                >
-                  {p.username}
-                </span>
-                <LiveBadge username={p.username} />
-                <SocialLinks socials={p.socials} />
-              </div>
-              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
-                <span>Membro desde {criado}</span>
-                <span
-                  className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
-                  title="ID da conta"
-                >
-                  ID {p.display_id ?? p.id}
-                </span>
-              </p>
-              {p.mouse && (
-                <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">Mouse</span>
-                  {(() => {
-                    const m = (searchMice(p.mouse) || []).find(
-                      (x) => `${x.brand} ${x.model}` === p.mouse,
-                    )
-                    return m && m.logo ? (
-                      <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
-                    ) : null
-                  })()}
-                  <span className="font-bold">{p.mouse}</span>
-                  {p.dpi ? <span className="text-gray-500">· {p.dpi} DPI</span> : null}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* distinções obtidas (DEV fica só ao lado do nome), igual ao perfil normal */}
-          {minhas.length > 0 && (
-            <div className="relative mt-4 flex flex-wrap items-center gap-2.5">
-              {minhas.map((b) => (
-                <span
-                  key={b.id}
-                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 ring-1"
-                  style={{
-                    background: `${b.color}18`,
-                    boxShadow: `0 0 14px ${b.glow || b.color}40`,
-                    ringColor: `${b.glow || b.color}66`,
-                  }}
-                >
-                  <BadgeGem badge={b} size={28} />
-                  <span className="font-display text-[11.5px] font-black uppercase tracking-wider" style={{ color: b.labelColor || b.color }}>
-                    {b.label}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-        </motion.div>
+    <PageShell
+      background={estiloFundo(fundoAtual)}
+      className={`profile-style profile-style--${p.profile_style || 'padrao'}`}
+    >
+        <ProfileHero
+          perfil={p}
+          avatarSrc={avatarSrc}
+          nomeCls={nomeCls}
+          corBorda={corCarta || corBorda}
+          badges={badges}
+          minhas={minhas}
+          criado={criado}
+          memberId={p.display_id ?? p.id}
+          clips={clips}
+          jogos={jogosPerfil}
+          gameRanks={p.game_ranks || {}}
+          isOwn={souEu}
+          onEdit={souEu ? () => setEditOpen(true) : undefined}
+          onPrimary={() =>
+            document.getElementById('publicacoes')?.scrollIntoView({ behavior: 'smooth' })
+          }
+          primaryLabel="Ver publicações"
+        />
 
         {/* ---------------- Feed do membro: clips + mensagens ---------------- */}
-        <div className="mb-8">
+        <div id="publicacoes" className="mb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <h2
               className="font-display text-2xl font-black uppercase sm:text-3xl"
@@ -376,57 +298,20 @@ export default function PublicProfilePage({
             </span>
           </div>
 
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {[
-              { id: 'tudo', label: 'Tudo' },
-              { id: 'videos', label: 'Vídeos' },
-              { id: 'mensagens', label: 'Mensagens' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFiltroFeed(f.id)}
-                className={`filtro-clips rounded-full border px-3 py-1.5 text-[11px] font-black ${
-                  filtroFeed === f.id
-                    ? 'border-white/60 bg-white/15 text-white'
-                    : 'border-white/10 bg-[#17112a] text-gray-300 hover:text-white'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {filtroFeed !== 'mensagens' && clips.length > 0 && (
-            <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <select
-                value={jogoClips}
-                onChange={(e) => setJogoClips(e.target.value)}
-                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
-              >
-                <option value="">Todos os jogos</option>
-                {jogosClips.map((g) => (
-                  <option key={g} value={g}>
-                    {gameLabel(g)}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={ordemClips}
-                onChange={(e) => setOrdemClips(e.target.value)}
-                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
-              >
-                <option value="recentes">Mais recentes</option>
-                <option value="views">Mais vistos</option>
-                <option value="titulo">Título (A-Z)</option>
-                <option value="jogo">Jogo (A-Z)</option>
-              </select>
-            </div>
-          )}
+          <FeedToolbar
+            filtro={filtroFeed}
+            setFiltro={setFiltroFeed}
+            jogos={jogosClips}
+            jogo={jogoClips}
+            setJogo={setJogoClips}
+            ordem={ordemClips}
+            setOrdem={setOrdemClips}
+            mostrarFiltros={filtroFeed !== 'mensagens' && clips.length > 0}
+          />
 
           {feedMostrado.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
-              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-violet-400" />
+            <div className="rounded-3xl border border-dashed border-zinc-500/40 bg-zinc-500/5 p-6 text-center">
+              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-zinc-400" />
               <p className="font-bold text-white">
                 {filtroFeed === 'mensagens'
                   ? 'Ainda sem mensagens'
@@ -489,14 +374,6 @@ export default function PublicProfilePage({
                 Painel Admin
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => setEditOpen(true)}
-              className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <Camera className="h-4 w-4" />
-              Editar perfil
-            </button>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}

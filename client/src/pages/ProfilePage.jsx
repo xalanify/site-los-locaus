@@ -20,9 +20,8 @@ import {
   User,
   Share2,
   Radio,
+  CreditCard,
 } from 'lucide-react'
-import LiveBadge from '../components/LiveBadge'
-import SocialLinks from '../components/SocialLinks'
 import PlatformIcon from '../components/PlatformIcon'
 import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
@@ -31,7 +30,10 @@ import { searchMice } from '../data/mice'
 import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
-import ProfileBanner from '../components/ProfileBanner'
+import ProfileHero from '../components/ProfileHero'
+import ProfileCard from '../components/ProfileCard'
+import ProfileStylePreview from '../components/ProfileStylePreview'
+import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
 import {
   BANNERS,
@@ -46,6 +48,7 @@ import {
 } from '../data/temasPerfil'
 import { CORES_NOME, EFEITOS_NOME, classesCard, classesNome } from '../data/nomeEfeitos'
 import { extrairCores } from '../lib/coresFundo'
+import { toast } from '../components/Feedback'
 import { useLive } from '../lib/live'
 
 /* ============================================================
@@ -69,8 +72,44 @@ const SECOES_EDIT = [
   { id: 'banner', nome: 'Banner', Icon: ImageIcon },
   { id: 'fundo', nome: 'Fundo', Icon: ImageIcon },
   { id: 'estilo', nome: 'Estilo', Icon: Palette },
+  { id: 'carta', nome: 'Carta', Icon: CreditCard },
+  { id: 'estiloPerfil', nome: 'Estilo de perfil', Icon: Sparkles },
   { id: 'musica', nome: 'Música', Icon: Music },
   { id: 'redes', nome: 'Redes & live', Icon: Share2 },
+]
+
+const CARD_STYLES = [
+  { id: 'padrao', nome: 'Padrão Locaus' },
+  { id: 'license', nome: 'Aimer License' },
+  { id: 'kova', nome: 'Kova' },
+  { id: 'dvd', nome: 'Red DVD' },
+  { id: 'felony', nome: 'Felony' },
+  { id: 'neon', nome: 'Neon' },
+  { id: 'blood', nome: 'Blood' },
+  { id: 'cosmic', nome: 'Cosmic' },
+  { id: 'crimson', nome: 'Crimson' },
+  { id: 'violet', nome: 'Violet' },
+]
+
+const CARD_ACCENTS = {
+  license: '#e4e4e7',
+  kova: '#a1a1aa',
+  dvd: '#ff4d4d',
+  felony: '#c084fc',
+  neon: '#e879f9',
+  blood: '#ff3b3b',
+  cosmic: '#60a5fa',
+  crimson: '#ef4444',
+  violet: '#c084fc',
+}
+
+const PROFILE_STYLES = [
+  { id: 'padrao', nome: 'Padrão Locaus' },
+  { id: 'felony', nome: 'Felony' },
+  { id: 'neon', nome: 'Neon' },
+  { id: 'blood', nome: 'Blood' },
+  { id: 'cosmic', nome: 'Cosmic' },
+  { id: 'crimson', nome: 'Crimson' },
 ]
 
 const REDES_SOCIAIS = [
@@ -99,7 +138,10 @@ const formDe = (u) => ({
   dynamic_colors: u?.dynamic_colors !== false,
   name_color: u?.name_color || '',
   name_effect: u?.name_effect || '',
-  borda_cor: u?.borda_cor || 'banner',
+  borda_cor: u?.borda_cor || 'preto',
+  card_style: u?.card_style || 'padrao',
+  profile_style: u?.profile_style || 'padrao',
+  cs2_inventory_eur: u?.cs2_inventory_eur ?? 0,
   socials: u?.socials && typeof u.socials === 'object' ? u.socials : {},
 })
 
@@ -136,6 +178,7 @@ export default function ProfilePage({
   const cropDragRef = useRef(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [aSyncInv, setASyncInv] = useState(false)
   const [mouseSug, setMouseSug] = useState([])
   const [myClips, setMyClips] = useState([]) // publicações desta conta
   const [myPosts, setMyPosts] = useState([]) // mensagens desta conta
@@ -280,7 +323,7 @@ export default function ProfilePage({
     ...distOc,
   ]
 
-  const avatarSrc = me.avatar_url || svgAvatar(me.username, '#8B5CF6')
+  const avatarSrc = me.avatar_url || svgAvatar(me.username, '#a1a1aa')
 
   const abrirEditar = () => {
     // game_nick mantém-se guardado (liga o TOP 1 KILL ao CS2) — invisível no perfil
@@ -369,7 +412,7 @@ export default function ProfilePage({
     canvas.height = OUT
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.fillStyle = '#0d0a16'
+    ctx.fillStyle = '#101012'
     ctx.fillRect(0, 0, OUT, OUT)
     ctx.drawImage(img, dx, dy, dw, dh)
     canvas.toBlob(
@@ -430,6 +473,33 @@ export default function ProfilePage({
     }
   }
 
+  const sincronizarInventario = async () => {
+    setASyncInv(true)
+    try {
+      const r = await fetch('/api/users/cs2-inventory/sync', {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não foi possível atualizar.')
+      const me2 = await fetch('/api/users/me', {
+        headers: authHeaders(),
+        cache: 'no-store',
+      })
+        .then((x) => (x.ok ? x.json() : null))
+        .catch(() => null)
+      if (me2) {
+        setMe(me2)
+        setForm((f) => ({ ...f, cs2_inventory_eur: me2.cs2_inventory_eur ?? 0 }))
+      }
+      toast.ok('Inventários CS2 atualizados.')
+    } catch (e) {
+      toast.erro(e.message || 'Não foi possível atualizar os inventários.')
+    } finally {
+      setASyncInv(false)
+    }
+  }
+
   const guardar = async () => {
     if (saving) return
     setSaving(true)
@@ -470,6 +540,9 @@ export default function ProfilePage({
               musica_nome: form.musica_nome,
               name_color: form.name_color,
               name_effect: form.name_effect,
+              card_style: form.card_style,
+              profile_style: form.profile_style,
+              cs2_inventory_eur: Number(form.cs2_inventory_eur) || 0,
             }
           : {}),
         borda_cor: form.borda_cor,
@@ -510,8 +583,16 @@ export default function ProfilePage({
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
   const corBorda = corBordaDe(edit ? form.borda_cor : me.borda_cor, tema.cor)
+  const corCarta = me.card_style && CARD_ACCENTS[me.card_style] ? CARD_ACCENTS[me.card_style] : null
   const nomeCls = classesNome(me.name_color, me.name_effect)
   const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
+  const jogosPerfil = [
+    ...new Set([
+      ...(me.game_accounts || []),
+      ...jogosClips,
+      ...Object.keys(me.game_ranks || {}),
+    ]),
+  ].filter((g) => g !== 'csgo')
   const clipsMostrados = useMemo(() => {
     let lista = [...myClips]
     if (jogoClips) lista = lista.filter((c) => c.game === jogoClips)
@@ -539,8 +620,8 @@ export default function ProfilePage({
   const modalEdicao = edit ? (
 
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
-              <div className="glass max-h-[92dvh] w-full max-w-4xl space-y-5 overflow-y-auto rounded-3xl border border-violet-500/30 p-4 shadow-2xl sm:p-6">
-              <div className="sticky -top-4 z-20 -mx-4 -mt-4 mb-2 flex items-start justify-between gap-3 border-b border-white/10 bg-[#140f22]/95 px-4 py-3 backdrop-blur sm:-top-6 sm:-mx-6 sm:-mt-6 sm:px-6">
+              <div className="glass max-h-[92dvh] w-full max-w-4xl space-y-5 overflow-y-auto rounded-3xl border border-zinc-500/30 p-4 shadow-2xl sm:p-6">
+              <div className="sticky -top-4 z-20 -mx-4 -mt-4 mb-2 flex items-start justify-between gap-3 border-b border-white/10 bg-[#141416]/95 px-4 py-3 backdrop-blur sm:-top-6 sm:-mx-6 sm:-mt-6 sm:px-6">
                 <div>
                   <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
                   <p className="text-xs text-gray-400">
@@ -559,14 +640,19 @@ export default function ProfilePage({
 
               {/* separadores do editor */}
               <div className="flex gap-1.5 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-1.5">
-                {SECOES_EDIT.filter((s) => s.id !== 'redes' || me?.is_admin).map(({ id, nome, Icon }) => (
+                {SECOES_EDIT.filter(
+                  (s) =>
+                    (s.id !== 'redes' || me?.is_admin) &&
+                    (s.id !== 'carta' || me?.is_admin) &&
+                    (s.id !== 'estiloPerfil' || me?.is_admin),
+                ).map(({ id, nome, Icon }) => (
                   <button
                     key={id}
                     type="button"
                     onClick={() => setSecaoEdit(id)}
                     className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[11px] font-black transition-colors ${
                       secaoEdit === id
-                        ? 'bg-violet-500 text-white shadow-lg shadow-violet-900/30'
+                        ? 'bg-zinc-500 text-white shadow-lg shadow-zinc-900/30'
                         : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -578,7 +664,7 @@ export default function ProfilePage({
 
               {/* Foto de perfil */}
               <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'perfil' ? '' : 'hidden'}`}>
-                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-zinc-300">
                   Foto de perfil
                 </h3>
               {/* escolher ficheiro */}
@@ -616,7 +702,7 @@ export default function ProfilePage({
                   <img
                     src={avatarPreview}
                     alt="Pré-visualização"
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-violet-500/50"
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-zinc-500/50"
                   />
                   <span className="text-xs text-gray-400">
                     Pré-visualização — será guardada ao clicar em Guardar.
@@ -628,7 +714,7 @@ export default function ProfilePage({
                   <img
                     src={me.avatar_url}
                     alt="Foto atual"
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-violet-500/50"
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-zinc-500/50"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                     }}
@@ -651,7 +737,7 @@ export default function ProfilePage({
                     onClick={fecharCrop}
                   >
                     <div
-                      className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d0a16] p-4 shadow-2xl"
+                      className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#101012] p-4 shadow-2xl"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="mb-3 flex items-center justify-between">
@@ -667,7 +753,7 @@ export default function ProfilePage({
                       </div>
 
                       <div
-                        className="relative mx-auto touch-none select-none overflow-hidden rounded-full bg-black ring-2 ring-violet-500/50"
+                        className="relative mx-auto touch-none select-none overflow-hidden rounded-full bg-black ring-2 ring-zinc-500/50"
                         style={{ width: CROP, height: CROP, cursor: 'grab' }}
                         onPointerDown={cropDown}
                         onPointerMove={cropMove}
@@ -717,7 +803,7 @@ export default function ProfilePage({
                               }
                             })
                           }}
-                          className="h-1.5 w-full accent-violet-500"
+                          className="h-1.5 w-full accent-zinc-500"
                         />
                         <span className="w-9 shrink-0 text-right text-[10px] font-bold tabular-nums text-gray-400">
                           {crop.zoom.toFixed(1)}×
@@ -735,7 +821,7 @@ export default function ProfilePage({
                         <button
                           type="button"
                           onClick={aplicarCrop}
-                          className="flex-1 rounded-xl bg-violet-500 py-2 text-xs font-black text-white transition hover:bg-violet-400"
+                          className="flex-1 rounded-xl bg-zinc-500 py-2 text-xs font-black text-white transition hover:bg-zinc-400"
                         >
                           Aplicar recorte
                         </button>
@@ -747,7 +833,7 @@ export default function ProfilePage({
 
               {/* Rato + DPI */}
               <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'perfil' ? '' : 'hidden'}`}>
-                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-zinc-300">
                   Rato e DPI
                 </h3>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -763,7 +849,7 @@ export default function ProfilePage({
                     onFocus={() => setMouseSug(searchMice(form.mouse))}
                     onBlur={() => setTimeout(() => setMouseSug([]), 150)}
                     placeholder="Ex.: Razer Viper V3 Pro"
-                    className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white focus:border-violet-500/50 focus:outline-none"
+                    className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white focus:border-zinc-500/50 focus:outline-none"
                   />
                   {mouseSug.length > 0 && (
                     <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#1a1428] py-1 shadow-lg">
@@ -798,7 +884,7 @@ export default function ProfilePage({
                     value={form.dpi}
                     onChange={(e) => setForm((f) => ({ ...f, dpi: e.target.value }))}
                     placeholder="Ex.: 800"
-                    className="w-32 rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white focus:border-violet-500/50 focus:outline-none"
+                    className="w-32 rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-sm text-white focus:border-zinc-500/50 focus:outline-none"
                   />
                 </div>
               </div>
@@ -807,7 +893,7 @@ export default function ProfilePage({
 
               {/* Banner animado do perfil */}
               <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'banner' || secaoEdit === 'fundo' ? '' : 'hidden'}`}>
-                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-zinc-300">
                   {secaoEdit === 'banner' ? 'Banner do perfil' : 'Fundo da página'}
                 </h3>
               <div className={secaoEdit === 'banner' ? '' : 'hidden'}>
@@ -835,7 +921,7 @@ export default function ProfilePage({
                             className="block h-16 w-full rounded-md object-cover sm:h-20"
                           />
                         ) : (
-                          <span className="block h-16 w-full rounded-md bg-gradient-to-br from-[#1b1230] to-[#0b0716] sm:h-20" />
+                          <span className="block h-16 w-full rounded-md bg-gradient-to-br from-[#1b1230] to-[#0b0b0c] sm:h-20" />
                         )}
                         <span className="mt-1 block truncate text-[10px] font-bold text-gray-300">
                           {b.nome}
@@ -885,7 +971,7 @@ export default function ProfilePage({
                         ) : (
                           <span
                             className="block h-20 w-full rounded-md sm:h-24"
-                            style={{ background: 'linear-gradient(135deg, #1b1230, #0b0716)' }}
+                            style={{ background: 'linear-gradient(135deg, #1b1230, #0b0b0c)' }}
                           />
                         )}
                         <span className="mt-1 block truncate text-[9px] font-bold text-gray-400">
@@ -910,7 +996,7 @@ export default function ProfilePage({
 
               {/* Cor das linhas / brilho do cartão e do avatar */}
               <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'estilo' ? '' : 'hidden'}`}>
-                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-zinc-300">
                   Estilo do perfil
                 </h3>
               <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
@@ -956,7 +1042,7 @@ export default function ProfilePage({
                   aria-checked={form.dynamic_colors}
                   onClick={() => setForm((f) => ({ ...f, dynamic_colors: !f.dynamic_colors }))}
                   className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                    form.dynamic_colors ? 'bg-violet-500' : 'bg-white/15'
+                    form.dynamic_colors ? 'bg-zinc-500' : 'bg-white/15'
                   }`}
                 >
                   <span
@@ -970,7 +1056,7 @@ export default function ProfilePage({
 
               {/* Música do perfil */}
               <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'musica' ? '' : 'hidden'}`}>
-                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                <h3 className="mb-2 text-[11px] font-black uppercase tracking-widest text-zinc-300">
                   Música do perfil
                 </h3>
               <div>
@@ -1099,6 +1185,98 @@ export default function ProfilePage({
               </section>
 
               {(isAdmin || me.is_admin) && (
+                <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#ff9e9e]">
+                    Carta do perfil (admin)
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-gray-500">
+                    Muda o estilo da carta na aba Cartas e no teu perfil.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {CARD_STYLES.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, card_style: c.id }))}
+                        className={`rounded-xl border p-1.5 text-left transition-colors ${
+                          form.card_style === c.id
+                            ? 'border-[#ff9e9e]/60 bg-[#ff9e9e]/5'
+                            : 'border-white/10 bg-black/20 hover:border-white/25'
+                        }`}
+                      >
+                        <ProfileCard
+                          perfil={{ ...me, ...form, card_style: c.id }}
+                          variant={c.id}
+                          jogos={jogosPerfil}
+                          className="w-full"
+                        />
+                        <span className="mt-1.5 block px-1 text-[10px] font-bold text-zinc-300">
+                          {c.nome}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className="mt-4 block text-xs font-bold text-gray-400">
+                    Inventário CS2 (€)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.cs2_inventory_eur}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, cs2_inventory_eur: e.target.value }))
+                    }
+                    className={inputCls}
+                  />
+                  <p className="mt-1 text-[10px] text-gray-500">
+                    O badge de inventário mais caro é atribuído automaticamente a quem tiver o
+                    valor mais alto.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={sincronizarInventario}
+                    disabled={aSyncInv}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold text-zinc-300 hover:bg-white/10 disabled:opacity-50"
+                  >
+                    <RefreshCcw className={`h-3 w-3 ${aSyncInv ? 'animate-spin' : ''}`} />
+                    {aSyncInv ? 'A atualizar…' : 'Atualizar automaticamente'}
+                  </button>
+                </div>
+              )}
+
+              {(isAdmin || me.is_admin) && (
+                <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'estiloPerfil' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#ff9e9e]">
+                    Estilo de perfil (admin)
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-gray-500">
+                    Muda o design da página do teu perfil.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {PROFILE_STYLES.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, profile_style: s.id }))}
+                        className={`rounded-xl border p-1.5 text-left transition-colors ${
+                          form.profile_style === s.id
+                            ? 'border-[#ff9e9e]/60 bg-[#ff9e9e]/5'
+                            : 'border-white/10 bg-black/20 hover:border-white/25'
+                        }`}
+                      >
+                        <ProfileStylePreview style={s.id} nome={me.username} />
+                        <span className="mt-1.5 block px-1 text-[10px] font-bold text-zinc-300">
+                          {s.nome}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(isAdmin || me.is_admin) && (
                 <div className={`rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3 ${secaoEdit === 'estilo' ? '' : 'hidden'}`}>
                   <p className="text-xs font-black uppercase tracking-wider text-amber-300">
                     Efeitos de nome (admin)
@@ -1152,7 +1330,7 @@ export default function ProfilePage({
               {/* Redes sociais + live (só admin, para testes) */}
               {me?.is_admin && (
                 <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'redes' ? '' : 'hidden'}`}>
-                  <h3 className="mb-1 text-[11px] font-black uppercase tracking-widest text-violet-300">
+                  <h3 className="mb-1 text-[11px] font-black uppercase tracking-widest text-zinc-300">
                     Redes sociais
                   </h3>
                   <p className="mb-3 text-[11px] leading-relaxed text-gray-500">
@@ -1225,7 +1403,7 @@ export default function ProfilePage({
                   {err}
                 </p>
               )}
-              <div className="sticky -bottom-4 z-20 -mx-4 -mb-4 mt-4 flex justify-end gap-2 border-t border-white/10 bg-[#140f22]/95 px-4 py-3 backdrop-blur sm:-bottom-6 sm:-mx-6 sm:-mb-6 sm:px-6">
+              <div className="sticky -bottom-4 z-20 -mx-4 -mb-4 mt-4 flex justify-end gap-2 border-t border-white/10 bg-[#141416]/95 px-4 py-3 backdrop-blur sm:-bottom-6 sm:-mx-6 sm:-mb-6 sm:px-6">
                 <button
                   onClick={fecharEditar}
                   className="rounded-xl border border-white/15 px-4 py-2 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10"
@@ -1288,124 +1466,30 @@ export default function ProfilePage({
   }
 
   return (
-    <PageShell background={estiloFundo(fundoAtual)}>
-        {/* ---------------- Saudação ---------------- */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 font-black gradient-text"
-          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-        >
-          Editar perfil
-        </motion.h1>
+    <PageShell
+      background={estiloFundo(fundoAtual)}
+      className={`profile-style profile-style--${me.profile_style || 'padrao'}`}
+    >
+        <ProfileHero
+          perfil={me}
+          avatarSrc={avatarSrc}
+          nomeCls={nomeCls}
+          corBorda={corCarta || corBorda}
+          badges={badges}
+          minhas={minhas}
+          criado={criado}
+          memberId={me.display_id ?? me.id}
+          clips={myClips}
+          jogos={jogosPerfil}
+          gameRanks={me.game_ranks || {}}
+          isOwn
+          onEdit={abrirEditar}
+        />
 
-        {/* ---------------- Cartão da conta ---------------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className={`glass relative mb-8 overflow-hidden rounded-3xl border p-5 sm:p-6 ${classesCard(me.name_effect)}`}
-          style={{
-            borderColor: `${corBorda}66`,
-            boxShadow: `0 0 40px ${corBorda}22, inset 0 0 0 1px ${corBorda}18`,
-          }}
-        >
-          <ProfileBanner bannerId={me.banner_id} />
-          {/* letra fantasma ao fundo */}
-          <span className="pointer-events-none absolute -top-3 right-2 select-none font-display text-7xl font-black uppercase leading-none text-white/5">
-            {me.username}
-          </span>
-
-          <div className="relative flex items-center gap-4">
-            {/* foto de perfil com botão de editar */}
-            <div className="relative shrink-0">
-              <img
-                src={avatarSrc}
-                alt={me.username}
-                className="h-16 w-16 rounded-full object-cover"
-                style={{ boxShadow: `0 0 0 2px ${corBorda}99, 0 0 26px ${corBorda}66` }}
-                onError={(e) => {
-                  if (e.currentTarget.dataset.fb) return
-                  e.currentTarget.dataset.fb = '1'
-                  e.currentTarget.src = svgAvatar(me.username, '#8B5CF6')
-                }}
-              />
-              <button
-                onClick={abrirEditar}
-                title="Editar foto e perfil"
-                className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-[#0a0813]/88 text-gray-300 ring-1 ring-white/25 transition-colors hover:bg-violet-500 hover:text-white"
-              >
-                <Camera className="h-3 w-3" />
-              </button>
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={`truncate font-display text-xl font-black uppercase ${
-                    nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
-                  }`}
-                >
-                  {me.username}
-                </span>
-                <LiveBadge username={me.username} />
-                <SocialLinks socials={me.socials} />
-              </div>
-              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
-                <span>Membro desde {criado}</span>
-                <span
-                  className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-500"
-                  title="ID da conta"
-                >
-                  ID {me.display_id ?? me.id}
-                </span>
-              </p>
-              {me.mouse && (
-                <p className="mt-2 flex items-center gap-2 text-xs text-gray-300">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">Mouse</span>
-                  {(() => {
-                    const m = (searchMice(me.mouse) || []).find(
-                      (x) => `${x.brand} ${x.model}` === me.mouse,
-                    )
-                    return m && m.logo ? (
-                      <img src={m.logo} alt="" className="h-5 w-5 shrink-0 rounded-sm object-contain" />
-                    ) : null
-                  })()}
-                  <span className="font-bold">{me.mouse}</span>
-                  {me.dpi ? <span className="text-gray-500">· {me.dpi} DPI</span> : null}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* distinções obtidas (DEV fica só ao lado do nome) */}
-          {minhas.length > 0 && (
-            <div className="relative mt-4 flex flex-wrap items-center gap-2.5">
-              {minhas.map((b) => (
-                <span
-                  key={b.id}
-                  className="flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 ring-1"
-                  style={{
-                    background: hexToRgba(b.color, 0.09),
-                    boxShadow: `0 0 14px ${hexToRgba(b.glow || b.color, 0.25)}`,
-                    // eslint-disable-next-line react/forbid-dom-props
-                    ['--tw-ring-color']: hexToRgba(b.glow || b.color, 0.4),
-                  }}
-                >
-                  <BadgeGem badge={b} size={24} />
-                  <span className="font-display text-[10.5px] font-black uppercase tracking-wider" style={{ color: b.labelColor || b.color }}>
-                    {b.label}
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* editar foto (ficheiro) */}
-          {modalEdicao}
-        </motion.div>
+        {modalEdicao}
 
         {/* ---------------- Feed: clips + mensagens ---------------- */}
-        <div className="mb-8">
+        <div id="publicacoes" className="mb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <h2
               className="font-display text-2xl font-black uppercase sm:text-3xl"
@@ -1418,57 +1502,20 @@ export default function ProfilePage({
             </span>
           </div>
 
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {[
-              { id: 'tudo', label: 'Tudo' },
-              { id: 'videos', label: 'Vídeos' },
-              { id: 'mensagens', label: 'Mensagens' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFiltroFeed(f.id)}
-                className={`filtro-clips rounded-full border px-3 py-1.5 text-[11px] font-black ${
-                  filtroFeed === f.id
-                    ? 'border-white/60 bg-white/15 text-white'
-                    : 'border-white/10 bg-[#17112a] text-gray-300 hover:text-white'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {filtroFeed !== 'mensagens' && myClips.length > 0 && (
-            <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <select
-                value={jogoClips}
-                onChange={(e) => setJogoClips(e.target.value)}
-                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
-              >
-                <option value="">Todos os jogos</option>
-                {jogosClips.map((g) => (
-                  <option key={g} value={g}>
-                    {gameLabel(g)}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={ordemClips}
-                onChange={(e) => setOrdemClips(e.target.value)}
-                className="filtro-clips rounded-xl border border-white/10 bg-[#17112a] px-3 py-2 text-[11px] font-bold text-gray-200 outline-none"
-              >
-                <option value="recentes">Mais recentes</option>
-                <option value="views">Mais vistos</option>
-                <option value="titulo">Título (A-Z)</option>
-                <option value="jogo">Jogo (A-Z)</option>
-              </select>
-            </div>
-          )}
+          <FeedToolbar
+            filtro={filtroFeed}
+            setFiltro={setFiltroFeed}
+            jogos={jogosClips}
+            jogo={jogoClips}
+            setJogo={setJogoClips}
+            ordem={ordemClips}
+            setOrdem={setOrdemClips}
+            mostrarFiltros={filtroFeed !== 'mensagens' && myClips.length > 0}
+          />
 
           {feedMostrado.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-violet-500/40 bg-violet-500/5 p-6 text-center">
-              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-violet-400" />
+            <div className="rounded-3xl border border-dashed border-zinc-500/40 bg-zinc-500/5 p-6 text-center">
+              <Clapperboard className="mx-auto mb-2 h-7 w-7 text-zinc-400" />
               <p className="font-bold text-white">
                 {filtroFeed === 'mensagens'
                   ? 'Ainda sem mensagens'
@@ -1524,13 +1571,6 @@ export default function ProfilePage({
               Painel Admin
             </button>
           )}
-          <button
-            onClick={abrirEditar}
-            className="ui-btn ui-btn-ghost"
-          >
-            <Camera className="h-4 w-4" />
-            Editar perfil
-          </button>
           <button
             onClick={() => onProfile?.(me.username)}
             className="ui-btn ui-btn-ghost"

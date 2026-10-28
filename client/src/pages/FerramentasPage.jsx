@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { confirmar } from '../components/Feedback'
-import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import {
   Wrench,
   Terminal,
@@ -174,7 +173,7 @@ export default function FerramentasPage({ isAdmin = false }) {
   const [avisoSite] = useState('O .exe foi retirado do fluxo. Usa o site com login. Comandos Windows (revo/wmic) precisam de PC local.')
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
-  const [cat, setCat] = useState('Otimizador by Xalana')
+  const [cat, setCat] = useState('Programas')
   const [subCat, setSubCat] = useState('Todas')
   const [busca, setBusca] = useState('')
   const [idLivre, setIdLivre] = useState('')
@@ -617,6 +616,13 @@ export default function FerramentasPage({ isAdmin = false }) {
     return CATS.filter((c) => usadas.has(c))
   }, [ferramentas])
 
+  /* Se a categoria atual não estiver disponível (ex.: Otimizações
+     escondidas para não-admin), salta para a primeira que exista. */
+  useEffect(() => {
+    if (cats.length && !cats.includes(cat)) setCat(cats[0])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cats, cat])
+
   /* subcategorias da categoria actual (ex.: Programas → Navegadores, Jogos…) */
   const subCats = useMemo(() => {
     const usadas = new Set(
@@ -821,15 +827,6 @@ export default function FerramentasPage({ isAdmin = false }) {
   const podeLocal = dados?.podeLocal
   const podeExecutar = Boolean(podeLocal || agente.online)
 
-  if (!isAdmin) {
-    return (
-      <EmDesenvolvimento
-        titulo="Ferramentas Windows"
-        descricao="Estas ferramentas ainda estão em desenvolvimento e reservadas aos administradores durante os testes."
-      />
-    )
-  }
-
   /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
   /* A página só abre quando a app deste utilizador está ligada ao site
      (ou quando o servidor corre com PowerShell local). A verificação
@@ -844,8 +841,8 @@ export default function FerramentasPage({ isAdmin = false }) {
             animate={{ opacity: 1, y: 0 }}
             className="glass rounded-2xl p-6 text-center ring-1 ring-white/10"
           >
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
-              <Lock className="h-7 w-7 text-violet-400" />
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
+              <Lock className="h-7 w-7 text-zinc-400" />
             </span>
             <h1 className="mt-4 font-display text-xl font-black uppercase text-white">
               Ferramentas Windows
@@ -885,6 +882,9 @@ export default function FerramentasPage({ isAdmin = false }) {
           >
             Ferramentas Windows
           </h1>
+          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#ff9e9e] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-[#1a0f0f]">
+            Novo
+          </span>
           <p className="mt-2 max-w-2xl text-sm text-gray-400">
             Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
           </p>
@@ -915,7 +915,7 @@ export default function FerramentasPage({ isAdmin = false }) {
 
         {/* aviso: PC ligado ao servidor local (só no modo local) */}
         {podeLocal === true && (
-          <div className="mb-4 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-[13px] text-violet-200">
+          <div className="mb-4 rounded-xl border border-zinc-500/30 bg-zinc-500/10 px-4 py-3 text-[13px] text-zinc-200">
             <b>Modo local ativo.</b> O servidor corre no teu PC — as ferramentas executam diretamente no Windows.
           </div>
         )}
@@ -951,7 +951,7 @@ export default function FerramentasPage({ isAdmin = false }) {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Procurar ferramenta…"
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-9 text-[13px] text-white placeholder:text-gray-400 focus:border-violet-500/50 focus:bg-white/10 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-9 text-[13px] text-white placeholder:text-gray-400 focus:border-zinc-500/50 focus:bg-white/10 focus:outline-none"
             />
             {busca && (
               <button
@@ -975,7 +975,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                 onClick={() => setCat(c)}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-black uppercase tracking-wide transition-colors ${
                   cat === c
-                    ? 'bg-violet-500 text-white'
+                    ? 'bg-zinc-500 text-white'
                     : 'btn-glass text-gray-400 hover:text-white'
                 }`}
               >
@@ -1082,8 +1082,8 @@ export default function FerramentasPage({ isAdmin = false }) {
 
         {/* ---------------- Fila de execução ---------------- */}
         {fila.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-2.5 text-[12px]">
-            <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-wide text-violet-300">
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-zinc-500/25 bg-zinc-500/10 px-4 py-2.5 text-[12px]">
+            <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-wide text-zinc-300">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Fila ({fila.length})
             </span>
@@ -1214,7 +1214,7 @@ export default function FerramentasPage({ isAdmin = false }) {
         {/* ---------------- Grelha ---------------- */}
         {!recarregado ? (
           <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
-            <RefreshCcw className="h-4 w-4 animate-spin text-violet-400" /> A carregar ferramentas…
+            <RefreshCcw className="h-4 w-4 animate-spin text-zinc-400" /> A carregar ferramentas…
           </div>
         ) : visiveis.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -1270,10 +1270,10 @@ export default function FerramentasPage({ isAdmin = false }) {
                   key={nivel}
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="glass flex flex-col overflow-hidden rounded-2xl border border-violet-500/30 p-5 transition-colors hover:border-violet-500/50"
+                  className="glass flex flex-col overflow-hidden rounded-2xl border border-zinc-500/30 p-5 transition-colors hover:border-zinc-500/50"
                 >
                   <div className="mb-3 flex items-start gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/30">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-500/20 text-zinc-300 ring-1 ring-zinc-500/30">
                       {nivel === 'minima' ? <Gauge className="h-5 w-5" /> : nivel === 'normal' ? <Rocket className="h-5 w-5" /> : <Swords className="h-5 w-5" />}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -1306,7 +1306,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                     <button
                       onClick={() => setXalanaAberto(abertoPainel ? null : nivel)}
                       disabled={aCorrer}
-                      className="inline-flex items-center gap-1 font-bold text-violet-400 transition-colors hover:text-violet-300 disabled:opacity-50"
+                      className="inline-flex items-center gap-1 font-bold text-zinc-400 transition-colors hover:text-zinc-300 disabled:opacity-50"
                     >
                       <SlidersHorizontal className="h-3 w-3" />
                       Remover alguma opção ou fazer execução personalizada
@@ -1324,7 +1324,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-3">
+                        <div className="mt-3 rounded-xl border border-zinc-500/20 bg-zinc-500/5 p-3">
                           <p className="mb-2 text-[10px] font-black uppercase tracking-wide text-gray-500">
                             O que vai fazer — corrige o traço do que não queres
                           </p>
@@ -1392,12 +1392,12 @@ export default function FerramentasPage({ isAdmin = false }) {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                  className="glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/5 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/10"
+                  className="glass flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/5 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-500/30 hover:shadow-lg hover:shadow-zinc-500/10"
                 >
                   <div className="mb-3 flex items-start gap-3">
                     <label className="flex min-w-0 flex-1 cursor-pointer select-none items-start gap-3">
                       {/* ícone no círculo — mesma linguagem visual do site */}
-                      <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-violet-500/25 to-fuchsia-500/10 text-violet-300 ring-1 ring-violet-500/25">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-zinc-500/25 to-zinc-500/10 text-zinc-300 ring-1 ring-zinc-500/25">
                         {f.logo && !logosFalha.has(f.id) ? (
                           <img
                             src={f.logo}
@@ -1469,7 +1469,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                   )}
 
                   {f.soAdmin && (
-                    <span className="inline-flex items-center rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-300 ring-1 ring-violet-400/40">
+                    <span className="inline-flex items-center rounded-full bg-zinc-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-zinc-300 ring-1 ring-zinc-400/40">
                       <Lock className="mr-0.5 h-2.5 w-2.5" /> só admin · em teste
                     </span>
                   )}
@@ -1481,7 +1481,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                       <ul className="flex flex-col gap-0.5">
                         {f.passos.map((p, i) => (
                           <li key={i} className="flex items-start gap-1.5 text-gray-300">
-                            <Check className="mt-0.5 h-3 w-3 shrink-0 text-violet-400" />
+                            <Check className="mt-0.5 h-3 w-3 shrink-0 text-zinc-400" />
                             <span>{p}</span>
                           </li>
                         ))}
@@ -1495,7 +1495,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                         onChange={(e) => setDiscoSel(e.target.value)}
                         disabled={ocupado}
                         aria-label="Escolher disco"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white focus:border-violet-500/50 focus:outline-none"
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white focus:border-zinc-500/50 focus:outline-none"
                       >
                         {discos.length === 0 && <option value="">sem discos</option>}
                         {discos.map((d) => (
@@ -1516,7 +1516,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                         value={idLivre}
                         onChange={(e) => setIdLivre(e.target.value)}
                         placeholder="ShareX.ShareX"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
                         disabled={ocupado}
                       />
                       <button
@@ -1573,12 +1573,12 @@ export default function FerramentasPage({ isAdmin = false }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.98 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-violet-500/30 shadow-2xl"
+              className="glass flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-zinc-500/30 shadow-2xl"
             >
               <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
                 <div>
                   <h2 className="flex items-center gap-2 font-display text-lg font-black text-white">
-                    <SlidersHorizontal className="h-4 w-4 text-violet-300" /> Todas as otimizações
+                    <SlidersHorizontal className="h-4 w-4 text-zinc-300" /> Todas as otimizações
                   </h2>
                   <p className="mt-0.5 text-[11px] text-gray-500">
                     Otimizações aplicadas no teu PC e reversão das selecionadas.
@@ -1603,7 +1603,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                     type="button"
                     onClick={carregarTweaks}
                     disabled={tweaksLoading}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-violet-400/30 bg-violet-500/10 px-2.5 py-1.5 text-[10px] font-black text-violet-200 hover:bg-violet-500/20 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-400/30 bg-zinc-500/10 px-2.5 py-1.5 text-[10px] font-black text-zinc-200 hover:bg-zinc-500/20 disabled:opacity-40"
                   >
                     {tweaksLoading ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -1616,7 +1616,7 @@ export default function FerramentasPage({ isAdmin = false }) {
 
                 {tweaksLoading ? (
                   <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-400">
-                    <Loader2 className="h-4 w-4 animate-spin text-violet-300" /> A ler o estado do PC…
+                    <Loader2 className="h-4 w-4 animate-spin text-zinc-300" /> A ler o estado do PC…
                   </div>
                 ) : Object.keys(tweaksStatus).length === 0 ? (
                   <p className="rounded-xl border border-amber-400/20 bg-amber-500/[0.06] px-3 py-3 text-[11px] text-amber-200">
@@ -1630,7 +1630,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                     return (
                       <section key={nivel}>
                         <div className="mb-2 flex items-center gap-2">
-                          <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-violet-300">
+                          <span className="rounded-full bg-zinc-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-300">
                             {label}
                           </span>
                           <span className="text-[10px] font-bold text-gray-500">
@@ -1772,7 +1772,7 @@ export default function FerramentasPage({ isAdmin = false }) {
                   <p className="mt-0.5 truncate text-[12px] text-gray-300">{toast.detalhe}</p>
                 ) : null}
                 {fila.length > 0 && (
-                  <p className="mt-0.5 text-[11px] font-bold text-violet-300">
+                  <p className="mt-0.5 text-[11px] font-bold text-zinc-300">
                     Fila: faltam {fila.length}
                   </p>
                 )}

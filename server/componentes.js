@@ -590,8 +590,7 @@ function parseKuantoKusta(html) {
   return out;
 }
 
-async function pesquisarLoja(loja, consulta, { categoria = '', tipo = '' } = {}) {
-  const q = encodeURIComponent(consulta);
+async function pesquisarLoja(loja, consulta, { categoria = '', tipo = '' } = {}) {  const q = encodeURIComponent(consulta);
   if (loja === 'globaldata') {
     return parseGlobalData(await pedir(`https://www.globaldata.pt/search?q=${q}`));
   }
@@ -628,7 +627,6 @@ async function pesquisarLoja(loja, consulta, { categoria = '', tipo = '' } = {})
 /* Pesquisa livre em todas as lojas (para a pesquisa ao vivo da página). */
 const buscaCache = new Map();
 const BUSCA_MS = 10 * 60 * 1000;
-
 async function buscarTudo(consulta, { tipo = 'componente', categoria = '', lojas = [], limite = 80 } = {}) {
   const q = String(consulta || '').trim();
   if (!q) return [];
@@ -1030,6 +1028,58 @@ function montarProdutos(rows) {
   });
 }
 
+/* Foto de um periférico (rato) para o cartão do perfil.
+   Procura nas lojas e guarda em memória durante 6 horas. */
+const imagemCache = new Map();
+const IMAGEM_MS = 6 * 60 * 60 * 1000;
+
+/* Fotos limpas de modelos que as lojas às vezes só têm em packs. */
+const IMAGENS_CONHECIDAS = {
+  'razer viper ultimate':
+    'https://www.maxgaming.com/bilder/artiklar/liten/39121_S.jpg?m=1774379447',
+  'attack shark x11':
+    'https://thumb.pccomponentes.com/w-300-300/articles/1121/11211506/1724-raton-gaming-attack-shark-x11-triple-conexion-22000-dpi-negro-con-base-rgb.jpg',
+};
+
+async function imagemPeriferico(nome) {
+  const key = String(nome || '').trim().toLowerCase();
+  if (!key) return null;
+  const cached = imagemCache.get(key);
+  if (cached && Date.now() - cached.at < IMAGEM_MS) return cached.url;
+  if (IMAGENS_CONHECIDAS[key]) {
+    imagemCache.set(key, { url: IMAGENS_CONHECIDAS[key], at: Date.now() });
+    return IMAGENS_CONHECIDAS[key];
+  }
+
+  const resultados = await Promise.allSettled(
+    ['maxgaming', 'globaldata', 'pccomponentes'].map((loja) =>
+      pesquisarLoja(loja, key, { tipo: 'periferico' }),
+    ),
+  );
+  const acessorio = /(skate|skates|feet|glide|glides|grip|tape|bundle|pack|kit|mousepad|pad\b|case|bag)/i;
+  const tokens = key.split(/\s+/).filter((t) => t.length > 2);
+  const comNumero = tokens.filter((t) => /\d/.test(t));
+  const modelo = comNumero.length ? comNumero[comNumero.length - 1] : tokens[tokens.length - 1];
+  const candidatos = [];
+  for (const r of resultados) {
+    if (r.status !== 'fulfilled' || !Array.isArray(r.value)) continue;
+    for (const item of r.value) {
+      if (!item || !item.imagem) continue;
+      const titulo = String(item.titulo || '').toLowerCase();
+      if (acessorio.test(titulo)) continue;
+      if (modelo && !titulo.includes(modelo)) continue;
+      let score = 0;
+      if (/mouse|rato/.test(titulo)) score += 3;
+      for (const t of tokens) if (titulo.includes(t)) score += 1;
+      candidatos.push({ url: item.imagem, score });
+    }
+  }
+  candidatos.sort((a, b) => b.score - a.score);
+  const url = candidatos.length ? candidatos[0].url : null;
+  imagemCache.set(key, { url, at: Date.now() });
+  return url;
+}
+
 module.exports = {
   CATALOGO,
   CATEGORIAS,
@@ -1046,4 +1096,5 @@ module.exports = {
   apagarAlerta,
   montarProdutos,
   garantirTabela,
+  imagemPeriferico,
 };

@@ -31,8 +31,8 @@ const MODULOS = [
 
 const PRESETS = [
   { nome: 'Mínimo', mods: 'CPU · RAM · Rede', cor: 'from-emerald-500/60' },
-  { nome: 'Resumo', mods: 'CPU · Clock · RAM · Discos · Uptime', cor: 'from-violet-500/60' },
-  { nome: 'Gamer', mods: 'CPU · Clock · Temp · GPU · VRAM · RAM', cor: 'from-fuchsia-500/60' },
+  { nome: 'Resumo', mods: 'CPU · Clock · RAM · Discos · Uptime', cor: 'from-zinc-500/60' },
+  { nome: 'Gamer', mods: 'CPU · Clock · Temp · GPU · VRAM · RAM', cor: 'from-zinc-500/60' },
   { nome: 'Rede', mods: 'Descida · Subida · Disco I/O', cor: 'from-sky-500/60' },
   { nome: 'Completo', mods: 'Tudo — 14 módulos combinados', cor: 'from-amber-500/60' },
 ]
@@ -146,7 +146,7 @@ export default function InfoAoVivoPage() {
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass relative overflow-hidden rounded-[28px] border border-violet-500/30 p-6 sm:p-9"
+          className="glass relative overflow-hidden rounded-[28px] border border-zinc-500/30 p-6 sm:p-9"
           style={{ boxShadow: '0 0 60px rgba(139,92,246,.14)' }}
         >
           <div className="pointer-events-none absolute -right-6 -top-8 select-none text-[110px] font-black leading-none text-white/5">
@@ -154,7 +154,7 @@ export default function InfoAoVivoPage() {
           </div>
           <div className="relative">
             <div className="mb-3 flex items-center gap-2">
-              <span className="rounded-full bg-violet-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-violet-300 ring-1 ring-violet-400/30">
+              <span className="rounded-full bg-zinc-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300 ring-1 ring-zinc-400/30">
                 app nativo · beta privado
               </span>
               <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/30">
@@ -162,7 +162,7 @@ export default function InfoAoVivoPage() {
               </span>
             </div>
             <h1 className="font-display font-black leading-tight" style={{ fontSize: 'clamp(1.8rem, 5.5vw, 2.8rem)' }}>
-              Info <span className="text-violet-400">Ao Vivo</span>
+              Info <span className="text-zinc-400">Ao Vivo</span>
             </h1>
             <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-400">
               Overlays do desempenho do teu PC, <span className="font-bold text-gray-200">sempre no topo e
@@ -233,10 +233,10 @@ export default function InfoAoVivoPage() {
           {MODULOS.map((m) => (
             <div
               key={m.nome}
-              className="glass rounded-2xl p-4 transition-colors hover:border-violet-500/30"
+              className="glass rounded-2xl p-4 transition-colors hover:border-zinc-500/30"
             >
               <div className="mb-2 flex items-center gap-2">
-                <m.icone className="h-4 w-4 text-violet-300" />
+                <m.icone className="h-4 w-4 text-zinc-300" />
                 <span className="text-[13.5px] font-bold text-gray-100">{m.nome}</span>
               </div>
               <p className="text-[12px] leading-relaxed text-gray-400">{m.desc}</p>
@@ -261,7 +261,7 @@ export default function InfoAoVivoPage() {
         </div>
 
         {/* ---------------- Instalação ---------------- */}
-        <div className="glass rounded-[28px] border border-violet-500/25 p-6 sm:p-8">
+        <div className="glass rounded-[28px] border border-zinc-500/25 p-6 sm:p-8">
           <h2 className="font-display mb-1 text-2xl font-black uppercase">Instalar no teu PC</h2>
           <p className="mb-5 text-[13.5px] text-gray-400">
             Um único executável (39 KB), sem instalador: fica em{' '}

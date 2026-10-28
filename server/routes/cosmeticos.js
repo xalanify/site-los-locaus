@@ -1,13 +1,26 @@
 /* ============================================================
-   Loja de cosméticos — só admin
+   Loja de cosméticos — aberta a todos os membros
    ============================================================ */
 const express = require('express');
-const { requireAdmin } = require('../middleware/auth');
+const { requireUser } = require('../middleware/auth');
 const cosmeticos = require('../cosmeticos');
 
 const router = express.Router();
 
-router.get('/', requireAdmin, async (req, res) => {
+/* Saldo de Moedas Locaus — qualquer conta com sessão. */
+router.get('/saldo', requireUser, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(await cosmeticos.saldo(uid));
+  } catch (e) {
+    console.error('Erro saldo moedas:', e.message);
+    res.status(500).json({ error: 'Não foi possível obter o saldo.' });
+  }
+});
+
+router.get('/', requireUser, async (req, res) => {
   try {
     const uid = Number(req.auth && req.auth.uid);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -19,7 +32,7 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 });
 
-router.post('/comprar', requireAdmin, async (req, res) => {
+router.post('/comprar', requireUser, async (req, res) => {
   try {
     const uid = Number(req.auth && req.auth.uid);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -30,7 +43,7 @@ router.post('/comprar', requireAdmin, async (req, res) => {
   }
 });
 
-router.post('/aplicar', requireAdmin, async (req, res) => {
+router.post('/aplicar', requireUser, async (req, res) => {
   try {
     const uid = Number(req.auth && req.auth.uid);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });

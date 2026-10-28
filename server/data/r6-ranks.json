@@ -1,11 +1,11 @@
 {
   "_origem": "tracker.gg — API v2 r6siege (colhida no browser; o node e o curl são bloqueados pelo tracker)",
-  "colhidoEm": "2026-10-10T00:00:00.000Z",
+  "colhidoEm": "2026-10-28T00:00:00.000Z",
   "seasonAtual": 43,
   "shortAtual": "Y11S3",
   "jogadores": {
     "xalana.": {
-      "rank": { "season": "Y11S3", "points": 0, "name": "NO RANK" },
+      "rank": { "season": "Y11S3", "points": 3167, "name": "PLATINUM IV" },
       "maxRank": { "name": "EMERALD III", "rp": 3753, "season": "Y11S1" }
     },
     "m4xi01504": {

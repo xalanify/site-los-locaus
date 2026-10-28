@@ -85,7 +85,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-[#0a0813]/88 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-[#0a0a0b]/88 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -106,7 +106,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
 
         {state.loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
           </div>
         ) : !d || !d.found ? (
           <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
@@ -126,7 +126,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
                   {d.profile.username}
                 </div>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-400">
-                  <Calendar className="h-3.5 w-3.5 text-violet-400" />
+                  <Calendar className="h-3.5 w-3.5 text-zinc-400" />
                   Membro desde{' '}
                   {new Date(d.profile.created_at).toLocaleDateString('pt-PT', {
                     day: '2-digit',
@@ -146,7 +146,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
                 </div>
               </div>
               <div className="rounded-2xl bg-white/5 p-3 text-center">
-                <div className="text-lg font-black text-violet-400">{d.stats?.likes ?? 0}</div>
+                <div className="text-lg font-black text-zinc-400">{d.stats?.likes ?? 0}</div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Gostos
                 </div>
@@ -162,7 +162,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             {/* Contas de jogo ligadas pelo admin */}
             <div className="rounded-2xl bg-white/5 p-4">
               <h3 className="mb-2.5 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
-                <Gamepad2 className="h-4 w-4 text-violet-400" /> Contas de jogo
+                <Gamepad2 className="h-4 w-4 text-zinc-400" /> Contas de jogo
               </h3>
               {accounts.length === 0 ? (
                 <p className="text-sm text-gray-400">Ainda sem contas de jogo associadas.</p>
@@ -183,7 +183,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             {/* Distinções */}
             <div className="rounded-2xl bg-white/5 p-4">
               <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
-                <Award className="h-4 w-4 text-violet-400" /> Distinções
+                <Award className="h-4 w-4 text-zinc-400" /> Distinções
               </h3>
               {badges.length === 0 ? (
                 <p className="text-sm text-gray-400">Ainda sem distinções.</p>
@@ -216,7 +216,7 @@ function MemberModal({ name, onClose, user, onRequestAuth, onProfile }) {
             {/* Clips */}
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
-                <Film className="h-4 w-4 text-violet-400" /> Clips
+                <Film className="h-4 w-4 text-zinc-400" /> Clips
               </h3>
               {d.clips.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-sm text-gray-400">
@@ -1389,10 +1389,10 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         {/* ---------------- Conteúdo ---------------- */}
         <div className="min-w-0 flex-1">
           {/* Cabeçalho */}
-          <div className="mb-6 overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/15 via-[#17102a]/70 to-fuchsia-600/10 p-4 shadow-xl shadow-violet-950/10 backdrop-blur-md sm:p-5">
+          <div className="mb-6 overflow-hidden rounded-3xl border border-zinc-400/20 bg-gradient-to-br from-zinc-600/15 via-[#161618]/70 to-zinc-600/10 p-4 shadow-xl shadow-zinc-950/10 backdrop-blur-md sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-violet-400/20 bg-violet-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-violet-300">
+              <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-300">
                 <Film className="h-2.5 w-2.5" /> Feed da comunidade
               </span>
               <h1
@@ -1421,7 +1421,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             <div className="glass mb-6 rounded-2xl p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 font-bold text-white">
-                  <Plus className="h-5 w-5 text-violet-400" /> O que queres publicar?
+                  <Plus className="h-5 w-5 text-zinc-400" /> O que queres publicar?
                 </h2>
                 <button
                   onClick={() => setEscolhaPublicar(false)}
@@ -1437,9 +1437,9 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                     setEscolhaPublicar(false)
                     openForm()
                   }}
-                  className="flex items-start gap-3 rounded-2xl border border-violet-400/30 bg-violet-500/10 p-4 text-left transition-colors hover:bg-violet-500/20"
+                  className="flex items-start gap-3 rounded-2xl border border-zinc-400/30 bg-zinc-500/10 p-4 text-left transition-colors hover:bg-zinc-500/20"
                 >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-500/25 text-violet-200">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-zinc-500/25 text-zinc-200">
                     <Film className="h-5 w-5" />
                   </span>
                   <span>
@@ -1477,7 +1477,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             <form onSubmit={publicarMensagem} className="glass mb-6 rounded-2xl p-4 sm:p-5">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 font-bold text-white">
-                  <MessageSquare className="h-5 w-5 text-violet-400" /> Nova mensagem
+                  <MessageSquare className="h-5 w-5 text-zinc-400" /> Nova mensagem
                 </h2>
                 <button
                   type="button"
@@ -1570,7 +1570,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             <div className="glass mb-6 rounded-2xl p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 font-bold text-white">
-                  <Film className="h-5 w-5 text-violet-400" /> Novo clip
+                  <Film className="h-5 w-5 text-zinc-400" /> Novo clip
                 </h2>
                 <button
                   onClick={() => {
@@ -1639,18 +1639,18 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   {/* jogo do clip — obrigatório */}
                   <label className="block">
                     <span className="mb-1 block text-xs font-bold uppercase text-gray-400">
-                      Jogo do clip <span className="text-violet-400">*</span>
+                      Jogo do clip <span className="text-zinc-400">*</span>
                     </span>
                     <select
                       value={game}
                       onChange={(e) => setGame(e.target.value)}
                       className="w-full rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white outline-none focus:bg-white/15"
                     >
-                      <option value="" className="bg-[#1b1630]">
+                      <option value="" className="bg-[#161618]">
                         Escolhe o jogo…
                       </option>
                       {CLIP_GAMES.map((g) => (
-                        <option key={g.id} value={g.id} className="bg-[#1b1630]">
+                        <option key={g.id} value={g.id} className="bg-[#161618]">
                           {g.label}
                         </option>
                       ))}
@@ -1662,7 +1662,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                 {!preview ? (
                   <button
                     onClick={() => fileRef.current && fileRef.current.click()}
-                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-violet-500/60 hover:text-violet-400"
+                    className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/20 px-4 py-8 text-gray-400 transition-colors hover:border-zinc-500/60 hover:text-zinc-400"
                   >
                     <Upload className="h-7 w-7" />
                     <span className="text-sm font-bold">Escolher vídeo</span>
@@ -1670,7 +1670,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       className={`rounded-full px-2.5 py-0.5 text-xs font-black ${
                         vaiParaYT
                           ? 'bg-emerald-500/15 text-emerald-300'
-                          : 'bg-white/10 text-violet-300'
+                          : 'bg-white/10 text-zinc-300'
                       }`}
                     >
                       {vaiParaYT
@@ -1693,7 +1693,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                       className="max-h-72 w-full rounded-xl bg-black"
                     />
                     <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
-                      <span className="truncate font-semibold text-violet-400">{file?.name}</span>
+                      <span className="truncate font-semibold text-zinc-400">{file?.name}</span>
                       <div className="flex items-center gap-2">
                         {duration != null && <span>Duração {mmss(duration)}</span>}
                         <button
@@ -1719,7 +1719,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   <div className="rounded-xl border border-white/10 bg-black/40 p-3 sm:p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-gray-400">
-                        <Scissors className="h-4 w-4 text-violet-400" /> Peso e corte
+                        <Scissors className="h-4 w-4 text-zinc-400" /> Peso e corte
                       </span>
                       <span className="text-xs font-bold">
                         {vaiParaYT ? (
@@ -1759,7 +1759,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                           onChange={(e) => setStartStr(e.target.value)}
                           placeholder="0:00"
                           disabled={!!trimming}
-                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-violet-300 outline-none focus:bg-white/15 disabled:opacity-50"
+                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-zinc-300 outline-none focus:bg-white/15 disabled:opacity-50"
                         />
                         <input
                           type="range"
@@ -1773,7 +1773,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                             setStartStr(mmss(val))
                             if (val >= tB) setEndStr(mmss(Math.min(dur, val + 1)))
                           }}
-                          className="min-w-0 flex-1 accent-violet-500"
+                          className="min-w-0 flex-1 accent-zinc-500"
                         />
                       </label>
                       <label className="flex items-center gap-2">
@@ -1785,7 +1785,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                           onChange={(e) => setEndStr(e.target.value)}
                           placeholder={duration != null ? mmss(duration) : 'fim'}
                           disabled={!!trimming}
-                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-violet-300 outline-none focus:bg-white/15 disabled:opacity-50"
+                          className="w-16 shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-center text-xs font-bold text-zinc-300 outline-none focus:bg-white/15 disabled:opacity-50"
                         />
                         <input
                           type="range"
@@ -1799,7 +1799,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                             if (val <= tA) setStartStr(mmss(Math.max(0, val - 1)))
                             setEndStr(mmss(val))
                           }}
-                          className="min-w-0 flex-1 accent-violet-500"
+                          className="min-w-0 flex-1 accent-zinc-500"
                         />
                       </label>
                     </div>
@@ -1837,7 +1837,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
 
                     {trimming && (
                       <div className="mt-3">
-                        <div className="mb-1 flex justify-between text-[11px] font-bold text-violet-300">
+                        <div className="mb-1 flex justify-between text-[11px] font-bold text-zinc-300">
                           <span>
                             A cortar em tempo real…
                             {trimming.tentativa > 1 ? ` (tentativa ${trimming.tentativa}/4)` : ''}
@@ -1849,7 +1849,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-white/10">
                           <div
-                            className="h-full rounded-full bg-violet-500 transition-all"
+                            className="h-full rounded-full bg-zinc-500 transition-all"
                             style={{
                               width: `${Math.min(100, (trimming.done / Math.max(0.01, trimming.total)) * 100)}%`,
                             }}
@@ -1896,7 +1896,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   <div className="rounded-xl bg-white/5 px-3 py-2.5">
                     <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                       <span className="flex items-center gap-1.5 font-bold text-gray-200">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-300" />
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-300" />
                         {envio.fase === 'guardar'
                           ? 'A guardar o clip.'
                           : envio.fase === 'copia'
@@ -1918,7 +1918,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                     </div>
                     <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 transition-[width] duration-200"
+                        className="h-full rounded-full bg-gradient-to-r from-zinc-500 to-zinc-400 transition-[width] duration-200"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -1998,7 +1998,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
             />
             {jogosComClips.length > 0 && (
               <label className="ml-auto flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-gray-300 focus-within:bg-white/10">
-                <Gamepad2 className="h-4 w-4 text-violet-400" />
+                <Gamepad2 className="h-4 w-4 text-zinc-400" />
                 <select
                   value={jogo}
                   onChange={(e) => setJogo(e.target.value)}
@@ -2026,7 +2026,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           {/* Lista */}
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-16 text-gray-400">
-              <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
               <span className="text-sm">A carregar clips…</span>
             </div>
           ) : filtered.length === 0 ? (
@@ -2054,7 +2054,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
                   id={`clip-${c.id}`}
                   className={
                     destaque && Number(c.id) === Number(destaque.id)
-                      ? 'rounded-2xl ring-2 ring-violet-400/60'
+                      ? 'rounded-2xl ring-2 ring-zinc-400/60'
                       : ''
                   }
                 >

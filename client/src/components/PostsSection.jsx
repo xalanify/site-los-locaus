@@ -122,7 +122,7 @@ export default function PostsSection({ isAdmin }) {
     return (
       <section id="posts" className="px-4 py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-t-2 border-b-2 border-violet-500" />
+          <div className="mx-auto h-16 w-16 animate-spin rounded-full border-t-2 border-b-2 border-zinc-500" />
         </div>
       </section>
     )
@@ -182,7 +182,7 @@ export default function PostsSection({ isAdmin }) {
                     placeholder="Título da publicação"
                     value={newPost.title}
                     onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                    className="w-full rounded-xl border border-gray-700 bg-dark/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-violet-500 focus:outline-none"
+                    className="w-full rounded-xl border border-gray-700 bg-dark/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-zinc-500 focus:outline-none"
                     required
                     maxLength={150}
                   />
@@ -191,7 +191,7 @@ export default function PostsSection({ isAdmin }) {
                     value={newPost.content}
                     onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                     rows={4}
-                    className="w-full resize-none rounded-xl border border-gray-700 bg-dark/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-violet-500 focus:outline-none"
+                    className="w-full resize-none rounded-xl border border-gray-700 bg-dark/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-zinc-500 focus:outline-none"
                     required
                     maxLength={5000}
                   />
@@ -202,14 +202,14 @@ export default function PostsSection({ isAdmin }) {
                       placeholder="URL da imagem (opcional)"
                       value={newPost.image_url}
                       onChange={(e) => setNewPost({ ...newPost, image_url: e.target.value })}
-                      className="flex-1 rounded-xl border border-gray-700 bg-dark/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-violet-500 focus:outline-none"
+                      className="flex-1 rounded-xl border border-gray-700 bg-dark/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-zinc-500 focus:outline-none"
                       maxLength={2000}
                     />
                   </div>
                   <div className="flex gap-3">
                     <button
                       type="submit"
-                      className="flex-1 rounded-xl bg-violet-500 py-3 font-bold text-white transition-all duration-300 hover:bg-violet-600"
+                      className="flex-1 rounded-xl bg-zinc-500 py-3 font-bold text-white transition-all duration-300 hover:bg-zinc-600"
                     >
                       Publicar
                     </button>
@@ -280,9 +280,9 @@ export default function PostsSection({ isAdmin }) {
                   <div className="mt-4 border-t border-gray-700 pt-4">
                     <button
                       onClick={() => handleLike(post.id)}
-                      className="group flex items-center gap-2 text-gray-400 transition-colors hover:text-violet-500"
+                      className="group flex items-center gap-2 text-gray-400 transition-colors hover:text-zinc-500"
                     >
-                      <Heart className="h-5 w-5 transition-all group-hover:fill-violet-500" />
+                      <Heart className="h-5 w-5 transition-all group-hover:fill-zinc-500" />
                       <span className="font-semibold">{post.likes || 0}</span>
                     </button>
                   </div>

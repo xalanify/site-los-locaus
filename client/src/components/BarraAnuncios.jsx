@@ -46,8 +46,8 @@ export default function BarraAnuncios() {
   return (
     <>
       <div className="sticky top-14 z-30 px-3 pt-3 sm:top-16 sm:px-4 lg:top-3 lg:px-6 xl:px-8">
-        <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-2xl border border-violet-500/25 bg-violet-500/10 px-3 py-2">
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-500/20 text-violet-300">
+        <div className="mx-auto flex max-w-2xl items-center gap-2 rounded-2xl border border-zinc-500/25 bg-zinc-500/10 px-3 py-2">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-zinc-500/20 text-zinc-300">
             <Megaphone className="h-3.5 w-3.5" />
           </span>
           <button
@@ -55,9 +55,9 @@ export default function BarraAnuncios() {
             title="Abrir todos os anúncios"
             className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
           >
-            <span className="truncate text-xs font-bold text-violet-100 sm:text-sm">{texto}</span>
+            <span className="truncate text-xs font-bold text-zinc-100 sm:text-sm">{texto}</span>
             {posts.length > 1 && (
-              <span className="hidden shrink-0 items-center gap-1 text-[11px] font-black uppercase tracking-wide text-violet-300 sm:inline-flex">
+              <span className="hidden shrink-0 items-center gap-1 text-[11px] font-black uppercase tracking-wide text-zinc-300 sm:inline-flex">
                 Ver todos
                 <ChevronRight className="h-3 w-3" />
               </span>
@@ -67,7 +67,7 @@ export default function BarraAnuncios() {
             onClick={fechar}
             title="Fechar anúncios"
             aria-label="Fechar anúncios"
-            className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-violet-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -86,7 +86,7 @@ export default function BarraAnuncios() {
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <h2 className="flex items-center gap-2 font-display text-base font-black uppercase tracking-wide text-white sm:text-lg">
-                <Megaphone className="h-4 w-4 text-violet-400" />
+                <Megaphone className="h-4 w-4 text-zinc-400" />
                 Anúncios
               </h2>
               <button

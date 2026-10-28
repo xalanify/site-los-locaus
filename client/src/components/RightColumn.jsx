@@ -20,7 +20,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
     <section className="right-card glass overflow-hidden rounded-2xl border border-white/10">
       <header className="flex items-center justify-between px-4 pb-1 pt-3.5">
         <h2 className="inline-flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-gray-300">
-          <Icon className="h-4 w-4 text-violet-400" />
+          <Icon className="h-4 w-4 text-zinc-400" />
           {titulo}
         </h2>
         <span className="flex items-center gap-1.5">
@@ -28,7 +28,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
             <button
               key={i}
               onClick={a.acao}
-              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-violet-400"
+              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-zinc-400"
             >
               {a.texto}
             </button>
@@ -36,7 +36,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
           {acao && (
             <button
               onClick={acao}
-              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-violet-400"
+              className="text-[11px] font-bold text-gray-500 transition-colors hover:text-zinc-400"
             >
               {acaoTexto}
             </button>
@@ -44,7 +44,7 @@ function Cartao({ titulo, icone: Icon, children, link, linkTexto, acao, acaoText
           {link && (
             <Link
               to={link}
-              className="inline-flex items-center gap-0.5 text-[11px] font-bold text-gray-500 transition-colors hover:text-violet-400"
+              className="inline-flex items-center gap-0.5 text-[11px] font-bold text-gray-500 transition-colors hover:text-zinc-400"
             >
               {linkTexto}
               <ChevronRight className="h-3 w-3" />
@@ -149,7 +149,11 @@ export default function RightColumn() {
                           name={m.display_name || m.username}
                           className="h-[30px] w-[30px]"
                         />
-                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0e0e11] bg-emerald-400" />
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0e0e11] ${
+                            m.away ? 'bg-amber-400' : 'bg-emerald-400'
+                          }`}
+                        />
                       </span>
                       <span
                         className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${

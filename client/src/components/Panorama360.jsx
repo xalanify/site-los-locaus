@@ -106,10 +106,10 @@ export default function Panorama360({ desktopSrc, mobileSrc, className = '' }) {
         const luzSol = new THREE.DirectionalLight(0xffd9b0, 2.4)
         luzSol.position.set(5, 8, 4)
         scene.add(luzSol)
-        const luzRoxa = new THREE.PointLight(0xa78bfa, 70, 40)
+        const luzRoxa = new THREE.PointLight(0xffffff, 55, 40)
         luzRoxa.position.set(-6, 1.5, 3)
         scene.add(luzRoxa)
-        const luzTexto = new THREE.PointLight(0xd8b4fe, 28, 18)
+        const luzTexto = new THREE.PointLight(0xffffff, 28, 18)
         luzTexto.position.set(0, 3.4, -5)
         scene.add(luzTexto)
 
@@ -141,13 +141,13 @@ export default function Panorama360({ desktopSrc, mobileSrc, className = '' }) {
 
               modelo.traverse((o) => {
                 if (o.isMesh && o.material) {
-                  if (o.material.color) o.material.color.setHex(0xf1e6ff)
+                  if (o.material.color) o.material.color.setHex(0xf4f4f5)
                   if (o.material.metalness != null) o.material.metalness = 0.55
                   if (o.material.roughness != null) o.material.roughness = 0.25
                   o.material.envMapIntensity = 2.2
                   if (o.material.emissive) {
-                    o.material.emissive.setHex(0x5b21b6)
-                    o.material.emissiveIntensity = 0.85
+                    o.material.emissive.setHex(0x4a4a52)
+                    o.material.emissiveIntensity = 0.5
                   }
                   o.material.needsUpdate = true
                 }
@@ -313,7 +313,7 @@ export default function Panorama360({ desktopSrc, mobileSrc, className = '' }) {
   return (
     <div
       ref={caixa}
-      className={`absolute inset-0 overflow-hidden bg-[#050308] ${className}`}
+      className={`pano-fundo absolute inset-0 overflow-hidden bg-[#08080a] ${className}`}
       style={{
         backgroundImage: `url("${mobileSrc || desktopSrc}")`,
         backgroundSize: 'cover',

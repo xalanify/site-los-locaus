@@ -30,8 +30,42 @@ const CORES_NOME = new Set([
   'green',
   'pink',
   'cyan',
+  /* Camuflagens com textura (SVGs em client/public/camo) */
+  'camo-gold',
+  'camo-diamond',
+  'camo-damascus',
+  'camo-darkmatter',
+  'camo-interstellar',
+  'camo-chrome',
+  'camo-platinum',
+  'camo-obsidian',
+  'camo-redtiger',
+  'camo-greentiger',
+  'camo-digital',
+  'camo-hex',
+  'camo-woodland',
+  'camo-desert',
+  'camo-urban',
+  'camo-neon',
+  'camo-zebra',
+  'camo-blue',
+  'camo-red',
+  'camo-purple',
 ]);
 const EFEITOS_NOME = new Set(['', 'glow', 'blink', 'pulse', 'shimmer']);
+const CARD_STYLES = new Set([
+  'padrao',
+  'license',
+  'kova',
+  'dvd',
+  'felony',
+  'neon',
+  'blood',
+  'cosmic',
+  'crimson',
+  'violet',
+]);
+const PROFILE_STYLES = new Set(['padrao', 'felony', 'neon', 'blood', 'cosmic', 'crimson']);
 
 /* ---------- fotos de perfil ----------
    O utilizador escolhe uma imagem; o servidor sobe-a para o
@@ -72,7 +106,8 @@ const profileOf = async (userId) => {
     const row = await getDb()
       .prepare(
         `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil,
-                socials, live_platform, live_url, live_since, live_until, live_auto
+                socials, live_platform, live_url, live_since, live_until, live_auto,
+                card_style, profile_style, cs2_inventory_eur
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -92,6 +127,9 @@ const profileOf = async (userId) => {
       name_effect: (row && row.name_effect) || null,
       borda_cor: (row && row.borda_cor) || null,
       fonte_perfil: null,
+      card_style: (row && row.card_style) || 'padrao',
+      profile_style: (row && row.profile_style) || 'padrao',
+      cs2_inventory_eur: row && row.cs2_inventory_eur != null ? Number(row.cs2_inventory_eur) : 0,
       socials: parseSocials(row && row.socials),
       live_auto: row && row.live_auto != null ? Boolean(row.live_auto) : true,
       live:
@@ -122,6 +160,9 @@ const profileOf = async (userId) => {
       name_effect: null,
       borda_cor: null,
       fonte_perfil: null,
+      card_style: 'padrao',
+      profile_style: 'padrao',
+      cs2_inventory_eur: 0,
       socials: {},
       live_auto: true,
       live: null,
@@ -137,6 +178,101 @@ const badgesOf = async (userId) => {
     return rows.map((r) => r.badge);
   } catch {
     return [];
+  }
+};
+
+/* Jogos com conta ligada (só os ids; os nicks ficam no painel admin). */
+const gameAccountsOf = async (userId) => {
+  try {
+    const rows = await getDb()
+      .prepare('SELECT DISTINCT game FROM user_game_accounts WHERE user_id = ?')
+      .all(userId);
+    return rows.map((r) => r.game).filter(Boolean);
+  } catch {
+    return [];
+  }
+};
+
+/* Rank atual por jogo, a partir dos snapshots que já temos no servidor. */
+const R6_RANKS = require('../data/r6-ranks.json');
+const FORTNITE_DATA = require('../data/fortnite.json');
+const BF6_DATA = require('../data/bf6.json');
+
+const ROMAN = { i: 1, ii: 2, iii: 3, iv: 4, v: 5 };
+function r6RankIcon(name) {
+  const partes = String(name || '').toLowerCase().split(/\s+/);
+  const tier = partes[0];
+  if (!tier || /no|unranked/.test(tier)) return null;
+  const num = ROMAN[partes[1]];
+  return `https://trackercdn.com/cdn/r6.tracker.network/ranks/3.0/medium/${tier}${num ? `-${num}` : ''}.png`;
+}
+
+const gameRanksOf = async (userId) => {
+  try {
+    const rows = await getDb()
+      .prepare('SELECT game, nick FROM user_game_accounts WHERE user_id = ?')
+      .all(userId);
+    const conta = await getDb()
+      .prepare('SELECT username FROM users WHERE id = ?')
+      .get(userId)
+      .catch(() => null);
+    const username = String((conta && conta.username) || '').toLowerCase();
+    const ranks = {};
+
+    // Rainbow Six — rank atual (não o máximo)
+    const r6 = [];
+    for (const row of rows) {
+      if (String(row.game).toLowerCase() !== 'r6') continue;
+      const j = R6_RANKS.jogadores && R6_RANKS.jogadores[String(row.nick || '').toLowerCase()];
+      if (j) {
+        const atual = j.rank && j.rank.name && !/no rank/i.test(j.rank.name) ? j.rank : null;
+        const rank = atual || (j.maxRank && !/no rank/i.test(j.maxRank.name || '') ? j.maxRank : null);
+        if (rank && rank.name) {
+          r6.push({
+            name: rank.name,
+            points: Number(rank.points ?? rank.rp) || 0,
+            tier: String(rank.name).split(' ')[0].toLowerCase(),
+            icon: r6RankIcon(rank.name),
+          });
+        }
+      }
+    }
+    if (r6.length) ranks.r6 = r6.sort((a, b) => b.points - a.points)[0];
+
+    // Fortnite — rank atual mais alto entre os modos atuais
+    const fn = [];
+    for (const row of rows) {
+      if (String(row.game).toLowerCase() !== 'fortnite') continue;
+      const j = FORTNITE_DATA.jogadores && FORTNITE_DATA.jogadores[String(row.nick || '').toLowerCase()];
+      const listaRanks = (j && j.perfil && j.perfil.ranks) || (j && j.ranks) || [];
+      for (const r of listaRanks) {
+        const at = r.atualRank;
+        if (!at || at.semRank || !at.nome) continue;
+        fn.push({
+          name: at.nome,
+          icon: at.icone || null,
+          valor: Number(at.valor) || 0,
+          elo: at.elo == null ? null : Number(at.elo),
+          modo: r.modo || null,
+        });
+      }
+    }
+    if (fn.length) ranks.fortnite = fn.sort((a, b) => b.valor - a.valor)[0];
+
+    // Battlefield 6 — nível de carreira (snapshot tracker.gg)
+    const bf = BF6_DATA && BF6_DATA.overview ? BF6_DATA : null;
+    const handle = String((bf && bf.handle) || '').toLowerCase();
+    if (bf && username && (handle.includes(username) || username.includes(handle))) {
+      ranks.bf6 = {
+        name: `Nível ${bf.overview.careerPlayerRank}`,
+        level: Number(bf.overview.careerPlayerRank) || null,
+        tier: 'bf',
+      };
+    }
+
+    return ranks;
+  } catch {
+    return {};
   }
 };
 
@@ -178,11 +314,13 @@ const displayIdOf = async (userId) => {
 };
 
 const publicUser = async (u) => {
-  const [prof, badges, dist, displayId] = await Promise.all([
+  const [prof, badges, dist, displayId, jogos, ranks] = await Promise.all([
     profileOf(u.id),
     badgesOf(u.id),
     distincoesOverclock(u.id),
     displayIdOf(u.id),
+    gameAccountsOf(u.id),
+    gameRanksOf(u.id),
   ]);
   return {
     id: u.id,
@@ -196,6 +334,8 @@ const publicUser = async (u) => {
     ...prof,
     badges,
     distincoes: dist,
+    game_accounts: jogos,
+    game_ranks: ranks,
   };
 };
 
@@ -399,6 +539,22 @@ router.post(
   },
 );
 
+// Atualiza os valores dos inventários CS2 (admin). Corre também em background.
+router.post('/cs2-inventory/sync', attachAuth, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.status(401).json({ error: 'Sessão não iniciada' });
+    const conta = await store.findById(uid);
+    const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+    if (!souAdmin) return res.status(403).json({ error: 'Só o admin pode atualizar inventários.' });
+    const r = await require('../cs2inventory').sincronizarValores({ forcar: true });
+    res.json({ ok: true, ...(r || {}) });
+  } catch (e) {
+    console.error('Erro sync inventário CS2:', e.message);
+    res.status(500).json({ error: 'Não foi possível atualizar os inventários.' });
+  }
+});
+
 // Guardar dados do perfil (nick no CS2, avatar_url opcional para limpar)
 router.put('/me/profile', attachAuth, async (req, res) => {
   if (!req.auth || !req.auth.uid) {
@@ -423,6 +579,9 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasBorda = Object.prototype.hasOwnProperty.call(body, 'borda_cor');
     const hasSocials = Object.prototype.hasOwnProperty.call(body, 'socials');
     const hasLiveAuto = Object.prototype.hasOwnProperty.call(body, 'live_auto');
+    const hasCardStyle = Object.prototype.hasOwnProperty.call(body, 'card_style');
+    const hasProfileStyle = Object.prototype.hasOwnProperty.call(body, 'profile_style');
+    const hasInventory = Object.prototype.hasOwnProperty.call(body, 'cs2_inventory_eur');
     const musicaAlterada = Boolean(body.musica_alterada);
     if (
       !hasNick &&
@@ -440,7 +599,10 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       !hasNameEffect &&
       !hasBorda &&
       !hasSocials &&
-      !hasLiveAuto
+      !hasLiveAuto &&
+      !hasCardStyle &&
+      !hasProfileStyle &&
+      !hasInventory
     ) {
       return res.status(400).json({ error: 'Nada para guardar.' });
     }
@@ -624,8 +786,49 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       }
     }
 
-    if (hasSocials) {
+    if (hasCardStyle || hasProfileStyle || hasInventory) {
       const conta = await store.findById(uid);
+      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+      if (!souAdmin) {
+        return res.status(403).json({ error: 'Só o admin pode mudar a carta ou o inventário.' });
+      }
+      if (hasCardStyle) {
+        const estilo = String(body.card_style || 'padrao').trim();
+        if (!CARD_STYLES.has(estilo)) {
+          return res.status(400).json({ error: 'Carta inválida.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET card_style = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(estilo, uid);
+      }
+      if (hasProfileStyle) {
+        const estilo = String(body.profile_style || 'padrao').trim();
+        if (!PROFILE_STYLES.has(estilo)) {
+          return res.status(400).json({ error: 'Estilo de perfil inválido.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET profile_style = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(estilo, uid);
+      }
+      if (hasInventory) {
+        const valor = Number(body.cs2_inventory_eur);
+        if (!Number.isFinite(valor) || valor < 0) {
+          return res.status(400).json({ error: 'Valor de inventário inválido.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET cs2_inventory_eur = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(valor, uid);
+        require('../cs2inventory').syncCs2InventoryBadge({ forcar: true }).catch(() => {});
+      }
+    }
+
+    if (hasSocials) {      const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
       if (!souAdmin) {
         return res.status(403).json({ error: 'Só o admin pode configurar as redes/live.' });
@@ -859,26 +1062,41 @@ router.get('/exists', async (req, res) => {
 
 // ===================== Presença + lista de membros =====================
 // POST /api/users/presence — o cliente "pinga" de 30 em 30 segundos
+let presencaAway = null;
+function garantirAway() {
+  if (!presencaAway) {
+    presencaAway = getDb()
+      .exec(
+        'ALTER TABLE public.user_presence ADD COLUMN IF NOT EXISTS away boolean NOT NULL DEFAULT false',
+      )
+      .then(() => true)
+      .catch(() => false);
+  }
+  return presencaAway;
+}
+
 router.post('/presence', requireUser, async (req, res) => {
   try {
     const db = getDb();
+    await garantirAway();
     // plataforma (pc|mobile) — para mostrar "No PC" / "No Telemóvel"
     const plataforma = String((req.body && req.body.plataforma) || '').toLowerCase();
+    const away = Boolean(req.body && req.body.away);
     const ok = plataforma === 'pc' || plataforma === 'mobile';
     if (ok) {
       await db
         .prepare(
-          `INSERT INTO user_presence (user_id, last_seen, plataforma) VALUES (?, now(), ?)
-           ON CONFLICT (user_id) DO UPDATE SET last_seen = now(), plataforma = EXCLUDED.plataforma`,
+          `INSERT INTO user_presence (user_id, last_seen, plataforma, away) VALUES (?, now(), ?, ?)
+           ON CONFLICT (user_id) DO UPDATE SET last_seen = now(), plataforma = EXCLUDED.plataforma, away = EXCLUDED.away`,
         )
-        .run(req.auth.uid, plataforma);
+        .run(req.auth.uid, plataforma, away);
     } else {
       await db
         .prepare(
-          `INSERT INTO user_presence (user_id, last_seen) VALUES (?, now())
-           ON CONFLICT (user_id) DO UPDATE SET last_seen = now()`,
+          `INSERT INTO user_presence (user_id, last_seen, away) VALUES (?, now(), ?)
+           ON CONFLICT (user_id) DO UPDATE SET last_seen = now(), away = EXCLUDED.away`,
         )
-        .run(req.auth.uid);
+        .run(req.auth.uid, away);
     }
     res.json({ ok: true });
   } catch (error) {
@@ -890,18 +1108,22 @@ router.post('/presence', requireUser, async (req, res) => {
 // GET /api/users/list — todos os membros + sinal online/offline
 router.get('/list', attachAuth, async (req, res) => {
   try {
+    await garantirAway();
     require('../fortniteRank').sincronizar().catch(() => {});
     require('../top1').syncTop1Badge().catch(() => {});
     require('../previsoestop1').syncTop1Previsoes().catch(() => {});
+    require('../cs2inventory').syncCs2InventoryBadge().catch(() => {});
     const db = getDb();
     const rows = await db
       .prepare(
         `SELECT u.id, u.username,
                 (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
                 p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
+                p.card_style, p.profile_style, p.cs2_inventory_eur,
                 p.socials, p.live_platform, p.live_url, p.live_since, p.live_until, p.live_auto,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 p2.last_seen,
+                p2.away,
                 CASE WHEN p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes'
                      THEN p2.plataforma END AS plataforma
          FROM users u
@@ -916,6 +1138,8 @@ router.get('/list', attachAuth, async (req, res) => {
     for (const b of badges) (byUser[b.user_id] = byUser[b.user_id] || []).push(b.badge);
     // distinções de overclock (leitura real do PC) — para os membros
     const dists = await Promise.all(rows.map((r) => distincoesOverclock(r.id)));
+    const ranks = await Promise.all(rows.map((r) => gameRanksOf(r.id)));
+    const games = await Promise.all(rows.map((r) => gameAccountsOf(r.id)));
     res.json({
       users: rows.map((r, i) => ({
         id: Number(r.id),
@@ -935,6 +1159,9 @@ router.get('/list', attachAuth, async (req, res) => {
         name_effect: r.name_effect || null,
         borda_cor: r.borda_cor || null,
         fonte_perfil: null,
+        card_style: r.card_style || 'padrao',
+        profile_style: r.profile_style || 'padrao',
+        cs2_inventory_eur: r.cs2_inventory_eur != null ? Number(r.cs2_inventory_eur) : 0,
         socials: parseSocials(r.socials),
         live_auto: r.live_auto != null ? Boolean(r.live_auto) : true,
         live:
@@ -948,10 +1175,13 @@ router.get('/list', attachAuth, async (req, res) => {
               }
             : null,
         online: Boolean(r.online),
+        away: Boolean(r.online && r.away),
         last_seen: r.last_seen ? new Date(r.last_seen).toISOString() : null,
         plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
         badges: byUser[r.id] || [],
         distincoes: dists[i] || null,
+        game_ranks: ranks[i] || {},
+        game_accounts: games[i] || [],
       })),
     });
   } catch (error) {
@@ -973,6 +1203,7 @@ router.get('/:username', attachAuth, async (req, res) => {
     );
 
     const db = getDb();
+    await garantirAway();
     const rows = await db
       .prepare(
         `SELECT c.*, u.username, p.avatar_url AS author_avatar
@@ -993,15 +1224,17 @@ router.get('/:username', attachAuth, async (req, res) => {
       saved: clips.filter((c) => c.saved).length,
     };
 
-    const [badges, prof, pres, dist, displayId] = await Promise.all([
+    const [badges, prof, pres, dist, displayId, jogos, ranks] = await Promise.all([
       badgesOf(user.id),
       profileOf(user.id),
       getDb()
-        .prepare('SELECT last_seen FROM user_presence WHERE user_id = ?')
+        .prepare('SELECT last_seen, away FROM user_presence WHERE user_id = ?')
         .get(user.id)
         .catch(() => null),
       distincoesOverclock(user.id),
       displayIdOf(user.id),
+      gameAccountsOf(user.id),
+      gameRanksOf(user.id),
     ]);
 
     // "online agora" — mesma regra da lista de membros (2 minutos)
@@ -1021,6 +1254,9 @@ router.get('/:username', attachAuth, async (req, res) => {
         badges,
         distincoes: dist,
         online,
+        away: Boolean(online && pres && pres.away),
+        game_accounts: jogos,
+        game_ranks: ranks,
         ...prof,
         // as contas de jogo ficam no backend (painel admin) — não saem aqui
       },

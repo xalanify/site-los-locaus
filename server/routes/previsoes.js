@@ -304,19 +304,36 @@ router.get('/resultados-novos', requireUser, async (req, res) => {
   try {
     const db = getDb();
     const uid = req.auth.uid;
-    const rows = await db
+    const r6 = await db
       .prepare(
         `SELECT p.match_id, p.pick, p.correct, m.team_a, m.team_b, m.score_a, m.score_b,
-                m.start_time, m.competition_name
+                m.start_time, m.competition_name AS competition
          FROM r6_predictions p
          JOIN r6_matches m ON m.id = p.match_id
          WHERE p.user_id = ? AND p.correct IS NOT NULL AND p.seen_at IS NULL AND m.status = 3
          ORDER BY m.start_time DESC LIMIT 12`,
       )
       .all(uid);
+    const cs2 = await db
+      .prepare(
+        `SELECT p.match_id, p.pick, p.correct, m.team_a, m.team_b, m.score_a, m.score_b,
+                m.start_time, m.competition
+         FROM cs2_predictions p
+         JOIN cs2_matches m ON m.id = p.match_id
+         WHERE p.user_id = ? AND p.correct IS NOT NULL AND p.seen_at IS NULL AND m.status = 3
+         ORDER BY m.start_time DESC LIMIT 12`,
+      )
+      .all(uid);
+    const rows = [
+      ...r6.map((r) => ({ ...r, jogo: 'r6' })),
+      ...cs2.map((r) => ({ ...r, jogo: 'cs2' })),
+    ]
+      .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
+      .slice(0, 12);
     res.json({
       results: rows.map((r) => ({
         match_id: Number(r.match_id),
+        jogo: r.jogo,
         pick: r.pick,
         correct: Boolean(r.correct),
         team_a: r.team_a || '',
@@ -324,7 +341,7 @@ router.get('/resultados-novos', requireUser, async (req, res) => {
         score_a: Number(r.score_a) || 0,
         score_b: Number(r.score_b) || 0,
         start_time: r.start_time,
-        competition: r.competition_name || '',
+        competition: r.competition || '',
       })),
     });
   } catch (error) {
@@ -339,6 +356,11 @@ router.post('/resultados-vistos', requireUser, async (req, res) => {
     await db
       .prepare(
         'UPDATE r6_predictions SET seen_at = now() WHERE user_id = ? AND correct IS NOT NULL AND seen_at IS NULL',
+      )
+      .run(req.auth.uid);
+    await db
+      .prepare(
+        'UPDATE cs2_predictions SET seen_at = now() WHERE user_id = ? AND correct IS NOT NULL AND seen_at IS NULL',
       )
       .run(req.auth.uid);
     res.json({ ok: true });

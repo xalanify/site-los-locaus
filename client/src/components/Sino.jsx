@@ -11,7 +11,7 @@ const TIPOS = {
   reply: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
   like: { Icon: Heart, cor: 'text-rose-300', fundo: 'bg-rose-400/15' },
   save: { Icon: Sparkles, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },
-  badge: { Icon: Award, cor: 'text-violet-300', fundo: 'bg-violet-400/15' },
+  badge: { Icon: Award, cor: 'text-zinc-300', fundo: 'bg-zinc-400/15' },
 }
 const padrao = TIPOS.comment
 
@@ -213,7 +213,7 @@ export default function Sino({ user, posicao = 'topo' }) {
               {items.some((i) => !i.read) && (
                 <button
                   onClick={marcarTudo}
-                  className="flex items-center gap-1 text-xs font-bold text-violet-300 hover:text-white"
+                  className="flex items-center gap-1 text-xs font-bold text-zinc-300 hover:text-white"
                 >
                   <CheckCheck className="h-3.5 w-3.5" /> marcar tudo
                 </button>
@@ -260,7 +260,7 @@ export default function Sino({ user, posicao = 'topo' }) {
                       {it.body && <span className="block truncate text-xs text-gray-400">{it.body}</span>}
                       <span className="text-[11px] text-gray-500">{quando(it.created_at)}</span>
                     </span>
-                    {!it.read && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-violet-400" />}
+                    {!it.read && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-zinc-400" />}
                   </button>
                 )
               })

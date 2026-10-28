@@ -129,7 +129,7 @@ export default function ClipPlaylistPlayer({ items, musicUrl, volume = 0.25, onP
         />
         {lista.length > 1 && (
           <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-[10px] font-black text-white backdrop-blur">
-            <ListVideo className="h-3 w-3 text-violet-300" /> {idx + 1}/{lista.length}
+            <ListVideo className="h-3 w-3 text-zinc-300" /> {idx + 1}/{lista.length}
           </div>
         )}
       </div>
@@ -164,7 +164,7 @@ export default function ClipPlaylistPlayer({ items, musicUrl, volume = 0.25, onP
           )}
         </span>
         {musicUrl && (
-          <span className="flex items-center gap-1 text-[10px] font-bold text-violet-300">
+          <span className="flex items-center gap-1 text-[10px] font-bold text-zinc-300">
             <Music className="h-3 w-3" /> música
           </span>
         )}

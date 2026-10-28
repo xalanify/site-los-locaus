@@ -132,7 +132,7 @@ export default function BuildLabPage({ embedded = false }) {
             onClick={() => setAba(a.id)}
             className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-[11px] font-black transition sm:text-xs ${
               aba === a.id
-                ? 'border-violet-400/40 bg-violet-500/20 text-white'
+                ? 'border-zinc-400/40 bg-zinc-500/20 text-white'
                 : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white'
             }`}
           >
@@ -218,7 +218,7 @@ function Comparador() {
           <select
             value={jogoId}
             onChange={(e) => setJogoId(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-violet-400/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-zinc-400/50 focus:outline-none"
           >
             {JOGOS.map((j) => (
               <option key={j.id} value={j.id}>
@@ -234,7 +234,7 @@ function Comparador() {
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-violet-400/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-zinc-400/50 focus:outline-none"
           >
             {PRESETS.map((p) => (
               <option key={p.id} value={p.id}>
@@ -251,7 +251,7 @@ function Comparador() {
       </div>
 
       {/* comparação direta */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-[#0f0a1a]/80">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-[#121214]/80">
         <div className="border-b border-white/10 px-4 py-2.5">
           <h3 className="text-[11px] font-black uppercase tracking-wider text-gray-300">
             Comparação direta · {jogo.nome}
@@ -268,7 +268,7 @@ function Comparador() {
             return (
               <div key={rotulo} className="flex items-center gap-3 px-4 py-2 text-xs">
                 <span className="w-12 shrink-0 font-black text-gray-400">{rotulo}</span>
-                <span className={`w-20 shrink-0 text-right font-black tabular-nums ${melhor === 'A' ? 'text-violet-300' : 'text-gray-400'}`}>
+                <span className={`w-20 shrink-0 text-right font-black tabular-nums ${melhor === 'A' ? 'text-zinc-300' : 'text-gray-400'}`}>
                   {fmt(va)} FPS
                 </span>
                 <span className="flex-1 text-center text-[10px] font-bold text-gray-600">
@@ -292,9 +292,9 @@ function Comparador() {
 }
 
 function BuildCard({ titulo, valor, setValor, calc, jogo, cor }) {
-  const corTexto = cor === 'violet' ? 'text-violet-300' : 'text-sky-300'
+  const corTexto = cor === 'violet' ? 'text-zinc-300' : 'text-sky-300'
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-3.5">
+    <div className="rounded-2xl border border-white/10 bg-[#121214]/80 p-3.5">
       <div className="mb-2 flex items-center justify-between">
         <h3 className={`text-sm font-black ${corTexto}`}>{titulo}</h3>
         <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-gray-400">
@@ -364,7 +364,7 @@ function BuildCard({ titulo, valor, setValor, calc, jogo, cor }) {
             calc.gargalo.cor === 'amber'
               ? 'bg-amber-400/15 text-amber-300'
               : calc.gargalo.cor === 'violet'
-                ? 'bg-violet-400/15 text-violet-300'
+                ? 'bg-zinc-400/15 text-zinc-300'
                 : 'bg-emerald-400/15 text-emerald-300'
           }`}
         >
@@ -394,7 +394,7 @@ function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom =
       <select
         value={valor}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-violet-400/50 focus:outline-none"
+        className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-zinc-400/50 focus:outline-none"
       >
         {lista.map((x) => (
           <option key={x.id} value={x.id}>
@@ -404,12 +404,12 @@ function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom =
         <option value="custom">Personalizado (qualquer peça)…</option>
       </select>
       {valor === 'custom' && (
-        <div className="mt-1 grid grid-cols-2 gap-1 rounded-lg border border-violet-400/20 bg-violet-500/[0.05] p-1.5">
+        <div className="mt-1 grid grid-cols-2 gap-1 rounded-lg border border-zinc-400/20 bg-zinc-500/[0.05] p-1.5">
           <input
             value={c.nome || ''}
             onChange={(e) => set('nome', e.target.value)}
             placeholder={`Nome da ${rotulo.toLowerCase()} (ex.: RTX 4090)`}
-            className="col-span-2 w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+            className="col-span-2 w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-zinc-400/50 focus:outline-none"
           />
           {tipo !== 'psu' && (
             <input
@@ -418,7 +418,7 @@ function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom =
               onChange={(e) => set('score', e.target.value)}
               placeholder="Desempenho (100 = ref.)"
               title="Pontuação relativa: 100 = RTX 4060 / Ryzen 5 7600"
-              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-zinc-400/50 focus:outline-none"
             />
           )}
           {(tipo === 'cpu' || tipo === 'gpu') && (
@@ -427,7 +427,7 @@ function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom =
               value={c.consumo || ''}
               onChange={(e) => set('consumo', e.target.value)}
               placeholder="Consumo W"
-              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-zinc-400/50 focus:outline-none"
             />
           )}
           {tipo === 'psu' && (
@@ -436,7 +436,7 @@ function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom =
               value={c.watts || ''}
               onChange={(e) => set('watts', e.target.value)}
               placeholder="Watts"
-              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+              className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-zinc-400/50 focus:outline-none"
             />
           )}
           <input
@@ -444,7 +444,7 @@ function PecaSelect({ icon: Icon, rotulo, tipo, lista, valor, onChange, custom =
             value={c.preco || ''}
             onChange={(e) => set('preco', e.target.value)}
             placeholder="Preço €"
-            className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+            className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-zinc-400/50 focus:outline-none"
           />
           <p className="col-span-2 text-[9px] text-gray-500">
             Pontuação: 100 = RTX 4060 / Ryzen 5 7600. Podes ajustar como quiseres.
@@ -464,7 +464,7 @@ function SelectPeca({ icon: Icon, rotulo, lista, valor, onChange }) {
       <select
         value={valor}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-violet-400/50 focus:outline-none"
+        className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-zinc-400/50 focus:outline-none"
       >
         {lista.map((x) => (
           <option key={x.id} value={x.id}>
@@ -511,7 +511,7 @@ function CalculadoraFps() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-      <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
+      <div className="rounded-2xl border border-white/10 bg-[#121214]/80 p-4">
         <div className="grid gap-2 sm:grid-cols-2">
           <PecaSelect
             icon={Cpu}
@@ -562,7 +562,7 @@ function CalculadoraFps() {
                 onClick={() => setRes(id)}
                 className={`rounded-lg border py-2 text-xs font-black transition ${
                   res === id
-                    ? 'border-violet-400/40 bg-violet-500/20 text-white'
+                    ? 'border-zinc-400/40 bg-zinc-500/20 text-white'
                     : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07]'
                 }`}
               >
@@ -613,11 +613,11 @@ function CalculadoraFps() {
       </div>
 
       <div className="space-y-3">
-        <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
+        <div className="rounded-2xl border border-white/10 bg-[#121214]/80 p-4">
           <h3 className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
             <Gauge className="h-3.5 w-3.5" /> Leitura rápida
           </h3>
-          <p className={`text-sm font-black ${gargaloInfo.cor === 'amber' ? 'text-amber-300' : gargaloInfo.cor === 'violet' ? 'text-violet-300' : 'text-emerald-300'}`}>
+          <p className={`text-sm font-black ${gargaloInfo.cor === 'amber' ? 'text-amber-300' : gargaloInfo.cor === 'violet' ? 'text-zinc-300' : 'text-emerald-300'}`}>
             {gargaloInfo.texto}
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-gray-400">
@@ -629,7 +629,7 @@ function CalculadoraFps() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
+        <div className="rounded-2xl border border-white/10 bg-[#121214]/80 p-4">
           <h3 className="mb-2 text-[10px] font-black uppercase tracking-wider text-gray-400">
             Configuração
           </h3>
@@ -682,7 +682,7 @@ function Overclock() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-      <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-4">
+      <div className="rounded-2xl border border-white/10 bg-[#121214]/80 p-4">
         <div className="grid gap-2 sm:grid-cols-2">
           <PecaSelect
             icon={Cpu}
@@ -712,7 +712,7 @@ function Overclock() {
             <select
               value={arrefecimento}
               onChange={(e) => setArrefecimento(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-violet-400/50 focus:outline-none"
+              className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-[12px] font-bold text-gray-200 focus:border-zinc-400/50 focus:outline-none"
             >
               <option value="ar">Ar (torre)</option>
               <option value="aio">AIO 240/360 mm</option>
@@ -754,7 +754,7 @@ function Overclock() {
               onClick={() => setRes(id)}
               className={`rounded-lg border py-2 text-[11px] font-black transition ${
                 res === id
-                  ? 'border-violet-400/40 bg-violet-500/20 text-white'
+                  ? 'border-zinc-400/40 bg-zinc-500/20 text-white'
                   : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07]'
               }`}
             >

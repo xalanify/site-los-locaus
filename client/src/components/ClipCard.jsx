@@ -741,7 +741,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   if (aberto && processando === false) {
     return (
       <div className="mt-3 flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-xl bg-[#0f0b1c] px-6 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
         <p className="text-sm font-bold text-white">A processar o vídeo…</p>
         <p className="text-xs text-gray-400">
           Fica pronto dentro de uns minutos — enquanto isso dá para ver as outras coisas.
@@ -770,7 +770,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
 
         {!pronto && (
           <span className="pointer-events-none absolute inset-0 grid place-items-center">
-            <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
           </span>
         )}
 
@@ -786,7 +786,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         {veuQual && (
           <div className="absolute inset-0 z-[7] grid place-items-center bg-black/85 px-6 text-center">
             <div>
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-violet-400" />
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-zinc-400" />
               <p className="mt-3 text-sm font-black text-white">
                 {veuQual.startsWith('Este') ? veuQual : `A forçar ${veuQual}…`}
               </p>
@@ -817,7 +817,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             type="button"
             onClick={aoClicar}
             className={
-              'absolute inset-0 z-[5] flex cursor-pointer flex-col justify-between bg-gradient-to-br from-[#1b1030] via-[#120d22] to-[#0d0a18] px-5 py-4 text-left transition-opacity duration-700 ' +
+              'absolute inset-0 z-[5] flex cursor-pointer flex-col justify-between bg-gradient-to-br from-[#1a1a1d] via-[#120d22] to-[#101012] px-5 py-4 text-left transition-opacity duration-700 ' +
               (veuSai ? 'pointer-events-none opacity-0' : 'opacity-100')
             }
             aria-label={veu === 'fim' ? 'Repetir vídeo' : 'Fechar aviso'}
@@ -843,7 +843,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             <span className="relative z-10 grid place-items-center self-center pb-6">
               {veu === 'fim' && (
                 <>
-                  <span className="grid h-16 w-16 place-items-center rounded-full bg-violet-600 shadow-[0_8px_30px_rgba(139,92,246,0.6)]">
+                  <span className="grid h-16 w-16 place-items-center rounded-full bg-zinc-600 shadow-[0_8px_30px_rgba(255,255,255,0.16)]">
                     <Play className="ml-1 h-7 w-7 text-white" fill="currentColor" />
                   </span>
                   <span className="mt-2 text-xs font-black uppercase tracking-wider text-white">
@@ -852,7 +852,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 </>
               )}
             </span>
-            <span className="relative z-10 text-[11px] font-bold uppercase tracking-wider text-violet-300">
+            <span className="relative z-10 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
               Los Locaus
             </span>
           </button>
@@ -870,7 +870,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             <button
               type="button"
               onClick={alternar}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
               aria-label={tocando ? 'Pausar' : 'Reproduzir'}
             >
               {tocando ? (
@@ -887,7 +887,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             <div className="relative min-w-0 flex-1">
               <span className="pointer-events-none absolute left-0 top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-white/20" />
               <span
-                className="pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-violet-500"
+                className="pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-zinc-500"
                 style={{ width: pct + '%' }}
               />
               <input
@@ -898,7 +898,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 value={Math.min(tempo, dur > 0 ? dur : 1)}
                 onChange={(e) => procurar(Number(e.target.value))}
                 aria-label="Barra de progresso"
-                className="relative h-1.5 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-300 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-violet-300"
+                className="relative h-1.5 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-zinc-300 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-300"
               />
             </div>
 
@@ -909,7 +909,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             <button
               type="button"
               onClick={alternarSom}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
               aria-label={mudo ? 'Ligar som' : 'Desligar som'}
             >
               {mudo || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -919,7 +919,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             <div className="relative hidden w-20 shrink-0 sm:block">
               <span className="pointer-events-none absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-white/20" />
               <span
-                className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-violet-400"
+                className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-zinc-400"
                 style={{ width: (mudo ? 0 : volume) + '%' }}
               />
               <input
@@ -930,7 +930,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 value={mudo ? 0 : volume}
                 onChange={(e) => mexerVolume(Number(e.target.value))}
                 aria-label="Volume"
-                className="relative h-1 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-violet-200"
+                className="relative h-1 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-zinc-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-200"
               />
             </div>
 
@@ -939,7 +939,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
               <button
                 type="button"
                 onClick={() => setMenuQual((v) => !v)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
                 aria-label="Qualidade do vídeo"
                 title={`Qualidade: ${ETIQUETA_QUAL[qualAtual] || qualAtual}`}
               >
@@ -954,12 +954,12 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                       onClick={() => escolherQualidade(q)}
                       className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-[12px] font-bold transition-colors ${
                         qualEsc.current === q
-                          ? 'bg-violet-500/25 text-violet-200'
+                          ? 'bg-zinc-500/25 text-zinc-200'
                           : 'text-gray-300 hover:bg-white/10'
                       }`}
                     >
                       {ETIQUETA_QUAL[q] || q}
-                      {qualEsc.current === q && <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />}
+                      {qualEsc.current === q && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />}
                     </button>
                   ))}
                   {!niveisQual.length && (
@@ -972,7 +972,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             <button
               type="button"
               onClick={alternarEcrã}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-violet-500"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
               aria-label={cheio ? 'Sair do ecrã inteiro' : 'Ecrã inteiro'}
             >
               {cheio ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
@@ -1009,7 +1009,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         aoDarPlay && aoDarPlay()
         setAberto(true)
       }}
-      className="group relative mt-3 block w-full overflow-hidden rounded-xl bg-gradient-to-br from-[#1b1030] to-[#0d0a18]"
+      className="group relative mt-3 block w-full overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a1d] to-[#101012]"
       aria-label={'Reproduzir ' + (titulo || 'clip')}
     >
       {temCapa ? (
@@ -1022,11 +1022,11 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
         />
       ) : (
         <span className="grid aspect-video w-full place-items-center">
-          <Gamepad2 className="h-14 w-14 text-violet-500/40" />
+          <Gamepad2 className="h-14 w-14 text-zinc-500/40" />
         </span>
       )}
       <span className="absolute inset-0 grid place-items-center bg-black/25 transition-colors group-hover:bg-black/45">
-        <span className="grid h-14 w-14 place-items-center rounded-full bg-violet-600 shadow-[0_8px_30px_rgba(139,92,246,0.55)] transition-transform group-hover:scale-110">
+        <span className="grid h-14 w-14 place-items-center rounded-full bg-zinc-600 shadow-[0_8px_30px_rgba(139,92,246,0.55)] transition-transform group-hover:scale-110">
           <Play className="ml-0.5 h-6 w-6 text-white" fill="currentColor" />
         </span>
       </span>
@@ -1470,7 +1470,7 @@ export default function ClipCard({
   const actionCls = (active) =>
     `flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-colors ${
       active
-        ? 'bg-violet-500/20 text-violet-400'
+        ? 'bg-zinc-500/20 text-zinc-400'
         : 'text-gray-400 hover:bg-white/10 hover:text-white'
     }`
 
@@ -1482,7 +1482,7 @@ export default function ClipCard({
           <div className="flex flex-wrap items-center gap-x-2">
             <button
               onClick={() => onProfile && onProfile(cm.author)}
-              className="text-xs font-bold text-violet-400 hover:underline"
+              className="text-xs font-bold text-zinc-400 hover:underline"
             >
               {cm.author}
             </button>
@@ -1509,7 +1509,7 @@ export default function ClipCard({
               setReplyTo(replyTo === cm.id ? null : cm.id)
             }}
             title="Responder"
-            className="rounded p-1 text-gray-500 hover:bg-white/10 hover:text-violet-400"
+            className="rounded p-1 text-gray-500 hover:bg-white/10 hover:text-zinc-400"
           >
             <Send className="h-3.5 w-3.5" />
           </button>
@@ -1543,13 +1543,13 @@ export default function ClipCard({
           className="group flex items-center gap-2.5"
         >
           <AvatarImg name={c.author} src={c.author_avatar} className="h-9 w-9" />
-          <span className="text-sm font-bold text-white group-hover:text-violet-400">
+          <span className="text-sm font-bold text-white group-hover:text-zinc-400">
             {c.author}
           </span>
         </button>
         <LiveBadge username={c.author} />
         {c.game && (
-          <span className="flex items-center gap-1.5 rounded-full bg-violet-500/15 px-2.5 py-1 text-[11px] font-bold text-violet-300 ring-1 ring-violet-500/30">
+          <span className="flex items-center gap-1.5 rounded-full bg-zinc-500/15 px-2.5 py-1 text-[11px] font-bold text-zinc-300 ring-1 ring-zinc-500/30">
             <Gamepad2 className="h-3 w-3" /> {gameLabel(c.game)}
           </span>
         )}
@@ -1565,7 +1565,7 @@ export default function ClipCard({
               <button
                 onClick={abrirEdicao}
                 title="Editar clip"
-                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-violet-500/15 hover:text-violet-400"
+                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-zinc-500/15 hover:text-zinc-400"
               >
                 <Pencil className="h-4 w-4" />
               </button>
@@ -1590,14 +1590,14 @@ export default function ClipCard({
               onChange={(e) => setNovoTitulo(e.target.value)}
               maxLength={100}
               placeholder="Título do clip"
-              className="w-full rounded-lg bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+              className="w-full rounded-lg bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-zinc-500/50"
             />
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <select
                 value={novoJogo}
                 onChange={(e) => setNovoJogo(e.target.value)}
                 title="Jogo do clip"
-                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-zinc-500/50"
               >
                 {!novoJogo && (
                   <option value="" className="bg-neutral-900">
@@ -1614,7 +1614,7 @@ export default function ClipCard({
                 value={novaVis}
                 onChange={(e) => setNovaVis(e.target.value)}
                 title="Visibilidade do clip"
-                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+                className="cursor-pointer rounded-lg bg-black/40 px-2.5 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-zinc-500/50"
               >
                 <option value="public" className="bg-neutral-900">
                   Público — vê toda a gente
@@ -1725,7 +1725,7 @@ export default function ClipCard({
           {c.views || 0}
         </span>
         <button onClick={like} className={actionCls(c.liked)} title="Gosto">
-          <Heart className={`h-4 w-4 ${c.liked ? 'fill-violet-400 text-violet-400' : ''}`} />
+          <Heart className={`h-4 w-4 ${c.liked ? 'fill-zinc-400 text-zinc-400' : ''}`} />
           {c.likes || 0}
         </button>
         <button onClick={toggleComments} className={actionCls(showComments)} title="Comentários">
@@ -1776,7 +1776,7 @@ export default function ClipCard({
           )}
 
           {replyTo && (
-            <div className="mt-3 flex items-center justify-between rounded-lg bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300">
+            <div className="mt-3 flex items-center justify-between rounded-lg bg-zinc-500/10 px-3 py-1.5 text-xs text-zinc-300">
               A responder a {comments.find((x) => x.id === replyTo)?.author}
               <button onClick={() => setReplyTo(null)} className="hover:text-white">
                 <X className="h-3.5 w-3.5" />
@@ -1797,7 +1797,7 @@ export default function ClipCard({
               <button
                 onClick={send}
                 disabled={busy || !text.trim()}
-                className="rounded-full bg-violet-500 p-2.5 text-white transition-colors hover:bg-violet-600 disabled:opacity-40"
+                className="rounded-full bg-zinc-500 p-2.5 text-white transition-colors hover:bg-zinc-600 disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>
@@ -1805,7 +1805,7 @@ export default function ClipCard({
           ) : (
             <button
               onClick={() => onRequestAuth && onRequestAuth()}
-              className="mt-3 w-full rounded-xl border border-dashed border-white/20 py-2.5 text-sm font-bold text-gray-400 transition-colors hover:border-violet-500/50 hover:text-violet-400"
+              className="mt-3 w-full rounded-xl border border-dashed border-white/20 py-2.5 text-sm font-bold text-gray-400 transition-colors hover:border-zinc-500/50 hover:text-zinc-400"
             >
               Entra na conta para comentar
             </button>
@@ -1820,7 +1820,7 @@ export default function ClipCard({
             onClick={() => !salvando && setEditorAberto(false)}
           >
             <div
-              className="glass flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-violet-500/30 shadow-2xl"
+              className="glass flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-500/30 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
@@ -1848,12 +1848,12 @@ export default function ClipCard({
                     onChange={(e) => setNovoTitulo(e.target.value)}
                     maxLength={100}
                     placeholder="Título da publicação"
-                    className="w-full rounded-xl bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-violet-500/50 sm:col-span-2"
+                    className="w-full rounded-xl bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none ring-1 ring-white/10 focus:ring-zinc-500/50 sm:col-span-2"
                   />
                   <select
                     value={novoJogo}
                     onChange={(e) => setNovoJogo(e.target.value)}
-                    className="cursor-pointer rounded-xl bg-black/40 px-3 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+                    className="cursor-pointer rounded-xl bg-black/40 px-3 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-zinc-500/50"
                   >
                     {!novoJogo && <option value="">Escolher jogo…</option>}
                     {CLIP_GAMES.map((g) => (
@@ -1865,7 +1865,7 @@ export default function ClipCard({
                   <select
                     value={novaVis}
                     onChange={(e) => setNovaVis(e.target.value)}
-                    className="cursor-pointer rounded-xl bg-black/40 px-3 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-violet-500/50"
+                    className="cursor-pointer rounded-xl bg-black/40 px-3 py-2 text-xs font-bold text-gray-200 outline-none ring-1 ring-white/10 focus:ring-zinc-500/50"
                   >
                     <option value="public">Público — vê toda a gente</option>
                     <option value="private">Privado — vês só tu</option>

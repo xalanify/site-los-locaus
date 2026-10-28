@@ -23,7 +23,7 @@ export default function Hero({ onVerVideos }) {
   if (loading) {
     return (
       <section id="home" className="flex min-h-[45vh] items-center justify-center pt-20">
-        <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-violet-500" />
+        <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-zinc-500" />
       </section>
     )
   }
@@ -45,7 +45,7 @@ export default function Hero({ onVerVideos }) {
           className="glass relative overflow-hidden rounded-3xl"
         >
           {/* faixa fina de cor no topo do cartão */}
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/60 to-transparent" />
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-500/60 to-transparent" />
 
           <div className="flex items-center gap-4 p-5 sm:gap-5 sm:p-6">
             <img
@@ -69,7 +69,7 @@ export default function Hero({ onVerVideos }) {
                 href={channelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 transition-colors hover:text-violet-400"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 transition-colors hover:text-zinc-400"
               >
                 <Youtube className="h-3.5 w-3.5" />
                 Canal no YouTube
@@ -84,7 +84,7 @@ export default function Hero({ onVerVideos }) {
             <button
               type="button"
               onClick={onVerVideos}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/15 px-4 py-2.5 text-xs font-black uppercase tracking-wide text-violet-200 transition-colors hover:bg-violet-500/25 hover:text-white"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-400/30 bg-zinc-500/15 px-4 py-2.5 text-xs font-black uppercase tracking-wide text-zinc-200 transition-colors hover:bg-zinc-500/25 hover:text-white"
             >
               <Play className="h-3.5 w-3.5" />
               Ver vídeos

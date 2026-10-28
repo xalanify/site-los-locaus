@@ -11,7 +11,7 @@ import { Trophy, X } from 'lucide-react'
 const JOGOS = [
   { id: 'r6', nome: 'Rainbow Six', cor: 'from-orange-500 to-amber-500', txt: 'text-orange-300' },
   { id: 'cs2', nome: 'CS2', cor: 'from-yellow-500 to-amber-600', txt: 'text-yellow-300' },
-  { id: 'fortnite', nome: 'Fortnite', cor: 'from-purple-500 to-fuchsia-500', txt: 'text-purple-300' },
+  { id: 'fortnite', nome: 'Fortnite', cor: 'from-zinc-500 to-zinc-500', txt: 'text-zinc-300' },
 ]
 
 function tempoPara(iso) {
@@ -88,10 +88,10 @@ export default function TorneiosContagem() {
       className="fixed inset-x-0 top-0 z-50"
     >
       <div className="mx-auto mt-14 max-w-6xl px-3 sm:mt-16 sm:px-6">
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#120d1d]/95 shadow-2xl shadow-black/40 backdrop-blur">
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/60 to-transparent" />
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#121214]/95 shadow-2xl shadow-black/40 backdrop-blur">
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-500/60 to-transparent" />
           <div className="flex items-center gap-3 px-4 py-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-zinc-500 to-zinc-500 text-white">
               <Trophy className="h-4 w-4" />
             </span>
             <span className="hidden shrink-0 text-[11px] font-black uppercase tracking-wider text-gray-400 sm:block">

@@ -65,6 +65,22 @@ const ICONES = {
   microfone: Mic,
 }
 
+const CAT_NOMES = {
+  gpu: 'GPU',
+  cpu: 'CPU',
+  ram: 'RAM',
+  motherboard: 'Motherboard',
+  ssd: 'SSD',
+  psu: 'Fonte',
+  caixa: 'Caixa',
+  cooler: 'Cooler',
+  rato: 'Mouse',
+  teclado: 'Keyboard',
+  mousepad: 'Mousepad',
+  headset: 'Headset',
+  microfone: 'Microfone',
+}
+
 const eur = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' })
 const precoFmt = (v) => (Number(v) > 0 ? eur.format(Number(v)) : '—')
 
@@ -438,7 +454,7 @@ export default function ComponentesPage({ user }) {
           <h1 className="font-display text-2xl font-black text-white sm:text-3xl">
             Componentes e Periféricos
           </h1>
-          <span className="rounded-full bg-amber-400/15 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+          <span className="rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300 ring-1 ring-white/15">
             Admin · em testes
           </span>
         </div>
@@ -449,7 +465,7 @@ export default function ComponentesPage({ user }) {
         <button
           type="button"
           onClick={() => setBottleneckAberto(true)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-violet-400/25 bg-violet-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-violet-200 transition-colors hover:bg-violet-500/20"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-zinc-400/25 bg-zinc-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-zinc-200 transition-colors hover:bg-zinc-500/20"
         >
           <Gauge className="h-3.5 w-3.5" /> Calculadora de bottleneck
         </button>
@@ -463,7 +479,7 @@ export default function ComponentesPage({ user }) {
       </motion.div>
 
       {/* Tipo */}
-      <div className="mb-4 grid grid-cols-2 gap-2 sm:max-w-md">
+      <div className="mb-4 inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
         {[
           { id: 'componente', nome: 'Componentes', Icone: Cpu },
           { id: 'periferico', nome: 'Periféricos', Icone: Mouse },
@@ -472,10 +488,10 @@ export default function ComponentesPage({ user }) {
             key={t.id}
             type="button"
             onClick={() => trocarTipo(t.id)}
-            className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition-colors ${
+            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
               tipo === t.id
-                ? 'border-violet-400/40 bg-violet-500/15 text-white'
-                : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.06] hover:text-white'
+                ? 'bg-[#ff9e9e] text-[#1a0f0f] shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <t.Icone className="h-4 w-4" />
@@ -496,7 +512,7 @@ export default function ComponentesPage({ user }) {
                 ? 'Pesquisar componente (ex.: RTX 5070, Ryzen, SSD…)'
                 : 'Pesquisar periférico (ex.: WLmouse, teclado, mousepad…)'
             }
-            className="w-full rounded-xl border border-white/10 bg-black/40 py-3 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-[#ff9e9e]/50 focus:outline-none"
           />
           {q ? (
             <button
@@ -515,7 +531,7 @@ export default function ComponentesPage({ user }) {
         <select
           value={ordenar}
           onChange={(e) => setOrdenar(e.target.value)}
-          className="rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-xs font-bold text-gray-300 focus:border-violet-500/50 focus:outline-none"
+          className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-gray-300 focus:border-[#ff9e9e]/50 focus:outline-none"
         >
           <option value="relevancia">Relevância</option>
           <option value="preco-asc">Preço ↑</option>
@@ -528,7 +544,7 @@ export default function ComponentesPage({ user }) {
         >
           <SlidersHorizontal className="h-4 w-4" /> Filtros
           {(marcasAtivas.length > 0 || ramTipo !== 'todas' || stockFiltro !== 'todas' || soPromocoes) && (
-            <span className="rounded-full bg-violet-500 px-1.5 text-[9px] text-white">
+            <span className="rounded-full bg-zinc-500 px-1.5 text-[9px] text-white">
               {marcasAtivas.length + (ramTipo !== 'todas' ? 1 : 0) + (stockFiltro !== 'todas' ? 1 : 0) + (soPromocoes ? 1 : 0)}
             </span>
           )}
@@ -550,7 +566,7 @@ export default function ComponentesPage({ user }) {
               : 'hidden'
           } lg:static lg:z-auto lg:mb-0 lg:block lg:overflow-visible`}
         >
-          <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-3 lg:sticky lg:top-4">
+          <div className="rounded-2xl border border-white/10 bg-[#121214]/80 p-3 lg:sticky lg:top-4">
             <div className="mb-2 flex items-center justify-between lg:hidden">
               <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
                 Filtros
@@ -573,7 +589,7 @@ export default function ComponentesPage({ user }) {
                 onClick={() => setCategoria('todas')}
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-[11px] font-bold transition-colors ${
                   categoria === 'todas'
-                    ? 'bg-violet-500 text-white'
+                    ? 'bg-white/[0.08] text-[#ff9e9e]'
                     : 'bg-white/[0.04] text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
@@ -586,7 +602,7 @@ export default function ComponentesPage({ user }) {
                   onClick={() => setCategoria(c.id)}
                   className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-[11px] font-bold transition-colors ${
                     categoria === c.id
-                      ? 'bg-violet-500 text-white'
+                      ? 'bg-white/[0.08] text-[#ff9e9e]'
                       : 'bg-white/[0.04] text-gray-400 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -616,7 +632,7 @@ export default function ComponentesPage({ user }) {
                       onClick={() => setRamTipo(r.id)}
                       className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                         ramTipo === r.id
-                          ? 'bg-white text-black'
+                          ? 'bg-[#ff9e9e] text-[#1a0f0f]'
                           : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                       }`}
                     >
@@ -643,7 +659,7 @@ export default function ComponentesPage({ user }) {
                   onClick={() => setStockFiltro(s.id)}
                   className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                     stockFiltro === s.id
-                      ? 'bg-white text-black'
+                      ? 'bg-[#ff9e9e] text-[#1a0f0f]'
                       : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -674,7 +690,7 @@ export default function ComponentesPage({ user }) {
                     onClick={() => setMarcasAtivas([])}
                     className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                       !marcasAtivas.length
-                        ? 'bg-white text-black'
+                        ? 'bg-[#ff9e9e] text-[#1a0f0f]'
                         : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -691,7 +707,7 @@ export default function ComponentesPage({ user }) {
                       }
                       className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                         marcasAtivas.includes(m)
-                          ? 'bg-white text-black'
+                          ? 'bg-[#ff9e9e] text-[#1a0f0f]'
                           : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                       }`}
                     >
@@ -711,7 +727,7 @@ export default function ComponentesPage({ user }) {
                 onClick={() => setLojasAtivas([])}
                 className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                   !lojasAtivas.length
-                    ? 'bg-white text-black'
+                    ? 'bg-[#ff9e9e] text-[#1a0f0f]'
                     : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
@@ -726,7 +742,7 @@ export default function ComponentesPage({ user }) {
                     onClick={() => alternarLoja(l.id)}
                     className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                       ativa
-                        ? 'bg-white text-black'
+                        ? 'bg-[#ff9e9e] text-[#1a0f0f]'
                         : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -746,7 +762,7 @@ export default function ComponentesPage({ user }) {
 
       {carregando ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-7 w-7 animate-spin text-violet-400" />
+          <Loader2 className="h-7 w-7 animate-spin text-zinc-400" />
         </div>
       ) : erro ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-10 text-center">
@@ -764,14 +780,14 @@ export default function ComponentesPage({ user }) {
         <section>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="ui-section-title">
-              <SlidersHorizontal className="h-4 w-4 text-violet-400" />
+              <SlidersHorizontal className="h-4 w-4 text-zinc-400" />
               Resultados ao vivo
               <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
                 {resultadosFiltrados.length}
               </span>
             </h2>
             {buscando && (
-              <span className="flex items-center gap-1.5 text-[11px] font-bold text-violet-300">
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-300">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> a procurar nas lojas…
               </span>
             )}
@@ -782,7 +798,7 @@ export default function ComponentesPage({ user }) {
               {erroBusca}
             </p>
           ) : !resultados && buscando ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
@@ -813,7 +829,7 @@ export default function ComponentesPage({ user }) {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {resultadosFiltrados.map((r) => (
                 <CartaoLoja
                   key={`${r.loja}:${r.url}`}
@@ -839,7 +855,7 @@ export default function ComponentesPage({ user }) {
             <section className="mb-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="ui-section-title">
-                  <Store className="h-4 w-4 text-emerald-400" />
+                  <Store className="h-4 w-4 text-[#ff9e9e]" />
                   Mais vendidos nas lojas
                   <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
                     {vendidosFiltrados.length}
@@ -849,7 +865,7 @@ export default function ComponentesPage({ user }) {
                   PCComponentes · top de vendas
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {vendidosFiltrados.map((r) => (
                   <CartaoLoja
                     key={`vendido:${r.url}`}
@@ -863,7 +879,7 @@ export default function ComponentesPage({ user }) {
 
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="ui-section-title">
-              <Sparkles className="h-4 w-4 text-violet-400" />
+              <Sparkles className="h-4 w-4 text-zinc-400" />
               Destaques
               <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
                 {destaques.length}
@@ -873,7 +889,7 @@ export default function ComponentesPage({ user }) {
               type="button"
               onClick={atualizarTudo}
               disabled={Boolean(progresso) || !destaques.length}
-              className="flex items-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[11px] font-black text-violet-200 transition-colors hover:bg-violet-500/25 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl border border-zinc-400/30 bg-zinc-500/15 px-3 py-2 text-[11px] font-black text-zinc-200 transition-colors hover:bg-zinc-500/25 disabled:opacity-50"
             >
               <RefreshCcw className={`h-3.5 w-3.5 ${progresso ? 'animate-spin' : ''}`} />
               {progresso ? `${progresso.feitos}/${progresso.total}` : 'Atualizar preços'}
@@ -887,7 +903,7 @@ export default function ComponentesPage({ user }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {destaques.map((p) => (
                 <CartaoProduto
                   key={p.id}
@@ -955,7 +971,7 @@ export default function ComponentesPage({ user }) {
           onClick={() => setBuildLabAberto(false)}
         >
           <div
-            className="mx-auto my-3 w-full max-w-6xl rounded-3xl border border-white/10 bg-[#0d0a16] p-4 shadow-2xl"
+            className="mx-auto my-3 w-full max-w-6xl rounded-3xl border border-white/10 bg-[#101012] p-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -985,7 +1001,7 @@ export default function ComponentesPage({ user }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="fixed bottom-5 left-1/2 z-[130] -translate-x-1/2 rounded-full border border-violet-400/30 bg-[#1a1030] px-4 py-2 text-xs font-bold text-violet-100 shadow-2xl"
+            className="fixed bottom-5 left-1/2 z-[130] -translate-x-1/2 rounded-full border border-zinc-400/30 bg-[#1a1030] px-4 py-2 text-xs font-bold text-zinc-100 shadow-2xl"
           >
             {aviso}
           </motion.div>
@@ -999,31 +1015,30 @@ export default function ComponentesPage({ user }) {
 
 function CartaoLoja({ r, maisBarato }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0f0a1a]/80">
-      <div className="relative flex h-36 items-center justify-center overflow-hidden bg-white/[0.03]">
+    <div className="glass flex flex-col overflow-hidden rounded-2xl">
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-b from-white/[0.035] to-black/20">
         <img
           src={r.imagem}
           alt={r.titulo}
           loading="lazy"
-          className="h-full w-full object-contain p-3"
+          className="h-full w-full object-contain p-5"
           onError={(e) => {
             e.currentTarget.style.visibility = 'hidden'
           }}
         />
-        <span
-          className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white ring-1 ring-white/15"
-          style={{ backgroundColor: `${r.cor}cc` }}
-        >
-          {r.lojaNome}
+        <span className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-12 bg-gradient-to-b from-black/75 to-transparent" />
+        <span className="absolute inset-x-0 top-0 z-10 flex h-8 items-center gap-1.5 border-b border-white/5 bg-[#141416]/95 px-2.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ff9e9e]" />
+          {r.categoriaLoja || r.categoria || 'Produto'}
         </span>
         {maisBarato && (
-          <span className="absolute right-2 top-2 rounded-full bg-emerald-400/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-black">
+          <span className="absolute right-2 top-2 rounded-full bg-[#ff9e9e] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-[#1a0f0f]">
             mais barato
           </span>
         )}
       </div>
       <div className="flex flex-1 flex-col p-3.5">
-        <p className="line-clamp-2 min-h-[2.2rem] text-sm font-black leading-tight text-white">
+        <p className="line-clamp-2 min-h-[2.2rem] text-sm font-bold leading-tight text-white">
           {r.titulo}
         </p>
         <div className="mt-auto flex items-end justify-between gap-2 pt-3">
@@ -1057,7 +1072,7 @@ function CartaoLoja({ r, maisBarato }) {
             href={r.url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] font-black text-gray-300 hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] font-black text-[#ff9e9e] hover:bg-white/10 hover:text-[#ffc0c0]"
           >
             abrir <ExternalLink className="h-3 w-3" />
           </a>
@@ -1080,23 +1095,25 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
   const atualizado = dataFmt(produto.atualizado_em)
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0f0a1a]/80">
-      <div className="relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br from-violet-500/10 via-black/20 to-black/40">
+    <div className="glass flex flex-col overflow-hidden rounded-2xl">
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-b from-white/[0.035] to-black/20">
         {produto.imagem ? (
           <img
             src={produto.imagem}
             alt={produto.nome}
             loading="lazy"
-            className="h-full w-full object-contain p-3"
+            className="h-full w-full object-contain p-5"
             onError={(e) => {
               e.currentTarget.style.display = 'none'
             }}
           />
         ) : (
-          <Icone className="h-12 w-12 text-violet-300/40" />
+          <Icone className="h-12 w-12 text-zinc-300/40" />
         )}
-        <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-300 ring-1 ring-white/10">
-          {produto.marca}
+        <span className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-12 bg-gradient-to-b from-black/75 to-transparent" />
+        <span className="absolute inset-x-0 top-0 z-10 flex h-8 items-center gap-1.5 border-b border-white/5 bg-[#141416]/95 px-2.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ff9e9e]" />
+          {CAT_NOMES[produto.categoria] || produto.categoria}
         </span>
         {Number(produto.desconto) > 0 && (
           <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-lg bg-gradient-to-r from-red-600 to-rose-500 px-2 py-1 text-[11px] font-black text-white shadow-lg shadow-red-950/40 ring-1 ring-red-300/30">
@@ -1157,17 +1174,32 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
       </div>
 
       <div className="flex flex-1 flex-col p-3.5">
-        <p className="text-sm font-black leading-tight text-white">{produto.nome}</p>
-        <p className="mt-0.5 text-[11px] font-semibold text-gray-500">{produto.spec}</p>
+        <p className="text-sm font-bold leading-tight text-white">{produto.nome}</p>
+        {produto.spec && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {String(produto.spec)
+              .split('·')
+              .map((t) => t.trim())
+              .filter(Boolean)
+              .map((t) => (
+                <span
+                  key={t}
+                  className="rounded-md bg-white/[0.055] px-1.5 py-0.5 text-[9px] font-semibold text-zinc-400"
+                >
+                  {t}
+                </span>
+              ))}
+          </div>
+        )}
 
-        <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.07] px-3 py-2.5">
+        <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2.5">
           {maisBarato ? (
             <>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[9px] font-black uppercase tracking-wider text-emerald-300">
+                <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400">
                   Mais barato · {maisBarato.nome}
                 </span>
-                <span className="flex items-center gap-1 rounded-full bg-emerald-400/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-emerald-300">
+                <span className="flex items-center gap-1 rounded-full bg-[#ff9e9e]/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#ff9e9e]">
                   <Sparkles className="h-2.5 w-2.5" /> melhor
                 </span>
               </div>
@@ -1178,7 +1210,7 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
                     href={maisBarato.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 text-[10px] font-black text-emerald-300 hover:text-emerald-200"
+                    className="flex items-center gap-1 text-[10px] font-black text-[#ff9e9e] hover:text-[#ffc0c0]"
                   >
                     abrir <ExternalLink className="h-3 w-3" />
                   </a>
@@ -1314,7 +1346,7 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
             <button
               type="button"
               onClick={onHistorico}
-              className="flex items-center gap-1 rounded-md bg-white/5 px-1.5 py-1 text-[9px] font-black uppercase tracking-wide text-violet-300 transition hover:bg-white/10 hover:text-white"
+              className="flex items-center gap-1 rounded-md bg-white/5 px-1.5 py-1 text-[9px] font-black uppercase tracking-wide text-zinc-300 transition hover:bg-white/10 hover:text-white"
             >
               <History className="h-2.5 w-2.5" /> Histórico
             </button>
@@ -1412,7 +1444,7 @@ function ModalPrecos({ produto, lojas, onFechar, onGuardado }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 30, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-white/10 bg-[#121214] p-4 sm:rounded-2xl sm:p-5"
       >
         <div className="mb-1 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -1454,14 +1486,14 @@ function ModalPrecos({ produto, lojas, onFechar, onGuardado }) {
                       onChange={(e) => mudar(id, 'preco', e.target.value)}
                       inputMode="decimal"
                       placeholder="0,00"
-                      className="w-full rounded-lg border border-white/10 bg-black/40 py-2 pl-8 pr-2 text-sm font-bold text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+                      className="w-full rounded-lg border border-white/10 bg-black/40 py-2 pl-8 pr-2 text-sm font-bold text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
                     />
                   </div>
                   <input
                     value={v.url}
                     onChange={(e) => mudar(id, 'url', e.target.value)}
                     placeholder="Link do produto (opcional)"
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-xs text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+                    className="w-full rounded-lg border border-white/10 bg-black/40 px-2.5 py-2 text-xs text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1558,7 +1590,7 @@ function ModalHistorico({ produto, onFechar }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 30, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+        className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-t-2xl border border-white/10 bg-[#121214] p-4 sm:rounded-2xl sm:p-5"
       >
         <div className="mb-1 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -1579,7 +1611,7 @@ function ModalHistorico({ produto, onFechar }) {
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
           </div>
         ) : !serie.length ? (
           <p className="py-10 text-center text-sm text-gray-400">
@@ -1724,7 +1756,7 @@ function ModalAlerta({ produto, alerta, onFechar, onGuardado }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 30, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+        className="w-full max-w-md rounded-t-2xl border border-white/10 bg-[#121214] p-4 sm:rounded-2xl sm:p-5"
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -1756,7 +1788,7 @@ function ModalAlerta({ produto, alerta, onFechar, onGuardado }) {
               onChange={(e) => setPreco(e.target.value)}
               inputMode="decimal"
               placeholder="Preço alvo"
-              className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-9 pr-3 text-sm font-bold text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-9 pr-3 text-sm font-bold text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
             />
           </div>
           <button
@@ -1842,12 +1874,12 @@ function BottleneckModal({ onFechar }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 30, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-t-2xl border border-white/10 bg-[#120c22] p-4 sm:rounded-2xl sm:p-5"
+        className="w-full max-w-lg rounded-t-2xl border border-white/10 bg-[#121214] p-4 sm:rounded-2xl sm:p-5"
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-base font-black text-white">
-              <Gauge className="h-4 w-4 text-violet-300" /> Calculadora de bottleneck
+              <Gauge className="h-4 w-4 text-zinc-300" /> Calculadora de bottleneck
             </h2>
             <p className="text-[11px] font-semibold text-gray-500">
               Estimativa rápida para 1080p/1440p. Depende sempre do jogo e dos settings.
@@ -1871,10 +1903,10 @@ function BottleneckModal({ onFechar }) {
             <select
               value={cpuIdx}
               onChange={(e) => setCpuIdx(Number(e.target.value))}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-violet-500/50 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-zinc-500/50 focus:outline-none"
             >
               {CPUS_BOTTLENECK.map((c, i) => (
-                <option key={c.nome} value={i} className="bg-[#171122]">
+                <option key={c.nome} value={i} className="bg-[#161618]">
                   {c.nome}
                 </option>
               ))}
@@ -1887,10 +1919,10 @@ function BottleneckModal({ onFechar }) {
             <select
               value={gpuIdx}
               onChange={(e) => setGpuIdx(Number(e.target.value))}
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-violet-500/50 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm font-bold text-white focus:border-zinc-500/50 focus:outline-none"
             >
               {GPUS_BOTTLENECK.map((g, i) => (
-                <option key={g.nome} value={i} className="bg-[#171122]">
+                <option key={g.nome} value={i} className="bg-[#161618]">
                   {g.nome}
                 </option>
               ))}
@@ -1903,27 +1935,27 @@ function BottleneckModal({ onFechar }) {
             value={cpuCustom.nome}
             onChange={(e) => setCpuCustom((x) => ({ ...x, nome: e.target.value }))}
             placeholder="Ou escreve outra CPU (ex.: Ryzen 5 5500)"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
           />
           <input
             value={gpuCustom.nome}
             onChange={(e) => setGpuCustom((x) => ({ ...x, nome: e.target.value }))}
             placeholder="Ou escreve outra GPU (ex.: RTX 3080)"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
           />
           <input
             type="number"
             value={cpuCustom.score}
             onChange={(e) => setCpuCustom((x) => ({ ...x, score: e.target.value }))}
             placeholder="Desempenho CPU (100 = 9800X3D)"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
           />
           <input
             type="number"
             value={gpuCustom.score}
             onChange={(e) => setGpuCustom((x) => ({ ...x, score: e.target.value }))}
             placeholder="Desempenho GPU (100 = RTX 5090)"
-            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-violet-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[12px] text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
           />
           <p className="text-[10px] text-gray-500 sm:col-span-2">
             Escreve o nome de qualquer peça e ajusta o desempenho (100 = referência). Se deixares o
@@ -1936,7 +1968,7 @@ function BottleneckModal({ onFechar }) {
             Resultado estimado
           </p>
           <p className="mt-1 text-3xl font-black text-white">{pct}%</p>
-          <p className="text-sm font-bold text-violet-300">
+          <p className="text-sm font-bold text-zinc-300">
             {lado === 'Equilibrado'
               ? 'Configuração equilibrada'
               : `Bottleneck do ${lado}`}
@@ -1944,7 +1976,7 @@ function BottleneckModal({ onFechar }) {
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
             <div
               className={`h-full rounded-full ${
-                pct > 20 ? 'bg-amber-400' : pct > 10 ? 'bg-violet-400' : 'bg-emerald-400'
+                pct > 20 ? 'bg-amber-400' : pct > 10 ? 'bg-zinc-400' : 'bg-emerald-400'
               }`}
               style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
             />

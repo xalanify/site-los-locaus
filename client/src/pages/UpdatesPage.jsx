@@ -58,7 +58,7 @@ export default function UpdatesPage() {
           </h2>
           {subtitle && <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>}
         </div>
-        <Trophy className="h-6 w-6 shrink-0 text-violet-400" />
+        <Trophy className="h-6 w-6 shrink-0 text-zinc-400" />
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {list.map((b) => {

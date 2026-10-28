@@ -36,7 +36,7 @@ import { confirmar, toast } from '../components/Feedback'
 /* Temas do chat — só o admin muda; aplica a todos.
    Cada tema = cor principal + fundo do chat. */
 const TEMAS = {
-  violeta: { nome: 'Violeta', grad: 'from-violet-600 to-fuchsia-600', cor: 'text-violet-300', borda: 'border-violet-400/40', bg: '#0d0a16', chip: 'bg-violet-500/15 text-violet-300' },
+  violeta: { nome: 'Cinza', grad: 'from-zinc-600 to-zinc-600', cor: 'text-zinc-300', borda: 'border-zinc-400/40', bg: '#0d0d0f', chip: 'bg-zinc-500/15 text-zinc-300' },
   azul: { nome: 'Azul', grad: 'from-blue-600 to-cyan-500', cor: 'text-blue-300', borda: 'border-blue-400/40', bg: '#080d1a', chip: 'bg-blue-500/15 text-blue-300' },
   verde: { nome: 'Verde', grad: 'from-emerald-600 to-green-500', cor: 'text-emerald-300', borda: 'border-emerald-400/40', bg: '#08140d', chip: 'bg-emerald-500/15 text-emerald-300' },
   rosa: { nome: 'Rosa', grad: 'from-pink-600 to-rose-500', cor: 'text-pink-300', borda: 'border-pink-400/40', bg: '#160a12', chip: 'bg-pink-500/15 text-pink-300' },
@@ -53,7 +53,7 @@ const linkify = (texto) => {
         href={p}
         target="_blank"
         rel="noopener noreferrer"
-        className="break-all font-semibold text-violet-300 underline decoration-violet-400/40 underline-offset-2 hover:text-violet-200"
+        className="break-all font-semibold text-zinc-300 underline decoration-zinc-400/40 underline-offset-2 hover:text-zinc-200"
       >
         {p}
       </a>
@@ -90,13 +90,13 @@ function ClipPreview({ clip, onOpen }) {
         e.stopPropagation()
         onOpen(clip)
       }}
-      className="group mt-2 flex w-full max-w-sm items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/30 p-2 text-left transition-colors hover:border-violet-400/40"
+      className="group mt-2 flex w-full max-w-sm items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/30 p-2 text-left transition-colors hover:border-zinc-400/40"
     >
-      <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-violet-500/20">
+      <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-zinc-500/20">
         {clip.thumb_url ? (
           <img src={clip.thumb_url} alt="" className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <span className="flex h-full w-full items-center justify-center text-violet-300">
+          <span className="flex h-full w-full items-center justify-center text-zinc-300">
             <Clapperboard className="h-6 w-6" />
           </span>
         )}
@@ -673,7 +673,7 @@ export default function ChatPage({ user }) {
                 <Palette className="h-4 w-4" />
               </button>
               {temaAberto && (
-                <div className="absolute right-0 top-full z-30 mt-1 grid grid-cols-1 gap-1 rounded-xl border border-white/10 bg-[#171122] p-2 shadow-2xl">
+                <div className="absolute right-0 top-full z-30 mt-1 grid grid-cols-1 gap-1 rounded-xl border border-white/10 bg-[#161618] p-2 shadow-2xl">
                   <p className="px-1 pb-1 text-[9px] font-black uppercase tracking-wider text-gray-500">Tema do chat (todos)</p>
                   {Object.entries(TEMAS).map(([k, v]) => (
                     <button
@@ -744,7 +744,7 @@ export default function ChatPage({ user }) {
 
           {!loading && !messages.length && (
             <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-300 ring-1 ring-violet-400/20">
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-500/10 text-zinc-300 ring-1 ring-zinc-400/20">
                 <Sparkles className="h-7 w-7" />
               </span>
               <h2 className="mt-4 text-lg font-black text-white">Ainda está tudo calado…</h2>
@@ -925,7 +925,7 @@ export default function ChatPage({ user }) {
                     </div>
                     {/* picker de reações */}
                     {reactAberto === m.id && (
-                      <div className={`absolute bottom-full z-20 mb-1 flex gap-0.5 rounded-full border border-white/10 bg-[#171122] p-1 shadow-xl ${minha ? 'right-0' : 'left-10'}`}>
+                      <div className={`absolute bottom-full z-20 mb-1 flex gap-0.5 rounded-full border border-white/10 bg-[#161618] p-1 shadow-xl ${minha ? 'right-0' : 'left-10'}`}>
                         {['👍', '❤️', '😂', '😮', '😢', '🔥'].map((e) => (
                           <button
                             key={e}
@@ -955,9 +955,9 @@ export default function ChatPage({ user }) {
               </span>
               <div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.06] px-3.5 py-2.5">
                 <span className="flex gap-1">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-400 [animation-delay:-0.36s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-400 [animation-delay:-0.24s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-violet-400 [animation-delay:-0.12s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.36s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.24s]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.12s]" />
                 </span>
                 <span className="text-[11px] font-semibold text-gray-400">
                   {typing
@@ -977,7 +977,7 @@ export default function ChatPage({ user }) {
               setNovasMensagens(false)
               scrollFundo(true)
             }}
-            className="mx-auto -mt-10 mb-2 flex items-center gap-1.5 rounded-full bg-violet-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-violet-900/40"
+            className="mx-auto -mt-10 mb-2 flex items-center gap-1.5 rounded-full bg-zinc-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-zinc-900/40"
           >
             Novas mensagens
           </button>
@@ -992,15 +992,15 @@ export default function ChatPage({ user }) {
         {/* anexos pendentes */}
         {(pendingMedia || pendingClip || aSubir) && (
           <div className="border-t border-white/10 bg-white/[0.02] px-3 pt-2">
-            <div className="flex items-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/[0.06] p-2">
+            <div className="flex items-center gap-2 rounded-xl border border-zinc-400/20 bg-zinc-500/[0.06] p-2">
               {aSubir ? (
-                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-500/15 text-zinc-300">
                   <Loader2 className="h-5 w-5 animate-spin" />
                 </span>
               ) : pendingMedia ? (
                 <img src={pendingMedia.preview} alt="" className="h-12 w-12 rounded-lg object-cover" />
               ) : (
-                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-500/15 text-zinc-300">
                   <Clapperboard className="h-5 w-5" />
                 </span>
               )}
@@ -1028,7 +1028,7 @@ export default function ChatPage({ user }) {
         )}
 
         {/* compositor */}
-        <div className="relative border-t border-white/10 bg-[#0d0a16] p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-3">
+        <div className="relative border-t border-white/10 bg-[#101012] p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-3">
           {resposta && (
             <div className={`mb-2 flex items-center gap-2 rounded-xl border-l-2 px-3 py-2 ${t.borda} bg-white/[0.04]`}>
               <CornerUpLeft className="h-3.5 w-3.5 shrink-0 text-gray-500" />
@@ -1040,9 +1040,9 @@ export default function ChatPage({ user }) {
             </div>
           )}
           {stickersAberto && (
-            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-violet-400/20 bg-[#171122] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
+            <div className="absolute bottom-full left-2 right-2 mb-2 overflow-hidden rounded-2xl border border-zinc-400/20 bg-[#161618] shadow-2xl sm:left-3 sm:right-auto sm:w-96">
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-violet-300">
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">
                   Stickers · Powered by Tenor
                 </span>
                 <button
@@ -1066,7 +1066,7 @@ export default function ChatPage({ user }) {
                   value={stickerQuery}
                   onChange={(e) => setStickerQuery(e.target.value)}
                   placeholder="Pesquisar stickers (ex.: gato, meme, tiktok)"
-                  className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-violet-400/50 focus:outline-none"
+                  className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 text-[11px] text-white placeholder:text-gray-600 focus:border-zinc-400/50 focus:outline-none"
                 />
                 <button
                   type="submit"
@@ -1090,7 +1090,7 @@ export default function ChatPage({ user }) {
                       type="button"
                       onClick={() => enviarSticker(s.url)}
                       title={s.titulo}
-                      className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-violet-400/30 hover:bg-violet-500/10"
+                      className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-1 transition hover:border-zinc-400/30 hover:bg-zinc-500/10"
                     >
                       <img src={s.preview} alt={s.titulo} className="h-full w-full object-contain" />
                     </button>
@@ -1116,7 +1116,7 @@ export default function ChatPage({ user }) {
                         onClick={() => carregarStickers(stickerQuery, i)}
                         className={`min-w-6 rounded-md px-1.5 py-1 text-[10px] font-black ${
                           stickerPagina === i
-                            ? 'bg-violet-500 text-white'
+                            ? 'bg-zinc-500 text-white'
                             : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
                         }`}
                       >
@@ -1168,7 +1168,7 @@ export default function ChatPage({ user }) {
                 }
               }}
               placeholder="Mensagem…"
-              className="order-1 min-h-[54px] w-full min-w-0 max-h-32 resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-3.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-violet-400/40 focus:bg-white/[0.07] sm:order-2 sm:w-auto sm:flex-1"
+              className="order-1 min-h-[54px] w-full min-w-0 max-h-32 resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-3.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-zinc-400/40 focus:bg-white/[0.07] sm:order-2 sm:w-auto sm:flex-1"
             />
             <div className="order-2 flex w-full items-center gap-1 sm:order-1 sm:w-auto">
               <input
@@ -1182,14 +1182,14 @@ export default function ChatPage({ user }) {
                 onClick={escolherImagem}
                 disabled={aSubir}
                 title="Enviar imagem ou GIF"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 disabled:opacity-40 sm:h-11 sm:w-11"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-zinc-300 disabled:opacity-40 sm:h-11 sm:w-11"
               >
                 <ImagePlus className="h-5 w-5" />
               </button>
               <button
                 onClick={abrirClips}
                 title="Enviar um clip"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-violet-300 sm:h-11 sm:w-11"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-zinc-300 sm:h-11 sm:w-11"
               >
                 <Clapperboard className="h-5 w-5" />
               </button>
@@ -1198,8 +1198,8 @@ export default function ChatPage({ user }) {
                 title="Stickers animados"
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-white/10 sm:h-11 sm:w-11 ${
                   stickersAberto
-                    ? 'bg-violet-500/15 text-violet-300'
-                    : 'text-gray-400 hover:text-violet-300'
+                    ? 'bg-zinc-500/15 text-zinc-300'
+                    : 'text-gray-400 hover:text-zinc-300'
                 }`}
               >
                 <Sticker className="h-5 w-5" />
@@ -1208,7 +1208,7 @@ export default function ChatPage({ user }) {
               <button
                 onClick={enviar}
                 disabled={aEnviar || aSubir || (!texto.trim() && !pendingMedia && !pendingClip)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40 sm:hidden"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-600 to-zinc-600 text-white shadow-lg shadow-zinc-900/30 transition hover:brightness-110 disabled:opacity-40 sm:hidden"
                 title="Enviar"
               >
                 {aEnviar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -1217,7 +1217,7 @@ export default function ChatPage({ user }) {
             <button
               onClick={enviar}
               disabled={aEnviar || aSubir || (!texto.trim() && !pendingMedia && !pendingClip)}
-              className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/30 transition hover:brightness-110 disabled:opacity-40 sm:order-3 sm:flex"
+              className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-600 to-zinc-600 text-white shadow-lg shadow-zinc-900/30 transition hover:brightness-110 disabled:opacity-40 sm:order-3 sm:flex"
               title="Enviar"
             >
               {aEnviar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -1232,10 +1232,10 @@ export default function ChatPage({ user }) {
       {/* escolher clip */}
       {clipsAberto && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-          <div className="flex max-h-[75dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-[#120d1d] sm:rounded-2xl">
+          <div className="flex max-h-[75dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-[#121214] sm:rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
               <h2 className="flex items-center gap-2 text-sm font-black text-white">
-                <Clapperboard className="h-4 w-4 text-violet-300" /> Os teus clips
+                <Clapperboard className="h-4 w-4 text-zinc-300" /> Os teus clips
               </h2>
               <button onClick={() => setClipsAberto(false)} className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white">
                 <X className="h-4 w-4" />
@@ -1260,13 +1260,13 @@ export default function ChatPage({ user }) {
                         setClipsAberto(false)
                         setTimeout(() => textareaRef.current && textareaRef.current.focus(), 20)
                       }}
-                      className="overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-violet-400/50"
+                      className="overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-zinc-400/50"
                     >
-                      <span className="block aspect-video bg-violet-500/10">
+                      <span className="block aspect-video bg-zinc-500/10">
                         {c.thumb_url ? (
                           <img src={c.thumb_url} alt="" className="h-full w-full object-cover" />
                         ) : (
-                          <span className="flex h-full w-full items-center justify-center text-violet-300">
+                          <span className="flex h-full w-full items-center justify-center text-zinc-300">
                             <Clapperboard className="h-5 w-5" />
                           </span>
                         )}
@@ -1324,7 +1324,7 @@ export default function ChatPage({ user }) {
           onClick={() => setOnlineAberto(false)}
         >
           <div
-            className="w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#0d0a16] shadow-2xl"
+            className="w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-[#101012] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
@@ -1349,14 +1349,14 @@ export default function ChatPage({ user }) {
                       <div className="flex items-center gap-2.5 rounded-xl px-2 py-2 hover:bg-white/5">
                         <span className="relative shrink-0">
                           <AvatarImg src={u.avatar_url} name={u.username} className="h-9 w-9" />
-                          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0a16] bg-emerald-400" />
+                          <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#101012] ${u.away ? 'bg-amber-400' : 'bg-emerald-400'}`} />
                         </span>
                         <span className="min-w-0 flex-1 truncate text-sm font-bold text-white">
                           {u.username}
                         </span>
                         <LiveBadge username={u.username} />
                         <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gray-400">
-                          {u.plataforma === 'mobile' ? 'Telemóvel' : u.plataforma === 'pc' ? 'PC' : 'Online'}
+                          {u.away ? 'Ausente' : u.plataforma === 'mobile' ? 'Telemóvel' : u.plataforma === 'pc' ? 'PC' : 'Online'}
                         </span>
                       </div>
                     </li>
@@ -1383,7 +1383,7 @@ export default function ChatPage({ user }) {
                                 name={u.username}
                                 className="h-9 w-9 grayscale"
                               />
-                              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d0a16] bg-gray-600" />
+                              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#101012] bg-gray-600" />
                             </span>
                             <span className="min-w-0 flex-1 truncate text-sm font-bold text-gray-300">
                               {u.username}

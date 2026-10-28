@@ -50,7 +50,7 @@ export default function Announcements() {
   if (posts === null) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
       </div>
     )
   }

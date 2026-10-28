@@ -15,7 +15,6 @@ import {
   Loader2,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import EmDesenvolvimento from '../components/EmDesenvolvimento'
 import { authHeaders } from '../lib/auth'
 import { correrBench as medirBench } from '../lib/bench'
 
@@ -86,7 +85,7 @@ function LeituraReal({ d }) {
       {d.cpu?.nome && (
         <div className="rounded-xl bg-white/5 px-3 py-2.5 text-[13px]">
           <p className="mb-1 flex flex-wrap items-center gap-2 font-bold text-white">
-            <Cpu className="h-3.5 w-3.5 text-violet-400" /> {String(d.cpu.nome).trim()}
+            <Cpu className="h-3.5 w-3.5 text-zinc-400" /> {String(d.cpu.nome).trim()}
             <Badge tom={ver.tom}>{ver.txt}</Badge>
           </p>
           {cpu.relogio_mhz ? (
@@ -141,13 +140,13 @@ function LeituraReal({ d }) {
               </>
             ) : (
               <>
-                <MemoryStick className="h-3.5 w-3.5 text-violet-400" />
+                <MemoryStick className="h-3.5 w-3.5 text-zinc-400" />
                 Memória — {d.ram?.total_gb || '—'} GB {ram.tipo ? `· ${ram.tipo}` : ''}
               </>
             )}
             {ram.tem_xmp ? <Badge tom="aviso">XMP/EXPO ligado</Badge> : null}
             {ram.estado === 'overclock' && (
-              <span className="text-violet-400 text-[10px] ml-2">OC</span>
+              <span className="text-zinc-400 text-[10px] ml-2">OC</span>
             )}
           </p>
           {ram.aplicada_mhz ? (
@@ -530,15 +529,6 @@ export default function PcsPage({ isAdmin = false }) {
     return <Badge tom="ok">Normal</Badge>
   }
 
-  if (!isAdmin) {
-    return (
-      <EmDesenvolvimento
-        titulo="PCs / Specs"
-        descricao="Esta página ainda está em desenvolvimento e reservada aos administradores durante os testes."
-      />
-    )
-  }
-
   /* ---- GATE: o LOCAUS-PC.bat é obrigatório ---- */
   /* A página só abre quando o PC deste utilizador está ligado ao site
      (via LOCAUS-PC.bat). A verificação corre a cada 2s — quando o .bat
@@ -626,7 +616,7 @@ export default function PcsPage({ isAdmin = false }) {
 
           {!carregado ? (
             <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
-              <RefreshCcw className="h-4 w-4 animate-spin text-violet-400" /> A carregar specs…
+              <RefreshCcw className="h-4 w-4 animate-spin text-zinc-400" /> A carregar specs…
             </div>
           ) : lista.length === 0 ? (
             <div className="py-10 text-center text-sm text-gray-400">
@@ -788,7 +778,7 @@ export default function PcsPage({ isAdmin = false }) {
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
               {bench.aCorrer ? (
                 <p className="flex items-center gap-2 text-[13px] font-bold text-gray-300">
-                  <Activity className="h-4 w-4 animate-pulse text-violet-400" />
+                  <Activity className="h-4 w-4 animate-pulse text-zinc-400" />
                   A medir a CPU (single-thread e multi-thread)… não corras outras coisas.
                 </p>
               ) : bench.resultado ? (
@@ -803,12 +793,12 @@ export default function PcsPage({ isAdmin = false }) {
                   </span>
                   <span className="text-[13px] text-gray-300">
                     <span className="font-black text-white">Single:</span>{' '}
-                    <span className="font-bold text-violet-300">{bench.resultado.st ?? '—'}</span>{' '}
+                    <span className="font-bold text-zinc-300">{bench.resultado.st ?? '—'}</span>{' '}
                     <span className="text-gray-400">pts</span>
                   </span>
                   <span className="text-[13px] text-gray-300">
                     <span className="font-black text-white">Multi:</span>{' '}
-                    <span className="font-bold text-violet-300">{bench.resultado.mt ?? '—'}</span>{' '}
+                    <span className="font-bold text-zinc-300">{bench.resultado.mt ?? '—'}</span>{' '}
                     <span className="text-gray-400">pts</span>
                   </span>
                   <span className="text-[12px] text-gray-400">
@@ -843,7 +833,7 @@ export default function PcsPage({ isAdmin = false }) {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 font-display text-lg font-black uppercase text-white">
-              <Activity className="h-5 w-5 text-violet-400" />
+              <Activity className="h-5 w-5 text-zinc-400" />
               Saúde do PC
             </h2>
             <button

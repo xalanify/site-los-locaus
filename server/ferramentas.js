@@ -1081,6 +1081,7 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     perigo: 'baixo',
     tempo: 180000,
     icone: 'Gauge',
+    soAdmin: true,
     passos: [
       'Plano de energia em alto desempenho (a CPU não dorme)',
       'Efeitos visuais em modo leve (menus e janelas mais rápidos)',
@@ -1100,6 +1101,7 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     perigo: 'medio',
     tempo: 360000,
     icone: 'Rocket',
+    soAdmin: true,
     passos: [
       'Tudo do nível 1 (energia, visuais, rato, animações, USB, temporários)',
       'Telemetria DiagTrack parada',
@@ -1123,6 +1125,7 @@ Write-Output $(if ($correuDefender) { 'Verificacao rapida do Defender feita.' } 
     perigo: 'alto',
     tempo: 600000,
     icone: 'Swords',
+    soAdmin: true,
     passos: [
       'Tudo do nível 1 e do nível 2',
       'Nota: nada da Xbox/Microsoft é removido ou desligado',
@@ -1713,6 +1716,7 @@ FERRAMENTAS.push({
   perigo: 'medio',
   tempo: 120000,
   icone: 'RefreshCcw',
+  soAdmin: true,
   cmd: XALANA_REVERSO,
 });
 
@@ -1976,7 +1980,7 @@ FERRAMENTAS.push({
   id: 'limpeza-ram',
   cat: 'Limpeza',
   nome: 'Limpar RAM (standby + cache)',
-  desc: 'Liberta a standby memory, reduz os working sets dos processos e limpa a cache do sistema — estilo RAMMap.',
+  desc: 'Recomendado antes dos jogos. Liberta a standby memory, reduz os working sets dos processos e limpa a cache do sistema — estilo RAMMap.',
   perigo: 'baixo',
   tempo: 90000,
   cmd: `$ErrorActionPreference='Continue'

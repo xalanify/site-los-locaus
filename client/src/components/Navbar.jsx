@@ -60,7 +60,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
   return (
     <>
       {/* ---------------- Barra de topo (só no telemóvel) ---------------- */}
-      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0813]/88 backdrop-blur-md lg:hidden">
+      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0b]/88 backdrop-blur-md lg:hidden">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
           {/* Botão de menu — abre o menu lateral (estilo X) */}
           <button
@@ -74,10 +74,10 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
 
           {/* Marca */}
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="gradient-text truncate font-display text-base font-black uppercase tracking-wide sm:text-lg xl:text-xl">
+            <span className="brand-serif gradient-text truncate font-display text-base font-black tracking-wide sm:text-lg xl:text-xl">
               Locaus
             </span>
-            <span className="shrink-0 rounded border border-violet-400/40 bg-violet-500/15 px-1.5 py-0.5 font-display text-[8px] font-black uppercase leading-none tracking-wider text-violet-300">
+            <span className="shrink-0 rounded border border-zinc-400/40 bg-zinc-500/15 px-1.5 py-0.5 font-display text-[8px] font-black uppercase leading-none tracking-wider text-zinc-300">
               Beta
             </span>
           </Link>
@@ -95,7 +95,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
         aria-label="Navegação principal"
         className="fixed bottom-3 left-1/2 z-40 w-[calc(100vw-1rem)] max-w-3xl -translate-x-1/2 sm:bottom-4 sm:w-[calc(100vw-1.5rem)] lg:hidden"
       >
-        <div className="flex flex-nowrap items-center justify-between gap-1 rounded-3xl border border-white/10 bg-[#1b1630]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:flex-wrap sm:justify-center sm:gap-1.5 sm:rounded-full">
+        <div className="flex flex-nowrap items-center justify-between gap-1 rounded-3xl border border-white/10 bg-[#161618]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:flex-wrap sm:justify-center sm:gap-1.5 sm:rounded-full">
           {links.map((link) => {
             const Icon = link.icon
             return (
@@ -107,7 +107,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
                 aria-current={link.active ? 'page' : undefined}
                 className={`flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full px-2 transition-all duration-300 sm:h-12 sm:flex-none sm:px-4 ${
                   link.active
-                    ? 'bg-violet-500 text-white glow-violet'
+                    ? 'bg-white/10 text-[#ff9e9e]'
                     : 'text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
@@ -129,7 +129,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
             aria-current={isProfile ? 'page' : undefined}
             className={`flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full px-2 transition-all duration-300 sm:h-12 sm:flex-none sm:px-4 ${
               isProfile
-                ? 'bg-violet-500 text-white glow-violet'
+                ? 'bg-white/10 text-[#ff9e9e]'
                 : 'text-gray-400 hover:bg-white/10 hover:text-white'
             }`}
           >

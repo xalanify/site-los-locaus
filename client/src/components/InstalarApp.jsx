@@ -78,8 +78,8 @@ export default function InstalarApp() {
 
   return (
     <div className="mx-auto mt-4 max-w-2xl px-4 sm:hidden">
-      <div className="relative overflow-hidden rounded-3xl border border-violet-400/25 bg-violet-500/10 p-4">
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/60 to-transparent" />
+      <div className="relative overflow-hidden rounded-3xl border border-zinc-400/25 bg-zinc-500/10 p-4">
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-400/60 to-transparent" />
 
         <button
           type="button"
@@ -91,11 +91,11 @@ export default function InstalarApp() {
         </button>
 
         <div className="flex items-start gap-3 pr-6">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-500/20 ring-1 ring-violet-400/30">
-            <Smartphone className="h-5 w-5 text-violet-300" />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-500/20 ring-1 ring-zinc-400/30">
+            <Smartphone className="h-5 w-5 text-zinc-300" />
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-violet-300">
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-300">
               Estás num telemóvel
             </p>
             <h3 className="mt-1 font-display text-base font-black leading-snug text-white">
@@ -118,7 +118,7 @@ export default function InstalarApp() {
 
         {ajuda === 'ios' && (
           <div className="mt-3 flex items-start gap-2 rounded-2xl bg-black/30 p-3 text-xs leading-relaxed text-gray-300">
-            <Share className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
+            <Share className="mt-0.5 h-4 w-4 shrink-0 text-zinc-300" />
             <span>
               No iPhone: toca em <b className="text-white">Partilhar</b> e depois em{' '}
               <b className="text-white">Adicionar ao Ecrã Principal</b>.
@@ -128,7 +128,7 @@ export default function InstalarApp() {
 
         {ajuda === 'brave' && (
           <div className="mt-3 flex items-start gap-2 rounded-2xl bg-black/30 p-3 text-xs leading-relaxed text-gray-300">
-            <Share className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
+            <Share className="mt-0.5 h-4 w-4 shrink-0 text-zinc-300" />
             <span>
               No Brave a instalação nativa pode falhar por causa dos Shields. Toca no ícone do{' '}
               <b className="text-white">leão</b> (Shields) na barra de endereço, desativa os Shields
@@ -139,7 +139,7 @@ export default function InstalarApp() {
 
         {ajuda === 'manual' && (
           <div className="mt-3 flex items-start gap-2 rounded-2xl bg-black/30 p-3 text-xs leading-relaxed text-gray-300">
-            <Share className="mt-0.5 h-4 w-4 shrink-0 text-violet-300" />
+            <Share className="mt-0.5 h-4 w-4 shrink-0 text-zinc-300" />
             <span>
               Abre o menu do browser (⋮) e escolhe{' '}
               <b className="text-white">Instalar aplicação</b> ou{' '}

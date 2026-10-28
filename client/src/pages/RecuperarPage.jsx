@@ -78,7 +78,7 @@ export default function RecuperarPage({ onAuthed }) {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black px-4 py-8">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 blur-[110px]" />
+        <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-500/10 blur-[110px]" />
       </div>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -87,8 +87,8 @@ export default function RecuperarPage({ onAuthed }) {
         className="relative w-full max-w-sm"
       >
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
-            <LogIn className="h-6 w-6 text-violet-400" />
+          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
+            <LogIn className="h-6 w-6 text-zinc-400" />
           </span>
           <h1 className="gradient-text font-display text-2xl font-black uppercase tracking-wide">
             Locaus
@@ -131,14 +131,14 @@ export default function RecuperarPage({ onAuthed }) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Nova palavra-passe"
                 autoFocus
-                className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-violet-500/40"
+                className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-zinc-500/40"
               />
               <input
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Confirmar palavra-passe"
-                className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-violet-500/40"
+                className="w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-zinc-500/40"
               />
               {erro && <p className="text-xs font-bold text-red-400">{erro}</p>}
               <button

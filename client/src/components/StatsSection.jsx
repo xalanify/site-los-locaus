@@ -20,7 +20,7 @@ export default function StatsSection() {
     return (
       <section id="stats" className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-violet-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-zinc-500 mx-auto"></div>
         </div>
       </section>
     )
@@ -45,15 +45,15 @@ export default function StatsSection() {
       icon: <TrendingUp className="w-8 h-8" />,
       label: 'Últimos 30 Dias',
       value: stats?.last30Days || 0,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-400/10'
+      color: 'text-zinc-400',
+      bgColor: 'bg-zinc-400/10'
     },
     {
       icon: <Users className="w-8 h-8" />,
       label: 'Último Ano',
       value: stats?.lastYear || 0,
-      color: 'text-violet-400',
-      bgColor: 'bg-violet-400/10'
+      color: 'text-zinc-400',
+      bgColor: 'bg-zinc-400/10'
     }
   ]
 

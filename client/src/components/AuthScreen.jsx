@@ -170,11 +170,11 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
   }
 
   const inputCls =
-    'w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-violet-500/40'
+    'w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-zinc-500/40'
 
   const tabCls = (on) =>
     `flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-bold transition-colors ${
-      on ? 'bg-violet-500 text-white shadow-[0_0_20px_rgba(139,92,246,0.5)]' : 'text-gray-400 hover:text-white'
+      on ? 'bg-zinc-500 text-white shadow-[0_0_20px_rgba(255,255,255,0.14)]' : 'text-gray-400 hover:text-white'
     }`
 
   const isForgot = mode === 'forgot'
@@ -203,11 +203,11 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
       >
         {/* Marca */}
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/20 ring-1 ring-violet-400/40 shadow-[0_0_34px_rgba(139,92,246,0.35)]">
-            <ShieldCheck className="h-7 w-7 text-violet-200" />
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-500/20 ring-1 ring-zinc-400/40 shadow-[0_0_34px_rgba(255,255,255,0.1)]">
+            <ShieldCheck className="h-7 w-7 text-zinc-200" />
           </span>
           <h1 className="font-display text-3xl font-black uppercase tracking-wide text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.65)]">
-            Ashow <span className="italic text-violet-300">e</span> Jazer
+            Ashow <span className="italic text-zinc-300">e</span> Jazer
           </h1>
           <p className="mt-1 font-display text-sm font-black tracking-[0.28em] text-white/70">
             locaus.fun
@@ -217,13 +217,13 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
           </p>
         </div>
 
-        <div className="auth-card rounded-3xl border border-white/12 bg-[#0d0918]/85 p-6 shadow-2xl backdrop-blur-xl sm:p-7">
+        <div className="auth-card rounded-3xl border border-white/12 bg-[#101012]/85 p-6 shadow-2xl backdrop-blur-xl sm:p-7">
           {/* ------------- "Esqueci a pass" (pedido ao admin) ------------- */}
           {isForgot ? (
             sentInfo ? (
               <div className="space-y-4 text-center">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
-                  <MailCheck className="h-6 w-6 text-violet-400" />
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
+                  <MailCheck className="h-6 w-6 text-zinc-400" />
                 </span>
                 <p className="text-sm leading-relaxed text-gray-300">
                   Enviámos um <b className="text-white">email de recuperação</b> para a conta
@@ -294,8 +294,8 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
           ) : isReset ? (
             /* ------------- Nova palavra-passe (modo recuperação) ------------- */
             <form onSubmit={submitReset} className="space-y-3">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 ring-1 ring-violet-500/30">
-                <KeyRound className="h-6 w-6 text-violet-400" />
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
+                <KeyRound className="h-6 w-6 text-zinc-400" />
               </span>
               <p className="text-center text-xs leading-relaxed text-gray-400">
                 A recuperação foi aprovada pelo admin — cria já a tua nova palavra-passe.
@@ -410,7 +410,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                       setSentInfo(null)
                       setMode('forgot')
                     }}
-                    className="text-center text-xs text-violet-400 underline cursor-pointer hover:text-violet-300"
+                    className="text-center text-xs text-zinc-400 underline cursor-pointer hover:text-zinc-300"
                   >
                     Esqueci a pass
                   </p>

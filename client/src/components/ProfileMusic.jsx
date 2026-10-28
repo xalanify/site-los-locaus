@@ -224,7 +224,7 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
         <audio ref={audioRef} src={musica.ficheiro} preload="auto" loop />
       )}
       {createPortal(
-        <div className="fixed bottom-24 right-3 z-[100] flex items-center gap-2 rounded-2xl border border-white/15 bg-[#0b0716]/90 px-2.5 py-2 shadow-2xl shadow-black/50 backdrop-blur-md sm:right-5 lg:bottom-5">
+        <div className="fixed bottom-24 right-3 z-[100] flex items-center gap-2 rounded-2xl border border-white/15 bg-[#0b0b0c]/90 px-2.5 py-2 shadow-2xl shadow-black/50 backdrop-blur-md sm:right-5 lg:bottom-5">
           <button
             type="button"
             onClick={alternar}
@@ -236,7 +236,7 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
           </button>
           <div className="min-w-0">
             <p className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-400">
-              <Music2 className="h-3 w-3 text-violet-300" /> {nome}
+              <Music2 className="h-3 w-3 text-zinc-300" /> {nome}
             </p>
             <div className="mt-1 flex items-center gap-1.5">
               <Volume2 className="h-3.5 w-3.5 shrink-0 text-gray-400" />

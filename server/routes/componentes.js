@@ -8,7 +8,7 @@
 // ============================================================
 const express = require('express');
 const { getDb } = require('../database');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, attachAuth } = require('../middleware/auth');
 const {
   CATALOGO,
   CATEGORIAS,
@@ -25,9 +25,43 @@ const {
   apagarAlerta,
   montarProdutos,
   garantirTabela,
+  imagemPeriferico,
 } = require('../componentes');
 
 const router = express.Router();
+
+/* Foto de um periférico — usada no cartão do perfil (qualquer conta). */
+router.get('/imagem', attachAuth, async (req, res) => {
+  try {
+    const q = String((req.query && req.query.q) || '').slice(0, 120);
+    if (!q) return res.json({ imagem: null });
+    res.setHeader('Cache-Control', 'public, max-age=21600');
+    res.json({ imagem: await imagemPeriferico(q) });
+  } catch (error) {
+    console.error('Erro imagem periferico:', error.message);
+    res.json({ imagem: null });
+  }
+});
+
+/* Bytes da foto do periférico (para o browser poder remover o fundo
+   branco no canvas sem problemas de CORS). */
+router.get('/imagem-proxy', async (req, res) => {
+  try {
+    const q = String((req.query && req.query.q) || '').slice(0, 120);
+    if (!q) return res.status(404).end();
+    const url = await imagemPeriferico(q);
+    if (!url) return res.status(404).end();
+    const r = await fetch(url);
+    if (!r.ok) return res.status(404).end();
+    const buf = Buffer.from(await r.arrayBuffer());
+    res.setHeader('Content-Type', r.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=21600');
+    res.send(buf);
+  } catch (error) {
+    console.error('Erro proxy imagem periferico:', error.message);
+    res.status(404).end();
+  }
+});
 
 router.get('/', requireAdmin, async (req, res) => {
   try {

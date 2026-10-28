@@ -12,6 +12,7 @@ import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
+import NovidadesModal from './components/NovidadesModal'
 import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
@@ -98,22 +99,37 @@ function App() {
       .finally(() => setSessionChecked(true))
   }, [unlocked])
 
-  // Presença — sinal online/offline na lista de membros
+  // Presença — sinal online/ausente na lista de membros
   useEffect(() => {
     if (!unlocked || !sessionChecked || !user) return
     // plataforma: telemóvel vs PC (o site mostra "No PC" / "No Telemóvel")
     const isMobile =
       /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
       (navigator.maxTouchPoints > 1 && /Mac|Linux/i.test(navigator.userAgent) && window.innerWidth < 1024)
-    const ping = () =>
+    const AUSENTE_MS = 5 * 60 * 1000
+    let ultimoClique = Date.now()
+    const ping = () => {
+      const away = Date.now() - ultimoClique >= AUSENTE_MS
       fetch('/api/users/presence', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ plataforma: isMobile ? 'mobile' : 'pc' }),
+        body: JSON.stringify({ plataforma: isMobile ? 'mobile' : 'pc', away }),
       }).catch(() => {})
+    }
+    const ativo = () => {
+      const estavaAusente = Date.now() - ultimoClique >= AUSENTE_MS
+      ultimoClique = Date.now()
+      if (estavaAusente) ping()
+    }
+    window.addEventListener('pointerdown', ativo)
+    window.addEventListener('keydown', ativo)
     ping()
     const t = setInterval(ping, 30000)
-    return () => clearInterval(t)
+    return () => {
+      clearInterval(t)
+      window.removeEventListener('pointerdown', ativo)
+      window.removeEventListener('keydown', ativo)
+    }
   }, [unlocked, sessionChecked, user])
 
   // Volta ao topo ao mudar de página
@@ -180,7 +196,7 @@ function App() {
             {/* A verificar sessão guardada */}
             {!sessionChecked && (
               <div className="flex min-h-screen flex-col items-center justify-center gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                 <p className="text-[11px] uppercase tracking-[0.3em] text-gray-500">
                   A verificar sessão
                 </p>
@@ -192,7 +208,7 @@ function App() {
               <Suspense
                 fallback={
                   <div className="flex min-h-screen items-center justify-center">
-                    <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
+                    <Loader2 className="h-7 w-7 animate-spin text-zinc-500" />
                   </div>
                 }
               >
@@ -237,7 +253,7 @@ function App() {
                   <Suspense
                     fallback={
                       <div className="flex min-h-[60vh] items-center justify-center">
-                        <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
+                        <Loader2 className="h-7 w-7 animate-spin text-zinc-500" />
                       </div>
                     }
                   >
@@ -271,7 +287,9 @@ function App() {
                     />
                     {/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
-                    <Route path="/jogos-steam" element={<SteamStorePage />} />
+                    {/* Notícias (antiga Loja de Jogos) */}
+                    <Route path="/noticias" element={<SteamStorePage />} />
+                    <Route path="/jogos-steam" element={<Navigate to="/noticias" replace />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     <Route
@@ -285,16 +303,11 @@ function App() {
                         isAdmin ? <ComponentesPage user={user} /> : <Navigate to="/" replace />
                       }
                     />
-                    {/* PCs dos membros: dashboard de specs — só admin (aviso para os restantes) */}
+                    {/* PCs dos membros: dashboard de specs — aberto a todos */}
                     <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
-                    {/* Loja de cosméticos — só admin */}
-                    <Route
-                      path="/cosmeticos"
-                      element={
-                        isAdmin ? <CosmeticosPage isAdmin={isAdmin} /> : <Navigate to="/" replace />
-                      }
-                    />
-                    {/* Ferramentas Windows: scripts no PC do servidor — só admin (aviso para os restantes) */}
+                    {/* Loja de cosméticos — aberta a todos */}
+                    <Route path="/cosmeticos" element={<CosmeticosPage isAdmin={isAdmin} />} />
+                    {/* Ferramentas Windows: aberta a todos; Otimizações só admin */}
                     <Route path="/ferramentas" element={<FerramentasPage isAdmin={isAdmin} />} />
                     {/* /ligar: a app abria este endereço — manda para as ferramentas */}
                     <Route path="/ligar" element={<Navigate to="/ferramentas" replace />} />
@@ -361,6 +374,7 @@ function App() {
                 <Footer />
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
+                <NovidadesModal user={user} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

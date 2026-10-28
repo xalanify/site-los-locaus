@@ -4,31 +4,48 @@
    as secções. A janela volta a aparecer quando a versão muda.
    ============================================================ */
 
-export const NOVIDADES_VERSAO = '2026-10-26-4'
+export const NOVIDADES_VERSAO = '2026-10-28-1'
 
 export const NOVIDADES = {
   versao: NOVIDADES_VERSAO,
-  titulo: 'Novidades no Los Locaus',
-  subtitulo: 'Banners, fundos e notícias novas.',
-  data: '26 de outubro de 2026',
+  titulo: 'Design totalmente refeito',
+  subtitulo: 'Mais limpo, mais rápido e pronto para o telemóvel.',
+  data: '28 de outubro de 2026',
   secoes: [
     {
-      titulo: 'Novos banners de perfil',
-      tipo: 'banners',
-      texto: 'Há 6 banners novos para escolheres no editar perfil.',
-      ids: ['g20', 'g21', 'g22', 'g25', 'g26', 'g27'],
+      titulo: 'Design totalmente refeito',
+      texto: 'Novo visual em todas as páginas.',
+      tipo: 'design',
     },
     {
-      titulo: 'Novos fundos de perfil',
-      tipo: 'fundos',
-      texto: 'War 02 e Inverno já estão disponíveis no editar perfil.',
-      ids: ['f14', 'f15'],
+      titulo: 'Loja de cosméticos aberta a todos',
+      texto: 'Cores de nome, cartas e estilos de perfil.',
+      tipo: 'loja',
     },
     {
-      titulo: 'Notícias no início da página',
+      titulo: 'Notícias no lugar da Loja de Jogos',
+      texto: 'Só notícias de gaming e hardware.',
       tipo: 'noticias',
-      texto:
-        'A página inicial mostra agora as últimas 4 notícias, atualizadas de hora a hora — franquias grandes, telemóveis e desbloqueios PS4/PS5. Os vídeos do canal passaram para o botão “Ver vídeos” no cartão do canal.',
+    },
+    {
+      titulo: 'Cartas com zoom',
+      texto: 'Clica numa carta da loja para a veres em grande.',
+      tipo: 'cartas',
+    },
+    {
+      titulo: 'Estilos de perfil — em breve',
+      texto: 'Já podes espreitar os 5 estilos na loja.',
+      tipo: 'estilos',
+    },
+    {
+      titulo: 'PCs / Specs e Ferramentas Windows para todos',
+      texto: 'Programas e limpeza abertos a todos os membros.',
+      tipo: 'ferramentas',
+    },
+    {
+      titulo: 'Previsões: aviso de resultados',
+      texto: 'Ao entrar, vês logo se acertaste nas partidas que já terminaram.',
+      tipo: 'previsoes',
     },
   ],
 }

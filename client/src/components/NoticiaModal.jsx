@@ -65,11 +65,11 @@ export default function NoticiaModal({ noticia, onFechar }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.98 }}
           onClick={(e) => e.stopPropagation()}
-          className="my-6 w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-[#0d0a16] shadow-2xl"
+          className="my-6 w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-[#101012] shadow-2xl"
         >
           {/* imagem */}
           {noticia.imagem && (
-            <div className="relative h-48 overflow-hidden bg-violet-500/10 sm:h-60">
+            <div className="relative h-48 overflow-hidden bg-zinc-500/10 sm:h-60">
               <img
                 src={noticia.imagem}
                 alt=""
@@ -83,7 +83,7 @@ export default function NoticiaModal({ noticia, onFechar }) {
                   }
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0d0a16] via-transparent to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#101012] via-transparent to-black/20" />
               <button
                 type="button"
                 onClick={onFechar}
@@ -108,7 +108,7 @@ export default function NoticiaModal({ noticia, onFechar }) {
             )}
 
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wider">
-              <span className="flex items-center gap-1 rounded-full bg-violet-500/15 px-2.5 py-1 text-violet-200 ring-1 ring-violet-400/20">
+              <span className="flex items-center gap-1 rounded-full bg-zinc-500/15 px-2.5 py-1 text-zinc-200 ring-1 ring-zinc-400/20">
                 <Newspaper className="h-3 w-3" /> {noticia.fonte || 'Notícia'}
               </span>
               {noticia.data && (
@@ -122,20 +122,20 @@ export default function NoticiaModal({ noticia, onFechar }) {
               {noticia.titulo}
             </h2>
 
-            <div className="mt-4 rounded-2xl border border-violet-400/20 bg-violet-500/[0.07] p-3.5">
-              <h3 className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-violet-300">
+            <div className="mt-4 rounded-2xl border border-zinc-400/20 bg-zinc-500/[0.07] p-3.5">
+              <h3 className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-300">
                 <Sparkles className="h-3.5 w-3.5" /> Resumo inteligente
               </h3>
               <ul className="mt-2 space-y-1.5">
                 {pontos.map((p, i) => (
                   <li key={i} className="flex gap-2 text-[12.5px] leading-relaxed text-gray-200">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400" />
                     <span>{p}</span>
                   </li>
                 ))}
               </ul>
               {noticia.resumo && (
-                <p className="mt-2 border-t border-violet-400/15 pt-2 text-[11.5px] leading-relaxed text-gray-400">
+                <p className="mt-2 border-t border-zinc-400/15 pt-2 text-[11.5px] leading-relaxed text-gray-400">
                   {noticia.resumo}
                 </p>
               )}

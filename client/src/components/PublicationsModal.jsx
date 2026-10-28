@@ -181,7 +181,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
             {/* Cabeçalho */}
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <h3 className="flex items-center gap-2 text-lg font-black text-white sm:text-xl">
-                <Megaphone className="h-5 w-5 text-violet-400" />
+                <Megaphone className="h-5 w-5 text-zinc-400" />
                 Publicações
               </h3>
               <button
@@ -199,7 +199,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
               {isAdmin && !showForm && (
                 <button
                   onClick={() => setShowForm(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-violet-500/40 py-3 text-sm font-bold text-violet-400 transition-colors hover:bg-violet-500/10"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-500/40 py-3 text-sm font-bold text-zinc-400 transition-colors hover:bg-zinc-500/10"
                 >
                   <Plus className="h-4 w-4" />
                   Nova publicação
@@ -207,8 +207,8 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
               )}
 
               {isAdmin && showForm && (
-                <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4">
-                  <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-violet-400">
+                <div className="rounded-xl border border-zinc-500/30 bg-zinc-500/5 p-4">
+                  <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-zinc-400">
                     <Megaphone className="h-4 w-4" />
                     Nova publicação
                   </h4>
@@ -219,7 +219,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                       placeholder="Título"
                       value={newPost.title}
                       onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))}
-                      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500"
+                      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-zinc-500"
                     />
                     <textarea
                       rows={4}
@@ -227,20 +227,20 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                       placeholder="Conteúdo..."
                       value={newPost.content}
                       onChange={(e) => setNewPost((p) => ({ ...p, content: e.target.value }))}
-                      className="w-full resize-y rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500"
+                      className="w-full resize-y rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-zinc-500"
                     />
                     <input
                       type="url"
                       placeholder="URL de imagem (opcional)"
                       value={newPost.image_url}
                       onChange={(e) => setNewPost((p) => ({ ...p, image_url: e.target.value }))}
-                      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500"
+                      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-zinc-500"
                     />
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={handleCreate}
                         disabled={creating}
-                        className="flex-1 rounded-lg bg-violet-500 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-600 disabled:opacity-50"
+                        className="flex-1 rounded-lg bg-zinc-500 py-2 text-sm font-bold text-white transition-colors hover:bg-zinc-600 disabled:opacity-50"
                       >
                         {creating ? 'A criar...' : 'Publicar'}
                       </button>
@@ -260,7 +260,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
 
               {loading ? (
                 <div className="flex justify-center py-10">
-                  <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-violet-500" />
+                  <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-zinc-500" />
                 </div>
               ) : posts.length === 0 ? (
                 <p className="py-10 text-center text-sm text-gray-500">
@@ -344,7 +344,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                             />
                             <div className="min-w-0 rounded-lg bg-black/30 px-3 py-2">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-xs font-bold text-violet-400">
+                                <span className="text-xs font-bold text-zinc-400">
                                   {c.author}
                                 </span>
                                 <span className="text-[10px] text-gray-500">
@@ -372,7 +372,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                               [post.id]: { ...form, author: e.target.value },
                             }))
                           }
-                          className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500 sm:w-40"
+                          className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-zinc-500 sm:w-40"
                         />
                         <input
                           type="text"
@@ -386,7 +386,7 @@ export default function PublicationsModal({ isOpen, onClose, isAdmin = false }) 
                             }))
                           }
                           onKeyDown={(e) => e.key === 'Enter' && handleComment(post.id)}
-                          className="w-full flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500"
+                          className="w-full flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-zinc-500"
                         />
                         <button
                           onClick={() => handleComment(post.id)}

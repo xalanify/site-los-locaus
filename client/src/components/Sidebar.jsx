@@ -13,11 +13,12 @@ import {
   Sparkles,
   MessageCircle,
   Swords,
-  ShoppingBag,
+  Newspaper,
   CircuitBoard,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
 import Sino from './Sino'
+import SaldoMoedas from './SaldoMoedas'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -45,7 +46,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isProfile = location.pathname.startsWith('/perfil')
   const isMembers = location.pathname === '/membros'
   const isGames = location.pathname === '/jogos'
-  const isLojaJogos = location.pathname === '/jogos-steam'
+  const isNoticias = location.pathname === '/noticias' || location.pathname === '/jogos-steam'
   const isPcs = location.pathname === '/pcs'
   const isFerramentas = location.pathname === '/ferramentas'
   const isChat = location.pathname === '/chat'
@@ -64,14 +65,22 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       active: isChat,
       naoLidas: !isChat ? naoLidas : 0,
     },
-    { name: 'Previsões', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes, badge: 'Novo' },
-    { name: 'Loja de Jogos', icon: ShoppingBag, action: () => navigate('/jogos-steam'), active: isLojaJogos, badge: 'Novo' },
+    { name: 'Previsões', icon: Swords, action: () => navigate('/previsoes'), active: isPrevisoes },
+    { name: 'Notícias', icon: Newspaper, action: () => navigate('/noticias'), active: isNoticias },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
-    // PCs/Specs e Ferramentas: visíveis para todos; a página mostra o aviso
+    // PCs/Specs: aberto a todos os membros
     { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
+    // Loja de cosméticos: aberta a todos os membros
+    {
+      name: 'Loja de cosméticos',
+      icon: Sparkles,
+      action: () => navigate('/cosmeticos'),
+      active: isCosmeticos,
+      badge: 'Novo',
+    },
     // Componentes e Periféricos: só o admin vê no sidebar
     ...(isAdmin
       ? [
@@ -82,27 +91,26 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             active: isComponentes,
             badge: 'Admin',
           },
-          {
-            name: 'Loja de cosméticos',
-            icon: Sparkles,
-            action: () => navigate('/cosmeticos'),
-            active: isCosmeticos,
-            badge: 'Admin',
-          },
         ]
       : []),
-    { name: 'Ferramentas Windows', icon: Wrench, action: () => navigate('/ferramentas'), active: isFerramentas },
+    {
+      name: 'Ferramentas Windows',
+      icon: Wrench,
+      action: () => navigate('/ferramentas'),
+      active: isFerramentas,
+      badge: 'Novo',
+    },
   ]
 
   return (
     <aside className="painel-fixo fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 px-3 py-5 lg:flex xl:w-[280px]">
-      {/* Marca */}
-      <div>
+      {/* Marca + navegação (rola se o ecrã for baixo) */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-500/30">
-            <Youtube className="h-5 w-5 text-violet-400" />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
+            <Youtube className="h-5 w-5 text-zinc-400" />
           </span>
-          <span className="gradient-text font-display text-lg font-black uppercase tracking-wide">
+          <span className="brand-serif gradient-text font-display text-lg font-black tracking-wide">
             Ashow e Jazer
           </span>
         </Link>
@@ -117,19 +125,19 @@ export default function Sidebar({ user = null, isAdmin = false }) {
                 onClick={link.action}
                 className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
                   link.active
-                    ? 'nav-ativo text-white'
+                    ? 'nav-ativo text-[#ff9e9e]'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
                 <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'nav-ativo-icon' : ''}`} />
-                <span className="text-[15px] font-bold">{link.name}</span>
+                <span className="text-[15px] font-medium">{link.name}</span>
                 {link.naoLidas > 0 && (
-                  <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-violet-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(139,92,246,0.6)]">
+                  <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-zinc-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(255,255,255,0.16)]">
                     {link.naoLidas > 99 ? '99+' : link.naoLidas}
                   </span>
                 )}
                 {link.badge && (
-                  <span className="ml-auto rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+                  <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-200 ring-1 ring-white/15">
                     {link.badge}
                   </span>
                 )}
@@ -140,7 +148,8 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       </div>
 
       {/* Conta em baixo */}
-      <div className="space-y-2">
+      <div className="shrink-0 space-y-2 pt-3">
+        <SaldoMoedas user={user} />
         <div className="flex items-center gap-2 px-1">
           <Sino user={user} posicao="lateral" />
           <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
@@ -153,7 +162,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
           }
           className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
             isProfile
-              ? 'nav-ativo text-white'
+              ? 'nav-ativo text-[#ff9e9e]'
               : 'text-gray-400 hover:bg-white/5 hover:text-white'
           }`}
         >
@@ -165,7 +174,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             )}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-bold text-white">
+            <span className={`block truncate text-sm font-bold ${isProfile ? 'text-[#ff9e9e]' : 'text-white'}`}>
               {user?.username || 'Conta'}
             </span>
             <span className="block text-xs text-gray-500">

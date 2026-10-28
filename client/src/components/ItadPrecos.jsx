@@ -37,9 +37,9 @@ export default function ItadPrecos({ titulo }) {
   const melhor = d && d.deals && d.deals[0]
 
   return (
-    <div className="rounded-2xl border border-violet-400/20 bg-violet-500/[0.05] p-3">
+    <div className="rounded-2xl border border-zinc-400/20 bg-zinc-500/[0.05] p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-violet-300">
+        <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-300">
           <Tag className="h-3.5 w-3.5" /> Preços fora da Steam
         </p>
         <span className="text-[9px] font-bold uppercase tracking-wide text-gray-500">
@@ -104,7 +104,7 @@ export default function ItadPrecos({ titulo }) {
             href={d.link}
             target="_blank"
             rel="noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-[9px] font-bold text-violet-300 hover:text-violet-200"
+            className="mt-2 inline-flex items-center gap-1 text-[9px] font-bold text-zinc-300 hover:text-zinc-200"
           >
             Ver histórico completo no IsThereAnyDeal <ExternalLink className="h-2.5 w-2.5" />
           </a>
@@ -114,7 +114,7 @@ export default function ItadPrecos({ titulo }) {
           href={d?.link || `https://isthereanydeal.com/search/?q=${encodeURIComponent(titulo)}`}
           target="_blank"
           rel="noreferrer"
-          className="mt-1 flex items-center gap-1 text-[11px] font-bold text-violet-300 hover:text-violet-200"
+          className="mt-1 flex items-center gap-1 text-[11px] font-bold text-zinc-300 hover:text-zinc-200"
         >
           Procurar no IsThereAnyDeal <ExternalLink className="h-3 w-3" />
         </a>

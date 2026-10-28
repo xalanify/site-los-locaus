@@ -14,7 +14,7 @@ export default function ProfileBanner({ bannerId, overlay = 'from-black/80 via-b
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        <span className="absolute inset-0 bg-gradient-to-br from-[#1b1230] to-[#0b0716]" />
+        <span className="absolute inset-0 bg-gradient-to-br from-[#1c1c1f] to-[#0b0b0c]" />
       )}
       <span className={`absolute inset-0 bg-gradient-to-br ${overlay}`} />
     </span>

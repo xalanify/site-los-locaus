@@ -161,7 +161,7 @@ function matchHasAll(m, keys) {
   return keys.every((k) => roster.some((p) => p.tracked === k))
 }
 
-function StatCard({ icon: Icon, label, value, color = 'text-violet-400', delay = 0 }) {
+function StatCard({ icon: Icon, label, value, color = 'text-zinc-400', delay = 0 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -183,7 +183,7 @@ function WinRateBar({ value, delay = 0 }) {
         initial={{ width: 0 }}
         animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         transition={{ delay, duration: 0.8, ease: 'easeOut' }}
-        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+        className="h-full rounded-full bg-gradient-to-r from-zinc-500 to-zinc-500"
       />
     </div>
   )
@@ -219,9 +219,9 @@ function GameChooser({ onPick }) {
       name: 'CS2',
       icon: Gamepad2,
       logo: 'https://cdn.cloudflare.steamstatic.com/steam/apps/730/library_600x900.jpg',
-      color: 'text-violet-400',
-      ring: 'hover:border-violet-500',
-      bg: 'bg-violet-500/10',
+      color: 'text-zinc-400',
+      ring: 'hover:border-zinc-500',
+      bg: 'bg-zinc-500/10',
       desc: 'Partidas do histórico da Steam — Braço Direito, Competitivo, CS:GO e Premier.',
     },
     {
@@ -239,9 +239,9 @@ function GameChooser({ onPick }) {
       name: 'Fortnite',
       icon: Flame,
       logo: 'https://cdn2.unrealengine.com/en-fn-og-42-10-c1sx-egs-launcher-blade-1200x1600-1200x1600-6e74a083a5cd.jpg',
-      color: 'text-purple-400',
-      ring: 'hover:border-purple-500',
-      bg: 'bg-purple-500/10',
+      color: 'text-zinc-400',
+      ring: 'hover:border-zinc-500',
+      bg: 'bg-zinc-500/10',
       desc: 'Estatísticas — pesquisa por nome de jogador (fortnite-api.com).',
     },
     {
@@ -369,10 +369,10 @@ const SKINS_SEC = {
 const estadoChip = (t = '') => {
   const s = String(t)
   if (/nunca/i.test(s)) return 'border-red-500/30 bg-red-500/10 text-red-300'
-  if (/quase imposs|<[0-9]/i.test(s)) return 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300'
+  if (/quase imposs|<[0-9]/i.test(s)) return 'border-zinc-500/30 bg-zinc-500/10 text-zinc-300'
   if (/temporada|janela|edi[cç]|s&#243; na T|sorteio|presencial| profissional/i.test(s))
     return 'border-amber-500/30 bg-amber-500/10 text-amber-300'
-  return 'border-violet-500/30 bg-violet-500/10 text-violet-300'
+  return 'border-zinc-500/30 bg-zinc-500/10 text-zinc-300'
 }
 
 function SkinCard({ it, i, onZoom }) {
@@ -383,7 +383,7 @@ function SkinCard({ it, i, onZoom }) {
         ? 'border-gray-300/40 bg-gradient-to-br from-gray-300/25 to-gray-400/10 text-gray-100'
         : it.rank === 3
           ? 'border-orange-700/50 bg-gradient-to-br from-orange-700/30 to-orange-900/10 text-orange-300'
-          : 'border-violet-500/25 bg-violet-500/10 text-violet-200'
+          : 'border-zinc-500/25 bg-zinc-500/10 text-zinc-200'
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -392,7 +392,7 @@ function SkinCard({ it, i, onZoom }) {
       onClick={() => it.img && onZoom(it)}
       title={it.img ? 'Clica para ampliar' : ''}
       className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4 ${
-        it.img ? 'cursor-zoom-in transition-colors hover:border-violet-400/50' : ''
+        it.img ? 'cursor-zoom-in transition-colors hover:border-zinc-400/50' : ''
       }`}
     >
       {it.rank != null && (
@@ -408,11 +408,11 @@ function SkinCard({ it, i, onZoom }) {
             src={it.img}
             alt={it.nome}
             loading="lazy"
-            className="max-h-28 object-contain drop-shadow-[0_0_18px_rgba(139,92,246,0.35)] transition-transform duration-300 group-hover:scale-105"
+            className="max-h-28 object-contain drop-shadow-[0_0_18px_rgba(255,255,255,0.1)] transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           /* item sem imagem oficial: emblema elegante em vez de ficha vazia */
-          <div className="grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-violet-500/30 via-fuchsia-500/20 to-transparent ring-1 ring-white/15">
+          <div className="grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-zinc-500/30 via-zinc-500/20 to-transparent ring-1 ring-white/15">
             <span className="font-display text-2xl font-black text-white/80">
               {it.nome.slice(0, 2).toUpperCase()}
             </span>
@@ -495,7 +495,7 @@ function SkinsRarosTab({ jogo }) {
               onClick={() => setSeccao(s.chave)}
               className={
                 seccao === s.chave
-                  ? 'rounded-xl bg-violet-500 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-violet-500/20'
+                  ? 'rounded-xl bg-zinc-500 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-zinc-500/20'
                   : 'rounded-xl border border-white/10 bg-white/5 px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10'
               }
             >
@@ -507,7 +507,7 @@ function SkinsRarosTab({ jogo }) {
 
       {!d ? (
         <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-400">
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-violet-300" />
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-zinc-300" />
           A carregar as listas…
         </div>
       ) : !lista.length ? (
@@ -559,7 +559,7 @@ function SkinsRarosTab({ jogo }) {
                 <img
                   src={zoom.img}
                   alt={zoom.nome}
-                  className="mx-auto max-h-[64vh] w-auto object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+                  className="mx-auto max-h-[64vh] w-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.12)]"
                 />
               </div>
               <p className="mt-3 font-display text-lg font-black text-white">
@@ -589,7 +589,7 @@ function SubAbaJogo({ jogo, aba, setAba }) {
         onClick={() => setAba('stats')}
         className={
           aba === 'stats'
-            ? 'rounded-xl bg-violet-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-violet-500/20'
+            ? 'rounded-xl bg-zinc-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-zinc-500/20'
             : 'rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10'
         }
       >
@@ -599,7 +599,7 @@ function SubAbaJogo({ jogo, aba, setAba }) {
         onClick={() => setAba('skins')}
         className={
           aba === 'skins'
-            ? 'rounded-xl bg-violet-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-violet-500/20'
+            ? 'rounded-xl bg-zinc-500 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-zinc-500/20'
             : 'rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10'
         }
       >
@@ -667,12 +667,12 @@ function FortniteTrackerModal({ jogador, onClose }) {
                 className="h-12 w-12 rounded-full object-cover ring-2 ring-white/10"
               />
             ) : (
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-fuchsia-500/20 text-lg font-black text-fuchsia-300">
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-zinc-500/20 text-lg font-black text-zinc-300">
                 {(jogador?.nome || '?').slice(0, 1).toUpperCase()}
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-widest text-fuchsia-300">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">
                 Fortnite Tracker (TRN)
               </p>
               <h3 className="truncate font-display text-xl font-black text-white">
@@ -690,7 +690,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden rounded-full border border-fuchsia-400/30 bg-fuchsia-500/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-fuchsia-200 hover:bg-fuchsia-500/25 sm:block"
+              className="hidden rounded-full border border-zinc-400/30 bg-zinc-500/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-200 hover:bg-zinc-500/25 sm:block"
             >
               Abrir no TRN
             </a>
@@ -711,7 +711,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
                   onClick={() => setAba(a.id)}
                   className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
                     aba === a.id
-                      ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25'
+                      ? 'bg-zinc-500 text-white shadow-lg shadow-zinc-500/25'
                       : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
                   }`}
                 >
@@ -746,8 +746,8 @@ function FortniteTrackerModal({ jogador, onClose }) {
                   cor="text-green-300"
                 />
                 <MiniStat label="K/D" valor={vida.KD ?? '—'} cor="text-sky-300" />
-                <MiniStat label="Kills" valor={nFN(vida.Kills)} cor="text-violet-300" />
-                <MiniStat label="K/partida" valor={vida.KPG ?? '—'} cor="text-fuchsia-300" />
+                <MiniStat label="Kills" valor={nFN(vida.Kills)} cor="text-zinc-300" />
+                <MiniStat label="K/partida" valor={vida.KPG ?? '—'} cor="text-zinc-300" />
                 <MiniStat label="Tempo" valor={vida.MinutesPlayed_txt || '—'} />
                 <MiniStat
                   label="TRN rating"
@@ -796,7 +796,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
                   { titulo: 'Últimos 7 dias', d: p.ultimos7, cor: 'text-sky-300' },
-                  { titulo: 'Últimos 30 dias', d: p.ultimos30, cor: 'text-violet-300' },
+                  { titulo: 'Últimos 30 dias', d: p.ultimos30, cor: 'text-zinc-300' },
                 ].map(({ titulo, d, cor: c }) =>
                   d ? (
                     <div key={titulo} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
@@ -841,8 +841,8 @@ function FortniteTrackerModal({ jogador, onClose }) {
           ) : aba === 'ranked' ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/[0.06] p-3">
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-fuchsia-300">
+                <div className="rounded-xl border border-zinc-400/20 bg-zinc-500/[0.06] p-3">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-zinc-300">
                     Rank atual
                   </p>
                   {atual?.atualRank ? (
@@ -870,7 +870,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
                         <div className="mt-3">
                           <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                             <div
-                              className="h-full rounded-full bg-fuchsia-400"
+                              className="h-full rounded-full bg-zinc-400"
                               style={{ width: `${Math.min(100, Math.max(0, atual.atualRank.progresso))}%` }}
                             />
                           </div>
@@ -927,7 +927,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
                         <td className="whitespace-nowrap px-3 py-2 text-gray-300">
                           {r.season || '—'}
                           {r.isCurrent && (
-                            <span className="ml-1.5 rounded-full bg-fuchsia-500/20 px-1.5 py-0.5 text-[9px] font-black text-fuchsia-300">
+                            <span className="ml-1.5 rounded-full bg-zinc-500/20 px-1.5 py-0.5 text-[9px] font-black text-zinc-300">
                               ATUAL
                             </span>
                           )}
@@ -991,7 +991,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
                       <p className="text-[8px] font-bold uppercase text-gray-500">K/D</p>
                     </div>
                     <div>
-                      <p className="font-display text-base font-black text-violet-300">{nFN(pl.Kills)}</p>
+                      <p className="font-display text-base font-black text-zinc-300">{nFN(pl.Kills)}</p>
                       <p className="text-[8px] font-bold uppercase text-gray-500">Kills</p>
                     </div>
                   </div>
@@ -1028,7 +1028,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
                         m.colocacao === 1
                           ? 'bg-yellow-500/20 text-yellow-300'
                           : m.ranked
-                            ? 'bg-fuchsia-500/15 text-fuchsia-300'
+                            ? 'bg-zinc-500/15 text-zinc-300'
                             : 'bg-white/10 text-gray-300'
                       }`}
                     >
@@ -1042,7 +1042,7 @@ function FortniteTrackerModal({ jogador, onClose }) {
                       </p>
                     </div>
                     <div className="shrink-0 text-right text-[11px]">
-                      <p className="font-black text-violet-300">{nFN(m.kills)} kills</p>
+                      <p className="font-black text-zinc-300">{nFN(m.kills)} kills</p>
                       <p className="text-[10px] text-gray-500">
                         {m.partidas > 1 ? `${m.partidas} partidas · ` : ''}
                         {nFN(m.score)} pts
@@ -1145,13 +1145,13 @@ function FortniteStats() {
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="rounded-lg bg-purple-500/20 px-4 py-1.5 text-sm font-bold text-purple-300 hover:bg-purple-500/30 disabled:opacity-50"
+            className="rounded-lg bg-zinc-500/20 px-4 py-1.5 text-sm font-bold text-zinc-300 hover:bg-zinc-500/30 disabled:opacity-50"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Pesquisar'}
           </button>
         </div>
         <p className="mt-2 text-[11px] text-gray-500 text-center">
-          Dados via <a href="https://fortnite-api.com" target="_blank" rel="noopener" className="underline hover:text-purple-400">fortnite-api.com</a> — perfis públicos apenas.
+          Dados via <a href="https://fortnite-api.com" target="_blank" rel="noopener" className="underline hover:text-zinc-400">fortnite-api.com</a> — perfis públicos apenas.
         </p>
         {error && (
           <p className="mt-2 text-center text-sm text-red-400">{error}</p>
@@ -1166,7 +1166,7 @@ function FortniteStats() {
           </h3>
           {fixosLoading ? (
             <div className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-8 text-sm font-semibold text-gray-400">
-              <Loader2 className="h-4 w-4 animate-spin text-violet-300" /> A carregar jogadores…
+              <Loader2 className="h-4 w-4 animate-spin text-zinc-300" /> A carregar jogadores…
             </div>
           ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1184,7 +1184,7 @@ function FortniteStats() {
                     {dd?.account?.avatar ? (
                       <img src={dd.account.avatar} alt="" className="h-10 w-10 rounded-full object-cover" />
                     ) : (
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-violet-500/20 font-black text-violet-300">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-500/20 font-black text-zinc-300">
                         {(dd?.account?.name || j.nome).slice(0, 1).toUpperCase()}
                       </span>
                     )}
@@ -1210,7 +1210,7 @@ function FortniteStats() {
                         <p className="text-[9px] font-bold uppercase text-gray-500">K/D</p>
                       </div>
                       <div>
-                        <p className="font-display text-base font-black text-violet-300">{fmt(s.kills)}</p>
+                        <p className="font-display text-base font-black text-zinc-300">{fmt(s.kills)}</p>
                         <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
                       </div>
                       <div>
@@ -1238,11 +1238,11 @@ function FortniteStats() {
                         <p className="text-[9px] font-bold uppercase text-gray-500">K/D solo</p>
                       </div>
                       <div>
-                        <p className="font-display text-base font-black text-violet-300">{dd?.stats?.all?.duo?.kd ?? '—'}</p>
+                        <p className="font-display text-base font-black text-zinc-300">{dd?.stats?.all?.duo?.kd ?? '—'}</p>
                         <p className="text-[9px] font-bold uppercase text-gray-500">K/D duo</p>
                       </div>
                       <div>
-                        <p className="font-display text-base font-black text-fuchsia-300">{dd?.stats?.all?.squad?.kd ?? '—'}</p>
+                        <p className="font-display text-base font-black text-zinc-300">{dd?.stats?.all?.squad?.kd ?? '—'}</p>
                         <p className="text-[9px] font-bold uppercase text-gray-500">K/D squad</p>
                       </div>
                       <div>
@@ -1259,7 +1259,7 @@ function FortniteStats() {
                         <p className="text-[9px] font-bold uppercase text-gray-500">K/D</p>
                       </div>
                       <div>
-                        <p className="font-display text-base font-black text-violet-300">
+                        <p className="font-display text-base font-black text-zinc-300">
                           {fmt(j.tracker.perfil.vida?.Kills)}
                         </p>
                         <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
@@ -1285,7 +1285,7 @@ function FortniteStats() {
 
                   {/* rank do competitivo + perfil completo do tracker.gg */}
                   {j.tracker?.perfil?.rankAtual?.atualRank && (
-                    <div className="mt-3 flex items-center gap-2 rounded-lg border border-fuchsia-400/20 bg-fuchsia-500/[0.06] px-2.5 py-2">
+                    <div className="mt-3 flex items-center gap-2 rounded-lg border border-zinc-400/20 bg-zinc-500/[0.06] px-2.5 py-2">
                       {j.tracker.perfil.rankAtual.atualRank.icone && (
                         <img
                           src={j.tracker.perfil.rankAtual.atualRank.icone}
@@ -1294,7 +1294,7 @@ function FortniteStats() {
                         />
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-[9px] font-black uppercase tracking-wider text-fuchsia-300">
+                        <p className="text-[9px] font-black uppercase tracking-wider text-zinc-300">
                           Ranked · {j.tracker.perfil.rankAtual.modo}
                         </p>
                         <p className="truncate text-[12px] font-black text-white">
@@ -1310,7 +1310,7 @@ function FortniteStats() {
                     onClick={() => setTrackerAberto(j)}
                     className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
                       j.tracker
-                        ? 'border-fuchsia-400/25 bg-fuchsia-500/10 text-fuchsia-200 hover:bg-fuchsia-500/20 hover:text-white'
+                        ? 'border-zinc-400/25 bg-zinc-500/10 text-zinc-200 hover:bg-zinc-500/20 hover:text-white'
                         : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -1359,9 +1359,9 @@ function FortniteStats() {
               <Card label="Partidas" valor={fmt(stats.matches)} icon={Gamepad2} />
               <Card label="K/D" valor={stats.kd?.toFixed(2) ?? '—'} icon={Target} cor="text-sky-300" />
               <Card label="Win %" valor={`${stats.winRate?.toFixed(1) ?? '—'}%`} icon={TrendingUp} cor="text-green-300" />
-              <Card label="Kills" valor={fmt(stats.kills)} icon={Crosshair} cor="text-violet-300" />
+              <Card label="Kills" valor={fmt(stats.kills)} icon={Crosshair} cor="text-zinc-300" />
               <Card label="Top 10" valor={fmt(stats.top10)} icon={Medal} cor="text-amber-300" />
-              <Card label="K/partida" valor={stats.killsPerMatch?.toFixed(2) ?? '—'} icon={Sparkles} cor="text-purple-300" />
+              <Card label="K/partida" valor={stats.killsPerMatch?.toFixed(2) ?? '—'} icon={Sparkles} cor="text-zinc-300" />
               <Card label="Minutos jogados" valor={fmt(stats.minutesPlayed)} icon={Clock} />
             </div>
           )}
@@ -1483,7 +1483,7 @@ function BattlefieldStats({ aoMudarJogo }) {
 
       {aCarregar && (
         <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
-          <Loader2 className="h-5 w-5 animate-spin text-violet-400" /> A consultar os números…
+          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" /> A consultar os números…
         </div>
       )}
 
@@ -1516,7 +1516,7 @@ function BattlefieldStats({ aoMudarJogo }) {
               {p.avatar ? (
                 <img src={p.avatar} alt="" className="h-11 w-11 rounded-xl object-cover" />
               ) : (
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] font-display text-lg font-black text-violet-300">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] font-display text-lg font-black text-zinc-300">
                   {(p.nome || p.handle || '?').slice(0, 2).toUpperCase()}
                 </div>
               )}
@@ -1547,7 +1547,7 @@ function BattlefieldStats({ aoMudarJogo }) {
 
           {/* cartões de carreira (sem horas, como pediste) */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Cartão label="K/D" valor={p.kd != null ? Number(p.kd).toFixed(2) : '—'} Icon={Crosshair} cor="text-violet-300" atraso={0.05} />
+            <Cartão label="K/D" valor={p.kd != null ? Number(p.kd).toFixed(2) : '—'} Icon={Crosshair} cor="text-zinc-300" atraso={0.05} />
             <Cartão label="Kills" valor={num(p.kills)} Icon={Skull} atraso={0.08} />
             <Cartão label="Vitórias" valor={num(p.vitorias ?? p.wins)} Icon={Trophy} cor="text-green-400" atraso={0.11} />
             <Cartão
@@ -1592,7 +1592,7 @@ function BattlefieldStats({ aoMudarJogo }) {
             <div className="mt-5 border-t border-white/10 pt-4">
               <div className="mb-3 flex items-center justify-between">
                 <h4 className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-white">
-                  <Crosshair className="h-4 w-4 text-violet-400" /> Armas · top {p.armas.length}
+                  <Crosshair className="h-4 w-4 text-zinc-400" /> Armas · top {p.armas.length}
                 </h4>
                 <p className="text-[10px] text-gray-500">por kills · live</p>
               </div>
@@ -1622,7 +1622,7 @@ function BattlefieldStats({ aoMudarJogo }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display text-sm font-black text-violet-300">{num(w.kills)}</p>
+                      <p className="font-display text-sm font-black text-zinc-300">{num(w.kills)}</p>
                       <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
                     </div>
                   </div>
@@ -1670,21 +1670,21 @@ function SummaryCards({ s, delayBase = 0 }) {
           icon={Flame}
           label="Taxa Vitória"
           value={`${s.winRate}%`}
-          color="text-violet-400"
+          color="text-zinc-400"
           delay={delayBase + 0.2}
         />
         <StatCard
           icon={Crosshair}
           label="Rondas M / S"
           value={`${fmt(s.roundsFor)} / ${fmt(s.roundsAgainst)}`}
-          color="text-purple-400"
+          color="text-zinc-400"
           delay={delayBase + 0.25}
         />
       </div>
       <div className="glass rounded-2xl p-4 sm:p-5">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-semibold text-gray-300">Taxa de vitória</span>
-          <span className="font-black text-violet-400">{s.winRate}%</span>
+          <span className="font-black text-zinc-400">{s.winRate}%</span>
         </div>
         <WinRateBar value={s.winRate} delay={0.3} />
         <p className="mt-2 text-xs text-gray-500">
@@ -1704,7 +1704,7 @@ function PlayersTable({ players, stats, subtitle }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
-        <Users className="h-5 w-5 text-violet-400" />
+        <Users className="h-5 w-5 text-zinc-400" />
         <h4 className="text-lg font-bold text-white sm:text-xl">
           Jogadores
           <span className="ml-2 text-sm font-normal text-gray-400">{subtitle}</span>
@@ -1763,7 +1763,7 @@ function PlayersTable({ players, stats, subtitle }) {
                       </span>
                     )}
                   </td>
-                  <td className="py-3 pr-3 text-right font-bold text-violet-400">
+                  <td className="py-3 pr-3 text-right font-bold text-zinc-400">
                     {empty ? '—' : `${s.winRate}%`}
                   </td>
                   <td className="py-3 pr-3 text-right text-gray-300">
@@ -1805,7 +1805,7 @@ function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
     <div className="glass rounded-2xl p-4 sm:p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h4 className="flex items-center gap-2 text-base font-bold text-white sm:text-lg">
-          <Filter className="h-4 w-4 text-violet-400" />
+          <Filter className="h-4 w-4 text-zinc-400" />
           Jogadores
         </h4>
         {selected.length > 0 && (
@@ -1825,7 +1825,7 @@ function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
           onClick={onClear}
           className={`rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
             selected.length === 0
-              ? 'bg-violet-500 text-white glow-violet'
+              ? 'bg-zinc-500 text-white glow-violet'
               : 'bg-white/5 text-gray-300 hover:bg-white/10'
           }`}
         >
@@ -1865,7 +1865,7 @@ function PlayerFilters({ players, selected, onToggle, onClear, shown, total }) {
         ) : (
           <>
             <span className="font-bold text-white">{label.join(' + ')}</span>{' '}
-            <span className="font-bold text-violet-400">juntos</span> — {fmt(shown)} de{' '}
+            <span className="font-bold text-zinc-400">juntos</span> — {fmt(shown)} de{' '}
             {fmt(total)}
           </>
         )}
@@ -1881,7 +1881,7 @@ function ModeCards({ modes, perMode, onSelect }) {
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
-        <BarChart3 className="h-5 w-5 text-violet-400" />
+        <BarChart3 className="h-5 w-5 text-zinc-400" />
         <h4 className="text-lg font-bold text-white sm:text-xl">Resumo por modo</h4>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -1901,7 +1901,7 @@ function ModeCards({ modes, perMode, onSelect }) {
                 <span
                   className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black ${
                     m.game === 'CS2'
-                      ? 'bg-violet-500/20 text-violet-400'
+                      ? 'bg-zinc-500/20 text-zinc-400'
                       : 'bg-blue-500/20 text-blue-400'
                   }`}
                 >
@@ -1915,7 +1915,7 @@ function ModeCards({ modes, perMode, onSelect }) {
                 <span className="font-bold text-green-400">{s.wins}V</span>
                 <span className="font-bold text-yellow-400">{s.draws}E</span>
                 <span className="font-bold text-red-400">{s.losses}D</span>
-                <span className="ml-auto font-black text-violet-400">{s.winRate}%</span>
+                <span className="ml-auto font-black text-zinc-400">{s.winRate}%</span>
               </div>
               <WinRateBar value={s.winRate} delay={0.1 * i} />
             </motion.button>
@@ -1934,14 +1934,14 @@ function TeamBoard({ players, score, title, isOurs }) {
   return (
     <div
       className={`rounded-xl p-3 ${
-        isOurs ? 'bg-violet-500/10 ring-1 ring-violet-500/30' : 'bg-black/30'
+        isOurs ? 'bg-zinc-500/10 ring-1 ring-zinc-500/30' : 'bg-black/30'
       }`}
     >
       <div className="mb-2 flex items-center justify-between px-1">
-        <span className={`text-xs font-black uppercase ${isOurs ? 'text-violet-400' : 'text-gray-500'}`}>
+        <span className={`text-xs font-black uppercase ${isOurs ? 'text-zinc-400' : 'text-gray-500'}`}>
           {title}
         </span>
-        <span className={`text-lg font-black ${isOurs ? 'text-violet-400' : 'text-gray-400'}`}>
+        <span className={`text-lg font-black ${isOurs ? 'text-zinc-400' : 'text-gray-400'}`}>
           {score}
         </span>
       </div>
@@ -2061,7 +2061,7 @@ function MatchRow({ m, open, onToggle }) {
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
               title="Ver demo"
-              className="text-gray-500 transition-colors hover:text-violet-400"
+              className="text-gray-500 transition-colors hover:text-zinc-400"
             >
               <Link className="h-4 w-4" />
             </a>
@@ -2278,16 +2278,16 @@ function Cs2Vivo() {
           <select
             value={ordem}
             onChange={(e) => setOrdem(e.target.value)}
-            className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[12px] font-bold text-white outline-none focus:border-violet-400/40"
+            className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-[12px] font-bold text-white outline-none focus:border-zinc-400/40"
           >
-            <option value="kills" className="bg-[#171122]">Kills</option>
-            <option value="kd" className="bg-[#171122]">K/D</option>
-            <option value="hs" className="bg-[#171122]">HS %</option>
-            <option value="precisao" className="bg-[#171122]">Precisão</option>
-            <option value="mvps" className="bg-[#171122]">MVPs</option>
-            <option value="vitorias" className="bg-[#171122]">Vitórias</option>
-            <option value="partidas" className="bg-[#171122]">Partidas</option>
-            <option value="rondas" className="bg-[#171122]">Rondas</option>
+            <option value="kills" className="bg-[#161618]">Kills</option>
+            <option value="kd" className="bg-[#161618]">K/D</option>
+            <option value="hs" className="bg-[#161618]">HS %</option>
+            <option value="precisao" className="bg-[#161618]">Precisão</option>
+            <option value="mvps" className="bg-[#161618]">MVPs</option>
+            <option value="vitorias" className="bg-[#161618]">Vitórias</option>
+            <option value="partidas" className="bg-[#161618]">Partidas</option>
+            <option value="rondas" className="bg-[#161618]">Rondas</option>
           </select>
         </div>
       </div>
@@ -2304,7 +2304,7 @@ function Cs2Vivo() {
               {p.avatar ? (
                 <img src={p.avatar} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />
               ) : (
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-violet-300">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-zinc-300">
                   {(p.nick || p.nome || '?').slice(0, 1).toUpperCase()}
                 </div>
               )}
@@ -2319,7 +2319,7 @@ function Cs2Vivo() {
             {/* heróis */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <p className="font-display text-xl font-black text-violet-300">{p.kills ?? '—'}</p>
+                <p className="font-display text-xl font-black text-zinc-300">{p.kills ?? '—'}</p>
                 <p className="text-[9px] font-bold uppercase text-gray-500">Kills</p>
               </div>
               <div>
@@ -2401,7 +2401,7 @@ function Cs2Vivo() {
           </h4>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { label: 'Top kills', campo: 'kills', cor: 'text-violet-300', icon: Swords },
+              { label: 'Top kills', campo: 'kills', cor: 'text-zinc-300', icon: Swords },
               { label: 'Melhor K/D', campo: 'kd', cor: 'text-white', icon: Target },
               { label: 'MVPs (rondas)', campo: 'mvps', cor: 'text-amber-300', icon: Medal },
               { label: 'HS %', campo: 'hs', sufixo: '%', cor: 'text-sky-300', icon: Crosshair },
@@ -2758,7 +2758,7 @@ function TabelaOperadores({ ops = [] }) {
     >
       {label}
       {ordem.campo === campo && (
-        <span className="ml-1 text-violet-400">{ordem.desc ? '▾' : '▴'}</span>
+        <span className="ml-1 text-zinc-400">{ordem.desc ? '▾' : '▴'}</span>
       )}
     </th>
   )
@@ -2789,7 +2789,7 @@ function TabelaOperadores({ ops = [] }) {
             return (
               <tr
                 key={o.nome + i}
-                className={`border-t border-white/5 ${i % 2 ? 'bg-white/[0.015]' : ''} hover:bg-violet-500/[0.06]`}
+                className={`border-t border-white/5 ${i % 2 ? 'bg-white/[0.015]' : ''} hover:bg-zinc-500/[0.06]`}
               >
                 <td className="sticky left-0 z-10 bg-[#0d0d15] px-3 py-2">
                   <div className="flex items-center gap-2.5">
@@ -2798,7 +2798,7 @@ function TabelaOperadores({ ops = [] }) {
                       <p className="truncate font-bold text-white">{o.nome}</p>
                       <div className="mt-1 h-1 w-20 overflow-hidden rounded-full bg-white/10">
                         <div
-                          className="h-full rounded-full bg-violet-400/80"
+                          className="h-full rounded-full bg-zinc-400/80"
                           style={{
                             width: `${Math.max(4, ((Number(o.rounds) || 0) / maxRondas) * 100)}%`,
                           }}
@@ -2823,7 +2823,7 @@ function TabelaOperadores({ ops = [] }) {
                 <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-amber-300">
                   {o.hs ?? '—'}
                 </td>
-                <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-violet-300">
+                <td className="whitespace-nowrap px-2 py-2 text-right font-bold text-zinc-300">
                   {fmt(o.kills)}
                 </td>
                 <td className="whitespace-nowrap px-2 py-2 text-right text-gray-300">
@@ -2920,7 +2920,7 @@ function R6OperadoresModal({ jogador, onClose }) {
               disabled={!season}
               className={`rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
                 aba === 'season'
-                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                  ? 'bg-zinc-500 text-white shadow-lg shadow-zinc-500/25'
                   : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
               }`}
             >
@@ -2931,7 +2931,7 @@ function R6OperadoresModal({ jogador, onClose }) {
               disabled={!all}
               className={`rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
                 aba === 'all'
-                  ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                  ? 'bg-zinc-500 text-white shadow-lg shadow-zinc-500/25'
                   : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
               }`}
             >
@@ -2954,7 +2954,7 @@ function R6OperadoresModal({ jogador, onClose }) {
                   <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Operadores</p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
-                  <p className="font-display text-xl font-black text-violet-300">{fmt(totais.rounds)}</p>
+                  <p className="font-display text-xl font-black text-zinc-300">{fmt(totais.rounds)}</p>
                   <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Rondas</p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
@@ -2970,10 +2970,10 @@ function R6OperadoresModal({ jogador, onClose }) {
               </div>
 
               {melhor && (
-                <div className="mb-4 flex items-center gap-3 rounded-xl border border-violet-400/20 bg-violet-500/[0.07] px-3 py-2.5">
+                <div className="mb-4 flex items-center gap-3 rounded-xl border border-zinc-400/20 bg-zinc-500/[0.07] px-3 py-2.5">
                   <IconeOperador nome={melhor.nome} className="h-10 w-10" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-violet-300">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-300">
                       Mais jogado
                     </p>
                     <p className="truncate font-bold text-white">{melhor.nome}</p>
@@ -3010,7 +3010,7 @@ function R6Squad({ players, maxRp = {} }) {
     <div className="glass rounded-2xl p-5 sm:p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Users className="h-5 w-5 text-violet-400" />
+          <Users className="h-5 w-5 text-zinc-400" />
           <h4 className="text-lg font-bold text-white sm:text-xl">Esquadrão</h4>
         </div>
         <span className="text-[11px] text-gray-500 shrink-0">
@@ -3073,7 +3073,7 @@ function R6Squad({ players, maxRp = {} }) {
                   <div className="text-gray-500">Partidas</div>
                 </div>
                 <div className="col-span-2">
-                  <div className="font-black text-violet-400">{wr}%</div>
+                  <div className="font-black text-zinc-400">{wr}%</div>
                   <div className="text-gray-500">Vitórias</div>
                 </div>
                 <div className="col-span-2">
@@ -3085,7 +3085,7 @@ function R6Squad({ players, maxRp = {} }) {
                   <div className="text-gray-500">K/partida</div>
                 </div>
                 <div className="col-span-2">
-                  <div className="font-black text-purple-400">{fmt(ov.kills || 0)}</div>
+                  <div className="font-black text-zinc-400">{fmt(ov.kills || 0)}</div>
                   <div className="text-gray-500">Kills</div>
                 </div>
                 <div className="col-span-2">
@@ -3101,7 +3101,7 @@ function R6Squad({ players, maxRp = {} }) {
                 {rank ? rank.name : 'Sem rank'}
                 {rank && rank.season ? ` · ${rank.season}` : ''}
               </div>
-              <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-black text-violet-300">
+              <div className="mt-0.5 flex items-center justify-center gap-1.5 text-[11px] font-black text-zinc-300">
                 {(() => {
                   // rank máximo: o melhor que a conta já teve (tracker)
                   const max = maxRankDe(p, maxRp[p.key])
@@ -3127,7 +3127,7 @@ function R6Squad({ players, maxRp = {} }) {
               {/* Operadores — janela flutuante */}
               <button
                 onClick={() => setOpsAberto(p)}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-violet-400/25 bg-violet-500/10 py-1.5 text-[11px] font-black uppercase tracking-wider text-violet-200 transition-colors hover:bg-violet-500/20 hover:text-white"
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-zinc-400/25 bg-zinc-500/10 py-1.5 text-[11px] font-black uppercase tracking-wider text-zinc-200 transition-colors hover:bg-zinc-500/20 hover:text-white"
               >
                 <Swords className="h-3.5 w-3.5" /> Operadores
                 {p.operatorsSeason?.total || p.operatorsAllTime?.total ? (
@@ -3142,7 +3142,7 @@ function R6Squad({ players, maxRp = {} }) {
       </div>
       <p className="mt-4 text-center text-xs text-gray-500">
         Nível, rank da temporada, rank máximo, números de carreira e operadores de cada membro —
-        só o esquadrão. Dados do <code className="text-violet-400">tracker.gg</code> (import manual
+        só o esquadrão. Dados do <code className="text-zinc-400">tracker.gg</code> (import manual
         no painel de admin).
       </p>
 
@@ -3215,7 +3215,7 @@ function R6Stats() {
   if (state.loading) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-zinc-500 border-t-transparent" />
         <p className="text-sm text-gray-400">A ler os dados do Rainbow Six...</p>
       </div>
     )
@@ -3230,8 +3230,8 @@ function R6Stats() {
         className="glass mx-auto max-w-2xl rounded-2xl p-6 sm:p-8"
       >
         <div className="mb-5 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-500/10">
-            <KeyRound className="h-8 w-8 text-violet-500" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-500/10">
+            <KeyRound className="h-8 w-8 text-zinc-500" />
           </div>
           <h2 className="mb-2 text-xl font-black text-white">Falta o snapshot do tracker.gg</h2>
           <p className="text-sm text-gray-400">
@@ -3242,14 +3242,14 @@ function R6Stats() {
           {d.missing.map((f) => (
             <li
               key={f}
-              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-violet-400"
+              className="rounded-lg bg-black/40 px-4 py-2 font-mono text-sm text-zinc-400"
             >
               {f}
             </li>
           ))}
         </ul>
         <p className="mt-4 text-center text-xs text-gray-500">
-          Depois reinicia com o <code className="text-violet-500">INICIAR.bat</code> e os dados
+          Depois reinicia com o <code className="text-zinc-500">INICIAR.bat</code> e os dados
           aparecem aqui.
         </p>
         <div className="mt-5 text-center">
@@ -3283,13 +3283,13 @@ function R6Stats() {
     <div className="space-y-6">
       {/* estado da atualização */}
       {d.auto?.modo === 'manual' ? (
-        <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] px-4 py-2.5 text-[13px] text-gray-300">
+        <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-zinc-500/25 bg-zinc-500/[0.06] px-4 py-2.5 text-[13px] text-gray-300">
           <span className="relative inline-flex h-2.5 w-2.5 place-items-center">
-            <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-violet-400 opacity-60" />
-            <span className="h-2 w-2 rounded-full bg-violet-400" />
+            <span className="absolute h-2.5 w-2.5 animate-ping rounded-full bg-zinc-400 opacity-60" />
+            <span className="h-2 w-2 rounded-full bg-zinc-400" />
           </span>
           <span className="flex-1 min-w-0">
-            Estatísticas do <span className="font-bold text-violet-300">tracker.gg</span> (import
+            Estatísticas do <span className="font-bold text-zinc-300">tracker.gg</span> (import
             manual no painel de admin)
             {d.temporada ? ` · temporada ${d.temporada}` : ''}
             {d.updatedAt
@@ -3358,9 +3358,9 @@ function R6Stats() {
           <p className="flex-1 min-w-0">
             <span className="font-bold text-white">R6 automático (API da Ubisoft):</span> falta só a
             conta — cria uma conta Ubisoft gratuita, coloca{' '}
-            <code className="text-violet-300">UBI_EMAIL=...</code> e{' '}
-            <code className="text-violet-300">UBI_PASSWORD=...</code> no{' '}
-            <code className="text-violet-300">server/.env</code> e reinicia. A partir daí o servidor
+            <code className="text-zinc-300">UBI_EMAIL=...</code> e{' '}
+            <code className="text-zinc-300">UBI_PASSWORD=...</code> no{' '}
+            <code className="text-zinc-300">server/.env</code> e reinicia. A partir daí o servidor
             atualiza o esquadrão sozinho (open source SwiftCODA/R6-API) — sem tracker.gg nem
             carregamentos manuais.
           </p>
@@ -3377,7 +3377,7 @@ function R6Stats() {
       <R6Squad players={d.players || []} maxRp={maxRp} />
 
       <p className="text-center text-xs text-gray-500">
-        <Star className="mr-1 inline h-3 w-3 text-violet-400" />
+        <Star className="mr-1 inline h-3 w-3 text-zinc-400" />
         Dados do tracker.gg — import manual no painel de admin (perfil + operadores)
         {d.updatedAt
           ? ' · atualizado a ' +
@@ -3448,7 +3448,7 @@ export default function GamesPage() {
           {/* véu escuro por cima da foto */}
           <div className="absolute inset-0 bg-black/65" />
           {/* gradiente para fundir com o resto da página */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612]/80 via-[#0a0612]/50 to-[#0a0612]/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0b]/80 via-[#0a0a0b]/50 to-[#0a0a0b]/90" />
         </div>
       )}
 

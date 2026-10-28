@@ -75,7 +75,7 @@ function TeamLogo({ team, size = 'h-12 w-12' }) {
   }
   return (
     <span
-      className={`${size} flex shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-sm font-black text-violet-300 ring-1 ring-violet-400/20`}
+      className={`${size} flex shrink-0 items-center justify-center rounded-xl bg-zinc-500/15 text-sm font-black text-zinc-300 ring-1 ring-zinc-400/20`}
     >
       {(team && team.name ? team.name.slice(0, 1) : '?').toUpperCase()}
     </span>
@@ -105,7 +105,7 @@ function StatusPill({ match }) {
     )
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-violet-300 ring-1 ring-violet-400/20">
+    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300 ring-1 ring-zinc-400/20">
       <Target className="h-3 w-3" /> A aceitar votos
     </span>
   )
@@ -128,8 +128,8 @@ function VoterList({ match, user }) {
             key={`${v.id}-${v.pick}`}
             className={`flex items-center gap-2 rounded-lg border px-2 py-1.5 ${
               v.id === Number(user && user.id)
-                ? 'border-violet-400/30 bg-violet-500/[0.08]'
-                : 'border-white/5 bg-[#120d20]/80'
+                ? 'border-zinc-400/30 bg-zinc-500/[0.08]'
+                : 'border-white/5 bg-[#121214]/80'
             }`}
           >
             <AvatarImg src={v.avatar_url} name={v.username} className="h-6 w-6" />
@@ -159,21 +159,21 @@ function PredictionCard({ match, user, onVote, votando }) {
     const escolhida = minhaEscolha === lado
     if (acabado) {
       if (match.winner === lado) return 'border-emerald-400/40 bg-emerald-500/[0.08]'
-      if (match.winner) return 'border-white/5 bg-[#0f0a1a]/80 opacity-70'
+      if (match.winner) return 'border-white/5 bg-[#121214]/80 opacity-70'
     }
-    if (escolhida) return 'border-violet-400/60 bg-violet-500/[0.14] ring-1 ring-violet-400/30'
+    if (escolhida) return 'border-zinc-400/60 bg-zinc-500/[0.14] ring-1 ring-zinc-400/30'
     return match.can_vote
-      ? 'border-white/10 bg-[#120d20]/80 hover:border-violet-400/40 hover:bg-violet-500/[0.06]'
-      : 'border-white/5 bg-[#0f0a1a]/80'
+      ? 'border-white/10 bg-[#121214]/80 hover:border-zinc-400/40 hover:bg-zinc-500/[0.06]'
+      : 'border-white/5 bg-[#121214]/80'
   }
 
   return (
     <article className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.045] to-white/[0.015] shadow-xl shadow-black/20">
-      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-[#0d0918]/80 px-3 py-2.5 sm:px-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-[#101012]/80 px-3 py-2.5 sm:px-4">
         {match.competition_logo ? (
           <img src={match.competition_logo} alt="" className="h-6 w-6 rounded object-contain" loading="lazy" />
         ) : (
-          <Swords className="h-4 w-4 text-violet-300" />
+          <Swords className="h-4 w-4 text-zinc-300" />
         )}
         <span className="min-w-0 flex-1 break-words text-[11px] font-black uppercase leading-snug tracking-wider text-gray-300">
           {match.competition || 'Rainbow Six Siege'}
@@ -197,7 +197,7 @@ function PredictionCard({ match, user, onVote, votando }) {
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400">
             <Clock className="h-3 w-3" /> {fmtDia(match.start_time)} · {fmtHora(match.start_time)}
             {match.status === 1 && faltam(match.start_time) && (
-              <span className="ml-1 rounded-full bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-black text-violet-300 ring-1 ring-violet-400/20">
+              <span className="ml-1 rounded-full bg-zinc-500/10 px-1.5 py-0.5 text-[10px] font-black text-zinc-300 ring-1 ring-zinc-400/20">
                 {faltam(match.start_time)}
               </span>
             )}
@@ -225,7 +225,7 @@ function PredictionCard({ match, user, onVote, votando }) {
               <span className="w-full">
                 <span className="block text-[10px] font-bold text-gray-400">{pct(match.counts.a, total)}%</span>
                 <span className="mt-0.5 block h-1 overflow-hidden rounded-full bg-white/10">
-                  <span className="block h-full rounded-full bg-violet-500" style={{ width: `${pct(match.counts.a, total)}%` }} />
+                  <span className="block h-full rounded-full bg-zinc-500" style={{ width: `${pct(match.counts.a, total)}%` }} />
                 </span>
               </span>
             )}
@@ -236,7 +236,7 @@ function PredictionCard({ match, user, onVote, votando }) {
             {match.locked && match.status === 1 ? (
               <Lock className="h-4 w-4 text-gray-500" title="Apostas fechadas" />
             ) : match.can_vote ? (
-              <Target className="h-4 w-4 text-violet-400/70" />
+              <Target className="h-4 w-4 text-zinc-400/70" />
             ) : null}
           </div>
 
@@ -257,7 +257,7 @@ function PredictionCard({ match, user, onVote, votando }) {
               <span className="w-full">
                 <span className="block text-[10px] font-bold text-gray-400">{pct(match.counts.b, total)}%</span>
                 <span className="mt-0.5 block h-1 overflow-hidden rounded-full bg-white/10">
-                  <span className="block h-full rounded-full bg-fuchsia-500" style={{ width: `${pct(match.counts.b, total)}%` }} />
+                  <span className="block h-full rounded-full bg-zinc-500" style={{ width: `${pct(match.counts.b, total)}%` }} />
                 </span>
               </span>
             )}
@@ -327,11 +327,11 @@ function PalmaresTorneio({ t, destaque }) {
     <article
       className={`group relative w-[19rem] shrink-0 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
         destaque
-          ? 'border-amber-400/40 bg-gradient-to-b from-amber-500/[0.16] via-violet-500/[0.06] to-white/[0.02] shadow-xl shadow-amber-950/25'
-          : 'border-white/10 bg-gradient-to-b from-white/[0.05] to-[#120d20]/90 hover:-translate-y-0.5 hover:border-violet-400/40 hover:shadow-lg hover:shadow-violet-950/20'
+          ? 'border-amber-400/40 bg-gradient-to-b from-amber-500/[0.16] via-zinc-500/[0.06] to-white/[0.02] shadow-xl shadow-amber-950/25'
+          : 'border-white/10 bg-gradient-to-b from-white/[0.05] to-[#121214]/90 hover:-translate-y-0.5 hover:border-zinc-400/40 hover:shadow-lg hover:shadow-zinc-950/20'
       }`}
     >
-      <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-violet-500/10 blur-2xl" />
+      <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-zinc-500/10 blur-2xl" />
       {destaque && (
         <span className="absolute right-3 top-3 rounded-full bg-amber-400/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-200 ring-1 ring-amber-400/40">
           Mais recente
@@ -342,7 +342,7 @@ function PalmaresTorneio({ t, destaque }) {
           {t.logo ? (
             <img src={t.logo} alt="" className="h-full w-full object-contain" loading="lazy" />
           ) : (
-            <Trophy className="h-5 w-5 text-violet-300" />
+            <Trophy className="h-5 w-5 text-zinc-300" />
           )}
         </span>
         <div className="min-w-0 pr-14">
@@ -374,7 +374,7 @@ function PalmaresTorneio({ t, destaque }) {
         ))}
       </div>
       <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-[10px] font-semibold">
-        <span className="inline-flex min-w-0 items-center gap-1 truncate text-violet-200">
+        <span className="inline-flex min-w-0 items-center gap-1 truncate text-zinc-200">
           <Star className="h-3 w-3 shrink-0 text-amber-300" />
           {t.mvp?.nome ? `MVP: ${t.mvp.nome} · ${t.mvp.equipa || ''}` : 'Torneio Tier 1'}
         </span>
@@ -403,7 +403,7 @@ function Podium({ users }) {
           <div key={u.id} className={`rounded-2xl border border-white/10 bg-gradient-to-b ${cor} px-2 py-3 text-center ${altura}`}>
             <div className="relative mx-auto mb-2 w-fit">
               <AvatarImg src={u.avatar_url} name={u.username} className="h-12 w-12 ring-2 ring-white/20" />
-              <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#171122] text-[10px] font-black text-white ring-1 ring-white/20">
+              <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#161618] text-[10px] font-black text-white ring-1 ring-white/20">
                 {idx + 1}
               </span>
             </div>
@@ -454,7 +454,7 @@ function ProximoTorneio() {
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-4 overflow-hidden rounded-3xl border border-amber-400/25 bg-gradient-to-r from-amber-500/15 via-[#17102a] to-violet-600/10 p-4 shadow-xl shadow-amber-950/10 sm:p-5"
+      className="relative mb-4 overflow-hidden rounded-3xl border border-amber-400/25 bg-gradient-to-r from-amber-500/15 via-[#161618] to-zinc-600/10 p-4 shadow-xl shadow-amber-950/10 sm:p-5"
     >
       <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-amber-500/15 blur-3xl" />
       <div className="relative flex flex-wrap items-center gap-4">
@@ -662,8 +662,8 @@ function FortniteTorneiosTab() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-3xl border border-fuchsia-400/20 bg-gradient-to-b from-fuchsia-600/10 to-[#17102a] p-5 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-fuchsia-500/15 text-fuchsia-300 ring-1 ring-fuchsia-400/30">
+      <div className="rounded-3xl border border-zinc-400/20 bg-gradient-to-b from-zinc-600/10 to-[#161618] p-5 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-500/15 text-zinc-300 ring-1 ring-zinc-400/30">
           <Flame className="h-7 w-7" />
         </span>
         <h2 className="mt-3 font-display text-xl font-black uppercase text-white">
@@ -683,7 +683,7 @@ function FortniteTorneiosTab() {
             onClick={() => setRegiao(r.id)}
             className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
               regiao === r.id
-                ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/25'
+                ? 'bg-zinc-500 text-white shadow-lg shadow-zinc-500/25'
                 : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
             }`}
           >
@@ -703,7 +703,7 @@ function FortniteTorneiosTab() {
             onClick={() => setModo(m.id)}
             className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors ${
               modo === m.id
-                ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
+                ? 'bg-zinc-500 text-white shadow-lg shadow-zinc-500/25'
                 : 'border border-white/10 bg-white/5 text-gray-400 hover:text-white'
             }`}
           >
@@ -750,23 +750,23 @@ function FortniteTorneiosTab() {
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl border border-fuchsia-400/25 bg-gradient-to-r from-fuchsia-500/15 via-[#17102a] to-violet-600/10 p-4 shadow-xl shadow-fuchsia-950/10 sm:p-5"
+          className="relative overflow-hidden rounded-3xl border border-zinc-400/25 bg-gradient-to-r from-zinc-500/15 via-[#161618] to-zinc-600/10 p-4 shadow-xl shadow-zinc-950/10 sm:p-5"
         >
-          <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-fuchsia-500/15 blur-3xl" />
+          <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-zinc-500/15 blur-3xl" />
           <div className="relative flex flex-wrap items-center gap-4">
             {proximo.imagem ? (
               <img
                 src={proximo.imagem}
                 alt=""
-                className="h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-fuchsia-400/30"
+                className="h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-zinc-400/30"
               />
             ) : (
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-fuchsia-500/15 ring-1 ring-fuchsia-400/30">
-                <Trophy className="h-6 w-6 text-fuchsia-300" />
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-zinc-500/15 ring-1 ring-zinc-400/30">
+                <Trophy className="h-6 w-6 text-zinc-300" />
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-300">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">
                 Próximo torneio
               </p>
               <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">
@@ -785,10 +785,10 @@ function FortniteTorneiosTab() {
         </motion.section>
       )}
 
-      <section className="rounded-2xl border border-white/10 bg-[#120d20]/80 p-4">
+      <section className="rounded-2xl border border-white/10 bg-[#121214]/80 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="ui-section-title font-display">
-            <Calendar className="h-4 w-4 text-fuchsia-400" /> Próximos torneios
+            <Calendar className="h-4 w-4 text-zinc-400" /> Próximos torneios
           </h2>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-semibold text-gray-600">
@@ -842,7 +842,7 @@ function FortniteTorneiosTab() {
           <div className="space-y-4">
             {grupos.map(([dia, lista]) => (
               <div key={dia}>
-                <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-fuchsia-300/80">
+                <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-300/80">
                   {fmtDia(lista[0].inicio)}
                 </p>
                 <div className="space-y-1.5">
@@ -855,7 +855,7 @@ function FortniteTorneiosTab() {
                       onClick={(e) => {
                         if (!t.link) e.preventDefault()
                       }}
-                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-[#120d20]/80 px-3 py-2.5 transition-colors hover:border-fuchsia-400/25 hover:bg-fuchsia-500/[0.06]"
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-[#121214]/80 px-3 py-2.5 transition-colors hover:border-zinc-400/25 hover:bg-zinc-500/[0.06]"
                     >
                       {t.imagem ? (
                         <img
@@ -865,7 +865,7 @@ function FortniteTorneiosTab() {
                           loading="lazy"
                         />
                       ) : (
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/5 text-fuchsia-300">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/5 text-zinc-300">
                           <Trophy className="h-4 w-4" />
                         </span>
                       )}
@@ -876,7 +876,7 @@ function FortniteTorneiosTab() {
                         </p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="text-[11px] font-black text-fuchsia-300">
+                        <p className="text-[11px] font-black text-zinc-300">
                           {fmtHora(t.inicio)} – {fmtHora(t.fim)}
                         </p>
                         <p className="text-[9px] font-bold uppercase tracking-wider text-gray-600">
@@ -897,7 +897,7 @@ function FortniteTorneiosTab() {
             href="https://uefn.fnjpnews.com/en/tournaments"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-fuchsia-400 underline-offset-2 hover:underline"
+            className="text-zinc-400 underline-offset-2 hover:underline"
           >
             FNJPNews
           </a>{' '}
@@ -906,7 +906,7 @@ function FortniteTorneiosTab() {
             href="https://fortnitetracker.com/events"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-fuchsia-400 underline-offset-2 hover:underline"
+            className="text-zinc-400 underline-offset-2 hover:underline"
           >
             ver também no Fortnite Tracker
           </a>
@@ -1011,7 +1011,7 @@ function CS2PrevisoesTab({ user }) {
   return (
     <div className="space-y-4">
       {prox && (
-        <section className="overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-violet-600/10 to-[#0f0a1a] p-4 shadow-xl shadow-sky-950/20">
+        <section className="overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-zinc-600/10 to-[#121214] p-4 shadow-xl shadow-sky-950/20">
           <div className="flex flex-wrap items-center gap-2">
             {prox.competition_logo ? (
               <img src={prox.competition_logo} alt="" className="h-9 w-9 rounded-lg object-contain" loading="lazy" />
@@ -1098,16 +1098,16 @@ function CS2PrevisoesTab({ user }) {
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <label className="flex shrink-0 items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
-          <MapPin className="h-3.5 w-3.5 text-violet-400" /> Região
+          <MapPin className="h-3.5 w-3.5 text-zinc-400" /> Região
         </label>
         <select
           value={regiaoCs2}
           onChange={(e) => setRegiaoCs2(e.target.value)}
-          className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-violet-400/40"
+          className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-zinc-400/40"
         >
-          <option value="Todas" className="bg-[#171122]">Todas as regiões</option>
+          <option value="Todas" className="bg-[#161618]">Todas as regiões</option>
           {regioesCs2.map((r) => (
-            <option key={r} value={r} className="bg-[#171122]">
+            <option key={r} value={r} className="bg-[#161618]">
               {r}
             </option>
           ))}
@@ -1115,7 +1115,7 @@ function CS2PrevisoesTab({ user }) {
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#120d20]/90 p-1 shadow-inner shadow-black/30">
+        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#121214]/90 p-1 shadow-inner shadow-black/30">
           {[
             { id: 'proximos', label: 'Próximos', Icon: Target, count: proximos.length },
             { id: 'resultados', label: 'Resultados', Icon: Trophy, count: resultados.length },
@@ -1126,7 +1126,7 @@ function CS2PrevisoesTab({ user }) {
               onClick={() => setAbaCs2(t.id)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
                 abaCs2 === t.id
-                  ? 'bg-gradient-to-b from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-950/50'
+                  ? 'bg-gradient-to-b from-zinc-500 to-zinc-600 text-white shadow-lg shadow-zinc-950/50'
                   : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -1143,7 +1143,7 @@ function CS2PrevisoesTab({ user }) {
         <button
           onClick={() => carregar()}
           title="Atualizar resultados"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#120d20]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#121214]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
         >
           <RefreshCw className="h-4 w-4" />
         </button>
@@ -1158,7 +1158,7 @@ function CS2PrevisoesTab({ user }) {
           </span>
         </h2>
         {dados.loading ? (
-          <div className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[#0f0a1a]/80 py-12 text-sm text-gray-400">
+          <div className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[#121214]/80 py-12 text-sm text-gray-400">
             <Loader2 className="h-4 w-4 animate-spin" /> A carregar jogos CS2…
           </div>
         ) : dados.erro ? (
@@ -1176,7 +1176,7 @@ function CS2PrevisoesTab({ user }) {
             </button>
           </div>
         ) : proximos.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-10 text-center text-sm text-gray-500">
+          <p className="rounded-2xl border border-white/10 bg-[#121214]/80 px-4 py-10 text-center text-sm text-gray-500">
             Sem jogos CS2 marcados neste momento. Atualizamos automaticamente.
           </p>
         ) : (
@@ -1225,11 +1225,6 @@ export default function PrevisoesPage({ user }) {
   const [tab, setTab] = useState('proximos')
   const [regiao, setRegiao] = useState('Todas')
   const [jogo, setJogo] = useState('r6') // r6 | cs2 | fortnite
-  const fundosJogo = {
-    r6: '/coastliner6.jpg',
-    cs2: '/nukecs2.png',
-    fortnite: '/fortnite.jpg',
-  }
   const [loading, setLoading] = useState(true)
   const [sync, setSync] = useState(null)
   const [erro, setErro] = useState('')
@@ -1402,16 +1397,6 @@ export default function PrevisoesPage({ user }) {
 
   return (
     <PageShell className="relative">
-      {/* fundo com a imagem do jogo (a mesma dos Jogos/Estáticas) —
-          escurecida para os cartões continuarem legíveis */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{ backgroundImage: `url(${fundosJogo[jogo]})` }}
-        />
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612]/85 via-[#0a0612]/55 to-[#0a0612]/92" />
-      </div>
       <div className="relative z-10">
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1
@@ -1423,7 +1408,7 @@ export default function PrevisoesPage({ user }) {
         <p className="mt-2 max-w-2xl text-sm text-gray-400">
           Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade.
         </p>
-        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-violet-400/20 bg-violet-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-violet-300">
+        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300">
           <RefreshCw className="h-2.5 w-2.5" /> atualiza sozinho
         </span>
       </motion.div>
@@ -1439,15 +1424,10 @@ export default function PrevisoesPage({ user }) {
             key={g.id}
             type="button"
             onClick={() => setJogo(g.id)}
-            style={{
-              backgroundImage: `linear-gradient(rgba(8,5,15,0.55), rgba(8,5,15,0.84)), url(${fundosJogo[g.id]})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
             className={`relative flex items-center justify-center gap-1.5 overflow-hidden rounded-2xl border px-2 py-3 text-[10px] font-black transition-all sm:text-xs ${
               jogo === g.id
-                ? 'border-white/40 text-white shadow-lg shadow-black/40'
-                : 'border-white/10 text-gray-300 hover:border-white/25 hover:text-white'
+                ? 'border-white/25 bg-white/10 text-white'
+                : 'border-white/10 bg-white/[0.035] text-gray-300 hover:border-white/25 hover:text-white'
             }`}
           >
             <g.Icon className="h-4 w-4 shrink-0" /> {g.nome}
@@ -1459,7 +1439,7 @@ export default function PrevisoesPage({ user }) {
         <button
           type="button"
           onClick={() => setClassificacaoAberta(true)}
-          className="flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-violet-200 transition-colors hover:bg-violet-500/20"
+          className="flex items-center gap-2 rounded-full border border-zinc-400/30 bg-zinc-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-200 transition-colors hover:bg-zinc-500/20"
         >
           <Medal className="h-4 w-4" /> Ver classificações
         </button>
@@ -1473,9 +1453,9 @@ export default function PrevisoesPage({ user }) {
         <>
 
       {/* cabeçalho */}
-      <section className="relative mb-4 overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/25 via-[#17102a] to-fuchsia-600/10 p-4 shadow-2xl shadow-violet-950/20 sm:p-6">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl" />
+      <section className="relative mb-4 overflow-hidden rounded-3xl border border-zinc-400/20 bg-gradient-to-br from-zinc-600/25 via-[#161618] to-zinc-600/10 p-4 shadow-2xl shadow-zinc-950/20 sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-zinc-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-zinc-500/10 blur-3xl" />
         <div className="relative flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-display text-2xl font-black leading-tight text-white sm:text-3xl">
@@ -1486,11 +1466,11 @@ export default function PrevisoesPage({ user }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="rounded-2xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
               <p className="text-lg font-black text-white">{acertos}</p>
               <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Acertos</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
               <p className="text-lg font-black text-white">{falhas}</p>
               <p className="text-[9px] font-black uppercase tracking-wider text-red-300">Falhas</p>
             </div>
@@ -1512,16 +1492,16 @@ export default function PrevisoesPage({ user }) {
       {regioesDisponiveis.length > 0 && (
         <div className="mb-3 flex items-center gap-2">
           <label className="flex shrink-0 items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
-            <MapPin className="h-3.5 w-3.5 text-violet-400" /> Região
+            <MapPin className="h-3.5 w-3.5 text-zinc-400" /> Região
           </label>
           <select
             value={regiao}
             onChange={(e) => setRegiao(e.target.value)}
-            className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#120d20]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-violet-400/40"
+            className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-zinc-400/40"
           >
-            <option value="Todas" className="bg-[#171122]">Todas as regiões</option>
+            <option value="Todas" className="bg-[#161618]">Todas as regiões</option>
             {regioesDisponiveis.map((r) => (
-              <option key={r} value={r} className="bg-[#171122]">
+              <option key={r} value={r} className="bg-[#161618]">
                 {r}
               </option>
             ))}
@@ -1531,7 +1511,7 @@ export default function PrevisoesPage({ user }) {
 
       {/* separadores */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#120d20]/90 p-1 shadow-inner shadow-black/30">
+        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#121214]/90 p-1 shadow-inner shadow-black/30">
           {(() => {
             const icones = {
               proximos: <Swords className="h-4 w-4 shrink-0" />,
@@ -1554,7 +1534,7 @@ export default function PrevisoesPage({ user }) {
                 onClick={() => setTab(id)}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
                   tab === id
-                    ? 'bg-gradient-to-b from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-950/50'
+                    ? 'bg-gradient-to-b from-zinc-500 to-zinc-600 text-white shadow-lg shadow-zinc-950/50'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
@@ -1572,7 +1552,7 @@ export default function PrevisoesPage({ user }) {
         <button
           onClick={() => recarregarRef.current()}
           title="Atualizar resultados"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#120d20]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#121214]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
         >
           <RefreshCw className="h-4 w-4" />
         </button>
@@ -1585,7 +1565,7 @@ export default function PrevisoesPage({ user }) {
         </span>
         {sync && sync.last_ok && <span>· Última sincronização: {fmtHora(sync.last_ok)}</span>}
         {minhaClass && (
-          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2 py-0.5 text-violet-300 ring-1 ring-violet-400/20">
+          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-zinc-500/10 px-2 py-0.5 text-zinc-300 ring-1 ring-zinc-400/20">
             <Medal className="h-3 w-3" /> {minhaClass.pos}.º lugar · {minhaClass.acertos} acertos
           </span>
         )}
@@ -1606,8 +1586,8 @@ export default function PrevisoesPage({ user }) {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#0f0a1a]/80 py-20 text-sm font-semibold text-gray-400">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin text-violet-400" /> A carregar os jogos…
+        <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#121214]/80 py-20 text-sm font-semibold text-gray-400">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin text-zinc-400" /> A carregar os jogos…
         </div>
       ) : tab === 'proximos' ? (
         <div className="space-y-3">
@@ -1616,8 +1596,8 @@ export default function PrevisoesPage({ user }) {
               <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} />
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-14 text-center">
-              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-300 ring-1 ring-violet-400/20">
+            <div className="rounded-2xl border border-white/10 bg-[#121214]/80 px-4 py-14 text-center">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-500/10 text-zinc-300 ring-1 ring-zinc-400/20">
                 <Swords className="h-6 w-6" />
               </span>
               <h3 className="mt-3 text-base font-black text-white">
@@ -1634,13 +1614,13 @@ export default function PrevisoesPage({ user }) {
       ) : tab === 'resultados' ? (
         <div className="space-y-4">
           {/* Palmarés R6 — últimos torneios Tier 1 */}
-          <section className="overflow-hidden rounded-2xl border border-violet-400/20 bg-gradient-to-b from-violet-600/10 to-[#17102a] p-3 shadow-xl shadow-violet-950/15 sm:p-4">
+          <section className="overflow-hidden rounded-2xl border border-zinc-400/20 bg-gradient-to-b from-zinc-600/10 to-[#161618] p-3 shadow-xl shadow-zinc-950/15 sm:p-4">
             <div className="mb-3 flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15 ring-1 ring-violet-400/30">
-                <Trophy className="h-4 w-4 text-violet-300" />
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-500/15 ring-1 ring-zinc-400/30">
+                <Trophy className="h-4 w-4 text-zinc-300" />
               </span>
               <h2 className="font-display text-base font-black text-white">Últimos vencedores</h2>
-              <span className="ml-auto rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-violet-300 ring-1 ring-violet-400/20">
+              <span className="ml-auto rounded-full bg-zinc-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-zinc-300 ring-1 ring-zinc-400/20">
                 Últimos torneios
               </span>
             </div>
@@ -1655,7 +1635,7 @@ export default function PrevisoesPage({ user }) {
 
           <div>
             <h2 className="ui-section-title font-display mb-2 px-1">
-              <Swords className="h-4 w-4 text-violet-400" /> Jogos já jogados
+              <Swords className="h-4 w-4 text-zinc-400" /> Jogos já jogados
             </h2>
             {resultadosFiltrados.length ? (
               <div className="space-y-3">
@@ -1664,7 +1644,7 @@ export default function PrevisoesPage({ user }) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-14 text-center">
+              <div className="rounded-2xl border border-white/10 bg-[#121214]/80 px-4 py-14 text-center">
                 <Trophy className="mx-auto h-8 w-8 text-gray-600" />
                 <p className="mt-2 text-sm font-bold text-gray-400">Ainda não há resultados recentes.</p>
               </div>
@@ -1674,8 +1654,8 @@ export default function PrevisoesPage({ user }) {
       ) : (
         <div>
           {classLoading ? (
-            <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#0f0a1a]/80 py-20 text-sm font-semibold text-gray-400">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin text-violet-400" /> A carregar a classificação…
+            <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#121214]/80 py-20 text-sm font-semibold text-gray-400">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin text-zinc-400" /> A carregar a classificação…
             </div>
           ) : classificacao.length ? (
             <>
@@ -1693,7 +1673,7 @@ export default function PrevisoesPage({ user }) {
                   <div
                     key={u.id}
                     className={`grid grid-cols-[36px_1fr_auto] items-center gap-2 border-b border-white/5 px-3 py-3.5 last:border-0 sm:grid-cols-[56px_1fr_90px_90px_90px_110px] sm:px-4 ${
-                      u.id === Number(meuNome) ? 'bg-violet-500/[0.08]' : ''
+                      u.id === Number(meuNome) ? 'bg-zinc-500/[0.08]' : ''
                     }`}
                   >
                     <span className={`text-base font-black ${u.pos <= 3 ? 'text-amber-300' : 'text-gray-500'}`}>{u.pos}</span>
@@ -1701,7 +1681,7 @@ export default function PrevisoesPage({ user }) {
                       <AvatarImg src={u.avatar_url} name={u.username} className="h-8 w-8" />
                       <span className="truncate text-sm font-bold text-white">
                         {u.username}
-                        {u.id === Number(meuNome) ? <span className="ml-1 text-violet-300">(tu)</span> : null}
+                        {u.id === Number(meuNome) ? <span className="ml-1 text-zinc-300">(tu)</span> : null}
                       </span>
                     </span>
                     <span className="hidden text-center text-sm font-bold text-emerald-300 sm:block">{u.acertos}</span>
@@ -1724,7 +1704,7 @@ export default function PrevisoesPage({ user }) {
               </p>
             </>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-[#0f0a1a]/80 px-4 py-14 text-center">
+            <div className="rounded-2xl border border-white/10 bg-[#121214]/80 px-4 py-14 text-center">
               <Trophy className="mx-auto h-8 w-8 text-gray-600" />
               <p className="mt-2 text-sm font-bold text-gray-400">Ainda não há votos suficientes.</p>
               <p className="text-xs text-gray-500">Sê o primeiro a prever um jogo.</p>
@@ -1733,9 +1713,9 @@ export default function PrevisoesPage({ user }) {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-white/10 bg-[#0f0a1a]/80 p-3 text-[11px] font-semibold leading-relaxed text-gray-500">
+      <div className="mt-6 rounded-2xl border border-white/10 bg-[#121214]/80 p-3 text-[11px] font-semibold leading-relaxed text-gray-500">
         <p className="flex items-start gap-1.5">
-          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-400" />
+          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" />
           Fonte: site oficial da Rainbow Six Esports (Ubisoft). Só entram ligas profissionais Tier 1.
           As apostas fecham quando o jogo começa; podes mudar o voto até lá. Quando o resultado sair,
           recebes um aviso nesta página e no sino.
@@ -1751,7 +1731,7 @@ export default function PrevisoesPage({ user }) {
           onClick={() => setClassificacaoAberta(false)}
         >
           <div
-            className="w-full max-w-3xl overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60"
+            className="w-full max-w-3xl overflow-hidden rounded-3xl border border-zinc-400/25 bg-[#141416] shadow-2xl shadow-black/60"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
@@ -1771,7 +1751,7 @@ export default function PrevisoesPage({ user }) {
               </button>
             </div>
 
-            <div className="border-b border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-violet-300">
+            <div className="border-b border-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-zinc-300">
               Classificação total · R6 + CS2
             </div>
 
@@ -1841,9 +1821,9 @@ export default function PrevisoesPage({ user }) {
       {/* janela flutuante de resultados */}
       {modalResultados && resultadosNovos.length > 0 && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-violet-400/25 bg-[#140f22] shadow-2xl shadow-black/60">
-            <div className="relative overflow-hidden bg-gradient-to-br from-violet-600/30 to-fuchsia-600/10 px-5 pb-4 pt-5 text-center">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-500/20 blur-2xl" />
+          <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-zinc-400/25 bg-[#141416] shadow-2xl shadow-black/60">
+            <div className="relative overflow-hidden bg-gradient-to-br from-zinc-600/30 to-zinc-600/10 px-5 pb-4 pt-5 text-center">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-zinc-500/20 blur-2xl" />
               <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-amber-300 ring-1 ring-white/20">
                 <Trophy className="h-7 w-7" />
               </span>
@@ -1870,6 +1850,9 @@ export default function PrevisoesPage({ user }) {
                       {r.team_a} <span className="text-gray-400">{r.score_a} — {r.score_b}</span> {r.team_b}
                     </p>
                     <p className="truncate text-[10px] font-semibold text-gray-500">
+                      <span className="mr-1 rounded bg-white/10 px-1 py-0.5 text-[8px] font-black uppercase text-zinc-300">
+                        {r.jogo === 'cs2' ? 'CS2' : 'R6'}
+                      </span>
                       {r.competition} · escolheste {r.pick === 'a' ? r.team_a : r.team_b}
                     </p>
                   </div>

@@ -74,7 +74,7 @@ function Barra({ rotulo, valor, max, extra }) {
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400"
+          className="h-full rounded-full bg-gradient-to-r from-zinc-500 to-zinc-400"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -109,7 +109,7 @@ export default function AdminStats() {
   if (!carregado) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
       </div>
     )
   }
@@ -134,22 +134,22 @@ export default function AdminStats() {
       {/* Resumo */}
       <div>
         <h3 className="mb-3 flex items-center gap-2 ui-section-title">
-          <TrendingUp className="h-4 w-4 text-violet-300" /> Resumo geral
+          <TrendingUp className="h-4 w-4 text-zinc-300" /> Resumo geral
         </h3>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-          <Cartao Icon={Film} cor="bg-violet-400/15 text-violet-300" valor={r.clipsTotal} trend={porDia.map((d) => d.clips)} corLinha="#a78bfa" rotulo="clips" />
+          <Cartao Icon={Film} cor="bg-zinc-400/15 text-zinc-300" valor={r.clipsTotal} trend={porDia.map((d) => d.clips)} corLinha="#a78bfa" rotulo="clips" />
           <Cartao Icon={Eye} cor="bg-emerald-400/15 text-emerald-300" valor={r.clipsPublicos} rotulo="públicos" />
           <Cartao Icon={Heart} cor="bg-rose-400/15 text-rose-300" valor={r.likes} rotulo="gostos" />
           <Cartao Icon={Download} cor="bg-sky-400/15 text-sky-300" valor={r.downloads} rotulo="transferidos" />
-          <Cartao Icon={Eye} cor="bg-violet-400/15 text-violet-300" valor={r.views} trend={porDia.map((d) => d.visitas)} corLinha="#38bdf8" rotulo="visualizações" />
+          <Cartao Icon={Eye} cor="bg-zinc-400/15 text-zinc-300" valor={r.views} trend={porDia.map((d) => d.visitas)} corLinha="#38bdf8" rotulo="visualizações" />
           <Cartao Icon={Save} cor="bg-amber-400/15 text-amber-300" valor={r.saves} rotulo="guardados" />
           <Cartao Icon={MessageSquare} cor="bg-indigo-400/15 text-indigo-300" valor={r.comentarios} trend={porDia.map((d) => d.comentarios)} corLinha="#818cf8" rotulo="comentários" />
-          <Cartao Icon={Clapperboard} cor="bg-fuchsia-400/15 text-fuchsia-300" valor={r.posts} rotulo="publicações" />
+          <Cartao Icon={Clapperboard} cor="bg-zinc-400/15 text-zinc-300" valor={r.posts} rotulo="publicações" />
           <Cartao Icon={Users} cor="bg-lime-400/15 text-lime-300" valor={r.usersTotal} rotulo="contas" />
           <Cartao Icon={Users} cor="bg-teal-400/15 text-teal-300" valor={r.usersNovos} rotulo="novas (30d)" />
           <Cartao Icon={Eye} cor="bg-cyan-400/15 text-cyan-300" valor={r.visitasTotal} rotulo="visitas" />
           <Cartao Icon={Eye} cor="bg-green-400/15 text-green-300" valor={r.visitasOnline} rotulo="online" />
-          <Cartao Icon={Film} cor="bg-purple-400/15 text-purple-300" valor={r.clipsPrivados} rotulo="privados" />
+          <Cartao Icon={Film} cor="bg-zinc-400/15 text-zinc-300" valor={r.clipsPrivados} rotulo="privados" />
         </div>
       </div>
 
@@ -190,7 +190,7 @@ export default function AdminStats() {
                   key={c.id}
                   className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2"
                 >
-                  <span className="font-display text-sm font-black text-violet-300">
+                  <span className="font-display text-sm font-black text-zinc-300">
                     {i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -227,7 +227,7 @@ export default function AdminStats() {
           </h3>
           <span className="flex flex-wrap items-center gap-3 text-[11px] text-gray-400">
             <span className="inline-flex items-center gap-1">
-              <i className="h-2 w-2 rounded-full bg-violet-400" /> clips
+              <i className="h-2 w-2 rounded-full bg-zinc-400" /> clips
             </span>
             <span className="inline-flex items-center gap-1">
               <i className="h-2 w-2 rounded-full bg-sky-400" /> comentários
@@ -246,7 +246,7 @@ export default function AdminStats() {
             >
               <div className="flex h-28 w-full items-end justify-center gap-0.5">
                 <div
-                  className="w-1/3 rounded-t bg-violet-500"
+                  className="w-1/3 rounded-t bg-zinc-500"
                   style={{ height: `${Math.round((d.clips / maxDia) * 100)}%`, minHeight: d.clips ? 3 : 0 }}
                 />
                 <div

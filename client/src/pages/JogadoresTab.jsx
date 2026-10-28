@@ -225,8 +225,8 @@ const JOGADORES = {
   },
   fortnite: {
     nome: 'Fortnite',
-    cor: 'from-purple-500 to-fuchsia-500',
-    txt: 'text-purple-300',
+    cor: 'from-zinc-500 to-zinc-500',
+    txt: 'text-zinc-300',
     destaque: [
       { nick: 'Bugha', time: 'Pro player', rank: 1, stat: 'Campeão World Cup 2019' },
       { nick: 'Ninjasin', time: 'Pro player', rank: 2, stat: 'Top da cena' },

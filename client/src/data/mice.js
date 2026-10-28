@@ -431,6 +431,7 @@ export const MICE = [
   M('Razer', 'Viper V2 Pro'),
   M('Razer', 'Viper V3 HyperSpeed'),
   M('Razer', 'Viper V3 Pro'),
+  M('Razer', 'Viper V4 Pro'),
   M('Razer', 'Viper 8KHz'),
   M('Razer', 'DeathAdder V2'),
   M('Razer', 'DeathAdder V2 Pro'),

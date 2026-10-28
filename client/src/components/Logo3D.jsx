@@ -61,7 +61,7 @@ export default function Logo3D({ largura = 90, altura = 90 }) {
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 3, 4]} intensity={2.2} />
-        <directionalLight position={[-3, -2, -3]} intensity={0.8} color="#a78bfa" />
+        <directionalLight position={[-3, -2, -3]} intensity={0.8} color="#d4d4d8" />
         <Suspense fallback={null}>
           <Modelo />
         </Suspense>

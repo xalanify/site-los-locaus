@@ -108,13 +108,13 @@ function Grafico({ porDia }) {
       <div className="ui-card-header">
         <div>
           <h3 className="ui-section-title">
-            <TrendingUp className="h-4 w-4 text-violet-300" /> Movimento dos últimos 14 dias
+            <TrendingUp className="h-4 w-4 text-zinc-300" /> Movimento dos últimos 14 dias
           </h3>
           <p className="mt-1 text-[11px] text-gray-500">Visitas, clips e comentários — atualiza sozinho.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-gray-400">
           <span className="inline-flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-emerald-400" /> visitas</span>
-          <span className="inline-flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-violet-400" /> clips</span>
+          <span className="inline-flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-zinc-400" /> clips</span>
           <span className="inline-flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-sky-400" /> comentários</span>
         </div>
       </div>
@@ -166,7 +166,7 @@ function BarrasJogo({ porJogo }) {
   return (
     <div className="ui-card">
       <div className="ui-card-header">
-        <h3 className="ui-section-title"><Gamepad2 className="h-4 w-4 text-fuchsia-300" /> Clips por jogo</h3>
+        <h3 className="ui-section-title"><Gamepad2 className="h-4 w-4 text-zinc-300" /> Clips por jogo</h3>
         <span className="ui-chip bg-white/5 text-gray-400">{porJogo?.length || 0} jogos</span>
       </div>
       {!lista.length ? (
@@ -181,7 +181,7 @@ function BarrasJogo({ porJogo }) {
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400"
+                  className="h-full rounded-full bg-gradient-to-r from-zinc-500 to-zinc-400"
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.max(4, (Number(j.n) / max) * 100)}%` }}
                   transition={{ duration: 0.7, delay: i * 0.05 }}
@@ -200,8 +200,8 @@ function TopClips({ topClips }) {
   return (
     <div className="ui-card">
       <div className="ui-card-header">
-        <h3 className="ui-section-title"><Film className="h-4 w-4 text-violet-300" /> Clips mais vistos</h3>
-        <span className="ui-chip bg-violet-500/10 text-violet-300">top {lista.length}</span>
+        <h3 className="ui-section-title"><Film className="h-4 w-4 text-zinc-300" /> Clips mais vistos</h3>
+        <span className="ui-chip bg-zinc-500/10 text-zinc-300">top {lista.length}</span>
       </div>
       {!lista.length ? (
         <p className="py-8 text-center text-xs text-gray-500">Sem clips ainda.</p>
@@ -298,7 +298,7 @@ export default function AdminDashboard({ onTab, onLimparChat, chatLimparBusy, ch
   if (!carregado) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
       </div>
     )
   }
@@ -334,8 +334,8 @@ export default function AdminDashboard({ onTab, onLimparChat, chatLimparBusy, ch
 
       {/* KPIs principais */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <Kpi Icon={Users} label="Contas" valor={r.usersTotal} cor="bg-violet-500/15 text-violet-300" />
-        <Kpi Icon={Film} label="Clips" valor={r.clipsTotal} cor="bg-fuchsia-500/15 text-fuchsia-300" trend={porDia.map((d) => d.clips)} linha="#e879f9" />
+        <Kpi Icon={Users} label="Contas" valor={r.usersTotal} cor="bg-zinc-500/15 text-zinc-300" />
+        <Kpi Icon={Film} label="Clips" valor={r.clipsTotal} cor="bg-zinc-500/15 text-zinc-300" trend={porDia.map((d) => d.clips)} linha="#e879f9" />
         <Kpi Icon={Eye} label="Visualizações" valor={r.views} cor="bg-sky-500/15 text-sky-300" trend={visitas} linha="#38bdf8" />
         <Kpi Icon={Heart} label="Gostos" valor={r.likes} cor="bg-rose-500/15 text-rose-300" />
         <Kpi Icon={MessageSquare} label="Comentários" valor={r.comentarios} cor="bg-indigo-500/15 text-indigo-300" trend={porDia.map((d) => d.comentarios)} linha="#818cf8" />

@@ -219,7 +219,7 @@ export default function SpotifyPage() {
 
         {/* ---------------- Nota final ---------------- */}
         <div className="mt-8 flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] leading-relaxed text-gray-400">
-          <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
+          <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
           <p>
             Scripts correm no PC do servidor (requer PowerShell admin). A configuração aplicada é a
             <span className="font-bold text-green-400">Premium By Xalana</span> — sem anúncios, skips ilimitados,

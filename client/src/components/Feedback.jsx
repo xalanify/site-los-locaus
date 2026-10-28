@@ -41,7 +41,7 @@ toast.info = (t) => toast(t, 'info')
 const AVISO_ESTILO = {
   ok: { Icone: CheckCircle2, cor: 'text-emerald-300', fundo: 'bg-emerald-500/15', anel: 'ring-emerald-400/30' },
   erro: { Icone: AlertTriangle, cor: 'text-red-300', fundo: 'bg-red-500/15', anel: 'ring-red-400/30' },
-  info: { Icone: Info, cor: 'text-violet-300', fundo: 'bg-violet-500/15', anel: 'ring-violet-400/30' },
+  info: { Icone: Info, cor: 'text-zinc-300', fundo: 'bg-zinc-500/15', anel: 'ring-zinc-400/30' },
 }
 
 export function Toasts() {
@@ -73,7 +73,7 @@ export function Toasts() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 12, scale: 0.96 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0d0a17]/95 px-4 py-3 shadow-2xl backdrop-blur-xl"
+              className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-white/10 bg-[#101012]/95 px-4 py-3 shadow-2xl backdrop-blur-xl"
             >
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ${e.fundo} ${e.anel}`}
@@ -161,18 +161,18 @@ export function Dialogos() {
             exit={{ opacity: 0, y: 10, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             onClick={(ev) => ev.stopPropagation()}
-            className="w-full max-w-sm rounded-3xl border border-white/10 bg-[#0d0a17] p-5 shadow-2xl"
+            className="w-full max-w-sm rounded-3xl border border-white/10 bg-[#101012] p-5 shadow-2xl"
           >
             <div className="flex items-start gap-3">
               <span
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ring-1 ${
                   pedido.perigoso
                     ? 'bg-red-500/15 ring-red-400/30'
-                    : 'bg-violet-500/15 ring-violet-400/30'
+                    : 'bg-zinc-500/15 ring-zinc-400/30'
                 }`}
               >
                 <AlertTriangle
-                  className={`h-5 w-5 ${pedido.perigoso ? 'text-red-300' : 'text-violet-300'}`}
+                  className={`h-5 w-5 ${pedido.perigoso ? 'text-red-300' : 'text-zinc-300'}`}
                 />
               </span>
               <div className="min-w-0 flex-1">
@@ -194,7 +194,7 @@ export function Dialogos() {
                 className={`rounded-full px-4 py-2 text-sm font-bold text-white transition-colors ${
                   pedido.perigoso
                     ? 'bg-red-500 hover:bg-red-400'
-                    : 'bg-violet-500 hover:bg-violet-400'
+                    : 'bg-zinc-500 hover:bg-zinc-400'
                 }`}
               >
                 {pedido.okTexto}

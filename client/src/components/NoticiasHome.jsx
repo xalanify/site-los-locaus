@@ -86,7 +86,7 @@ export default function NoticiasHome() {
             </p>
           </div>
           <Link
-            to="/jogos-steam?aba=noticias"
+            to="/noticias"
             className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-black text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
           >
             Ver todas <ArrowRight className="h-3.5 w-3.5" />
@@ -123,7 +123,7 @@ export default function NoticiasHome() {
                 transition={{ delay: Math.min(i * 0.06, 0.24) }}
                 className="glass group flex flex-col overflow-hidden rounded-2xl text-left"
               >
-                <span className="relative block aspect-video overflow-hidden bg-violet-500/10">
+                <span className="relative block aspect-video overflow-hidden bg-zinc-500/10">
                   {n.imagem ? (
                     <img
                       src={n.imagem}
@@ -141,10 +141,10 @@ export default function NoticiasHome() {
                     />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center">
-                      <Newspaper className="h-10 w-10 text-violet-300/30" />
+                      <Newspaper className="h-10 w-10 text-zinc-300/30" />
                     </span>
                   )}
-                  <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-violet-200 ring-1 ring-white/10">
+                  <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-200 ring-1 ring-white/10">
                     {n.fonte}
                   </span>
                 </span>
@@ -153,7 +153,7 @@ export default function NoticiasHome() {
                   <span className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
                     {fmtData(n.data)}
                   </span>
-                  <span className="mt-1.5 line-clamp-2 text-sm font-bold leading-snug text-white transition-colors group-hover:text-violet-300">
+                  <span className="mt-1.5 line-clamp-2 text-sm font-bold leading-snug text-white transition-colors group-hover:text-zinc-300">
                     {n.titulo}
                   </span>
                   {n.resumo && (
@@ -161,7 +161,7 @@ export default function NoticiasHome() {
                       {n.resumo}
                     </span>
                   )}
-                  <span className="mt-auto flex items-center gap-1 pt-3 text-[10px] font-black uppercase tracking-wide text-violet-300">
+                  <span className="mt-auto flex items-center gap-1 pt-3 text-[10px] font-black uppercase tracking-wide text-zinc-300">
                     <Sparkles className="h-3 w-3" /> Ver resumo
                   </span>
                 </span>

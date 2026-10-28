@@ -14,12 +14,13 @@ import {
   X,
   MessageCircle,
   Swords,
-  ShoppingBag,
+  Newspaper,
   CircuitBoard,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AvatarImg from './AvatarImg'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
+import SaldoMoedas from './SaldoMoedas'
 
 /* ============================================================
    Menu lateral do telemóvel (abre pela foto na barra de topo).
@@ -50,17 +51,18 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     { name: 'Membros', icon: Users, path: '/membros' },
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
-    { name: 'Loja de Jogos', icon: ShoppingBag, path: '/jogos-steam', badge: 'Novo' },
-    // PCs/Specs e Ferramentas: visíveis para todos; a página mostra o aviso
+    { name: 'Notícias', icon: Newspaper, path: '/noticias' },
+    // PCs/Specs: aberto a todos os membros
     { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
+    // Loja de cosméticos: aberta a todos os membros
+    { name: 'Loja de cosméticos', icon: Sparkles, path: '/cosmeticos', badge: 'Novo' },
     // Componentes e Periféricos: só o admin vê no menu
     ...(isAdmin
       ? [
           { name: 'Componentes e Periféricos', icon: CircuitBoard, path: '/componentes', badge: 'Admin' },
-          { name: 'Loja de cosméticos', icon: Sparkles, path: '/cosmeticos', badge: 'Admin' },
         ]
       : []),
-    { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
+    { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas', badge: 'Novo' },
     { name: 'Conta', icon: User, path: user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil' },
   ]
 
@@ -122,6 +124,11 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
               </span>
             </button>
 
+            {/* Moedas Locaus */}
+            <div className="px-4 pb-3">
+              <SaldoMoedas user={user} />
+            </div>
+
             {/* itens */}
             <nav className="flex-1 space-y-1 px-3">
               {itens.map((it) => {
@@ -133,21 +140,21 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
                     onClick={() => go(it.path)}
                     className={`flex w-full items-center gap-4 rounded-xl px-3 py-3 text-left transition-colors ${
                       ativo
-                        ? 'bg-violet-500/15 text-white'
+                        ? 'bg-white/[0.06] text-[#ff9e9e]'
                         : 'text-gray-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
                     <Icon
-                      className={`h-5 w-5 shrink-0 ${ativo ? 'text-violet-400' : 'text-gray-500'}`}
+                      className={`h-5 w-5 shrink-0 ${ativo ? 'text-[#ff9e9e]' : 'text-gray-500'}`}
                     />
-                    <span className="text-[15px] font-bold">{it.name}</span>
+                    <span className="text-[15px] font-medium">{it.name}</span>
                     {it.naoLidas > 0 && (
-                      <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-violet-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(139,92,246,0.6)]">
+                      <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-[#ff9e9e] px-1.5 py-0.5 text-[10px] font-black text-[#1a0f0f] shadow-[0_0_12px_rgba(255,158,158,0.25)]">
                         {it.naoLidas > 99 ? '99+' : it.naoLidas}
                       </span>
                     )}
                     {it.badge && (
-                      <span className="ml-auto rounded-full bg-amber-400/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
+                      <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-200 ring-1 ring-white/15">
                         {it.badge}
                       </span>
                     )}

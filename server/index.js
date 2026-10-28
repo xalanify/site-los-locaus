@@ -249,6 +249,14 @@ if (!IS_VERCEL) {
   app.listen(PORT, () => {
     console.log(`Servidor a correr em http://localhost:${PORT}`);
   });
+
+  // Inventário CS2 automático: calcula os valores em background.
+  setTimeout(() => {
+    require('./cs2inventory').sincronizarValores().catch(() => {});
+  }, 20000);
+  setInterval(() => {
+    require('./cs2inventory').sincronizarValores().catch(() => {});
+  }, 6 * 60 * 60 * 1000);
 }
 
 // R6 — modo manual (tracker.gg importado no painel admin).

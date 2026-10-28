@@ -54,6 +54,17 @@ export const BADGES = [  {
     anim: 'float',
     arte: 'fortnite',
   },
+  {
+    id: 'cs2-inventory',
+    label: 'INVENTÁRIO CS2 MAIS CARO',
+    desc: 'Maior valor de inventário CS2 do grupo',
+    color: '#F5C542',
+    light: '#FFF3B0',
+    dark: '#7A4D00',
+    glow: '#F5C542',
+    anim: 'shine',
+    icon: 'euro',
+  },
 ]
 
 /* Distinção dinâmica de acertos seguidos: streak-5, streak-6, ... */
@@ -203,6 +214,58 @@ export function BadgeGem({ badge, size = 56 }) {
           : '#08080e'
   const olhoGlow = obsidian ? '#A855F7' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : streak ? '#FF0000' : null
   const glow = badge.glow || badge.color
+
+  if (badge.icon === 'euro') {
+    return (
+      <div
+        className={`relative shrink-0 ${anim}`}
+        style={{
+          width: size,
+          height: size,
+          filter: `drop-shadow(0 0 9px ${hexToRgba(glow, 0.65)})`,
+        }}
+        title={badge.desc}
+      >
+        <svg viewBox="0 0 100 100" className="relative h-full w-full">
+          <defs>
+            <radialGradient id={`euro-${uid}`} cx="35%" cy="30%" r="80%">
+              <stop offset="0%" stopColor="#fff8d6" />
+              <stop offset="45%" stopColor="#f5c542" />
+              <stop offset="100%" stopColor="#8a5a00" />
+            </radialGradient>
+          </defs>
+          <circle
+            cx="50"
+            cy="50"
+            r="46"
+            fill={`url(#euro-${uid})`}
+            stroke="#fff3b0"
+            strokeWidth="2"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="37"
+            fill="none"
+            stroke="#7a4d00"
+            strokeOpacity="0.35"
+            strokeWidth="1.5"
+          />
+          <text
+            x="50"
+            y="68"
+            textAnchor="middle"
+            fontFamily="Inter, Arial, sans-serif"
+            fontSize="52"
+            fontWeight="800"
+            fill="#ffffff"
+          >
+            €
+          </text>
+        </svg>
+      </div>
+    )
+  }
 
   return (
     <div

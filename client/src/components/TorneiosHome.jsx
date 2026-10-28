@@ -341,7 +341,7 @@ export default function TorneiosHome() {
             Próximos torneios
           </h2>
           <p className="mt-1 flex items-center gap-2 text-xs font-semibold text-gray-400">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-300" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-300" />
             A carregar os próximos torneios…
           </p>
         </div>

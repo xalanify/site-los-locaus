@@ -97,7 +97,7 @@ export default function VideosModal({ open, onClose }) {
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
           transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-[#0d0918] shadow-2xl"
+          className="w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-[#101012] shadow-2xl"
         >
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-5">
             <div className="min-w-0">
@@ -154,7 +154,7 @@ export default function VideosModal({ open, onClose }) {
                     href={`https://www.youtube.com/watch?v=${aberto.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-violet-300 hover:text-violet-200"
+                    className="inline-flex items-center gap-1 text-zinc-300 hover:text-zinc-200"
                   >
                     Ver no YouTube <ExternalLink className="h-3 w-3" />
                   </a>
@@ -179,7 +179,7 @@ export default function VideosModal({ open, onClose }) {
 
                 {loading ? (
                   <div className="flex justify-center py-14">
-                    <Loader2 className="h-7 w-7 animate-spin text-violet-400" />
+                    <Loader2 className="h-7 w-7 animate-spin text-zinc-400" />
                   </div>
                 ) : lista.length === 0 ? (
                   <p className="py-10 text-center text-sm text-gray-400">
@@ -192,7 +192,7 @@ export default function VideosModal({ open, onClose }) {
                         key={v.id}
                         type="button"
                         onClick={() => setAberto(v)}
-                        className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] text-left transition-colors hover:border-violet-400/30 hover:bg-white/[0.06]"
+                        className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] text-left transition-colors hover:border-zinc-400/30 hover:bg-white/[0.06]"
                       >
                         <span className="relative block aspect-video overflow-hidden">
                           <img

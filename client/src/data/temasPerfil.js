@@ -225,8 +225,12 @@ export const CORES_BORDA = [
 ]
 
 export const corBordaDe = (id, bannerCor) => {
+  // Por padrão, o anel da foto e a borda do cartão são pretos.
+  if (!id) return '#000000'
   const c = CORES_BORDA.find((x) => x.id === id)
-  return (c && c.cor) || bannerCor
+  if (c && c.cor) return c.cor
+  if (id === 'banner') return bannerCor
+  return '#000000'
 }
 
 export const MUSICAS = [

@@ -24,12 +24,12 @@ export default function GLBLogo() {
   }, []);
 
   return (
-    <a href="/" className="group flex items-center gap-3 text-xl sm:text-2xl font-black tracking-tight text-white hover:text-violet-300 transition-colors" title="Ashow e Jazer — Início">
+    <a href="/" className="group flex items-center gap-3 text-xl sm:text-2xl font-black tracking-tight text-white hover:text-zinc-300 transition-colors" title="Ashow e Jazer — Início">
       {/* Logo 3D — imagem do ficheiro 2.glb (renderizado como thumb) */}
       <img
         src="/2.glb"
         alt="Logo 3D"
-        className="h-10 w-10 rounded-xl object-cover shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+        className="h-10 w-10 rounded-xl object-cover shadow-[0_0_30px_rgba(255,255,255,0.12)]"
         style={{
           transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg) scale(1.05)`,
           transition: 'transform 0.15s ease-out',
