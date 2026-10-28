@@ -1277,6 +1277,9 @@ export default function PrevisoesPage({ user }) {
     }
     // Abre já com o que está na base de dados e sincroniza a seguir,
     // para a página nunca ficar 3 segundos em "a carregar".
+    // O aviso de resultados é pedido logo no início, para aparecer
+    // assim que o utilizador entra (sem esperar pela sincronização).
+    carregarResultadosNovos()
     carregar(false).finally(() => {
       if (vivo) {
         carregar(true).finally(() => {
