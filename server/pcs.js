@@ -79,10 +79,13 @@ function estadoMemoria(aplicada, jedec, kit, timings) {
     Boolean(timings && timings.atual && timings.xmp) &&
     norm(timings.atual) !== norm(timings.xmp);
   const acimaKit = Boolean(kit && aplicada && aplicada > kit);
-  const temXmp = Boolean(jedec && aplicada && aplicada > jedec);
+  /* O CPU-Z mostra os perfis XMP que o módulo SUPORTA, não se estão
+     ativos. Usar isso como "XMP ligado" dava falsos positivos (ex.:
+     RAM à velocidade do kit). Só marcamos overclock quando os timings
+     mudam ou quando passa da velocidade do kit. */
   return {
-    estado: temTimings || acimaKit ? 'overclock' : temXmp ? 'xmp' : 'normal',
-    tem_xmp: temXmp,
+    estado: temTimings || acimaKit ? 'overclock' : 'normal',
+    tem_xmp: false,
     timings_alterados: temTimings,
     acima_do_kit: acimaKit,
   };

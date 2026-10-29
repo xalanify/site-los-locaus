@@ -545,7 +545,27 @@ async function salvarDeep(uid, campos, detalhes) {
 }
 
 /* ---------- ajudas ---------- */
+/* Alguns PCs têm a RAM à velocidade do kit e o CPU-Z marca XMP.
+   Quando o dono diz que não tem XMP ativo, escondemos esse dado
+   (sem mexer na leitura original guardada). */
+function semXmp(details) {
+  if (!details || !details.avaliacao) return details
+  const det = JSON.parse(JSON.stringify(details))
+  const av = det.avaliacao
+  if (av.ram) {
+    av.ram.tem_xmp = false
+    if (av.ram.estado === 'xmp') av.ram.estado = 'normal'
+    av.ram.tensao_xmp_v = null
+    if (av.ram.timings) av.ram.timings.xmp = null
+  }
+  if (det.cpu && det.cpu.real) {
+    det.cpu.real.memoria_tem_xmp = false
+    det.cpu.real.memoria_xmp_v = null
+  }
+  return det
+}
 function pick(r) {
+  const detalhes = json(r.details)
   return {
     os: r.os || null,
     browser: r.browser || null,
@@ -555,7 +575,7 @@ function pick(r) {
     screen: r.screen || null,
     storage_gb: r.storage_gb == null ? null : Number(r.storage_gb),
     cpu_score: r.cpu_score == null ? null : Number(r.cpu_score),
-    details: json(r.details),
+    details: r.ocultar_xmp ? semXmp(detalhes) : detalhes,
   };
 }
 function json(v) {

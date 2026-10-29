@@ -64,6 +64,9 @@ const CARD_STYLES = new Set([
   'cosmic',
   'crimson',
   'violet',
+  'sleepin',
+  'river',
+  'dev',
 ]);
 const PROFILE_STYLES = new Set(['padrao', 'felony', 'neon', 'blood', 'cosmic', 'crimson']);
 
@@ -282,7 +285,7 @@ const gameRanksOf = async (userId) => {
 const distincoesOverclock = async (userId) => {
   try {
     const row = await getDb()
-      .prepare('SELECT details FROM user_specs WHERE user_id = ?')
+      .prepare('SELECT details, ocultar_xmp FROM user_specs WHERE user_id = ?')
       .get(userId);
     let det = row && row.details;
     if (det && typeof det === 'string') {
@@ -292,7 +295,9 @@ const distincoesOverclock = async (userId) => {
     if (!av) return null;
     const ocCpu = av.cpu?.estado === 'overclock';
     const ocRam = av.ram?.estado === 'overclock';
-    const xmp = Boolean(av.ram?.tem_xmp || av.ram?.estado === 'xmp');
+    let xmp = Boolean(av.ram?.tem_xmp || av.ram?.estado === 'xmp');
+    // Leitura marcada para esconder XMP (RAM à velocidade do kit).
+    if (row && row.ocultar_xmp) xmp = false;
     if (!ocCpu && !ocRam && !xmp) return null;
     return { oc_cpu: ocCpu, oc_ram: ocRam, xmp };
   } catch {
@@ -828,56 +833,63 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       }
     }
 
-    if (hasSocials) {      const conta = await store.findById(uid);
+    if (hasSocials) {
+      const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
-      if (!souAdmin) {
-        return res.status(403).json({ error: 'Só o admin pode configurar as redes/live.' });
-      }
-      const entrada = body.socials && typeof body.socials === 'object' ? body.socials : {};
-      const permitidas = {
-        youtube: ['youtube.com', 'youtu.be'],
-        twitch: ['twitch.tv'],
-        tiktok: ['tiktok.com'],
-        kick: ['kick.com'],
-      };
-      const limpo = {};
-      for (const [rede, valor] of Object.entries(entrada)) {
-        const dominios = permitidas[rede];
-        if (!dominios) continue;
-        const bruto = String(valor || '').trim().slice(0, 300);
-        if (!bruto) continue;
-        if (!/^https?:\/\//i.test(bruto)) {
-          const handle = bruto.replace(/^@/, '');
-          if (!/^[A-Za-z0-9._-]{1,60}$/.test(handle)) {
+      // Redes/live continuam a ser só para admin. Para os restantes
+      // users os campos são ignorados (sem erro), para não bloquear
+      // a alteração normal do perfil (foto, banner, mouse, DPI...).
+      if (souAdmin) {
+        const entrada = body.socials && typeof body.socials === 'object' ? body.socials : {};
+        const permitidas = {
+          youtube: ['youtube.com', 'youtu.be'],
+          twitch: ['twitch.tv'],
+          tiktok: ['tiktok.com'],
+          kick: ['kick.com'],
+        };
+        const limpo = {};
+        for (const [rede, valor] of Object.entries(entrada)) {
+          const dominios = permitidas[rede];
+          if (!dominios) continue;
+          const bruto = String(valor || '').trim().slice(0, 300);
+          if (!bruto) continue;
+          if (!/^https?:\/\//i.test(bruto)) {
+            const handle = bruto.replace(/^@/, '');
+            if (!/^[A-Za-z0-9._-]{1,60}$/.test(handle)) {
+              return res.status(400).json({ error: `O link de ${rede} não é válido.` });
+            }
+            limpo[rede] = handle;
+            continue;
+          }
+          let host = '';
+          try {
+            host = new URL(bruto).hostname.replace(/^www\./i, '').toLowerCase();
+          } catch {
             return res.status(400).json({ error: `O link de ${rede} não é válido.` });
           }
-          limpo[rede] = handle;
-          continue;
+          const ok = dominios.some((d) => host === d || host.endsWith(`.${d}`));
+          if (!ok) {
+            return res.status(400).json({ error: `O link de ${rede} tem de ser do ${dominios[0]}.` });
+          }
+          limpo[rede] = bruto;
         }
-        let host = '';
-        try {
-          host = new URL(bruto).hostname.replace(/^www\./i, '').toLowerCase();
-        } catch {
-          return res.status(400).json({ error: `O link de ${rede} não é válido.` });
-        }
-        const ok = dominios.some((d) => host === d || host.endsWith(`.${d}`));
-        if (!ok) {
-          return res.status(400).json({ error: `O link de ${rede} tem de ser do ${dominios[0]}.` });
-        }
-        limpo[rede] = bruto;
+        await db
+          .prepare(
+            'UPDATE user_profiles SET socials = ?::jsonb, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(JSON.stringify(limpo), uid);
       }
-      await db
-        .prepare(
-          'UPDATE user_profiles SET socials = ?::jsonb, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-        )
-        .run(JSON.stringify(limpo), uid);
     }
     if (hasLiveAuto) {
-      await db
-        .prepare(
-          'UPDATE user_profiles SET live_auto = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-        )
-        .run(Boolean(body.live_auto), uid);
+      const conta = await store.findById(uid);
+      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+      if (souAdmin) {
+        await db
+          .prepare(
+            'UPDATE user_profiles SET live_auto = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(Boolean(body.live_auto), uid);
+      }
     }
 
     const user = await store.findById(uid);

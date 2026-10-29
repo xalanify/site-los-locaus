@@ -24,7 +24,7 @@ export default function MembrosPage({ onProfile }) {
   const [cartaZoom, setCartaZoom] = useState(null)
 
   useEffect(() => {
-    fetch('/api/users/list', { headers: authHeaders() })
+    fetch('/api/users/list', { headers: authHeaders(), cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setMembros(d?.users || []))
       .catch(() => {})
@@ -276,32 +276,37 @@ export default function MembrosPage({ onProfile }) {
 
       {cartaZoom && (
         <div
-          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
           onClick={() => setCartaZoom(null)}
         >
           <div
-            className="relative max-h-[92dvh] w-full max-w-[620px] overflow-y-auto"
+            className="relative w-full max-w-[560px]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setCartaZoom(null)}
-              className="absolute right-2 top-2 z-20 grid h-8 w-8 place-items-center rounded-full bg-black/60 text-zinc-300 ring-1 ring-white/15 hover:bg-white/15 hover:text-white"
+              className="absolute -right-1 -top-1 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/20"
               aria-label="Fechar carta"
             >
               <X className="h-4 w-4" />
             </button>
-            <ProfileCard
-              perfil={cartaZoom}
-              variant={cartaZoom.card_style || 'padrao'}
-              jogos={[
-                ...new Set([
-                  ...(cartaZoom.game_accounts || []),
-                  ...Object.keys(cartaZoom.game_ranks || {}),
-                ]),
-              ].filter((g) => g !== 'csgo')}
-              className="w-full"
-            />
+            <div className="origin-center scale-[0.92] sm:scale-100">
+              <ProfileCard
+                perfil={cartaZoom}
+                variant={cartaZoom.card_style || 'padrao'}
+                jogos={[
+                  ...new Set([
+                    ...(cartaZoom.game_accounts || []),
+                    ...Object.keys(cartaZoom.game_ranks || {}),
+                  ]),
+                ].filter((g) => g !== 'csgo')}
+                className="w-full"
+              />
+            </div>
+            <p className="mt-3 text-center text-xs font-bold text-zinc-300">
+              {cartaZoom.username}
+            </p>
           </div>
         </div>
       )}

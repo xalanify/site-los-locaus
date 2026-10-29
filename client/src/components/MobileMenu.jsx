@@ -6,7 +6,6 @@ import {
   Trophy,
   Users,
   Gamepad2,
-  Cpu,
   Wrench,
   User,
   LogOut,
@@ -52,8 +51,6 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     // Jogos, Specs e Ferramentas: abertas a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
     { name: 'Notícias', icon: Newspaper, path: '/noticias' },
-    // PCs/Specs: aberto a todos os membros
-    { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
     // Loja de cosméticos: aberta a todos os membros
     { name: 'Loja de cosméticos', icon: Sparkles, path: '/cosmeticos', badge: 'Novo' },
     // Componentes e Periféricos: só o admin vê no menu

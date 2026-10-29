@@ -87,6 +87,8 @@ const PASSOS = [
   'ALTER TABLE public.user_specs ALTER COLUMN cpu_score TYPE bigint',
   // leitura real do PC (PowerShell): relógios, timings e discos
   'ALTER TABLE public.user_specs ADD COLUMN IF NOT EXISTS details jsonb',
+  // esconder o XMP quando o dono confirma que não está ativo
+  'ALTER TABLE public.user_specs ADD COLUMN IF NOT EXISTS ocultar_xmp boolean NOT NULL DEFAULT false',
   // Registo de auditoria das ferramentas Windows (vê-se no painel admin)
   `CREATE TABLE IF NOT EXISTS public.tool_runs (
      id           bigint generated always as identity primary key,
@@ -165,12 +167,14 @@ const PASSOS = [
      user_id   bigint not null references public.users(id) on delete cascade,
      pick      text not null check (pick in ('a', 'b')),
      correct   boolean,
+     stake     integer not null default 0,
      notified  boolean not null default false,
      seen_at   timestamptz,
      created_at timestamptz not null default now(),
      updated_at timestamptz not null default now(),
      primary key (match_id, user_id)
    )`,
+  'ALTER TABLE public.r6_predictions ADD COLUMN IF NOT EXISTS stake integer NOT NULL DEFAULT 0',
   'CREATE INDEX IF NOT EXISTS r6_predictions_user_idx ON public.r6_predictions (user_id, created_at DESC)',
   // CS2 — jogos e previsões (fonte bo3.gg)
   `CREATE TABLE IF NOT EXISTS public.cs2_matches (
@@ -201,10 +205,12 @@ const PASSOS = [
      user_id    bigint not null references public.users(id) on delete cascade,
      pick       text not null check (pick in ('a', 'b')),
      correct    boolean,
+     stake      integer not null default 0,
      seen_at    timestamptz,
      updated_at timestamptz not null default now(),
      primary key (match_id, user_id)
    )`,
+  'ALTER TABLE public.cs2_predictions ADD COLUMN IF NOT EXISTS stake integer NOT NULL DEFAULT 0',
   'CREATE INDEX IF NOT EXISTS cs2_predictions_user_idx ON public.cs2_predictions (user_id)',
   `CREATE TABLE IF NOT EXISTS public.r6_sync (
      id         integer primary key,

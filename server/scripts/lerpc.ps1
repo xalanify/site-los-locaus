@@ -491,7 +491,10 @@ if ($cpuz) {
       if ($mXmpV) { $real.memoria_xmp_v = [double]$mXmpV }
       $temXmp = $false
       foreach ($l in $linhas) { if ($l -match '^\s*XMP\s+\d+') { $temXmp = $true; break } }
-      $real.memoria_tem_xmp = $temXmp
+      # CPU-Z lista perfis XMP suportados, não se estão ativos. Não
+      # usamos isto para dizer "XMP ligado" (evita falsos positivos).
+      $real.memoria_tem_xmp = $false
+      $real.memoria_suporta_xmp = $temXmp
 
       Passo 'CPU-Z: tensao, temperatura e timings lidos.'
     } else {

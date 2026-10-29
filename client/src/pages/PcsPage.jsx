@@ -284,7 +284,7 @@ function TerminalPassos({ passos, aCorrer }) {
   )
 }
 
-export default function PcsPage({ isAdmin = false }) {
+export default function PcsPage({ isAdmin = false, embedded = false }) {
   const [lista, setLista] = useState([])
   const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(null) // linha expandida
@@ -529,72 +529,58 @@ export default function PcsPage({ isAdmin = false }) {
     return <Badge tom="ok">Normal</Badge>
   }
 
-  /* ---- GATE: o LOCAUS-PC.bat é obrigatório ---- */
-  /* A página só abre quando o PC deste utilizador está ligado ao site
-     (via LOCAUS-PC.bat). A verificação corre a cada 2s — quando o .bat
-     liga o PC, a página desbloqueia sozinha. */
-  if (agenteVerificado && !agenteOnline) {
-    return (
-      <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
-        <div className="mx-auto max-w-md">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-2xl p-6 text-center ring-1 ring-white/10"
-          >
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 ring-1 ring-emerald-500/30">
-              <Lock className="h-7 w-7 text-emerald-400" />
-            </span>
-            <h1 className="mt-4 font-display text-xl font-black uppercase text-white">
-              PCs / Specs
-            </h1>
-            <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
-              Para leres as specs, o teu Windows tem de estar ligado ao site.
-              Descarrega o <b className="text-white">LOCAUS-PC.bat</b>, abre-o e deixa a
-              janela aberta — o site deteta a ligação e desbloqueia esta página.
-            </p>
-            <button
-              type="button"
-              onClick={ligarApp}
-              disabled={aLigarApp}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
-            >
-              {aLigarApp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              {aLigarApp ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
-            </button>
-            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
-              A ligação é só tua: liga o teu Windows à tua conta do site. Sem abrires o
-              ficheiro, ninguém (nem tu) consegue ler as specs.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-    )
-  }
-
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+    <section className={embedded ? 'py-2' : 'min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28'}>
       <div className="mx-auto max-w-6xl">
         {/* ---------------- Cabeçalho ---------------- */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className={embedded ? 'mb-4' : 'mb-6'}
         >
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1
                 className="font-black gradient-text"
-                style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
+                style={{ fontSize: embedded ? 'clamp(1.35rem, 4vw, 1.8rem)' : 'clamp(1.8rem, 6vw, 2.8rem)' }}
               >
                 PCs / Specs
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-gray-400">
-                As máquinas do grupo com valores lidos no Windows. Clique numa linha para ver tudo.
+                As máquinas do grupo com valores lidos no Windows. Clica numa linha para ver tudo.
               </p>
             </div>
           </div>
         </motion.div>
+
+        {/* Aviso: PC ainda não ligado — a tabela continua visível */}
+        {!embedded && agenteVerificado && !agenteOnline && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex flex-col gap-3 rounded-2xl border border-amber-400/25 bg-amber-500/[0.07] p-4 sm:flex-row sm:items-center"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 ring-1 ring-amber-300/30">
+              <Lock className="h-5 w-5 text-amber-300" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black text-amber-100">PC ainda não ligado</p>
+              <p className="mt-0.5 text-[12px] leading-relaxed text-amber-100/70">
+                Podes ver as máquinas do grupo. Para leres as tuas specs, liga o Windows ao site
+                com o <b className="text-white">LOCAUS-PC.bat</b>.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={ligarApp}
+              disabled={aLigarApp}
+              className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
+            >
+              {aLigarApp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarApp ? 'A preparar…' : 'Ligar este PC'}
+            </button>
+          </motion.div>
+        )}
 
         {/* ---------------- Tabela ---------------- */}
         <div className="glass mb-6 overflow-hidden rounded-2xl">

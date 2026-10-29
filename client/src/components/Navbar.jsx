@@ -60,7 +60,10 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
   return (
     <>
       {/* ---------------- Barra de topo (só no telemóvel) ---------------- */}
-      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0b]/88 backdrop-blur-md lg:hidden">
+      <nav
+        className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0b]/88 backdrop-blur-md lg:hidden"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
           {/* Botão de menu — abre o menu lateral (estilo X) */}
           <button
@@ -93,7 +96,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
           partir do ecrã médio. */}
       <nav
         aria-label="Navegação principal"
-        className="fixed bottom-3 left-1/2 z-40 w-[calc(100vw-1rem)] max-w-3xl -translate-x-1/2 sm:bottom-4 sm:w-[calc(100vw-1.5rem)] lg:hidden"
+        className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100vw-1rem)] max-w-3xl -translate-x-1/2 sm:bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:w-[calc(100vw-1.5rem)] lg:hidden"
       >
         <div className="flex flex-nowrap items-center justify-between gap-1 rounded-3xl border border-white/10 bg-[#161618]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:flex-wrap sm:justify-center sm:gap-1.5 sm:rounded-full">
           {links.map((link) => {

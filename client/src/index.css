@@ -1,8 +1,8 @@
-ï»¿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Fontes icÃ³nicas locais (perfil) */
+/* Fontes icónicas locais (perfil) */
 @font-face {
   font-family: 'Pricedown';
   src: url('/fonts/pricedown.woff') format('woff');
@@ -16,8 +16,8 @@
   font-weight: 400;
 }
 
-/* Quando um perfil com fonte escolhida estÃ¡ aberto, TODOS os textos
-   (sidebar, cartÃµes, botÃµes, tÃ­tulos) usam essa fonte. */
+/* Quando um perfil com fonte escolhida está aberto, TODOS os textos
+   (sidebar, cartões, botões, títulos) usam essa fonte. */
 body.profile-fonte,
 body.profile-fonte .font-display,
 body.profile-fonte button,
@@ -28,7 +28,7 @@ body.profile-fonte a {
   font-family: var(--perfil-fonte) !important;
 }
 
-/* Toque tÃ¡til em todos os botÃµes (inspirado nos componentes EasyUI) */
+/* Toque tátil em todos os botões (inspirado nos componentes EasyUI) */
 button:not(:disabled):active {
   transform: scale(0.97);
 }
@@ -38,8 +38,8 @@ button {
 }
 
 /* ============================================================
-   Paleta do site â€” o Tailwind lÃª estas variÃ¡veis
-   (guardar em RGB deixa qualquer cor com transparÃªncia:
+   Paleta do site — o Tailwind lê estas variáveis
+   (guardar em RGB deixa qualquer cor com transparência:
     rgb(var(--aj-500) / 0.4))
    ============================================================ */
 :root {
@@ -49,14 +49,14 @@ button {
   --aj-600: 113 113 122;
   --aj-700: 82 82 91;
 
-  /* SuperfÃ­cies â€” cinzento neutro, com cartÃµes um pouco mais claros
+  /* Superfícies — cinzento neutro, com cartões um pouco mais claros
      e um fio de luz branco na borda (estilo liquid glass). */
   --aj-bg: #0a0a0b;
   --aj-card: #121214;
   --aj-card-hi: #1a1a1d;
   --aj-line: rgba(255, 255, 255, 0.09);
 
-  /* Acento salmÃ£o da referÃªncia */
+  /* Acento salmão da referência */
   --salmon: #ff9e9e;
   --salmon-strong: #ff8a8a;
 }
@@ -70,7 +70,7 @@ button {
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--aj-bg);
-  /* brilho branco muito discreto no topo â€” profundidade sem cor */
+  /* brilho branco muito discreto no topo — profundidade sem cor */
   background-image: radial-gradient(
     70rem 34rem at 50% -12rem,
     rgba(255, 255, 255, 0.055),
@@ -82,16 +82,16 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* espaÃ§o para a barra de navegaÃ§Ã£o flutuante */
+  /* espaço para a barra de navegação flutuante */
   padding-bottom: 6.5rem;
 }
 
 /* ============================================================
-   PWA no telemÃ³vel â€” sem zoom (pinch/double-tap)
+   PWA no telemóvel — sem zoom (pinch/double-tap)
    ------------------------------------------------------------
-   Quando a app corre em modo standalone (Ã­cone no ecrÃ£
-   principal), nÃ£o faz sentido dar zoom: o layout jÃ¡ Ã©
-   pensado para telemÃ³vel. Bloqueia o pinch-zoom e o
+   Quando a app corre em modo standalone (ícone no ecrã
+   principal), não faz sentido dar zoom: o layout já é
+   pensado para telemóvel. Bloqueia o pinch-zoom e o
    double-tap zoom, mantendo o scroll normal.
    ============================================================ */
 html.pwa-no-zoom,
@@ -108,14 +108,14 @@ html.pwa-no-zoom svg {
   touch-action: pan-x pan-y;
 }
 
-/* seleÃ§Ã£o de texto na cor do site */
+/* seleção de texto na cor do site */
 ::selection {
   background: rgb(var(--aj-600) / 0.55);
   color: #fff;
 }
 
-/* foco visÃ­vel (teclado) â€” sÃ³ em botÃµes/links: os inputs jÃ¡ tÃªm
-   o prÃ³prio destaque de borda */
+/* foco visível (teclado) — só em botões/links: os inputs já têm
+   o próprio destaque de borda */
 button:focus-visible,
 a:focus-visible,
 [role='button']:focus-visible {
@@ -124,8 +124,8 @@ a:focus-visible,
 }
 
 /* ============================================================
-   Tipografia de destaque â€” grotesca pesada e levemente
-   expandida (tÃ­tulos, nÃºmeros e rÃ³tulos em maiÃºsculas)
+   Tipografia de destaque — grotesca pesada e levemente
+   expandida (títulos, números e rótulos em maiúsculas)
    ============================================================ */
 h1,
 h2,
@@ -142,7 +142,7 @@ h4,
   font-weight: 800;
 }
 
-/* TÃ­tulos grandes com a serifa editorial da referÃªncia */
+/* Títulos grandes com a serifa editorial da referência */
 h1,
 h1.font-black,
 h1.font-display {
@@ -184,9 +184,9 @@ h4 {
   background: rgb(var(--aj-500));
 }
 
-/* Scrollbar forte â€” para os terminais/log, onde a fina nÃ£o se vÃª.
+/* Scrollbar forte — para os terminais/log, onde a fina não se vê.
    Mais larga, mais clara e com trilho escuro para se notar que
-   hÃ¡ mais conteÃºdo para baixo. */
+   há mais conteúdo para baixo. */
 .scroll-forte {
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--aj-500)) rgba(255, 255, 255, 0.08);
@@ -208,17 +208,17 @@ h4 {
   background: #a1a1aa;
   background-clip: padding-box;
 }
-/* setas â€” sÃ³ aparecem quando a Ã¡rea do rato estÃ¡ em cima */
+/* setas — só aparecem quando a área do rato está em cima */
 .scroll-forte::-webkit-scrollbar-button:single-button {
   display: none;
 }
 
-/* Glow â€” discreto: sÃ³ um halo curto para destacar o elemento ativo */
+/* Glow — discreto: só um halo curto para destacar o elemento ativo */
 .glow-violet {
   box-shadow: 0 2px 12px rgb(var(--aj-600) / 0.4);
 }
 
-/* CartÃ£o â€” superfÃ­cie de vidro fumado: translÃºcida, desfocada e com
+/* Cartão — superfície de vidro fumado: translúcida, desfocada e com
    um fio de luz branco na borda (liquid glass discreto). */
 .glass {
   background:
@@ -292,8 +292,8 @@ h4 {
   animation: slideIn 0.5s ease-out forwards;
 }
 
-/* ---------- DistinÃ§Ãµes (joias de diabo) ---------- */
-/* halo a pulsar Ã  volta da gema */
+/* ---------- Distinções (joias de diabo) ---------- */
+/* halo a pulsar à volta da gema */
 .gem-halo {
   position: absolute;
   inset: -14%;
@@ -409,8 +409,8 @@ h4 {
 
 
 /* ============================================================
-   BotÃµes â€” superfÃ­cie sÃ³lida com borda fina.
-   Sem desfoque, sem reflexo especular: sÃ³ cor e contraste.
+   Botões — superfície sólida com borda fina.
+   Sem desfoque, sem reflexo especular: só cor e contraste.
    ============================================================ */
 button {
   transition:
@@ -430,8 +430,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* BotÃ£o secundÃ¡rio: cinza translÃºcido + fio de borda discreto.
-   (o inset shadow dÃ¡ o contorno sem mexer no layout) */
+/* Botão secundário: cinza translúcido + fio de borda discreto.
+   (o inset shadow dá o contorno sem mexer no layout) */
 .btn-glass,
 button[class~='bg-white/5'],
 button[class~='bg-white/10'],
@@ -458,9 +458,9 @@ button[class~='border-white/15']:active {
 }
 
 /* ============================================================
-   Sistema de UI comum (admin + pÃ¡ginas)
+   Sistema de UI comum (admin + páginas)
    ------------------------------------------------------------
-   CartÃµes, botÃµes e espaÃ§amentos iguais em todo o site.
+   Cartões, botões e espaçamentos iguais em todo o site.
    ============================================================ */
 :root {
   --ui-radius: 18px;
@@ -530,13 +530,13 @@ button[class~='border-white/15']:active {
   min-height: 32px;
   padding: 0 11px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .ui-btn-lg {
   min-height: 46px;
   padding: 0 20px;
   border-radius: 14px;
-  font-size: 14px;
+  font-size: 15px;
 }
 .ui-btn-icon {
   min-height: 40px;
@@ -627,7 +627,7 @@ button[class~='border-white/15']:active {
     min-height: 46px;
   }
   .ui-section-title {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.06em;
   }
   .tabbar {
@@ -648,7 +648,7 @@ button[class~='border-white/15']:active {
 }
 
 /* ============================================================
-   Selos "em live" e ligaÃ§Ãµes sociais
+   Selos "em live" e ligações sociais
    ============================================================ */
 .live-badge {
   display: inline-flex;
@@ -657,7 +657,7 @@ button[class~='border-white/15']:active {
   border-radius: 9999px;
   border: 1px solid transparent;
   padding: 3px 8px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.07em;
@@ -757,7 +757,7 @@ button[class~='border-white/15']:active {
 }
 
 /* ============================================================
-   PÃ¡gina de entrada / login
+   Página de entrada / login
    ============================================================ */
 .auth-screen {
   background: #08080a;
@@ -784,7 +784,7 @@ button[class~='border-white/15']:active {
 }
 
 /* ============================================================
-   Entrada do site â€” panorama 360Â° + botÃ£o Entrar
+   Entrada do site — panorama 360° + botão Entrar
    ============================================================ */
 .boot-screen {
   position: fixed;
@@ -799,7 +799,7 @@ button[class~='border-white/15']:active {
   transform: scale(1.035);
   pointer-events: none;
 }
-/* panorama em tons de cinza â€” profundidade sem competir com a
+/* panorama em tons de cinza — profundidade sem competir com a
    paleta neutra do site */
 .pano-fundo {
   filter: grayscale(0.82) contrast(1.04);
@@ -970,7 +970,7 @@ button[class~='border-white/15']:active {
 }
 
 /* ============================================================
-   Barra de abas em segmentos (TabBar) â€” pista sÃ³lida e a pÃ­lula
+   Barra de abas em segmentos (TabBar) — pista sólida e a pílula
    ativa em violeta chapado.
    ============================================================ */
 .tabbar {
@@ -989,7 +989,7 @@ button[class~='border-white/15']:active {
   isolation: isolate;
   border-radius: 9999px;
   padding: 7px 14px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1;
   color: #9ca3af;
@@ -1017,7 +1017,7 @@ button[class~='border-white/15']:active {
 
 .tab-cont {
   font-style: normal;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   line-height: 1;
   padding: 3px 6px;
@@ -1031,10 +1031,10 @@ button[class~='border-white/15']:active {
   color: #fff;
 }
 
-/* VersÃ£o grande (jogos) */
+/* Versão grande (jogos) */
 .tabbar-grande .tab-item {
   padding: 10px 18px;
-  font-size: 14px;
+  font-size: 15px;
   gap: 8px;
 }
 
@@ -1095,14 +1095,14 @@ button[class~='border-white/15']:active {
   margin-top: 8px;
   border-radius: 9999px;
   padding: 9px 18px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
 }
 
 
 /* ------------------------------------------------------------
-   BotÃµes principais: cor chapada, sombra curta e encolhe um
+   Botões principais: cor chapada, sombra curta e encolhe um
    pouco ao premir.
    ------------------------------------------------------------ */
 button[class~='bg-zinc-500'] {
@@ -1130,11 +1130,11 @@ button[class~='bg-zinc-500']:active {
 }
 
 /* ------------------------------------------------------------
-   Leitor de clips â€” ECRÃƒ INTEIRO
-   O moldura preenche o ecrÃ£ todo e a caixa do vÃ­deo fica 16:9
+   Leitor de clips — ECRÃ INTEIRO
+   O moldura preenche o ecrã todo e a caixa do vídeo fica 16:9
    ao centro com barras pretas NOSSAS (letterbox). O rato nunca
-   chega ao iframe, por isso nÃ£o aparece nada da plataforma:
-   nem tÃ­tulo, nem controlos, nem marca de Ã¡gua.
+   chega ao iframe, por isso não aparece nada da plataforma:
+   nem título, nem controlos, nem marca de água.
    ------------------------------------------------------------ */
 .player-ecra:fullscreen,
 .player-ecra:-webkit-full-screen {
@@ -1146,8 +1146,8 @@ button[class~='bg-zinc-500']:active {
   background: #000 !important;
 }
 
-/* caixa do vÃ­deo: 16:9 centrado, com as barras laterais/em cima
-   e em baixo feitas por nÃ³s (fundo preto do moldura) */
+/* caixa do vídeo: 16:9 centrado, com as barras laterais/em cima
+   e em baixo feitas por nós (fundo preto do moldura) */
 .player-ecra:fullscreen .player-caixa,
 .player-ecra:-webkit-full-screen .player-caixa {
   position: absolute !important;
@@ -1160,7 +1160,7 @@ button[class~='bg-zinc-500']:active {
   transform: translate(-50%, -50%);
 }
 
-/* controlos nossos em ecrÃ£ inteiro: maiores e com mais respiro */
+/* controlos nossos em ecrã inteiro: maiores e com mais respiro */
 .player-ecra:fullscreen .player-controlos,
 .player-ecra:-webkit-full-screen .player-controlos {
   padding: 4rem 1.5rem 1.5rem;
@@ -1180,20 +1180,20 @@ button[class~='bg-zinc-500']:active {
 
 .player-ecra:fullscreen .player-controlos span,
 .player-ecra:-webkit-full-screen .player-controlos span {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 
 /* ============================================================
-   Fundos das pÃ¡ginas de jogos (CS2 / R6 / Fortnite / Battlefield)
-   A imagem fica fixa no ecrÃ£ INTEIRO â€” passa por baixo da
+   Fundos das páginas de jogos (CS2 / R6 / Fortnite / Battlefield)
+   A imagem fica fixa no ecrã INTEIRO — passa por baixo da
    sidebar da esquerda e da coluna da direita, que ficam
-   translÃºcidas para a foto se ver nos cantos.
+   translúcidas para a foto se ver nos cantos.
    ============================================================ */
-/* ---------- Moldura comum das pÃ¡ginas ---------- */
+/* ---------- Moldura comum das páginas ---------- */
 .page-shell {
   min-height: 100vh;
-  padding: 6.5rem 1rem 6rem;
+  padding: calc(6.5rem + env(safe-area-inset-top)) 1rem calc(6rem + env(safe-area-inset-bottom));
 }
 .page-container {
   width: 100%;
@@ -1202,18 +1202,18 @@ button[class~='bg-zinc-500']:active {
 }
 @media (min-width: 640px) {
   .page-shell {
-    padding: 7.5rem 1.5rem 6rem;
+    padding: calc(7.5rem + env(safe-area-inset-top)) 1.5rem calc(6rem + env(safe-area-inset-bottom));
   }
 }
 @media (min-width: 1024px) {
   .page-shell {
-    padding-top: 3.5rem;
+    padding-top: calc(3.5rem + env(safe-area-inset-top));
   }
 }
 
-/* ---------- Chat geral no telemÃ³vel ----------
-   O ecrÃ£ fica fixo entre a barra de topo e a navegaÃ§Ã£o de baixo:
-   a pÃ¡gina nÃ£o rola, sÃ³ a lista de mensagens. */
+/* ---------- Chat geral no telemóvel ----------
+   O ecrã fica fixo entre a barra de topo e a navegação de baixo:
+   a página não rola, só a lista de mensagens. */
 @media (max-width: 1023px) {
   body:has(.chat-fixo) {
     padding-bottom: 0;
@@ -1223,7 +1223,7 @@ button[class~='bg-zinc-500']:active {
     position: fixed;
     inset: 0;
     height: 100dvh;
-    padding: 4rem 0.75rem calc(4.5rem + env(safe-area-inset-bottom));
+    padding: calc(4rem + env(safe-area-inset-top)) 0.75rem calc(4.5rem + env(safe-area-inset-bottom));
     overflow: hidden;
   }
   .chat-fixo .page-container {
@@ -1232,12 +1232,12 @@ button[class~='bg-zinc-500']:active {
 }
 @media (min-width: 640px) and (max-width: 1023px) {
   .chat-fixo {
-    padding: 4.5rem 1.5rem calc(5.5rem + env(safe-area-inset-bottom));
+    padding: calc(4.5rem + env(safe-area-inset-top)) 1.5rem calc(5.5rem + env(safe-area-inset-bottom));
   }
 }
 
-/* PainÃ©is fixos (sidebar + coluna direita): vidro fumado neutro
-   para os menus serem legÃ­veis por cima de qualquer foto. */
+/* Painéis fixos (sidebar + coluna direita): vidro fumado neutro
+   para os menus serem legíveis por cima de qualquer foto. */
 .painel-fixo {
   background: rgba(10, 10, 11, 0.74);
   backdrop-filter: blur(22px) saturate(130%);
@@ -1245,14 +1245,14 @@ button[class~='bg-zinc-500']:active {
   border-color: rgba(255, 255, 255, 0.07);
 }
 
-/* nos jogos: continua legÃ­vel, mas deixa passar um pouco da foto */
+/* nos jogos: continua legível, mas deixa passar um pouco da foto */
 body.in-jogo .painel-fixo {
   background: rgba(10, 10, 11, 0.66) !important;
   backdrop-filter: blur(14px);
 }
 
-/* ---------- TemÃ¡tica de cores por jogo (GamesPage) ----------
-   Tons neutros com um traÃ§o mÃ­nimo da cor de cada jogo. */
+/* ---------- Temática de cores por jogo (GamesPage) ----------
+   Tons neutros com um traço mínimo da cor de cada jogo. */
 body[data-theme="cs2"] { --aj-300: 236 236 239; --aj-400: 214 214 219; --aj-500: 176 176 182; --aj-600: 130 130 137; --aj-700: 92 92 98; }
 body[data-theme="r6"] { --aj-300: 232 224 224; --aj-400: 208 198 198; --aj-500: 172 160 160; --aj-600: 126 116 116; --aj-700: 90 82 82; }
 body[data-theme="bf1"] { --aj-300: 228 234 228; --aj-400: 204 212 204; --aj-500: 168 176 168; --aj-600: 122 130 122; --aj-700: 88 94 88; }
@@ -1272,7 +1272,7 @@ body::before {
 body.in-jogo::before { display: none; }
 
 /* ============================================================
-   Temas de perfil â€” banners animados + fundos de pÃ¡gina
+   Temas de perfil — banners animados + fundos de página
    ============================================================ */
 .perfil-banner {
   --b1: #4c1d95;
@@ -1322,7 +1322,7 @@ body.in-jogo::before { display: none; }
   to { transform: rotate(360deg); }
 }
 
-/* Cores dinÃ¢micas do perfil: sÃ³ enquanto a pÃ¡gina de perfil estÃ¡ aberta */
+/* Cores dinâmicas do perfil: só enquanto a página de perfil está aberta */
 .nav-ativo {
   background: rgba(255, 255, 255, 0.06);
   color: var(--salmon) !important;
@@ -1334,6 +1334,16 @@ body.profile-bg .painel-fixo {
   background: rgba(10, 10, 11, 0.3);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
+}
+/* Com fundo personalizado, os cartões/painéis ficam translúcidos
+   para a imagem aparecer — sem mudar as cores do site. */
+body.profile-bg .glass,
+body.profile-bg .right-card,
+body.profile-bg .clip-card,
+body.profile-bg .profile-hero {
+  background: rgba(10, 10, 11, 0.38) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 body.profile-theme .painel-fixo {
   background:
@@ -1428,7 +1438,7 @@ body.profile-theme .clip-card:hover {
   border-color: rgb(var(--perfil-accent-rgb, 139 92 246) / 0.45);
 }
 
-/* fundos de pÃ¡gina do perfil */
+/* fundos de página do perfil */
 .perfil-fundo {
   position: fixed;
   inset: 0;
@@ -1500,7 +1510,7 @@ body.profile-theme .clip-card:hover {
 }
 
 /* ============================================================
-   Efeitos de nome e cartÃ£o (apenas admin)
+   Efeitos de nome e cartão (apenas admin)
    ============================================================ */
 .nome-cor-gold,
 .nome-cor-diamond,
@@ -1518,37 +1528,37 @@ body.profile-theme .clip-card:hover {
   -webkit-text-fill-color: transparent;
   animation: nomePan 5s linear infinite;
 }
-/* Gold â€” metÃ¡lico BO1 */
+/* Gold — metálico BO1 */
 .nome-cor-gold { background-image: linear-gradient(120deg,#fff7cc,#fbbf24,#b45309,#fde68a,#f59e0b,#fff7cc); }
-/* Diamond â€” brilho dourado/cromado (como o utilizador pediu) */
+/* Diamond — brilho dourado/cromado (como o utilizador pediu) */
 .nome-cor-diamond { background-image: linear-gradient(120deg,#ffffff,#fde68a,#e5e7eb,#fbbf24,#ffffff,#cbd5e1,#fde68a); }
-/* Damascus â€” aÃ§o azul com veios dourados/ciano */
+/* Damascus — aço azul com veios dourados/ciano */
 .nome-cor-damascus { background-image: linear-gradient(120deg,#0f172a,#1d4ed8,#60a5fa,#fbbf24,#0ea5e9,#312e81,#93c5fd); }
-/* Interstellar â€” cÃ³smico roxo/azul */
+/* Interstellar — cósmico roxo/azul */
 .nome-cor-interstellar { background-image: linear-gradient(120deg,#020617,#312e81,#7c3aed,#22d3ee,#c084fc,#020617); }
-/* Dark Matter â€” preto/roxo com brilho */
+/* Dark Matter — preto/roxo com brilho */
 .nome-cor-darkmatter { background-image: linear-gradient(120deg,#000000,#4c1d95,#a855f7,#22d3ee,#000000,#7e22ce); }
-/* Chrome â€” prateado espelhado */
+/* Chrome — prateado espelhado */
 .nome-cor-chrome { background-image: linear-gradient(120deg,#f8fafc,#94a3b8,#ffffff,#475569,#e2e8f0,#ffffff); }
-/* Platinum â€” prata azulado */
+/* Platinum — prata azulado */
 .nome-cor-platinum { background-image: linear-gradient(120deg,#f1f5f9,#cbd5e1,#60a5fa,#e2e8f0,#94a3b8); }
-/* Obsidian â€” preto polido com reflexo roxo */
+/* Obsidian — preto polido com reflexo roxo */
 .nome-cor-obsidian { background-image: linear-gradient(120deg,#020617,#111827,#6d28d9,#1e293b,#000000,#8b5cf6); }
-/* Dark Aether â€” roxo/verde */
+/* Dark Aether — roxo/verde */
 .nome-cor-rainbow { background-image: linear-gradient(90deg,#c084fc,#22d3ee,#a3e635,#7c3aed,#c084fc); }
 .nome-cor-red { color: #f87171; }
 .nome-cor-green { color: #4ade80; }
 .nome-cor-pink { color: #f472b6; }
 .nome-cor-cyan { color: #22d3ee; }
 
-/* Acento sÃ³lido do site: cinzento escuro em vez de claro, para
-   manter bom contraste com texto/Ã­cones brancos (estilo da referÃªncia). */
+/* Acento sólido do site: cinzento escuro em vez de claro, para
+   manter bom contraste com texto/ícones brancos (estilo da referência). */
 .bg-zinc-500 {
   background-color: #2c2c31 !important;
 }
 
 /* ============================================================
-   Cartas de perfil â€” estilos colecionÃ¡veis
+   Cartas de perfil — estilos colecionáveis
    ============================================================ */
 .profile-card {
   position: relative;
@@ -1636,31 +1646,99 @@ body.profile-theme .clip-card:hover {
 }
 .pc-watermark {
   position: absolute;
-  left: -20%;
-  top: 32%;
-  width: 150%;
-  transform: rotate(-22deg);
-  color: var(--pc-accent);
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  white-space: nowrap;
+  inset: -18%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transform: rotate(-18deg);
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
   z-index: 1;
   -webkit-mask-image: radial-gradient(
-    circle 95px at var(--mx, 50%) var(--my, 50%),
+    circle 150px at var(--mx, 50%) var(--my, 50%),
     #000 0%,
-    transparent 72%
+    rgba(0, 0, 0, 0.55) 45%,
+    transparent 78%
   );
   mask-image: radial-gradient(
-    circle 95px at var(--mx, 50%) var(--my, 50%),
+    circle 150px at var(--mx, 50%) var(--my, 50%),
     #000 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    transparent 78%
+  );
+}
+.pc-watermark-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  white-space: nowrap;
+}
+.pc-watermark-word {
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: transparent;
+  background-image: linear-gradient(
+    115deg,
+    var(--pc-accent),
+    #ffffff 38%,
+    var(--pc-accent) 62%,
+    #ffffff 100%
+  );
+  background-size: 220% 100%;
+  background-position: var(--mx, 50%) 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.profile-card:hover .pc-watermark { opacity: 0.5; }
+.pc-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(
+    circle 220px at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--pc-accent) 34%, transparent),
     transparent 72%
   );
 }
-.profile-card:hover .pc-watermark { opacity: 0.32; }
+.profile-card:hover .pc-glow { opacity: 1; }
+.pc-ripple {
+  position: absolute;
+  left: var(--cx, 50%);
+  top: var(--cy, 50%);
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--pc-accent) 55%, transparent);
+  opacity: 0;
+}
+.profile-card.pc-clicado .pc-ripple {
+  animation: pc-ripple 0.5s ease-out forwards;
+}
+@keyframes pc-ripple {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(9);
+  }
+}
+.profile-card.pc-clicado {
+  transition: transform 0.12s ease;
+}
 .profile-card--wide .pc-body {
   display: grid;
   grid-template-columns: 1.15fr 1fr;
@@ -1701,7 +1779,7 @@ body.profile-theme .clip-card:hover {
 }
 .pc-stat span {
   display: block;
-  font-size: 7px;
+  font-size: 8.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1713,13 +1791,452 @@ body.profile-theme .clip-card:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10.5px;
+  font-size: 12px;
   color: #f4f4f5;
 }
 .profile-card--dvd .pc-stat { border-color: rgba(255, 77, 77, 0.25); }
 
 /* ============================================================
-   Estilos de perfil â€” pÃ¡gina e prÃ©-visualizaÃ§Ã£o
+   Cartas — cada estilo com linguagem própria
+   ============================================================ */
+.pc-rank {
+  display: inline-flex;
+  max-width: 120px;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #d4d4d8;
+}
+.pc-rank img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.pc-rank span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-rank--compacto {
+  max-width: 82px;
+  padding: 1px 5px;
+}
+.pc-rank--compacto span { display: none; }
+
+.profile-card--license {
+  border-radius: 10px;
+  border-color: rgba(228, 228, 231, 0.55);
+  background: linear-gradient(135deg, #202023, #0b0b0c 58%, #17171a);
+  font-family: 'Rajdhani', sans-serif;
+}
+.profile-card--license .pc-head { letter-spacing: 0.3em; }
+.profile-card--license .pc-id img { border-radius: 8px; }
+.profile-card--license .pc-stat { border-radius: 4px; }
+
+.profile-card--kova {
+  border-radius: 6px;
+  border-color: rgba(255, 255, 255, 0.22);
+  font-family: 'Michroma', sans-serif;
+}
+.profile-card--kova .pc-head { font-size: 9px; letter-spacing: 0.24em; }
+.profile-card--kova .pc-id img { border-radius: 999px; }
+.profile-card--kova .pc-stat { border-radius: 2px; }
+
+.profile-card--dvd {
+  border-radius: 0;
+  border: 2px solid #ff4d4d;
+  font-family: 'Press Start 2P', monospace;
+}
+.profile-card--dvd .pc-head,
+.profile-card--dvd .pc-foot { font-size: 8.5px; letter-spacing: 0.08em; }
+.profile-card--dvd .pc-id img { border-radius: 0; }
+.profile-card--dvd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.045) 0 1px,
+    transparent 1px 4px
+  );
+}
+
+.profile-card--felony {
+  border-radius: 4px;
+  border-color: rgba(192, 132, 252, 0.7);
+  font-family: 'Instrument Serif', serif;
+}
+.profile-card--felony .pc-id .font-display { font-style: italic; }
+.profile-card--felony::after {
+  content: '';
+  position: absolute;
+  right: -30%;
+  top: 36%;
+  width: 90%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c084fc, transparent);
+  transform: rotate(-24deg);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.profile-card--neon {
+  border-radius: 22px;
+  border: 2px solid #e879f9;
+  font-family: 'Orbitron', sans-serif;
+  box-shadow:
+    0 0 30px rgba(232, 121, 249, 0.18),
+    inset 0 0 0 1px rgba(232, 121, 249, 0.18);
+}
+.profile-card--neon .pc-id img {
+  box-shadow: 0 0 18px rgba(232, 121, 249, 0.45);
+}
+
+.profile-card--blood {
+  border-radius: 18px;
+  border-color: #ff3b3b;
+  font-family: 'Bebas Neue', sans-serif;
+}
+.profile-card--blood .pc-id .font-display { letter-spacing: 0.08em; }
+.profile-card--blood::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% -10%, rgba(255, 59, 59, 0.22), transparent 55%);
+}
+
+.profile-card--cosmic {
+  border-radius: 26px;
+  border-color: rgba(96, 165, 250, 0.7);
+  font-family: 'Michroma', sans-serif;
+}
+.profile-card--cosmic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0.6px, transparent 0.7px);
+  background-size: 26px 26px;
+  opacity: 0.18;
+}
+
+.profile-card--crimson {
+  border-radius: 2px;
+  border: 2px solid #ef4444;
+  font-family: 'Black Ops One', sans-serif;
+}
+.profile-card--crimson .pc-id .font-display { text-transform: uppercase; }
+.profile-card--crimson::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, transparent 48%, rgba(239, 68, 68, 0.18) 49%, transparent 51%);
+}
+
+.profile-card--violet {
+  border-radius: 16px;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* ---- Sleepin: cartão de licença horizontal ---- */
+.profile-card--sleepin {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #0b0b0c;
+  font-family: 'Rajdhani', sans-serif;
+}
+.profile-card--sleepin .pc-body { display: block; }
+.sleepin-body {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+}
+.sleepin-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.5;
+}
+.sleepin-bg > * {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sleepin-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sleepin-avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  object-fit: cover;
+}
+.sleepin-title { min-width: 0; flex: 1; }
+.sleepin-kicker {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+.sleepin-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px;
+  line-height: 1;
+  color: #fff;
+}
+.sleepin-title p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  color: #a1a1aa;
+}
+.sleepin-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.sleepin-grid > div {
+  min-width: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding-top: 4px;
+}
+.sleepin-grid span {
+  display: block;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: #71717a;
+}
+.sleepin-grid strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #f4f4f5;
+}
+.sleepin-foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding-top: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #a1a1aa;
+}
+.sleepin-sign {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #fff;
+  transform: rotate(-4deg);
+}
+.sleepin-barcode {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  color: #52525b;
+}
+
+/* ---- River: cartão vertical rosa com banner ---- */
+.profile-card--river {
+  border-radius: 18px;
+  border: 2px solid #f9a8d4;
+  background: linear-gradient(160deg, #1a1014, #0b0709);
+  font-family: 'Inter Tight', sans-serif;
+  box-shadow: 0 0 32px rgba(249, 168, 212, 0.14);
+}
+.river-body {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+.river-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(249, 168, 212, 0.3);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+.river-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+}
+.river-mark { color: #e879f9; }
+.river-banner {
+  position: relative;
+  display: flex;
+  height: 150px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(249, 168, 212, 0.25);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(249, 168, 212, 0.16), transparent 65%),
+    #0b0709;
+}
+.river-word {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.16);
+}
+.river-avatar {
+  position: relative;
+  z-index: 1;
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  border: 2px solid #f9a8d4;
+  object-fit: cover;
+  box-shadow: 0 0 24px rgba(249, 168, 212, 0.35);
+}
+.river-phonetic {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  font-size: 9px;
+  font-style: italic;
+  color: #d4d4d8;
+}
+.river-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.river-chip {
+  border: 1px solid rgba(249, 168, 212, 0.25);
+  border-radius: 4px;
+  background: rgba(249, 168, 212, 0.08);
+  padding: 2px 5px;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fbcfe8;
+}
+.river-chip--master {
+  background: #f9a8d4;
+  color: #1a0f0f;
+}
+.river-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.river-stats > div {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 6px;
+}
+.river-stats span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 7.5px;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+}
+.river-stats strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #fff;
+}
+.river-gear {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10px;
+  color: #d4d4d8;
+}
+.river-gear li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 2px;
+  white-space: nowrap;
+}
+.river-gear li > span {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 7.5px;
+  letter-spacing: 0.08em;
+  color: #71717a;
+}
+.river-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: #71717a;
+}
+.river-foot span {
+  font-family: 'Instrument Serif', serif;
+  font-size: 12px;
+  color: #f9a8d4;
+}
+
+/* ============================================================
+   Estilos de perfil — página e pré-visualização
    ============================================================ */
 .style-preview {
   --style-accent: #a1a1aa;
@@ -1777,7 +2294,7 @@ body.profile-theme .clip-card:hover {
   color: var(--style-name, #fff);
 }
 .style-preview-handle {
-  font-size: 8px;
+  font-size: 9px;
   color: var(--style-muted, #a1a1aa);
 }
 .style-preview-btn {
@@ -1788,7 +2305,7 @@ body.profile-theme .clip-card:hover {
   background: var(--style-btn-bg, #fff);
   padding: 3px 8px;
   color: var(--style-btn-text, #111);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -1876,7 +2393,7 @@ body.profile-theme .clip-card:hover {
 .profile-style--blood .perfil-fundo { opacity: 0.08; }
 
 .profile-style {
-  /* Por padrÃ£o, a borda do cartÃ£o do perfil Ã© preta. */
+  /* Por padrão, a borda do cartão do perfil é preta. */
   --style-border: #000000;
 }
 .profile-style .profile-hero {
@@ -1951,7 +2468,7 @@ body.profile-theme .clip-card:hover {
 }
 
 /* ============================================================
-   Camuflagens â€” textura real aplicada Ã s letras
+   Camuflagens — textura real aplicada às letras
    Cada classe usa o SVG correspondente em /camo/<id>.svg
    ============================================================ */
 .nome-cor-camo-gold,

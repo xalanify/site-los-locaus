@@ -37,15 +37,20 @@ export default function SaldoMoedas({ user }) {
   if (!user || !saldo) return null
 
   return (
-    <div className="glass-chip flex items-center gap-2.5 rounded-2xl px-3 py-2.5">
-      <MoedaLocaus size={24} className="shrink-0" />
+    <div className="glass flex items-center gap-3 rounded-2xl border border-white/10 px-3 py-2.5">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-amber-400/10 ring-1 ring-amber-300/25">
+        <MoedaLocaus size={24} />
+      </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[9px] font-black uppercase tracking-widest text-amber-200/80">
+        <span className="block text-[9px] font-black uppercase tracking-[0.16em] text-amber-200/80">
           Moedas Locaus
         </span>
-        <span className="block text-sm font-black tabular-nums text-white">
+        <span className="block text-lg font-black tabular-nums leading-tight text-white">
           {Number(saldo.disponiveis).toLocaleString('pt-PT')}
         </span>
+      </span>
+      <span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-[8px] font-black uppercase tracking-wider text-zinc-400 ring-1 ring-white/10">
+        saldo
       </span>
     </div>
   )

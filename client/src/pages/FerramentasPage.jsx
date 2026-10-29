@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { confirmar } from '../components/Feedback'
 import {
@@ -83,6 +84,7 @@ import {
   Square,
 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
+import PcsPage from './PcsPage'
 
 /* Mapa de ícones Lucide por nome (todos os do catálogo de programas) */
 const ICON_MAP = {
@@ -171,6 +173,11 @@ function Badge({ tom, children }) {
 
 export default function FerramentasPage({ isAdmin = false }) {
   const [avisoSite] = useState('O .exe foi retirado do fluxo. Usa o site com login. Comandos Windows (revo/wmic) precisam de PC local.')
+  const [searchParams] = useSearchParams()
+  const [abaFerr, setAbaFerr] = useState('ferramentas')
+  const [ecraLargo, setEcraLargo] = useState(() =>
+    typeof window === 'undefined' ? true : window.innerWidth >= 1024,
+  )
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
   const [cat, setCat] = useState('Programas')
@@ -371,6 +378,23 @@ export default function FerramentasPage({ isAdmin = false }) {
   }
 
   useEffect(carregar, [])
+
+  /* O separador PCs / Specs só existe em ecrãs largos. No telemóvel
+     fica sempre na aba das ferramentas. */
+  useEffect(() => {
+    const aoRedimensionar = () => {
+      const largo = window.innerWidth >= 1024
+      setEcraLargo(largo)
+      if (!largo) setAbaFerr('ferramentas')
+    }
+    window.addEventListener('resize', aoRedimensionar)
+    return () => window.removeEventListener('resize', aoRedimensionar)
+  }, [])
+
+  /* /pcs -> /ferramentas?aba=pcs (só no PC). */
+  useEffect(() => {
+    if (searchParams.get('aba') === 'pcs' && ecraLargo) setAbaFerr('pcs')
+  }, [searchParams, ecraLargo])
 
   /* ---------- PC remoto (agente via .bat) ---------- */
   const pedirTrabalho = async (payload) => {
@@ -826,15 +850,12 @@ export default function FerramentasPage({ isAdmin = false }) {
   const logs = estado?.logs || []
   const podeLocal = dados?.podeLocal
   const podeExecutar = Boolean(podeLocal || agente.online)
-
-  /* ---- GATE: a app LOCAUS-PC é obrigatória ---- */
-  /* A página só abre quando a app deste utilizador está ligada ao site
-     (ou quando o servidor corre com PowerShell local). A verificação
-     corre a cada 2s — quando a app liga, a página desbloqueia sozinha. */
   const appVerificada = Boolean(dados)
+
+  /* A app LOCAUS-PC é obrigatória para entrar nas ferramentas. */
   if (appVerificada && !podeExecutar) {
     return (
-      <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+      <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28">
         <div className="mx-auto max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
@@ -872,30 +893,105 @@ export default function FerramentasPage({ isAdmin = false }) {
   }
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+    <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28">
       <div className="mx-auto max-w-6xl">
         {/* ---------------- Cabeçalho ---------------- */}
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <h1
-            className="font-black gradient-text"
-            style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-          >
-            Ferramentas Windows
-          </h1>
-          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#ff9e9e] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-[#1a0f0f]">
-            Novo
-          </span>
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1
+              className="font-black gradient-text"
+              style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
+            >
+              Ferramentas Windows
+            </h1>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ff9e9e] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-[#1a0f0f]">
+              Novo
+            </span>
+          </div>
           <p className="mt-2 max-w-2xl text-sm text-gray-400">
             Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
           </p>
-          <div className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.07] px-4 py-2.5 text-[11px] leading-relaxed text-emerald-200">
+        </motion.div>
+
+        {/* Separadores (o de PCs / Specs só existe no PC) */}
+        <div className="mb-4 hidden items-center gap-2 rounded-2xl border border-white/10 bg-[#121214]/80 p-1 lg:flex">
+          {[
+            { id: 'ferramentas', nome: 'Ferramentas', Icon: Wrench },
+            { id: 'pcs', nome: 'PCs / Specs', Icon: Cpu },
+          ].map(({ id, nome, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setAbaFerr(id)}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-colors ${
+                abaFerr === id
+                  ? 'bg-gradient-to-b from-zinc-500 to-zinc-600 text-white shadow-lg shadow-zinc-950/40'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <Icon className="h-4 w-4" /> {nome}
+            </button>
+          ))}
+        </div>
+
+        {/* Estado do PC / ligação */}
+        {podeExecutar ? (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-[12px] text-emerald-100">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              </span>
+              <span>
+                <b>{podeLocal ? 'Modo local ativo' : 'PC ligado'}</b>
+                {!podeLocal && agente.sessao?.nome ? ` · ${agente.sessao.nome}` : ''} — as
+                ferramentas correm no teu Windows.
+              </span>
+            </div>
+            {podeLocal === false && (
+              <button
+                type="button"
+                onClick={desligarPc}
+                className="rounded-lg border border-emerald-500/30 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 transition-colors hover:bg-emerald-500/15"
+              >
+                Desligar PC
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-amber-400/25 bg-amber-500/[0.07] p-4 sm:flex-row sm:items-center">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 ring-1 ring-amber-300/30">
+              <Lock className="h-5 w-5 text-amber-300" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black text-amber-100">PC ainda não ligado</p>
+              <p className="mt-0.5 text-[12px] leading-relaxed text-amber-100/70">
+                Já podes ver as ferramentas. Para executar, liga o Windows ao site com o{' '}
+                <b className="text-white">LOCAUS-PC.bat</b>.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={ligarPc}
+              disabled={aLigarPc}
+              className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
+            >
+              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarPc ? 'A preparar…' : 'Ligar este PC'}
+            </button>
+          </div>
+        )}
+
+        {/* Avisos e opções */}
+        <div className="mb-4 grid gap-2 lg:grid-cols-[1fr_auto]">
+          <div className="flex items-start gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.07] px-4 py-2.5 text-[11px] leading-relaxed text-emerald-200">
             <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               Não removemos a <b>Microsoft Store</b> nem a <b>Xbox</b>. Podes remover Cortana,
               OneDrive, apps de consumo e limpar a RAM/cache em segurança.
             </span>
           </div>
-          <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] font-bold text-gray-300">
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-[11px] font-bold text-gray-300">
             <input
               type="checkbox"
               checked={restauroAtivo}
@@ -911,38 +1007,10 @@ export default function FerramentasPage({ isAdmin = false }) {
             Criar ponto de restauro antes de otimizar
             <span className="font-semibold text-gray-500">(recomendado)</span>
           </label>
-        </motion.div>
+        </div>
 
-        {/* aviso: PC ligado ao servidor local (só no modo local) */}
-        {podeLocal === true && (
-          <div className="mb-4 rounded-xl border border-zinc-500/30 bg-zinc-500/10 px-4 py-3 text-[13px] text-zinc-200">
-            <b>Modo local ativo.</b> O servidor corre no teu PC — as ferramentas executam diretamente no Windows.
-          </div>
-        )}
-
-        {podeLocal === false && agente.online && (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-[13px] text-emerald-100">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
-              </span>
-              <span>
-                <b>PC ligado</b>
-                {agente.sessao?.nome ? ` · ${agente.sessao.nome}` : ''} — as ferramentas correm no
-                teu Windows.
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={desligarPc}
-              className="rounded-lg border border-emerald-500/30 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 transition-colors hover:bg-emerald-500/15"
-            >
-              Desligar PC
-            </button>
-          </div>
-        )}
-
+        {abaFerr === 'ferramentas' || !ecraLargo ? (
+          <>
         {/* ---------------- Pesquisa ---------------- */}
         <div className="mb-4">
           <div className="relative">
@@ -1556,6 +1624,10 @@ export default function FerramentasPage({ isAdmin = false }) {
             : `${ferramentas.length} ferramentas`} ·{' '}
           {aCorrer ? 'a correr' : (podeLocal || agente.online) ? 'pronto para executar' : 'PC desligado'}
         </p>
+          </>
+        ) : (
+          <PcsPage embedded />
+        )}
       </div>
 
       {/* -------- janela flutuante: todas as otimizações -------- */}

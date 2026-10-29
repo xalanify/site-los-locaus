@@ -28,7 +28,6 @@ import { enviarSpecs } from './lib/specs'
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
 const SteamStorePage = lazy(() => import('./pages/SteamStorePage'))
-const PcsPage = lazy(() => import('./pages/PcsPage'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
@@ -245,7 +244,7 @@ function App() {
                 <Sidebar user={user} isAdmin={isAdmin} />
                 {/* Coluna direita (só em ecrãs largos) */}
                 <RightColumn />
-                <main className="pb-24 lg:pb-0 lg:pl-[260px] xl:pl-[280px] xl:pr-[320px]">
+                <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0 lg:pl-[260px] xl:pl-[280px] xl:pr-[320px]">
                   {/* Muro de erros: se uma página rebentar no render, só
                       ela cai — e a key pelo caminho limpa o erro quando
                       se navega para outro sítio */}
@@ -303,8 +302,8 @@ function App() {
                         isAdmin ? <ComponentesPage user={user} /> : <Navigate to="/" replace />
                       }
                     />
-                    {/* PCs dos membros: dashboard de specs — aberto a todos */}
-                    <Route path="/pcs" element={<PcsPage isAdmin={isAdmin} />} />
+                    {/* PCs dos membros: agora dentro de Ferramentas Windows */}
+                    <Route path="/pcs" element={<Navigate to="/ferramentas?aba=pcs" replace />} />
                     {/* Loja de cosméticos — aberta a todos */}
                     <Route path="/cosmeticos" element={<CosmeticosPage isAdmin={isAdmin} />} />
                     {/* Ferramentas Windows: aberta a todos; Otimizações só admin */}

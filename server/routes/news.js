@@ -224,6 +224,27 @@ const TRAD_CACHE = new Map();
 
 /* Tradução para português (Google Translate público, sem chave).
    Cache em memória para não repetir pedidos a cada atualização. */
+async function traduzirGet(texto) {
+  try {
+    const url =
+      'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=pt&dt=t&q=' +
+      encodeURIComponent(String(texto).replace(/\s+/g, ' ').trim().slice(0, 900));
+    const r = await fetch(url, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const t = (Array.isArray(j) && Array.isArray(j[0]) ? j[0] : [])
+      .map((seg) => (seg && seg[0]) || '')
+      .join('')
+      .trim();
+    return t || null;
+  } catch {
+    return null;
+  }
+}
+
 async function traduzirLote(textos) {
   const unicos = [...new Set(textos.filter(Boolean))];
   const falta = unicos.filter((t) => !TRAD_CACHE.has(t));
@@ -261,6 +282,14 @@ async function traduzirLote(textos) {
       console.warn('Tradução falhou:', e.message);
     }
   }
+  /* Segunda tentativa (GET) para o que o lote não traduziu. */
+  const emFalta = unicos.filter((t) => !TRAD_CACHE.has(t)).slice(0, 24);
+  await Promise.all(
+    emFalta.map(async (original) => {
+      const t = await traduzirGet(original);
+      if (t && t.toLowerCase() !== String(original).toLowerCase()) TRAD_CACHE.set(original, t);
+    }),
+  );
   return textos.map((t) => TRAD_CACHE.get(t) || t);
 }
 

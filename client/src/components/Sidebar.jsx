@@ -8,7 +8,6 @@ import {
   User,
   Users,
   Gamepad2,
-  Cpu,
   Wrench,
   Sparkles,
   MessageCircle,
@@ -47,7 +46,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isMembers = location.pathname === '/membros'
   const isGames = location.pathname === '/jogos'
   const isNoticias = location.pathname === '/noticias' || location.pathname === '/jogos-steam'
-  const isPcs = location.pathname === '/pcs'
   const isFerramentas = location.pathname === '/ferramentas'
   const isChat = location.pathname === '/chat'
   const isPrevisoes = location.pathname === '/previsoes'
@@ -71,8 +69,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
-    // PCs/Specs: aberto a todos os membros
-    { name: 'PCs / Specs', icon: Cpu, action: () => navigate('/pcs'), active: isPcs },
     // Loja de cosméticos: aberta a todos os membros
     {
       name: 'Loja de cosméticos',
@@ -150,12 +146,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       {/* Conta em baixo */}
       <div className="shrink-0 space-y-2 pt-3">
         <SaldoMoedas user={user} />
-        <div className="flex items-center gap-2 px-1">
-          <Sino user={user} posicao="lateral" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
-            Notificações
-          </span>
-        </div>
+        <Sino user={user} posicao="lateral" variant="card" />
         <button
           onClick={() =>
             navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')

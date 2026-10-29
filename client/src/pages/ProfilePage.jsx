@@ -47,7 +47,6 @@ import {
   musicaDe,
 } from '../data/temasPerfil'
 import { CORES_NOME, EFEITOS_NOME, classesCard, classesNome } from '../data/nomeEfeitos'
-import { extrairCores } from '../lib/coresFundo'
 import { toast } from '../components/Feedback'
 import { useLive } from '../lib/live'
 
@@ -89,19 +88,10 @@ const CARD_STYLES = [
   { id: 'cosmic', nome: 'Cosmic' },
   { id: 'crimson', nome: 'Crimson' },
   { id: 'violet', nome: 'Violet' },
+  { id: 'sleepin', nome: 'Sleepin' },
+  { id: 'river', nome: 'River' },
+  { id: 'dev', nome: 'Desenvolvedor', adminOnly: true },
 ]
-
-const CARD_ACCENTS = {
-  license: '#e4e4e7',
-  kova: '#a1a1aa',
-  dvd: '#ff4d4d',
-  felony: '#c084fc',
-  neon: '#e879f9',
-  blood: '#ff3b3b',
-  cosmic: '#60a5fa',
-  crimson: '#ef4444',
-  violet: '#c084fc',
-}
 
 const PROFILE_STYLES = [
   { id: 'padrao', nome: 'Padrão Locaus' },
@@ -168,7 +158,6 @@ export default function ProfilePage({
   const [musicaResultados, setMusicaResultados] = useState([])
   const [musicaLoading, setMusicaLoading] = useState(false)
   const [musicaAlterada, setMusicaAlterada] = useState(false)
-  const [coresExtra, setCoresExtra] = useState(null)
   const [form, setForm] = useState(() => formDe(user))
   const abriuState = useRef(false)
   const [avatarFile, setAvatarFile] = useState(null)
@@ -240,66 +229,25 @@ export default function ProfilePage({
 
   const fundoAtual = fundoDe(me?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
-  const dinamico = me?.dynamic_colors !== false && temFundo
 
-  /* cor dominante REAL da imagem (não a cor fixa do tema) */
-  useEffect(() => {
-    let vivo = true
-    setCoresExtra(null)
-    if (!temFundo || !dinamico) return
-    extrairCores(fundoAtual.imagem).then((c) => {
-      if (vivo && c) setCoresExtra(c)
-    })
-    return () => {
-      vivo = false
-    }
-  }, [temFundo, dinamico, fundoAtual.imagem])
-
-  const accent = coresExtra?.cor || fundoAtual.cor
-  const accent2 = coresExtra?.cor2 || fundoAtual.cor2
-  const accentRgb = coresExtra?.rgb || fundoAtual.rgb
-
+  /* O fundo personalizado já não muda as cores do site. Só deixa os
+     painéis/cartões mais transparentes para a imagem se ver melhor. */
   useEffect(() => {
     if (standaloneEdit) return
     const root = document.documentElement
     document.body.classList.toggle('profile-bg', temFundo)
-    if (!dinamico) {
-      document.body.classList.remove('profile-theme')
-      root.style.removeProperty('--perfil-accent')
-      root.style.removeProperty('--perfil-accent-2')
-      root.style.removeProperty('--perfil-accent-rgb')
-      root.style.removeProperty('--aj-300')
-      root.style.removeProperty('--aj-400')
-      root.style.removeProperty('--aj-500')
-      root.style.removeProperty('--aj-600')
-      root.style.removeProperty('--aj-700')
-      root.style.removeProperty('--aj-line')
-      return () => document.body.classList.remove('profile-bg')
-    }
-    document.body.classList.add('profile-theme')
-    root.style.setProperty('--perfil-accent', accent)
-    root.style.setProperty('--perfil-accent-2', accent2)
-    root.style.setProperty('--perfil-accent-rgb', accentRgb)
-    root.style.setProperty('--aj-300', accentRgb)
-    root.style.setProperty('--aj-400', accentRgb)
-    root.style.setProperty('--aj-500', accentRgb)
-    root.style.setProperty('--aj-600', accentRgb)
-    root.style.setProperty('--aj-700', accentRgb)
-    root.style.setProperty('--aj-line', `rgba(${accentRgb.split(' ').join(', ')}, 0.22)`)
-    return () => {
-      document.body.classList.remove('profile-theme')
-      document.body.classList.remove('profile-bg')
-      root.style.removeProperty('--perfil-accent')
-      root.style.removeProperty('--perfil-accent-2')
-      root.style.removeProperty('--perfil-accent-rgb')
-      root.style.removeProperty('--aj-300')
-      root.style.removeProperty('--aj-400')
-      root.style.removeProperty('--aj-500')
-      root.style.removeProperty('--aj-600')
-      root.style.removeProperty('--aj-700')
-      root.style.removeProperty('--aj-line')
-    }
-  }, [temFundo, dinamico, fundoAtual.id, accent, accent2, accentRgb])
+    document.body.classList.remove('profile-theme')
+    root.style.removeProperty('--perfil-accent')
+    root.style.removeProperty('--perfil-accent-2')
+    root.style.removeProperty('--perfil-accent-rgb')
+    root.style.removeProperty('--aj-300')
+    root.style.removeProperty('--aj-400')
+    root.style.removeProperty('--aj-500')
+    root.style.removeProperty('--aj-600')
+    root.style.removeProperty('--aj-700')
+    root.style.removeProperty('--aj-line')
+    return () => document.body.classList.remove('profile-bg')
+  }, [temFundo, standaloneEdit])
 
   /* A fonte do perfil foi removida: garante sempre a fonte Locaus padrão. */
   useEffect(() => {
@@ -543,10 +491,10 @@ export default function ProfilePage({
               card_style: form.card_style,
               profile_style: form.profile_style,
               cs2_inventory_eur: Number(form.cs2_inventory_eur) || 0,
+              socials: form.socials,
             }
           : {}),
         borda_cor: form.borda_cor,
-        socials: form.socials,
         musica_alterada: musicaAlterada,
       }
       if (removeAvatar && !avatarFile) body.avatar_url = ''
@@ -583,7 +531,6 @@ export default function ProfilePage({
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
   const corBorda = corBordaDe(edit ? form.borda_cor : me.borda_cor, tema.cor)
-  const corCarta = me.card_style && CARD_ACCENTS[me.card_style] ? CARD_ACCENTS[me.card_style] : null
   const nomeCls = classesNome(me.name_color, me.name_effect)
   const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
   const jogosPerfil = [
@@ -1028,29 +975,13 @@ export default function ProfilePage({
 
               {/* Fonte dos textos do perfil — removida (fonte Locaus padrão) */}
 
-              {/* Cores dinâmicas do perfil */}
-              <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-black/20 px-3 py-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-gray-300">Cores dinâmicas do perfil</p>
-                  <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
-                    O site adapta os títulos, sidebars, cartões e bordas às cores do fundo que escolheres.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={form.dynamic_colors}
-                  onClick={() => setForm((f) => ({ ...f, dynamic_colors: !f.dynamic_colors }))}
-                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                    form.dynamic_colors ? 'bg-zinc-500' : 'bg-white/15'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                      form.dynamic_colors ? 'translate-x-5' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
+              {/* Fundo personalizado — transparência dos painéis */}
+              <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
+                <p className="text-xs font-bold text-gray-300">Fundo personalizado</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-gray-500">
+                  As cores do site mantêm-se iguais. Quando escolhes um fundo, os sidebars,
+                  cartões e painéis ficam mais transparentes para a imagem se ver melhor.
+                </p>
               </div>
               </section>
 
@@ -1474,7 +1405,7 @@ export default function ProfilePage({
           perfil={me}
           avatarSrc={avatarSrc}
           nomeCls={nomeCls}
-          corBorda={corCarta || corBorda}
+          corBorda={corBorda}
           badges={badges}
           minhas={minhas}
           criado={criado}

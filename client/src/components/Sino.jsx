@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { Bell, BellRing, Check, CheckCheck, Heart, MessageSquare, Award, Sparkles, Trash2 } from 'lucide-react'
+import { Bell, BellRing, Check, CheckCheck, Heart, MessageSquare, Award, Sparkles, Trash2, ChevronRight } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import { ativarPush, desligarPush, pushLigado, temPWA } from '../lib/pwa'
 import Estado from './Estado'
@@ -33,7 +34,7 @@ const quando = (iso) => {
    • abre a lista com o que aconteceu nos teus clips
    • ativa/desativa o push do PWA neste dispositivo
    ============================================================ */
-export default function Sino({ user, posicao = 'topo' }) {
+export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
   const [items, setItems] = useState([])
@@ -78,17 +79,12 @@ export default function Sino({ user, posicao = 'topo' }) {
     return () => clearInterval(id)
   }, [user, carregar])
 
-  /* Estado do push + fecha ao clicar fora */
+  /* Estado do push */
   useEffect(() => {
     let vivo = true
     pushLigado().then((v) => vivo && setPush(v))
-    const fora = (e) => {
-      if (caixa.current && !caixa.current.contains(e.target)) setAberto(false)
-    }
-    document.addEventListener('mousedown', fora)
     return () => {
       vivo = false
-      document.removeEventListener('mousedown', fora)
     }
   }, [])
 
@@ -183,30 +179,60 @@ export default function Sino({ user, posicao = 'topo' }) {
     setBusy(false)
   }
 
+  const card = variant === 'card'
   return (
-    <div className="relative" ref={caixa}>
-      <button
-        onClick={() => setAberto((v) => !v)}
-        aria-label={nLidas ? `${nLidas} notificações por ler` : 'Notificações'}
-        aria-expanded={aberto}
-        className="btn-glass relative flex h-9 w-9 items-center justify-center rounded-full text-gray-300 sm:h-10 sm:w-10"
-      >
-        {nLidas ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-        {nLidas > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black leading-none text-white shadow">
-            {nLidas > 9 ? '9+' : nLidas}
-          </span>
-        )}
-      </button>
-
-      {aberto && (
-        <div
-          className={`glass absolute z-50 max-h-[80vh] w-[min(92vw,23rem)] overflow-hidden rounded-2xl ${
-            // Na sidebar o sino fica em baixo: o painel abre para cima
-            // e para a direita, para não sair do ecrã.
-            posicao === 'lateral' ? 'bottom-0 left-11' : 'right-0 top-11'
-          }`}
+    <div className={`relative ${card ? 'w-full' : ''}`} ref={caixa}>
+      {card ? (
+        <button
+          onClick={() => setAberto((v) => !v)}
+          aria-label={nLidas ? `${nLidas} notificações por ler` : 'Notificações'}
+          aria-expanded={aberto}
+          className="glass flex w-full items-center gap-3 rounded-2xl border border-white/10 px-3 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
         >
+          <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-500/10 text-zinc-300 ring-1 ring-white/10">
+            {nLidas ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+            {nLidas > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black leading-none text-white shadow">
+                {nLidas > 9 ? '9+' : nLidas}
+              </span>
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[9px] font-black uppercase tracking-[0.16em] text-zinc-500">
+              Notificações
+            </span>
+            <span className="block text-sm font-black leading-tight text-white">
+              {nLidas > 0 ? `${nLidas} por ler` : 'Em dia'}
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-zinc-500" />
+        </button>
+      ) : (
+        <button
+          onClick={() => setAberto((v) => !v)}
+          aria-label={nLidas ? `${nLidas} notificações por ler` : 'Notificações'}
+          aria-expanded={aberto}
+          className="btn-glass relative flex h-9 w-9 items-center justify-center rounded-full text-gray-300 sm:h-10 sm:w-10"
+        >
+          {nLidas ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+          {nLidas > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black leading-none text-white shadow">
+              {nLidas > 9 ? '9+' : nLidas}
+            </span>
+          )}
+        </button>
+      )}
+
+      {aberto &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[130] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm"
+            onClick={() => setAberto(false)}
+          >
+            <div
+              className="glass flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <span className="text-sm font-black text-white">Notificações</span>
             <span className="flex items-center gap-3">
@@ -309,8 +335,10 @@ export default function Sino({ user, posicao = 'topo' }) {
               </p>
             </div>
           )}
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }

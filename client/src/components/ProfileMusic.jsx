@@ -229,8 +229,8 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
             type="button"
             onClick={alternar}
             title={aTocar ? 'Pausar música' : 'Tocar música'}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white transition-opacity hover:opacity-90"
-            style={{ background: 'var(--perfil-accent, #8b5cf6)' }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#1a0f0f] transition-opacity hover:opacity-90"
+            style={{ background: 'var(--salmon, #ff9e9e)' }}
           >
             {aTocar ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>
@@ -248,7 +248,7 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
                 value={volume}
                 onChange={(e) => setVolume(Number(e.target.value))}
                 className="h-1 w-20 cursor-pointer"
-                style={{ accentColor: 'var(--perfil-accent, #8b5cf6)' }}
+                style={{ accentColor: 'var(--salmon, #ff9e9e)' }}
                 title="Volume"
               />
             </div>

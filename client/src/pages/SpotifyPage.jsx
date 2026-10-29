@@ -87,7 +87,7 @@ export default function SpotifyPage() {
   const spotifyTools = estado?.spotify || []
 
   return (
-    <section className="min-h-screen px-4 pb-24 pt-24 sm:px-6 sm:pt-28">
+    <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28">
       <div className="mx-auto max-w-3xl">
         {/* ---------------- Cabeçalho ---------------- */}
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-8">

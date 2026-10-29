@@ -143,8 +143,8 @@ export default function CosmeticosPage({ isAdmin }) {
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-gray-400">
               Cores e camuflagens para o nome, cartas e estilos de perfil, pagos com Moedas
-              Locaus. Cada acerto nas previsões vale 1 moeda — os acertos continuam a contar para
-              a classificação, só as moedas é que são gastas.
+              Locaus. Cada acerto sem aposta vale 1 moeda; se apostares moedas nas previsões,
+              o valor dobra. Os acertos continuam a contar para a classificação.
             </p>
           </div>
           <button
@@ -182,7 +182,7 @@ export default function CosmeticosPage({ isAdmin }) {
                 icon={MoedaLocaus}
                 rotulo="Moedas ganhas"
                 valor={dados.acertos}
-                nota="1 acerto = 1 moeda"
+                nota="sem aposta: 1 acerto = 1 moeda"
                 cor="amber"
               />
               <Saldo
@@ -239,8 +239,9 @@ export default function CosmeticosPage({ isAdmin }) {
 
             <p className="mt-6 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-[11px] text-gray-500">
               Os cosméticos são permanentes na tua conta. Se comprares algo que já tens, não é
-              cobrado outra vez. Cada acerto nas previsões vale 1 Moeda Locaus; os acertos
-              continuam a somar na classificação e a loja só gasta as moedas.
+              cobrado outra vez. Cada acerto sem aposta vale 1 Moeda Locaus; se apostares moedas
+              nas previsões, recebes o dobro do valor apostado quando acertas. Os acertos
+              continuam a somar na classificação.
             </p>
           </>
         ) : null}

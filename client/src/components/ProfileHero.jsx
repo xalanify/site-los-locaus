@@ -51,8 +51,8 @@ const mousePhotoCache = new Map()
 const GAME_LOGO = {
   cs2: '/jogos/cs2.svg',
   csgo: '/jogos/csgo.svg',
-  r6: '/jogos/r6.svg',
-  cod: '/jogos/cod.svg',
+  r6: '/jogos/r6.png',
+  cod: '/jogos/cod.png',
   fortnite: '/jogos/fortnite.svg',
   bf1: '/jogos/bf6.svg',
   bfv: '/jogos/bf6.svg',
@@ -67,6 +67,7 @@ const GAME_LOGO = {
   dota: '/jogos/dota.svg',
   pubg: '/jogos/pubg.svg',
   eafc: '/jogos/eafc.svg',
+  steam: '/jogos/steam.svg',
 }
 
 const RANK_CORES = {
@@ -368,26 +369,31 @@ export default function ProfileHero({
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             {jogos.map((g) => {
               const rank = gameRanks[g]
+              const logoLargo = ['cod', 'cs2'].includes(g)
               return (
-                <div key={g} className="flex w-[76px] flex-col items-center gap-1">
+                <div key={g} className="flex w-[104px] flex-col items-center gap-1">
                   <span
                     title={gameLabel(g) || g}
-                    className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]"
+                    className={`relative grid place-items-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] ${
+                      logoLargo ? 'h-14 w-24' : 'h-16 w-16'
+                    }`}
                   >
                     {GAME_LOGO[g] ? (
                       <img
-                        src={GAME_LOGO[g]}
+                        src={`${GAME_LOGO[g]}?v=3`}
                         alt=""
                         loading="lazy"
-                        className="h-7 w-7 object-contain"
+                        className={`object-contain brightness-0 invert ${
+                          logoLargo ? 'h-9 w-20' : 'h-11 w-11'
+                        }`}
                       />
                     ) : (
-                      <span className="text-[10px] font-black text-zinc-300">{abrevJogo(g)}</span>
+                      <span className="text-[11px] font-black text-zinc-300">{abrevJogo(g)}</span>
                     )}
                   </span>
-                  {rank ? (
+                  {rank && (
                     <span
-                      className="flex max-w-full items-center gap-1 text-[10px] font-semibold text-zinc-300"
+                      className="flex max-w-full flex-col items-center gap-1 text-[11px] font-bold leading-tight text-zinc-300"
                       title={rank.modo ? `${rank.name} · ${rank.modo}` : rank.name}
                     >
                       {rank.icon ? (
@@ -395,15 +401,13 @@ export default function ProfileHero({
                           src={rank.icon}
                           alt=""
                           loading="lazy"
-                          className="h-4 w-4 shrink-0 object-contain"
+                          className="h-7 w-7 shrink-0 object-contain"
                         />
                       ) : (
-                        <RankIcon tier={rank.tier} className="h-4 w-4" />
+                        <RankIcon tier={rank.tier} className="h-7 w-7" />
                       )}
-                      <span className="max-w-[56px] truncate">{rank.name}</span>
+                      <span className="max-w-[100px] text-center">{rank.name}</span>
                     </span>
-                  ) : (
-                    <span className="text-[10px] font-semibold text-zinc-600">Sem rank</span>
                   )}
                 </div>
               )
@@ -430,15 +434,15 @@ export default function ProfileHero({
                     </span>
                     <span className="truncate">{g.detalhe}</span>
                   </div>
-                  <div className="relative mt-3 flex h-[120px] items-center justify-center overflow-hidden rounded-xl bg-white/[0.03]">
-                    <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.10),transparent_65%)]" />
+                  <div className="relative mt-3 flex h-[120px] items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.18),rgba(255,255,255,0.06)_55%,rgba(255,255,255,0.02))] ring-1 ring-white/10">
+                    <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.22),transparent_65%)]" />
                     {g.img ? (
                       <img
                         src={g.img}
                         alt=""
                         loading="lazy"
-                        className="relative z-10 max-h-full max-w-full object-contain brightness-110"
-                        style={semBase ? { clipPath: 'inset(0 0 30% 0)' } : undefined}
+                        className="relative z-10 max-h-full max-w-full object-contain brightness-125 contrast-110 drop-shadow-[0_10px_22px_rgba(255,255,255,0.16)]"
+                        style={semBase ? { clipPath: 'inset(0 0 18% 0)' } : undefined}
                       />
                     ) : (
                       <Icon className="h-12 w-12 text-zinc-500" />

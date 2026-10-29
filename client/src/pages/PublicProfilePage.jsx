@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -24,19 +24,18 @@ import ProfileHero from '../components/ProfileHero'
 import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
 import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
-import { extrairCores } from '../lib/coresFundo'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
-   Perfil público com página própria — /perfil/:username
+   Perfil p�blico com página pr�pria � /perfil/:username
 
-   O design e a ordem são EXATAMENTE os do perfil normal da
+   O design e a ordem sóo EXATAMENTE os do perfil normal da
    sidebar (ProfilePage): saudação grande, cartão da conta com
    letra fantasma e anel violeta, distintivo DEV ao lado do
    nome, membro desde, rato/DPI, distinções e por fim os clips.
-   Nenhum azulejo de contagens — nada de cartão de visitas.
-   Só muda: é a página de OUTRO membro (ou fallback se o nome
-   da rota não bater com o utilizador ligado).
+   Nenhum azulejo de contagens � nada de cartão de visitas.
+   S� muda: � a página de OUTRO membro (ou fallback se o nome
+   da rota n�o bater com o utilizador ligado).
    ============================================================ */
 export default function PublicProfilePage({
   user,
@@ -57,28 +56,30 @@ export default function PublicProfilePage({
   const [jogoClips, setJogoClips] = useState('')
   const [posts, setPosts] = useState([])
   const [filtroFeed, setFiltroFeed] = useState('tudo')
-  const [coresExtra, setCoresExtra] = useState(null)
 
   useEffect(() => {
     let vivo = true
     setData(null)
     setErro('')
     setCarregado(false)
-    fetch(`/api/users/${encodeURIComponent(username)}`, { headers: authHeaders() })
+    fetch(`/api/users/${encodeURIComponent(username)}`, {
+      headers: authHeaders(),
+      cache: 'no-store',
+    })
       .then(async (r) => {
         const d = await r.json().catch(() => null)
         if (!vivo) return
-        if (!r.ok) setErro(d?.error || 'Perfil não encontrado')
+        if (!r.ok) setErro(d?.error || 'Perfil n�o encontrado')
         else setData(d)
       })
-      .catch(() => vivo && setErro('Não deu para carregar o perfil.'))
+      .catch(() => vivo && setErro('N�o deu para carregar o perfil.'))
       .finally(() => vivo && setCarregado(true))
     return () => {
       vivo = false
     }
   }, [username])
 
-  /* Mensagens públicas deste membro (feed do perfil). */
+  /* Mensagens p�blicas deste membro (feed do perfil). */
   useEffect(() => {
     const uid = data?.profile?.id
     if (!uid) {
@@ -97,66 +98,24 @@ export default function PublicProfilePage({
 
   const fundoAtual = fundoDe(data?.profile?.background_id)
   const temFundo = Boolean(fundoAtual.imagem)
-  const dinamico = data?.profile?.dynamic_colors !== false && temFundo
-
-  useEffect(() => {
-    let vivo = true
-    setCoresExtra(null)
-    if (!temFundo || !dinamico) return
-    extrairCores(fundoAtual.imagem).then((c) => {
-      if (vivo && c) setCoresExtra(c)
-    })
-    return () => {
-      vivo = false
-    }
-  }, [temFundo, dinamico, fundoAtual.imagem])
-
-  const accent = coresExtra?.cor || fundoAtual.cor
-  const accent2 = coresExtra?.cor2 || fundoAtual.cor2
-  const accentRgb = coresExtra?.rgb || fundoAtual.rgb
 
   useEffect(() => {
     const root = document.documentElement
     document.body.classList.toggle('profile-bg', temFundo)
-    if (!dinamico) {
-      document.body.classList.remove('profile-theme')
-      root.style.removeProperty('--perfil-accent')
-      root.style.removeProperty('--perfil-accent-2')
-      root.style.removeProperty('--perfil-accent-rgb')
-      root.style.removeProperty('--aj-300')
-      root.style.removeProperty('--aj-400')
-      root.style.removeProperty('--aj-500')
-      root.style.removeProperty('--aj-600')
-      root.style.removeProperty('--aj-700')
-      root.style.removeProperty('--aj-line')
-      return () => document.body.classList.remove('profile-bg')
-    }
-    document.body.classList.add('profile-theme')
-    root.style.setProperty('--perfil-accent', accent)
-    root.style.setProperty('--perfil-accent-2', accent2)
-    root.style.setProperty('--perfil-accent-rgb', accentRgb)
-    root.style.setProperty('--aj-300', accentRgb)
-    root.style.setProperty('--aj-400', accentRgb)
-    root.style.setProperty('--aj-500', accentRgb)
-    root.style.setProperty('--aj-600', accentRgb)
-    root.style.setProperty('--aj-700', accentRgb)
-    root.style.setProperty('--aj-line', `rgba(${accentRgb.split(' ').join(', ')}, 0.22)`)
-    return () => {
-      document.body.classList.remove('profile-theme')
-      document.body.classList.remove('profile-bg')
-      root.style.removeProperty('--perfil-accent')
-      root.style.removeProperty('--perfil-accent-2')
-      root.style.removeProperty('--perfil-accent-rgb')
-      root.style.removeProperty('--aj-300')
-      root.style.removeProperty('--aj-400')
-      root.style.removeProperty('--aj-500')
-      root.style.removeProperty('--aj-600')
-      root.style.removeProperty('--aj-700')
-      root.style.removeProperty('--aj-line')
-    }
-  }, [dinamico, fundoAtual.id, accent, accent2, accentRgb])
+    document.body.classList.remove('profile-theme')
+    root.style.removeProperty('--perfil-accent')
+    root.style.removeProperty('--perfil-accent-2')
+    root.style.removeProperty('--perfil-accent-rgb')
+    root.style.removeProperty('--aj-300')
+    root.style.removeProperty('--aj-400')
+    root.style.removeProperty('--aj-500')
+    root.style.removeProperty('--aj-600')
+    root.style.removeProperty('--aj-700')
+    root.style.removeProperty('--aj-line')
+    return () => document.body.classList.remove('profile-bg')
+  }, [temFundo])
 
-  /* Fonte do perfil removida — fica sempre a fonte Locaus padrão. */
+  /* Fonte do perfil removida � fica sempre a fonte Locaus padr�o. */
   useEffect(() => {
     const body = document.body
     body.classList.remove('profile-fonte')
@@ -167,14 +126,14 @@ export default function PublicProfilePage({
     return (
       <section className="flex min-h-screen flex-col items-center justify-center gap-3 pt-14">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
-        <p className="text-sm text-gray-500">A abrir o perfil…</p>
+        <p className="text-sm text-gray-500">A abrir o perfil�</p>
       </section>
     )
   }
 
   if (erro || !data) {
     return (
-      <section className="mx-auto max-w-3xl px-4 pb-20 pt-24 sm:px-6">
+      <section className="mx-auto max-w-3xl px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6">
         <button
           onClick={() => navigate(-1)}
           className="btn-glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-gray-300"
@@ -184,8 +143,8 @@ export default function PublicProfilePage({
         <Estado
           tipo="erro"
           icon={UserRoundX}
-          titulo="Perfil não encontrado"
-          texto={erro || 'Esta conta não existe ou foi removida.'}
+          titulo="Perfil n�o encontrado"
+          texto={erro || 'Esta conta n�o existe ou foi removida.'}
           acao={{ label: 'Ver os clips', onClick: () => navigate('/clips') }}
         />
       </section>
@@ -195,18 +154,6 @@ export default function PublicProfilePage({
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
   const corBorda = corBordaDe(p.borda_cor, tema.cor)
-  const CARD_ACCENTS = {
-    license: '#e4e4e7',
-    kova: '#a1a1aa',
-    dvd: '#ff4d4d',
-    felony: '#c084fc',
-    neon: '#e879f9',
-    blood: '#ff3b3b',
-    cosmic: '#60a5fa',
-    crimson: '#ef4444',
-    violet: '#c084fc',
-  }
-  const corCarta = p.card_style && CARD_ACCENTS[p.card_style] ? CARD_ACCENTS[p.card_style] : null
   const nomeCls = classesNome(p.name_color, p.name_effect)
   const clips = data.clips || []
   const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
@@ -246,7 +193,7 @@ export default function PublicProfilePage({
   /* ---- mesma construção de distinções do perfil normal ---- */
   const d = new Date(p.created_at)
   const criado = Number.isNaN(d.getTime())
-    ? '—'
+    ? '�'
     : d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
 
   const badges = Array.isArray(p.badges) ? p.badges : []
@@ -257,7 +204,7 @@ export default function PublicProfilePage({
   ]
 
   const avatarSrc = p.avatar_url || svgAvatar(p.username, '#a1a1aa')
-  /* margem de casal: 0/1 clip público da até aparecer cheio */
+  /* margem de casal: 0/1 clip p�blico da at� aparecer cheio */
 
   return (
     <PageShell
@@ -268,7 +215,7 @@ export default function PublicProfilePage({
           perfil={p}
           avatarSrc={avatarSrc}
           nomeCls={nomeCls}
-          corBorda={corCarta || corBorda}
+          corBorda={corBorda}
           badges={badges}
           minhas={minhas}
           criado={criado}
@@ -322,7 +269,7 @@ export default function PublicProfilePage({
               <p className="mx-auto max-w-md text-sm text-gray-400">
                 {souEu
                   ? 'Publica um clip ou uma mensagem e aparece aqui no teu perfil.'
-                  : `${p.username} ainda não publicou nada no site.`}
+                  : `${p.username} ainda n�o publicou nada no site.`}
               </p>
             </div>
           ) : (
@@ -388,7 +335,7 @@ export default function PublicProfilePage({
               className="flex items-center gap-2 rounded-xl border border-red-500/40 px-5 py-3 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/15"
             >
               <LogOut className="h-4 w-4" />
-              Terminar sessão
+              Terminar sessóo
             </button>
           </div>
         )}

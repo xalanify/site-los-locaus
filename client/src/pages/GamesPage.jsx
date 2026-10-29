@@ -3424,7 +3424,7 @@ export default function GamesPage() {
   }, [tab])
 
   return (
-    <section className="relative min-h-screen px-4 pb-20 pt-24 sm:pt-28 sm:px-6">
+    <section className="relative min-h-screen px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:pt-28 sm:px-6">
       {/* fundo com a imagem do jogo: FIXA no ecrã inteiro (passa por
           baixo da sidebar e da coluna direita, translúcidas), escurecido
           para as estatísticas ficarem bem visíveis */}

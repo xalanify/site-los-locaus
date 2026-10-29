@@ -14,68 +14,70 @@
 const { getDb } = require('./database');
 
 const CORES = [
-  { id: 'cor-red', nome: 'Red Tiger', valor: 'red', custo: 3, cor: '#ef4444' },
-  { id: 'cor-green', nome: 'Green Tiger', valor: 'green', custo: 3, cor: '#22c55e' },
-  { id: 'cor-obsidian', nome: 'Obsidian (MW2019)', valor: 'obsidian', custo: 17, cor: '#334155' },
-  { id: 'cor-pink', nome: 'Rosa', valor: 'pink', custo: 4, cor: '#ec4899' },
-  { id: 'cor-cyan', nome: 'Ciano', valor: 'cyan', custo: 4, cor: '#22d3ee' },
-  { id: 'cor-gold', nome: 'Gold (BO1)', valor: 'gold', custo: 5, cor: '#f59e0b' },
-  { id: 'cor-damascus', nome: 'Damascus (MW19)', valor: 'damascus', custo: 6, cor: '#60a5fa' },
-  { id: 'cor-interstellar', nome: 'Interstellar', valor: 'interstellar', custo: 17, cor: '#818cf8' },
-  { id: 'cor-darkmatter', nome: 'Dark Matter', valor: 'darkmatter', custo: 8, cor: '#a855f7' },
-  { id: 'cor-platinum', nome: 'Platinum', valor: 'platinum', custo: 8, cor: '#cbd5e1' },
-  { id: 'cor-diamond', nome: 'Diamond (BO2)', valor: 'diamond', custo: 9, cor: '#fde68a' },
-  { id: 'cor-chrome', nome: 'Chrome', valor: 'chrome', custo: 10, cor: '#e5e7eb' },
-  { id: 'cor-rainbow', nome: 'Dark Aether', valor: 'rainbow', custo: 17, cor: '#c084fc' },
+  { id: 'cor-red', nome: 'Red Tiger', valor: 'red', custo: 7, cor: '#ef4444' },
+  { id: 'cor-green', nome: 'Green Tiger', valor: 'green', custo: 8, cor: '#22c55e' },
+  { id: 'cor-obsidian', nome: 'Obsidian (MW2019)', valor: 'obsidian', custo: 26, cor: '#334155' },
+  { id: 'cor-pink', nome: 'Rosa', valor: 'pink', custo: 9, cor: '#ec4899' },
+  { id: 'cor-cyan', nome: 'Ciano', valor: 'cyan', custo: 10, cor: '#22d3ee' },
+  { id: 'cor-gold', nome: 'Gold (BO1)', valor: 'gold', custo: 38, cor: '#f59e0b' },
+  { id: 'cor-damascus', nome: 'Damascus (MW19)', valor: 'damascus', custo: 22, cor: '#60a5fa' },
+  { id: 'cor-interstellar', nome: 'Interstellar', valor: 'interstellar', custo: 32, cor: '#818cf8' },
+  { id: 'cor-darkmatter', nome: 'Dark Matter', valor: 'darkmatter', custo: 24, cor: '#a855f7' },
+  { id: 'cor-platinum', nome: 'Platinum', valor: 'platinum', custo: 20, cor: '#cbd5e1' },
+  { id: 'cor-diamond', nome: 'Diamond (BO2)', valor: 'diamond', custo: 28, cor: '#fde68a' },
+  { id: 'cor-chrome', nome: 'Chrome', valor: 'chrome', custo: 25, cor: '#e5e7eb' },
+  { id: 'cor-rainbow', nome: 'Dark Aether', valor: 'rainbow', custo: 34, cor: '#c084fc' },
 ];
 
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
    O `valor` coincide com o nome do SVG em client/public/camo/ e com a
    classe .nome-cor-<valor> em index.css. */
 const CAMOS = [
-  { id: 'camo-gold', nome: 'Gold Camuflado', valor: 'camo-gold', custo: 6, cor: '#f5c542' },
-  { id: 'camo-diamond', nome: 'Diamond Camuflado', valor: 'camo-diamond', custo: 10, cor: '#fde68a' },
-  { id: 'camo-damascus', nome: 'Damascus Camuflado', valor: 'camo-damascus', custo: 7, cor: '#60a5fa' },
-  { id: 'camo-darkmatter', nome: 'Dark Matter Camuflado', valor: 'camo-darkmatter', custo: 9, cor: '#a855f7' },
-  { id: 'camo-interstellar', nome: 'Interstellar Camuflado', valor: 'camo-interstellar', custo: 8, cor: '#818cf8' },
-  { id: 'camo-chrome', nome: 'Chrome Camuflado', valor: 'camo-chrome', custo: 11, cor: '#e5e7eb' },
-  { id: 'camo-platinum', nome: 'Platinum Camuflado', valor: 'camo-platinum', custo: 9, cor: '#cbd5e1' },
-  { id: 'camo-obsidian', nome: 'Obsidian Camuflado', valor: 'camo-obsidian', custo: 5, cor: '#334155' },
-  { id: 'camo-redtiger', nome: 'Red Tiger Camuflado', valor: 'camo-redtiger', custo: 4, cor: '#ef4444' },
-  { id: 'camo-greentiger', nome: 'Green Tiger Camuflado', valor: 'camo-greentiger', custo: 4, cor: '#22c55e' },
-  { id: 'camo-digital', nome: 'Digital Camuflado', valor: 'camo-digital', custo: 4, cor: '#6b7f3a' },
-  { id: 'camo-hex', nome: 'Hex Camuflado', valor: 'camo-hex', custo: 5, cor: '#f5c542' },
-  { id: 'camo-woodland', nome: 'Woodland Camuflado', valor: 'camo-woodland', custo: 4, cor: '#3f5e2a' },
-  { id: 'camo-desert', nome: 'Desert Camuflado', valor: 'camo-desert', custo: 4, cor: '#b08a55' },
-  { id: 'camo-urban', nome: 'Urban Camuflado', valor: 'camo-urban', custo: 4, cor: '#6b6b6b' },
-  { id: 'camo-neon', nome: 'Neon Camuflado', valor: 'camo-neon', custo: 7, cor: '#e879f9' },
-  { id: 'camo-zebra', nome: 'Zebra Camuflado', valor: 'camo-zebra', custo: 5, cor: '#f5f5f5' },
-  { id: 'camo-blue', nome: 'Azul Camuflado', valor: 'camo-blue', custo: 4, cor: '#3aa0d8' },
-  { id: 'camo-red', nome: 'Vermelho Camuflado', valor: 'camo-red', custo: 4, cor: '#b91c1c' },
-  { id: 'camo-purple', nome: 'Roxo Camuflado', valor: 'camo-purple', custo: 4, cor: '#a855f7' },
+  { id: 'camo-gold', nome: 'Gold Camuflado', valor: 'camo-gold', custo: 39, cor: '#f5c542' },
+  { id: 'camo-diamond', nome: 'Diamond Camuflado', valor: 'camo-diamond', custo: 33, cor: '#fde68a' },
+  { id: 'camo-damascus', nome: 'Damascus Camuflado', valor: 'camo-damascus', custo: 23, cor: '#60a5fa' },
+  { id: 'camo-darkmatter', nome: 'Dark Matter Camuflado', valor: 'camo-darkmatter', custo: 27, cor: '#a855f7' },
+  { id: 'camo-interstellar', nome: 'Interstellar Camuflado', valor: 'camo-interstellar', custo: 31, cor: '#818cf8' },
+  { id: 'camo-chrome', nome: 'Chrome Camuflado', valor: 'camo-chrome', custo: 35, cor: '#e5e7eb' },
+  { id: 'camo-platinum', nome: 'Platinum Camuflado', valor: 'camo-platinum', custo: 21, cor: '#cbd5e1' },
+  { id: 'camo-obsidian', nome: 'Obsidian Camuflado', valor: 'camo-obsidian', custo: 19, cor: '#334155' },
+  { id: 'camo-redtiger', nome: 'Red Tiger Camuflado', valor: 'camo-redtiger', custo: 12, cor: '#ef4444' },
+  { id: 'camo-greentiger', nome: 'Green Tiger Camuflado', valor: 'camo-greentiger', custo: 13, cor: '#22c55e' },
+  { id: 'camo-digital', nome: 'Digital Camuflado', valor: 'camo-digital', custo: 14, cor: '#6b7f3a' },
+  { id: 'camo-hex', nome: 'Hex Camuflado', valor: 'camo-hex', custo: 15, cor: '#f5c542' },
+  { id: 'camo-woodland', nome: 'Woodland Camuflado', valor: 'camo-woodland', custo: 16, cor: '#3f5e2a' },
+  { id: 'camo-desert', nome: 'Desert Camuflado', valor: 'camo-desert', custo: 17, cor: '#b08a55' },
+  { id: 'camo-urban', nome: 'Urban Camuflado', valor: 'camo-urban', custo: 18, cor: '#6b6b6b' },
+  { id: 'camo-neon', nome: 'Neon Camuflado', valor: 'camo-neon', custo: 36, cor: '#e879f9' },
+  { id: 'camo-zebra', nome: 'Zebra Camuflado', valor: 'camo-zebra', custo: 37, cor: '#f5f5f5' },
+  { id: 'camo-blue', nome: 'Azul Camuflado', valor: 'camo-blue', custo: 30, cor: '#3aa0d8' },
+  { id: 'camo-red', nome: 'Vermelho Camuflado', valor: 'camo-red', custo: 29, cor: '#b91c1c' },
+  { id: 'camo-purple', nome: 'Roxo Camuflado', valor: 'camo-purple', custo: 40, cor: '#a855f7' },
 ].map((x) => ({ ...x, textura: true }));
 
 /* Cartas de perfil — mudam o estilo do cartão do perfil. */
 const CARTAS = [
-  { id: 'carta-license', nome: 'Carta Aimer License', valor: 'license', custo: 12, cor: '#e4e4e7' },
-  { id: 'carta-kova', nome: 'Carta Kova', valor: 'kova', custo: 12, cor: '#a1a1aa' },
-  { id: 'carta-neon', nome: 'Carta Neon', valor: 'neon', custo: 12, cor: '#e879f9' },
-  { id: 'carta-dvd', nome: 'Carta Red DVD', valor: 'dvd', custo: 15, cor: '#ff4d4d' },
-  { id: 'carta-felony', nome: 'Carta Felony', valor: 'felony', custo: 15, cor: '#c084fc' },
-  { id: 'carta-blood', nome: 'Carta Blood', valor: 'blood', custo: 15, cor: '#ff3b3b' },
-  { id: 'carta-cosmic', nome: 'Carta Cosmic', valor: 'cosmic', custo: 15, cor: '#60a5fa' },
-  { id: 'carta-crimson', nome: 'Carta Crimson', valor: 'crimson', custo: 15, cor: '#ef4444' },
-  { id: 'carta-violet', nome: 'Carta Violet', valor: 'violet', custo: 15, cor: '#c084fc' },
+  { id: 'carta-license', nome: 'Carta Aimer License', valor: 'license', custo: 50, cor: '#e4e4e7' },
+  { id: 'carta-kova', nome: 'Carta Kova', valor: 'kova', custo: 52, cor: '#a1a1aa' },
+  { id: 'carta-neon', nome: 'Carta Neon', valor: 'neon', custo: 55, cor: '#e879f9' },
+  { id: 'carta-dvd', nome: 'Carta Red DVD', valor: 'dvd', custo: 58, cor: '#ff4d4d' },
+  { id: 'carta-felony', nome: 'Carta Felony', valor: 'felony', custo: 60, cor: '#c084fc' },
+  { id: 'carta-blood', nome: 'Carta Blood', valor: 'blood', custo: 62, cor: '#ff3b3b' },
+  { id: 'carta-cosmic', nome: 'Carta Cosmic', valor: 'cosmic', custo: 65, cor: '#60a5fa' },
+  { id: 'carta-crimson', nome: 'Carta Crimson', valor: 'crimson', custo: 68, cor: '#ef4444' },
+  { id: 'carta-violet', nome: 'Carta Violet', valor: 'violet', custo: 70, cor: '#c084fc' },
+  { id: 'carta-sleepin', nome: 'Carta Sleepin', valor: 'sleepin', custo: 75, cor: '#e4e4e7' },
+  { id: 'carta-river', nome: 'Carta River', valor: 'river', custo: 80, cor: '#f9a8d4' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.
    Ainda estão "Em breve": aparecem na loja mas não podem ser comprados. */
 const ESTILOS = [
-  { id: 'estilo-felony', nome: 'Estilo Felony', valor: 'felony', custo: 18, cor: '#f5f5f5', emBreve: true },
-  { id: 'estilo-neon', nome: 'Estilo Neon', valor: 'neon', custo: 18, cor: '#e879f9', emBreve: true },
-  { id: 'estilo-blood', nome: 'Estilo Blood', valor: 'blood', custo: 18, cor: '#ff2d2d', emBreve: true },
-  { id: 'estilo-cosmic', nome: 'Estilo Cosmic', valor: 'cosmic', custo: 18, cor: '#60a5fa', emBreve: true },
-  { id: 'estilo-crimson', nome: 'Estilo Crimson', valor: 'crimson', custo: 18, cor: '#ef4444', emBreve: true },
+  { id: 'estilo-felony', nome: 'Estilo Felony', valor: 'felony', custo: 120, cor: '#f5f5f5', emBreve: true },
+  { id: 'estilo-neon', nome: 'Estilo Neon', valor: 'neon', custo: 125, cor: '#e879f9', emBreve: true },
+  { id: 'estilo-blood', nome: 'Estilo Blood', valor: 'blood', custo: 130, cor: '#ff2d2d', emBreve: true },
+  { id: 'estilo-cosmic', nome: 'Estilo Cosmic', valor: 'cosmic', custo: 135, cor: '#60a5fa', emBreve: true },
+  { id: 'estilo-crimson', nome: 'Estilo Crimson', valor: 'crimson', custo: 140, cor: '#ef4444', emBreve: true },
 ];
 
 /* Os banners e os efeitos saíram da loja. Os banners continuam
@@ -116,15 +118,29 @@ async function acertosDe(uid) {
   const db = getDb();
   const row = await db
     .prepare(
-      `SELECT count(*) FILTER (WHERE correct IS TRUE)::int AS acertos
+      `SELECT
+         COALESCE(SUM(base), 0)::int AS base,
+         COALESCE(SUM(payout), 0)::int AS payout,
+         COALESCE(SUM(stakes), 0)::int AS stakes
        FROM (
-         SELECT correct FROM r6_predictions WHERE user_id = ?
+         SELECT
+           count(*) FILTER (WHERE correct IS TRUE AND COALESCE(stake, 0) = 0)::int AS base,
+           COALESCE(SUM(CASE WHEN correct IS TRUE AND COALESCE(stake, 0) > 0 THEN 2 * stake ELSE 0 END), 0)::int AS payout,
+           COALESCE(SUM(COALESCE(stake, 0)), 0)::int AS stakes
+         FROM r6_predictions WHERE user_id = ?
          UNION ALL
-         SELECT correct FROM cs2_predictions WHERE user_id = ?
-       ) p`,
+         SELECT
+           count(*) FILTER (WHERE correct IS TRUE AND COALESCE(stake, 0) = 0)::int AS base,
+           COALESCE(SUM(CASE WHEN correct IS TRUE AND COALESCE(stake, 0) > 0 THEN 2 * stake ELSE 0 END), 0)::int AS payout,
+           COALESCE(SUM(COALESCE(stake, 0)), 0)::int AS stakes
+         FROM cs2_predictions WHERE user_id = ?
+       ) x`,
     )
     .get(uid, uid);
-  return Number(row && row.acertos) || 0;
+  const base = Number(row && row.base) || 0;
+  const payout = Number(row && row.payout) || 0;
+  const stakes = Number(row && row.stakes) || 0;
+  return Math.max(0, base + payout - stakes);
 }
 
 async function gastosDe(uid) {

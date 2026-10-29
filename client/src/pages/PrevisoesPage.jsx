@@ -22,6 +22,7 @@ import {
   Star,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import MoedaLocaus from '../components/MoedaLocaus'
 import { R6_TORNEIOS } from '../data/r6Torneios'
 import { CS2_TORNEIOS } from '../data/cs2Torneios'
 import { authHeaders } from '../lib/auth'
@@ -147,13 +148,24 @@ function VoterList({ match, user }) {
   )
 }
 
-function PredictionCard({ match, user, onVote, votando }) {
+function PredictionCard({ match, user, onVote, votando, moedas = 0 }) {
   const [aberto, setAberto] = useState(false)
+  const [stake, setStake] = useState(Number(match.stake) || 0)
   const live = match.status === 2
   const acabado = match.status === 3
   const total = match.counts.total
   const minhaEscolha = match.pick
   const escolhaCerta = acabado && match.winner ? (match.winner === 'a' ? match.team_a : match.team_b) : null
+  const maxStake = Math.max(0, Number(moedas) || 0) + (Number(match.stake) || 0)
+
+  useEffect(() => {
+    setStake(Number(match.stake) || 0)
+  }, [match.stake, match.id])
+
+  const mudarStake = (valor) => {
+    const n = Math.max(0, Math.min(maxStake, Math.floor(Number(valor) || 0)))
+    setStake(n)
+  }
 
   const classeEquipa = (lado) => {
     const escolhida = minhaEscolha === lado
@@ -211,7 +223,7 @@ function PredictionCard({ match, user, onVote, votando }) {
           <button
             type="button"
             disabled={!match.can_vote || votando}
-            onClick={() => onVote(match, 'a')}
+            onClick={() => onVote(match, 'a', stake)}
             className={`flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-all ${classeEquipa('a')} ${
               match.can_vote ? 'cursor-pointer' : 'cursor-default'
             }`}
@@ -243,7 +255,7 @@ function PredictionCard({ match, user, onVote, votando }) {
           <button
             type="button"
             disabled={!match.can_vote || votando}
-            onClick={() => onVote(match, 'b')}
+            onClick={() => onVote(match, 'b', stake)}
             className={`flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-all ${classeEquipa('b')} ${
               match.can_vote ? 'cursor-pointer' : 'cursor-default'
             }`}
@@ -263,6 +275,65 @@ function PredictionCard({ match, user, onVote, votando }) {
             )}
           </button>
         </div>
+
+        {(match.can_vote || Number(match.stake) > 0) && (
+          <div className="mt-3 rounded-xl border border-amber-300/20 bg-amber-400/[0.04] px-2.5 py-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-200">
+                <MoedaLocaus size={12} /> Aposta
+              </span>
+              {match.can_vote ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => mudarStake(stake - 1)}
+                    disabled={stake <= 0 || votando}
+                    aria-label="Diminuir aposta"
+                    className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-sm font-black text-gray-200 hover:bg-white/10 disabled:opacity-30"
+                  >
+                    −
+                  </button>
+                  <span className="min-w-[2.5rem] text-center text-sm font-black tabular-nums text-white">
+                    {stake}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => mudarStake(stake + 1)}
+                    disabled={stake >= maxStake || votando}
+                    aria-label="Aumentar aposta"
+                    className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-sm font-black text-gray-200 hover:bg-white/10 disabled:opacity-30"
+                  >
+                    +
+                  </button>
+                  {maxStake > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => mudarStake(maxStake)}
+                      disabled={stake >= maxStake || votando}
+                      className="rounded-lg border border-amber-300/25 bg-amber-400/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-200 hover:bg-amber-400/20 disabled:opacity-30"
+                    >
+                      Máx.
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <span className="text-sm font-black text-white">
+                  {Number(match.stake) || 0} moedas
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-[10px] leading-snug text-amber-100/70">
+              {stake === 0
+                ? 'Sem gastar: ganhas 1 moeda se acertares.'
+                : `Apostas ${stake}: recebes ${stake * 2} moedas se acertares; perdes ${stake} se falhares.`}
+            </p>
+            {match.can_vote && (
+              <p className="mt-0.5 text-[9px] font-semibold text-amber-200/60">
+                Máximo para esta aposta: {maxStake} moeda(s).
+              </p>
+            )}
+          </div>
+        )}
 
         {live && match.maps && match.maps.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -917,12 +988,29 @@ function FortniteTorneiosTab() {
 }
 
 function CS2PrevisoesTab({ user }) {
-  const [dados, setDados] = useState({ loading: true, matches: [], erro: '' })
+  const [dados, setDados] = useState({
+    loading: true,
+    matches: [],
+    erro: '',
+    stats: { acertos: 0, falhas: 0 },
+  })
   const [prox, setProx] = useState(null)
   const [votando, setVotando] = useState(0)
   const [abaCs2, setAbaCs2] = useState('proximos')
   const [regiaoCs2, setRegiaoCs2] = useState('Todas')
   const [abertoProx, setAbertoProx] = useState(false)
+  const [moedas, setMoedas] = useState(0)
+
+  const carregarMoedas = async () => {
+    try {
+      const r = await fetch('/api/cosmeticos/saldo', { headers: authHeaders(), cache: 'no-store' })
+      if (!r.ok) return
+      const d = await r.json()
+      setMoedas(Number(d && d.disponiveis) || 0)
+    } catch {
+      /* sem rede */
+    }
+  }
 
   const carregar = async () => {
     try {
@@ -931,6 +1019,7 @@ function CS2PrevisoesTab({ user }) {
       setDados({
         loading: false,
         matches: (d && d.matches) || [],
+        stats: (d && d.stats) || { acertos: 0, falhas: 0 },
         erro: r.ok ? '' : (d && d.error) || 'Sem ligação aos jogos CS2.',
       })
     } catch {
@@ -941,6 +1030,7 @@ function CS2PrevisoesTab({ user }) {
   useEffect(() => {
     let vivo = true
     carregar()
+    carregarMoedas()
     fetch('/api/previsoes/cs2/proximo')
       .then((r) => r.json())
       .then((d) => vivo && setProx(d && d.jogo ? d.jogo : null))
@@ -953,7 +1043,7 @@ function CS2PrevisoesTab({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const votar = async (m, pick) => {
+  const votar = async (m, pick, stake = 0) => {
     if (!user) {
       toast.erro('Inicia sessão para votar.')
       return
@@ -964,7 +1054,7 @@ function CS2PrevisoesTab({ user }) {
       const r = await fetch(`/api/previsoes/cs2/${m.id}/voto`, {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pick }),
+        body: JSON.stringify({ pick, stake: Number(stake) || 0 }),
       })
       const d = await r.json().catch(() => null)
       if (!r.ok) throw new Error((d && d.error) || 'Não deu para votar.')
@@ -972,11 +1062,22 @@ function CS2PrevisoesTab({ user }) {
         ...prev,
         matches: prev.matches.map((x) =>
           x.id === m.id
-            ? { ...x, pick, counts: { ...x.counts, ...(d.counts || {}) } }
+            ? {
+                ...x,
+                pick,
+                stake: Number(d.stake) || Number(stake) || 0,
+                counts: { ...x.counts, ...(d.counts || {}) },
+              }
             : x,
         ),
       }))
-      toast.ok('Voto guardado.')
+      carregarMoedas()
+      window.dispatchEvent(new Event('locaus:moedas'))
+      toast.ok(
+        Number(stake) > 0
+          ? `Aposta de ${stake} guardada. Se acertares recebes ${Number(stake) * 2}.`
+          : 'Voto guardado.',
+      )
     } catch (e) {
       toast.erro(e.message || 'Não deu para votar.')
     } finally {
@@ -1008,8 +1109,34 @@ function CS2PrevisoesTab({ user }) {
       ].map(([nome, logo]) => ({ nome, logo }))
     : []
 
+  const acertosCs2 = Number(dados.stats?.acertos) || 0
+  const falhasCs2 = Number(dados.stats?.falhas) || 0
+
   return (
     <div className="space-y-4">
+      <section className="relative overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-[#161618] to-zinc-600/10 p-4 shadow-xl shadow-sky-950/20">
+        <div className="relative flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-black leading-tight text-white sm:text-3xl">
+              Previsões <span className="gradient-text">CS2</span>
+            </h1>
+            <p className="mt-1 max-w-lg text-xs font-semibold leading-relaxed text-gray-300 sm:text-sm">
+              Escolhe o vencedor dos jogos profissionais de Counter-Strike 2.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
+              <p className="text-lg font-black text-white">{acertosCs2}</p>
+              <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Acertos</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
+              <p className="text-lg font-black text-white">{falhasCs2}</p>
+              <p className="text-[9px] font-black uppercase tracking-wider text-red-300">Falhas</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {prox && (
         <section className="overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-zinc-600/10 to-[#121214] p-4 shadow-xl shadow-sky-950/20">
           <div className="flex flex-wrap items-center gap-2">
@@ -1182,7 +1309,7 @@ function CS2PrevisoesTab({ user }) {
         ) : (
           <div className="space-y-3">
             {proximos.map((m) => (
-              <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} />
+              <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} moedas={moedas} />
             ))}
           </div>
         )}
@@ -1236,8 +1363,20 @@ export default function PrevisoesPage({ user }) {
   const [classModalLoading, setClassModalLoading] = useState(false)
   const [resultadosNovos, setResultadosNovos] = useState([])
   const [modalResultados, setModalResultados] = useState(false)
+  const [moedas, setMoedas] = useState(0)
   const [, setTick] = useState(0)
   const recarregarRef = useRef(() => {})
+
+  const carregarMoedas = async () => {
+    try {
+      const r = await fetch('/api/cosmeticos/saldo', { headers: authHeaders(), cache: 'no-store' })
+      if (!r.ok) return
+      const d = await r.json()
+      setMoedas(Number(d && d.disponiveis) || 0)
+    } catch {
+      /* sem rede */
+    }
+  }
 
   const carregarResultadosNovos = async () => {
     try {
@@ -1280,6 +1419,7 @@ export default function PrevisoesPage({ user }) {
     // O aviso de resultados é pedido logo no início, para aparecer
     // assim que o utilizador entra (sem esperar pela sincronização).
     carregarResultadosNovos()
+    carregarMoedas()
     carregar(false).finally(() => {
       if (vivo) {
         carregar(true).finally(() => {
@@ -1339,25 +1479,37 @@ export default function PrevisoesPage({ user }) {
     }
   }, [matches.length])
 
-  const votar = async (m, pick) => {
+  const votar = async (m, pick, stake = 0) => {
     if (!m.can_vote || votando) return
     setVotando(m.id)
     try {
       const r = await fetch(`/api/previsoes/${m.id}/voto`, {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pick }),
+        body: JSON.stringify({ pick, stake: Number(stake) || 0 }),
       })
       const d = await r.json().catch(() => null)
       if (!r.ok) throw new Error((d && d.error) || 'Não deu para votar.')
       setMatches((prev) =>
         prev.map((x) =>
           x.id === m.id
-            ? { ...x, pick, counts: { ...x.counts, ...(d.counts || {}) }, can_vote: true }
+            ? {
+                ...x,
+                pick,
+                stake: Number(d.stake) || Number(stake) || 0,
+                counts: { ...x.counts, ...(d.counts || {}) },
+                can_vote: true,
+              }
             : x,
         ),
       )
-      toast.ok('Voto guardado. Boa sorte!')
+      carregarMoedas()
+      window.dispatchEvent(new Event('locaus:moedas'))
+      toast.ok(
+        Number(stake) > 0
+          ? `Aposta de ${stake} guardada. Se acertares recebes ${Number(stake) * 2}.`
+          : 'Voto guardado. Boa sorte!',
+      )
     } catch (e) {
       toast.erro(e.message || 'Não deu para votar.')
     } finally {
@@ -1410,6 +1562,9 @@ export default function PrevisoesPage({ user }) {
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-gray-400">
           Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade.
+        </p>
+        <p className="mt-1 max-w-2xl text-[11px] font-semibold text-amber-200/70">
+          Sem aposta: ganhas 1 moeda se acertares. Com aposta: recebes o dobro (ex.: 5 → 10).
         </p>
         <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300">
           <RefreshCw className="h-2.5 w-2.5" /> atualiza sozinho
@@ -1596,7 +1751,7 @@ export default function PrevisoesPage({ user }) {
         <div className="space-y-3">
           {proximosFiltrados.length ? (
             proximosFiltrados.map((m) => (
-              <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} />
+              <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} moedas={moedas} />
             ))
           ) : (
             <div className="rounded-2xl border border-white/10 bg-[#121214]/80 px-4 py-14 text-center">
