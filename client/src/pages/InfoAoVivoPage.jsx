@@ -140,7 +140,7 @@ export default function InfoAoVivoPage() {
   const instalado = s?.instalado
 
   return (
-    <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28">
+    <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
       <div className="mx-auto max-w-4xl space-y-8">
         {/* ---------------- Hero ---------------- */}
         <motion.div

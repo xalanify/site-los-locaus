@@ -115,6 +115,19 @@ export default function PublicProfilePage({
     return () => document.body.classList.remove('profile-bg')
   }, [temFundo])
 
+  /* O estilo do perfil pinta também a sidebar, o topo e o dock. */
+  const estiloAtivo = data?.profile?.profile_style || 'padrao'
+  useEffect(() => {
+    const body = document.body
+    body.dataset.ps = estiloAtivo
+    body.classList.add('perfil-ativo')
+    return () => {
+      delete body.dataset.ps
+      body.classList.remove('perfil-ativo')
+    }
+  }, [estiloAtivo])
+
+
   /* Fonte do perfil removida � fica sempre a fonte Locaus padr�o. */
   useEffect(() => {
     const body = document.body
@@ -133,7 +146,7 @@ export default function PublicProfilePage({
 
   if (erro || !data) {
     return (
-      <section className="mx-auto max-w-3xl px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6">
+      <section className="mx-auto max-w-3xl px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6">
         <button
           onClick={() => navigate(-1)}
           className="btn-glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-gray-300"
@@ -308,37 +321,30 @@ export default function PublicProfilePage({
           )}
         </div>
 
-        {/* ---------------- Ações (só se a página for tua) ---------------- */}
-        {souEu && (
-          <div className="flex flex-wrap justify-center gap-3">
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={onPanelClick}
-                className="ui-btn ui-btn-primary"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Painel Admin
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
-              className="flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm font-bold text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <Sparkles className="h-4 w-4" />
-              Novidades
+        {/* ---------------- Dock flutuante do perfil ---------------- */}
+        <nav className="perfil-dock" aria-label="Ações do perfil">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
+            title="Novidades"
+          >
+            <Sparkles />
+            <span>Novidades</span>
+          </button>
+          {isAdmin && (
+            <button type="button" onClick={onPanelClick} title="Painel Admin">
+              <LayoutDashboard />
+              <span>Admin</span>
             </button>
-            <button
-              type="button"
-              onClick={onLogout}
-              className="flex items-center gap-2 rounded-xl border border-red-500/40 px-5 py-3 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/15"
-            >
-              <LogOut className="h-4 w-4" />
-              Terminar sessóo
+          )}
+          {souEu && (
+            <button type="button" onClick={onLogout} title="Terminar sessão">
+              <LogOut />
+              <span>Sair</span>
             </button>
-          </div>
-        )}
+          )}
+        </nav>
+
         {souEu && editOpen && (
           <ProfilePage
             standaloneEdit

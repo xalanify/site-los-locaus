@@ -4,6 +4,7 @@ import { Trophy, Users, Loader2 } from 'lucide-react'
 import { BADGES, BadgeGem, OVERCLOCK_BADGES, STREAK_BADGE } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 
 /* ============================================================
    Página Distinções
@@ -88,18 +89,10 @@ export default function UpdatesPage() {
 
   return (
     <PageShell>
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="font-black gradient-text" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}>
-            Distinções
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-gray-400">
-            Todas as insígnias do site e quem já as tem. Aparecem no perfil de cada conta.
-          </p>
-        </motion.div>
+      <PageHeader
+        title={<span className="gradient-text">Distinções</span>}
+        subtitle="Todas as insígnias do site e quem já as tem. Aparecem no perfil de cada conta."
+      />
 
         {loading && (
           <div className="flex items-center gap-2 text-sm text-gray-500">

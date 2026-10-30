@@ -78,6 +78,14 @@ const ESTILOS = [
   { id: 'estilo-blood', nome: 'Estilo Blood', valor: 'blood', custo: 130, cor: '#ff2d2d', emBreve: true },
   { id: 'estilo-cosmic', nome: 'Estilo Cosmic', valor: 'cosmic', custo: 135, cor: '#60a5fa', emBreve: true },
   { id: 'estilo-crimson', nome: 'Estilo Crimson', valor: 'crimson', custo: 140, cor: '#ef4444', emBreve: true },
+  // Coleção nova (7) — aproximações dos layouts de perfil da referência
+  { id: 'estilo-m1key', nome: 'Estilo M1KEY', valor: 'm1key', custo: 120, cor: '#ef4444', emBreve: true },
+  { id: 'estilo-monarcs', nome: 'Estilo Monarcs', valor: 'monarcs', custo: 122, cor: '#ddd6c8', emBreve: true },
+  { id: 'estilo-pyvno', nome: 'Estilo Pyvno', valor: 'pyvno', custo: 126, cor: '#a78bfa', emBreve: true },
+  { id: 'estilo-speedy', nome: 'Estilo Speedy', valor: 'speedy', custo: 128, cor: '#facc15', emBreve: true },
+  { id: 'estilo-lafayette', nome: 'Estilo Lafayette', valor: 'lafayette', custo: 134, cor: '#d4af37', emBreve: true },
+  { id: 'estilo-saowur', nome: 'Estilo Saowur', valor: 'saowur', custo: 136, cor: '#f472b6', emBreve: true },
+  { id: 'estilo-kichies', nome: 'Estilo Kichies', valor: 'kichies', custo: 140, cor: '#22c55e', emBreve: true },
 ];
 
 /* Os banners e os efeitos saíram da loja. Os banners continuam

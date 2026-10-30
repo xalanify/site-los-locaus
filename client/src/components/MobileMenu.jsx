@@ -81,6 +81,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
           {/* painel deslizante */}
           <motion.aside
             key="painel"
+            id="mobilemenu"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}

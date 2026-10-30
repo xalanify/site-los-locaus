@@ -117,9 +117,20 @@ export default function ProfileCard({
   const aoSair = () => {
     if (ref.current) ref.current.style.transform = ''
   }
+  const arrasto = useRef({ x: 0, y: 0, ativo: false, ultimo: 0 })
   const aoClicar = (e) => {
     const el = ref.current
     if (!el) return
+    arrasto.current.x = e.clientX
+    arrasto.current.y = e.clientY
+    arrasto.current.ativo = false
+    if (e.pointerType !== 'mouse') {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      } catch {
+        /* sem captura */
+      }
+    }
     const r = el.getBoundingClientRect()
     el.style.setProperty('--cx', `${e.clientX - r.left}px`)
     el.style.setProperty('--cy', `${e.clientY - r.top}px`)
@@ -128,13 +139,41 @@ export default function ProfileCard({
     el.classList.add('pc-clicado')
     window.setTimeout(() => el.classList.remove('pc-clicado'), 520)
   }
+  const aoMoverPointer = (e) => {
+    if (e.pointerType !== 'mouse') {
+      const dx = e.clientX - arrasto.current.x
+      const dy = e.clientY - arrasto.current.y
+      if (Math.abs(dx) + Math.abs(dy) > 6) arrasto.current.ativo = true
+    }
+    aoMover(e)
+  }
+  const aoSoltar = (e) => {
+    if (e.pointerType !== 'mouse') {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId)
+      } catch {
+        /* sem captura */
+      }
+    }
+    if (arrasto.current.ativo) arrasto.current.ultimo = Date.now()
+    aoSair()
+  }
+  const aoClicarCarta = (e) => {
+    if (Date.now() - arrasto.current.ultimo < 450) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
 
   return (
     <div
       ref={ref}
-      onMouseMove={aoMover}
-      onMouseLeave={aoSair}
+      onPointerMove={aoMoverPointer}
+      onPointerLeave={aoSair}
       onPointerDown={aoClicar}
+      onPointerUp={aoSoltar}
+      onPointerCancel={aoSoltar}
+      onClick={aoClicarCarta}
       className={`profile-card profile-card--${v} group ${
         wide
           ? 'profile-card--wide'

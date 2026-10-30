@@ -102,11 +102,11 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     <aside className="painel-fixo fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 px-3 py-5 lg:flex xl:w-[280px]">
       {/* Marca + navegação (rola se o ecrã for baixo) */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <Link to="/" className="mb-6 flex items-center gap-2.5 px-3">
+        <Link to="/" className="mb-6 flex min-w-0 items-center gap-2.5 px-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
             <Youtube className="h-5 w-5 text-zinc-400" />
           </span>
-          <span className="brand-serif gradient-text font-display text-lg font-black tracking-wide">
+          <span className="brand-serif gradient-text min-w-0 truncate font-display text-lg font-black tracking-wide">
             Ashow e Jazer
           </span>
         </Link>

@@ -100,6 +100,13 @@ const PROFILE_STYLES = [
   { id: 'blood', nome: 'Blood' },
   { id: 'cosmic', nome: 'Cosmic' },
   { id: 'crimson', nome: 'Crimson' },
+  { id: 'm1key', nome: 'M1KEY' },
+  { id: 'monarcs', nome: 'Monarcs' },
+  { id: 'pyvno', nome: 'Pyvno' },
+  { id: 'speedy', nome: 'Speedy' },
+  { id: 'lafayette', nome: 'Lafayette' },
+  { id: 'saowur', nome: 'Saowur' },
+  { id: 'kichies', nome: 'Kichies' },
 ]
 
 const REDES_SOCIAIS = [

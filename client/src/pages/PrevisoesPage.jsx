@@ -28,6 +28,7 @@ import { CS2_TORNEIOS } from '../data/cs2Torneios'
 import { authHeaders } from '../lib/auth'
 import { toast } from '../components/Feedback'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 
 const fmtDia = (iso) => {
   const d = new Date(iso)
@@ -1114,28 +1115,12 @@ function CS2PrevisoesTab({ user }) {
 
   return (
     <div className="space-y-4">
-      <section className="relative overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-[#161618] to-zinc-600/10 p-4 shadow-xl shadow-sky-950/20">
-        <div className="relative flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="font-display text-2xl font-black leading-tight text-white sm:text-3xl">
-              Previsões <span className="gradient-text">CS2</span>
-            </h1>
-            <p className="mt-1 max-w-lg text-xs font-semibold leading-relaxed text-gray-300 sm:text-sm">
-              Escolhe o vencedor dos jogos profissionais de Counter-Strike 2.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
-              <p className="text-lg font-black text-white">{acertosCs2}</p>
-              <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Acertos</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
-              <p className="text-lg font-black text-white">{falhasCs2}</p>
-              <p className="text-[9px] font-black uppercase tracking-wider text-red-300">Falhas</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PrevisoesResumo
+        jogo="CS2"
+        acertos={acertosCs2}
+        falhas={falhasCs2}
+        subtitle="Escolhe o vencedor dos jogos profissionais de Counter-Strike 2."
+      />
 
       {prox && (
         <section className="overflow-hidden rounded-2xl border border-sky-400/25 bg-gradient-to-br from-sky-600/15 via-zinc-600/10 to-[#121214] p-4 shadow-xl shadow-sky-950/20">
@@ -1253,7 +1238,7 @@ function CS2PrevisoesTab({ user }) {
               onClick={() => setAbaCs2(t.id)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
                 abaCs2 === t.id
-                  ? 'bg-gradient-to-b from-zinc-500 to-zinc-600 text-white shadow-lg shadow-zinc-950/50'
+                  ? 'bg-[#ff9e9e] text-[#1a0f0f] shadow-lg shadow-[#ff9e9e]/20'
                   : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
@@ -1344,6 +1329,36 @@ function CS2PrevisoesTab({ user }) {
         </>
       )}
     </div>
+  )
+}
+
+/* Resumo igual para R6 e CS2 — mesmo tamanho, mesma estrutura. */
+function PrevisoesResumo({ jogo, acertos, falhas, subtitle, extra }) {
+  return (
+    <section className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-400/20 bg-gradient-to-br from-zinc-600/15 via-[#161618] to-zinc-600/10 p-4 shadow-xl shadow-zinc-950/10 sm:p-5">
+      <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-zinc-500/10 blur-3xl" />
+      <div className="relative flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-black leading-tight text-white sm:text-3xl">
+            Previsões <span className="gradient-text">{jogo}</span>
+          </h1>
+          <p className="mt-1 max-w-lg text-xs font-semibold leading-relaxed text-gray-300 sm:text-sm">
+            {subtitle}
+          </p>
+          {extra}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="min-w-[72px] rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
+            <p className="text-lg font-black text-white">{acertos}</p>
+            <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Acertos</p>
+          </div>
+          <div className="min-w-[72px] rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
+            <p className="text-lg font-black text-white">{falhas}</p>
+            <p className="text-[9px] font-black uppercase tracking-wider text-red-300">Falhas</p>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -1553,26 +1568,22 @@ export default function PrevisoesPage({ user }) {
   return (
     <PageShell className="relative">
       <div className="relative z-10">
-      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1
-          className="font-black gradient-text"
-          style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-        >
-          Previsões
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-gray-400">
-          Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade.
-        </p>
-        <p className="mt-1 max-w-2xl text-[11px] font-semibold text-amber-200/70">
-          Sem aposta: ganhas 1 moeda se acertares. Com aposta: recebes o dobro (ex.: 5 → 10).
-        </p>
-        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300">
-          <RefreshCw className="h-2.5 w-2.5" /> atualiza sozinho
-        </span>
-      </motion.div>
+      <PageHeader
+        title="Previsões"
+        subtitle="Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade."
+      >
+        <div className="flex flex-col items-start gap-1 sm:items-end">
+          <span className="text-[11px] font-semibold text-amber-200/70">
+            Sem aposta: 1 moeda. Com aposta: recebes o dobro.
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300">
+            <RefreshCw className="h-2.5 w-2.5" /> atualiza sozinho
+          </span>
+        </div>
+      </PageHeader>
 
       {/* seletor de jogo: Rainbow Six · CS2 · Fortnite */}
-      <div className="mt-2 mb-4 grid grid-cols-3 gap-2">
+      <div className="ui-tabs mb-4">
         {[
           { id: 'r6', nome: 'Rainbow Six', Icon: Swords },
           { id: 'cs2', nome: 'CS2', Icon: Target },
@@ -1582,11 +1593,8 @@ export default function PrevisoesPage({ user }) {
             key={g.id}
             type="button"
             onClick={() => setJogo(g.id)}
-            className={`relative flex items-center justify-center gap-1.5 overflow-hidden rounded-2xl border px-2 py-3 text-[10px] font-black transition-all sm:text-xs ${
-              jogo === g.id
-                ? 'border-white/25 bg-white/10 text-white'
-                : 'border-white/10 bg-white/[0.035] text-gray-300 hover:border-white/25 hover:text-white'
-            }`}
+            data-active={jogo === g.id}
+            className="ui-tab"
           >
             <g.Icon className="h-4 w-4 shrink-0" /> {g.nome}
           </button>
@@ -1597,7 +1605,7 @@ export default function PrevisoesPage({ user }) {
         <button
           type="button"
           onClick={() => setClassificacaoAberta(true)}
-          className="flex items-center gap-2 rounded-full border border-zinc-400/30 bg-zinc-500/10 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-200 transition-colors hover:bg-zinc-500/20"
+          className="ui-btn ui-btn-ghost"
         >
           <Medal className="h-4 w-4" /> Ver classificações
         </button>
@@ -1610,38 +1618,19 @@ export default function PrevisoesPage({ user }) {
       {jogo === 'r6' && (
         <>
 
-      {/* cabeçalho */}
-      <section className="relative mb-4 overflow-hidden rounded-3xl border border-zinc-400/20 bg-gradient-to-br from-zinc-600/25 via-[#161618] to-zinc-600/10 p-4 shadow-2xl shadow-zinc-950/20 sm:p-6">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-zinc-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-zinc-500/10 blur-3xl" />
-        <div className="relative flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="font-display text-2xl font-black leading-tight text-white sm:text-3xl">
-              Previsões <span className="gradient-text">R6</span>
-            </h1>
-            <p className="mt-1 max-w-lg text-xs font-semibold leading-relaxed text-gray-300 sm:text-sm">
-              Escolhe o vencedor dos jogos profissionais de Rainbow Six Siege.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
-              <p className="text-lg font-black text-white">{acertos}</p>
-              <p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Acertos</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-center">
-              <p className="text-lg font-black text-white">{falhas}</p>
-              <p className="text-[9px] font-black uppercase tracking-wider text-red-300">Falhas</p>
-            </div>
-          </div>
-        </div>
-        {aoVivo.length > 0 && (
-          <div className="relative mt-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/20">
+      <PrevisoesResumo
+        jogo="R6"
+        acertos={acertos}
+        falhas={falhas}
+        subtitle="Escolhe o vencedor dos jogos profissionais de Rainbow Six Siege."
+        extra={
+          aoVivo.length > 0 ? (
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/20">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" /> {aoVivo.length} ao vivo
             </span>
-          </div>
-        )}
-      </section>
+          ) : null
+        }
+      />
 
       {/* próximo torneio — contagem decrescente automática */}
       <ProximoTorneio />
@@ -1669,7 +1658,7 @@ export default function PrevisoesPage({ user }) {
 
       {/* separadores */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#121214]/90 p-1 shadow-inner shadow-black/30">
+        <div className="ui-tabs flex-1">
           {(() => {
             const icones = {
               proximos: <Swords className="h-4 w-4 shrink-0" />,
@@ -1690,11 +1679,8 @@ export default function PrevisoesPage({ user }) {
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
-                  tab === id
-                    ? 'bg-gradient-to-b from-zinc-500 to-zinc-600 text-white shadow-lg shadow-zinc-950/50'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                }`}
+                data-active={tab === id}
+                className="ui-tab"
               >
                 {icones[id]}
                 <span className="truncate">{rotulos[id]}</span>

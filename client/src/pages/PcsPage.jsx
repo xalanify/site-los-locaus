@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import PageHeader from '../components/PageHeader'
 import { authHeaders } from '../lib/auth'
 import { correrBench as medirBench } from '../lib/bench'
 
@@ -530,28 +531,14 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
   }
 
   return (
-    <section className={embedded ? 'py-2' : 'min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28'}>
+    <section className={embedded ? 'py-2' : 'min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]'}>
       <div className="mx-auto max-w-6xl">
         {/* ---------------- Cabeçalho ---------------- */}
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={embedded ? 'mb-4' : 'mb-6'}
-        >
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1
-                className="font-black gradient-text"
-                style={{ fontSize: embedded ? 'clamp(1.35rem, 4vw, 1.8rem)' : 'clamp(1.8rem, 6vw, 2.8rem)' }}
-              >
-                PCs / Specs
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm text-gray-400">
-                As máquinas do grupo com valores lidos no Windows. Clica numa linha para ver tudo.
-              </p>
-            </div>
-          </div>
-        </motion.div>
+        <PageHeader
+          title="PCs / Specs"
+          subtitle="As máquinas do grupo com valores lidos no Windows. Clica numa linha para ver tudo."
+          compact={embedded}
+        />
 
         {/* Aviso: PC ainda não ligado — a tabela continua visível */}
         {!embedded && agenteVerificado && !agenteOnline && (

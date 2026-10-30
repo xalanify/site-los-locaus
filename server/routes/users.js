@@ -5,7 +5,7 @@ const { getDb } = require('../database');
 const store = require('../usersStore');
 const storage = require('../storage');
 const { validateEmail } = require('../emailValidate');
-const { JWT_SECRET, attachAuth, requireUser } = require('../middleware/auth');
+const { JWT_SECRET, attachAuth, requireUser, requireAdmin } = require('../middleware/auth');
 const { decorateClips } = require('./clips');
 
 const router = express.Router();
@@ -68,7 +68,21 @@ const CARD_STYLES = new Set([
   'river',
   'dev',
 ]);
-const PROFILE_STYLES = new Set(['padrao', 'felony', 'neon', 'blood', 'cosmic', 'crimson']);
+const PROFILE_STYLES = new Set([
+  'padrao',
+  'felony',
+  'neon',
+  'blood',
+  'cosmic',
+  'crimson',
+  'm1key',
+  'monarcs',
+  'pyvno',
+  'speedy',
+  'lafayette',
+  'saowur',
+  'kichies',
+]);
 
 /* ---------- fotos de perfil ----------
    O utilizador escolhe uma imagem; o servidor sobe-a para o
@@ -110,7 +124,7 @@ const profileOf = async (userId) => {
       .prepare(
         `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil,
                 socials, live_platform, live_url, live_since, live_until, live_auto,
-                card_style, profile_style, cs2_inventory_eur
+                card_style, profile_style, cs2_inventory_eur, presence_override
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
@@ -133,6 +147,7 @@ const profileOf = async (userId) => {
       card_style: (row && row.card_style) || 'padrao',
       profile_style: (row && row.profile_style) || 'padrao',
       cs2_inventory_eur: row && row.cs2_inventory_eur != null ? Number(row.cs2_inventory_eur) : 0,
+      presence_override: (row && row.presence_override) || null,
       socials: parseSocials(row && row.socials),
       live_auto: row && row.live_auto != null ? Boolean(row.live_auto) : true,
       live:
@@ -166,6 +181,7 @@ const profileOf = async (userId) => {
       card_style: 'padrao',
       profile_style: 'padrao',
       cs2_inventory_eur: 0,
+      presence_override: null,
       socials: {},
       live_auto: true,
       live: null,
@@ -1117,6 +1133,35 @@ router.post('/presence', requireUser, async (req, res) => {
   }
 });
 
+// POST /api/users/me/presence-override — admin escolhe online/ausente/offline
+router.post('/me/presence-override', requireAdmin, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    const raw = req.body && req.body.status;
+    const status =
+      raw === 'online' || raw === 'away' || raw === 'offline'
+        ? raw
+        : raw === 'auto' || raw == null || raw === ''
+          ? null
+          : undefined;
+    if (status === undefined) {
+      return res.status(400).json({ error: 'Estado inválido.' });
+    }
+    const db = getDb();
+    await ensureProfileRow(db, uid);
+    await db
+      .prepare(
+        'UPDATE user_profiles SET presence_override = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+      )
+      .run(status, uid);
+    res.json({ ok: true, presence_override: status });
+  } catch (error) {
+    console.error('Erro presence override:', error.message);
+    res.status(500).json({ error: 'Não foi possível guardar o estado.' });
+  }
+});
+
 // GET /api/users/list — todos os membros + sinal online/offline
 router.get('/list', attachAuth, async (req, res) => {
   try {
@@ -1131,7 +1176,7 @@ router.get('/list', attachAuth, async (req, res) => {
         `SELECT u.id, u.username,
                 (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
                 p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
-                p.card_style, p.profile_style, p.cs2_inventory_eur,
+                p.card_style, p.profile_style, p.cs2_inventory_eur, p.presence_override,
                 p.socials, p.live_platform, p.live_url, p.live_since, p.live_until, p.live_auto,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
                 p2.last_seen,
@@ -1142,6 +1187,7 @@ router.get('/list', attachAuth, async (req, res) => {
          LEFT JOIN user_profiles p ON p.user_id = u.id
          LEFT JOIN user_presence p2 ON p2.user_id = u.id
          WHERE u.password_hash NOT LIKE '!%'
+           AND lower(u.username) NOT LIKE 'teste%'
          ORDER BY u.username`,
       )
       .all();
@@ -1186,10 +1232,26 @@ router.get('/list', attachAuth, async (req, res) => {
                 manual: true,
               }
             : null,
-        online: Boolean(r.online),
-        away: Boolean(r.online && r.away),
+        online:
+          r.presence_override === 'offline'
+            ? false
+            : r.presence_override === 'online' || r.presence_override === 'away'
+              ? true
+              : Boolean(r.online),
+        away:
+          r.presence_override === 'away'
+            ? true
+            : r.presence_override === 'online' || r.presence_override === 'offline'
+              ? false
+              : Boolean(r.online && r.away),
         last_seen: r.last_seen ? new Date(r.last_seen).toISOString() : null,
-        plataforma: r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile') ? r.plataforma : null,
+        plataforma:
+          r.presence_override === 'online' || r.presence_override === 'away'
+            ? r.plataforma || 'pc'
+            : r.online && (r.plataforma === 'pc' || r.plataforma === 'mobile')
+              ? r.plataforma
+              : null,
+        presence_override: r.presence_override || null,
         badges: byUser[r.id] || [],
         distincoes: dists[i] || null,
         game_ranks: ranks[i] || {},
@@ -1249,12 +1311,26 @@ router.get('/:username', attachAuth, async (req, res) => {
       gameRanksOf(user.id),
     ]);
 
-    // "online agora" — mesma regra da lista de membros (2 minutos)
-    const online = !!(
+    // "online agora" — mesma regra da lista de membros (2 minutos),
+    // com o estado manual do perfil a ter prioridade.
+    const onlineAuto = !!(
       pres &&
       pres.last_seen &&
       Date.now() - new Date(pres.last_seen).getTime() < 120000
     );
+    const override = prof && prof.presence_override;
+    const online =
+      override === 'offline'
+        ? false
+        : override === 'online' || override === 'away'
+          ? true
+          : onlineAuto;
+    const away =
+      override === 'away'
+        ? true
+        : override === 'online' || override === 'offline'
+          ? false
+          : Boolean(onlineAuto && pres && pres.away);
 
     res.json({
       found: true,
@@ -1266,7 +1342,7 @@ router.get('/:username', attachAuth, async (req, res) => {
         badges,
         distincoes: dist,
         online,
-        away: Boolean(online && pres && pres.away),
+        away,
         game_accounts: jogos,
         game_ranks: ranks,
         ...prof,

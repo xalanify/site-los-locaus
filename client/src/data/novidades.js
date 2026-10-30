@@ -34,7 +34,7 @@ export const NOVIDADES = {
     },
     {
       titulo: 'Estilos de perfil — em breve',
-      texto: 'Já podes espreitar os 5 estilos na loja.',
+      texto: 'Já podes espreitar os 12 estilos na loja.',
       tipo: 'estilos',
     },
     {

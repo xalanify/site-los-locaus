@@ -204,6 +204,9 @@ app.use('/api/previsoes', previsoesRouter);
 // Loja de cosméticos (só admin, paga com acertos das previsões)
 const { cosmeticosRouter } = require('./routes/cosmeticos');
 app.use('/api/cosmeticos', cosmeticosRouter);
+
+const { treinoRouter } = require('./routes/treino');
+app.use('/api/treino', treinoRouter);
 // Preços de jogos — IsThereAnyDeal / CheapShark
 const { itadRouter } = require('./routes/itad');
 app.use('/api/itad', itadRouter);

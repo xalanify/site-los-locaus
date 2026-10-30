@@ -191,11 +191,47 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const [ferrRuns, setFerrRuns] = useState([])
   const [ferrLoading, setFerrLoading] = useState(false)
   const [ferrErro, setFerrErro] = useState('')
+  const [presenca, setPresenca] = useState('auto')
+  const [presencaBusy, setPresencaBusy] = useState('')
 
   const adminHeaders = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${localStorage.getItem('userToken') || localStorage.getItem('adminToken')}`,
   })
+
+  const fetchPresenca = () => {
+    fetch('/api/users/me', { headers: adminHeaders(), cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setPresenca(d.presence_override || 'auto'))
+      .catch(() => {})
+  }
+
+  const mudarPresenca = async (status) => {
+    setPresencaBusy(status)
+    try {
+      const r = await fetch('/api/users/me/presence-override', {
+        method: 'POST',
+        headers: adminHeaders(),
+        body: JSON.stringify({ status }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não foi possível guardar o estado.')
+      setPresenca(d.presence_override || 'auto')
+      toast.ok(
+        status === 'online'
+          ? 'Perfil marcado como online.'
+          : status === 'away'
+            ? 'Perfil marcado como ausente.'
+            : status === 'offline'
+              ? 'Perfil marcado como offline.'
+              : 'Estado automático ativado.',
+      )
+    } catch (e) {
+      toast.erro(e.message || 'Não foi possível guardar o estado.')
+    } finally {
+      setPresencaBusy('')
+    }
+  }
 
   const fetchStats = () => {
     fetch('/api/stats/visitors')
@@ -472,6 +508,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
   useEffect(() => {
     if (tab === 'painel') fetchOverview()
+    if (tab === 'presenca') fetchPresenca()
     if (tab === 'utilizadores') {
       fetchUsers()
       fetchRequests()
@@ -958,6 +995,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
             items={[
               { id: 'painel', label: 'Painel', Icon: LayoutDashboard },
               { id: 'utilizadores', label: 'Utilizadores', Icon: Users },
+              { id: 'presenca', label: 'Presença', Icon: Eye },
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
@@ -1933,6 +1971,66 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
                 ))}
               </div>
             )}
+          </div>
+        ) : tab === 'presenca' ? (
+          <div className="mx-auto max-w-2xl">
+            <div className="glass rounded-2xl border border-white/10 p-5">
+              <h2 className="flex items-center gap-2 font-display text-lg font-black text-white">
+                <Eye className="h-5 w-5 text-zinc-300" /> Estado do meu perfil
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-gray-400">
+                Escolhe como o teu perfil aparece na lista de membros e no site. Em
+                <b className="text-white"> Automático</b> volta ao estado normal — online quando
+                estás no site e offline quando sais.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  { id: 'auto', nome: 'Automático' },
+                  { id: 'online', nome: 'Online' },
+                  { id: 'away', nome: 'Ausente' },
+                  { id: 'offline', nome: 'Offline' },
+                ].map((s) => {
+                  const ativo = presenca === s.id
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => mudarPresenca(s.id)}
+                      disabled={Boolean(presencaBusy)}
+                      className={`rounded-xl border px-3 py-3 text-xs font-black uppercase tracking-wider transition ${
+                        ativo
+                          ? s.id === 'online'
+                            ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-400/25'
+                            : s.id === 'away'
+                              ? 'border-amber-400/40 bg-amber-500/15 text-amber-200 ring-1 ring-amber-400/25'
+                              : s.id === 'offline'
+                                ? 'border-zinc-500/40 bg-zinc-500/15 text-zinc-200 ring-1 ring-zinc-400/25'
+                                : 'border-white/25 bg-white/10 text-white ring-1 ring-white/15'
+                          : 'border-white/10 bg-black/20 text-gray-400 hover:text-white'
+                      } ${presencaBusy ? 'opacity-60' : ''}`}
+                    >
+                      {presencaBusy === s.id ? (
+                        <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                      ) : (
+                        s.nome
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="mt-3 text-[11px] text-gray-500">
+                Estado atual:{' '}
+                <b className="text-white">
+                  {presenca === 'online'
+                    ? 'Online'
+                    : presenca === 'away'
+                      ? 'Ausente'
+                      : presenca === 'offline'
+                        ? 'Offline'
+                        : 'Automático'}
+                </b>
+              </p>
+            </div>
           </div>
         ) : null}
       </motion.div>

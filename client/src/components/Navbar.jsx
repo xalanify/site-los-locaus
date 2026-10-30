@@ -61,29 +61,32 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
     <>
       {/* ---------------- Barra de topo (só no telemóvel) ---------------- */}
       <nav
-        className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0b]/88 backdrop-blur-md lg:hidden"
+        id="topbar"
+        className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0b]/95 backdrop-blur-md lg:hidden"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
-          {/* Botão de menu — abre o menu lateral (estilo X) */}
-          <button
-            onClick={onMenu}
-            aria-label="Abrir menu"
-            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 transition-colors hover:bg-white/10 active:scale-95"
-          >
-            <Menu className="h-5 w-5 text-gray-200" />
-            <span className="text-xs font-bold text-gray-200">Menu</span>
-          </button>
+        <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-2 px-3 sm:h-14 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            {/* Botão de menu — abre o menu lateral (estilo X) */}
+            <button
+              onClick={onMenu}
+              aria-label="Abrir menu"
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 transition-colors hover:bg-white/10 active:scale-95"
+            >
+              <Menu className="h-4 w-4 text-gray-200" />
+              <span className="text-[11px] font-bold text-gray-200">Menu</span>
+            </button>
 
-          {/* Marca */}
-          <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="brand-serif gradient-text truncate font-display text-base font-black tracking-wide sm:text-lg xl:text-xl">
-              Locaus
-            </span>
-            <span className="shrink-0 rounded border border-zinc-400/40 bg-zinc-500/15 px-1.5 py-0.5 font-display text-[8px] font-black uppercase leading-none tracking-wider text-zinc-300">
-              Beta
-            </span>
-          </Link>
+            {/* Marca — ao lado do menu, à esquerda */}
+            <Link to="/" className="flex min-w-0 items-center gap-2">
+              <span className="brand-serif gradient-text truncate font-display text-lg font-black tracking-wide sm:text-xl">
+                Locaus
+              </span>
+              <span className="shrink-0 rounded border border-zinc-400/40 bg-zinc-500/15 px-1.5 py-0.5 font-display text-[8px] font-black uppercase leading-none tracking-wider text-zinc-300">
+                Beta
+              </span>
+            </Link>
+          </div>
 
           {/* Notificações (sino) — só para contas com sessão */}
           <Sino user={user} />
@@ -95,8 +98,9 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
           para duas linhas e ela ficava enorme); os nomes aparecem a
           partir do ecrã médio. */}
       <nav
+        id="bottomnav"
         aria-label="Navegação principal"
-        className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100vw-1rem)] max-w-3xl -translate-x-1/2 sm:bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:w-[calc(100vw-1.5rem)] lg:hidden"
+        className="navbar-pill fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100vw-1rem)] max-w-3xl -translate-x-1/2 sm:bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:w-[calc(100vw-1.5rem)] lg:hidden"
       >
         <div className="flex flex-nowrap items-center justify-between gap-1 rounded-3xl border border-white/10 bg-[#161618]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:flex-wrap sm:justify-center sm:gap-1.5 sm:rounded-full">
           {links.map((link) => {

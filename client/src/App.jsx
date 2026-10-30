@@ -21,6 +21,7 @@ import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
 import BootScreen from './components/BootScreen'
 import ErrorBoundary from './components/ErrorBoundary'
+import MorphPointer from './components/MorphPointer'
 import { Toasts, Dialogos } from './components/Feedback'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 import { enviarSpecs } from './lib/specs'
@@ -176,6 +177,7 @@ function App() {
 
   return (
     <div className="min-h-screen">
+      <MorphPointer />
       {/* Ecrã de carregamento — entra sozinho depois da barra encher */}
       <BootScreen visible={!entered} onEnter={() => setEntered(true)} />
 
@@ -364,6 +366,7 @@ function App() {
                       }
                     />
                     <Route path="/recuperar" element={<RecuperarPage onAuthed={handleAuthed} />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                     </motion.div>
                   </AnimatePresence>

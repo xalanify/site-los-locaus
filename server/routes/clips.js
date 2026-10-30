@@ -538,6 +538,9 @@ async function guardarCapa(videoId, thumb) {
     if (!m) return null;
     const bin = Buffer.from(m[2], 'base64');
     if (!bin.length || bin.length > 900 * 1024) return null; // capa pesada demais
+    // Um frame preto (vídeo ainda sem imagem) comprime para poucos KB.
+    // Nesse caso é melhor não guardar nada e deixar o fallback abaixo.
+    if (bin.length < 8 * 1024) return null;
     const tipo = m[1] === 'png' ? 'image/png' : m[1] === 'webp' ? 'image/webp' : 'image/jpeg';
     const ext = tipo === 'image/png' ? 'png' : tipo === 'image/webp' ? 'webp' : 'jpg';
     return await storage.upload(
@@ -549,6 +552,42 @@ async function guardarCapa(videoId, thumb) {
   } catch (e) {
     console.warn('Capa do clip saltou:', String(e.message).slice(0, 120));
     return null;
+  }
+}
+
+/* Último recurso: quando o browser não conseguiu tirar um frame bom,
+   guardamos no NOSSO storage uma imagem do próprio vídeo. Assim o
+   cartão do clip (e o anúncio) nunca fica preto. */
+const CAPAS_YT = ['maxresdefault', 'sddefault', 'hqdefault'];
+async function capaDoYoutube(videoId) {
+  const id = String(videoId || '').trim();
+  if (!id) return null;
+  const nome = `capa_${id.replace(/[^A-Za-z0-9_-]/g, '')}.jpg`;
+  for (const variante of CAPAS_YT) {
+    try {
+      const r = await fetch(`https://i.ytimg.com/vi/${encodeURIComponent(id)}/${variante}.jpg`);
+      if (!r.ok) continue;
+      const bin = Buffer.from(await r.arrayBuffer());
+      // 120x90 ou imagem vazia/preto: tenta a seguinte
+      if (bin.length < 8 * 1024) continue;
+      return await storage.upload(BUCKET, nome, bin, 'image/jpeg');
+    } catch (e) {
+      console.warn(`Capa YouTube (${variante}) saltou:`, String(e.message).slice(0, 120));
+    }
+  }
+  return null;
+}
+
+/* Uma capa guardada está boa? (existe e não é um frame preto) */
+async function capaValida(url) {
+  try {
+    if (!url) return false;
+    const r = await fetch(url, { method: 'HEAD' });
+    if (!r.ok) return false;
+    const n = Number(r.headers.get('content-length') || 0);
+    return n >= 8 * 1024;
+  } catch {
+    return false;
   }
 }
 
@@ -643,8 +682,10 @@ router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
     // imenso espaço). O download é feito no PC via yt-dlp; no
     // telemóvel o site avisa que ainda não está disponível.
     const downloadFile = '';
-    // Capa NOSSA: um frame do vídeo que o browser guardou antes de subir
-    const capa = await guardarCapa(videoId, b.thumb);
+    // Capa NOSSA: um frame do vídeo que o browser guardou antes de subir.
+    // Se o frame não serviu (preto/em falta), gera-se uma a partir do vídeo.
+    let capa = await guardarCapa(videoId, b.thumb);
+    if (!capa) capa = await capaDoYoutube(videoId);
     const result = await db
       .prepare(
         'INSERT INTO clips (user_id, title, game, file, start_sec, end_sec, visibility, youtube_id, youtube_thumb, thumb, download_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
@@ -714,6 +755,43 @@ router.get('/pub/pronto/:videoId', requireUserOrAdmin, async (req, res) => {
   } catch (e) {
     console.error('Erro clips pub pronto:', e.message);
     res.json({ pronto: true });
+  }
+});
+
+/* Repõe capas em falta ou pretas (clips antigos). Só admin.
+   A imagem é guardada no NOSSO storage, tal como as novas. */
+router.post('/capas/reparar', requireUserOrAdmin, async (req, res) => {
+  try {
+    if (!(req.auth && req.auth.admin)) return res.status(403).json({ error: 'Só o admin.' });
+    const db = getDb();
+    await garantirColunaYT(db);
+    const rows = await db
+      .prepare(
+        `SELECT id, title, youtube_id, thumb FROM clips
+         WHERE youtube_id IS NOT NULL AND youtube_id <> ''
+         ORDER BY id DESC`,
+      )
+      .all();
+    let corrigidos = 0;
+    for (const c of rows) {
+      if (await capaValida(c.thumb)) continue;
+      const nova = await capaDoYoutube(c.youtube_id);
+      if (!nova) continue;
+      await db.prepare('UPDATE clips SET thumb = ? WHERE id = ?').run(nova, c.id);
+      // o anúncio automático usa a mesma imagem
+      if (c.thumb) {
+        await db.prepare('UPDATE posts SET image_url = ? WHERE image_url = ?').run(nova, c.thumb);
+      } else {
+        await db
+          .prepare(`UPDATE posts SET image_url = ? WHERE image_url IS NULL AND title = ?`)
+          .run(nova, 'Novo clip: ' + String(c.title || '').slice(0, 120));
+      }
+      corrigidos += 1;
+    }
+    res.json({ ok: true, total: rows.length, corrigidos });
+  } catch (e) {
+    console.error('Erro a reparar capas:', e.message);
+    res.status(500).json({ error: 'Erro a reparar as capas.' });
   }
 });
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import { Loader2, Newspaper, RefreshCw, Sparkles, Gamepad2 } from 'lucide-react'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 import NoticiaModal from '../components/NoticiaModal'
 
 /* ============================================================
@@ -45,31 +45,20 @@ export default function SteamStorePage() {
 
   return (
     <PageShell>
-      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1
-              className="font-black gradient-text"
-              style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-            >
-              Notícias
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-gray-400">
-              As últimas notícias de gaming e hardware — Call of Duty, Rockstar/GTA, NVIDIA,
-              AMD, processadores, memórias e desbloqueios PS4/PS5.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={carregar}
-            disabled={noticias.loading}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-black text-gray-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${noticias.loading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </button>
-        </div>
-      </motion.div>
+      <PageHeader
+        title={<span className="gradient-text">Notícias</span>}
+        subtitle="As últimas notícias de gaming e hardware — Call of Duty, Rockstar/GTA, NVIDIA, AMD, processadores, memórias e desbloqueios PS4/PS5."
+      >
+        <button
+          type="button"
+          onClick={carregar}
+          disabled={noticias.loading}
+          className="ui-btn ui-btn-ghost ui-btn-sm"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${noticias.loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+      </PageHeader>
 
       <section className="rounded-2xl border border-white/10 bg-[#121214]/80 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

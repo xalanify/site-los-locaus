@@ -13,6 +13,7 @@ import {
   Clock,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from '../components/Feedback'
 import { classesNome } from '../data/nomeEfeitos'
@@ -133,29 +134,24 @@ export default function CosmeticosPage({ isAdmin }) {
   return (
     <PageShell>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-black text-white sm:text-3xl">
-              Loja de <span className="gradient-text">cosméticos</span>
-              <span className="rounded-full bg-[#ff9e9e] px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#1a0f0f]">
-                Novo
-              </span>
-            </h1>
-            <p className="mt-1 max-w-2xl text-sm text-gray-400">
-              Cores e camuflagens para o nome, cartas e estilos de perfil, pagos com Moedas
-              Locaus. Cada acerto sem aposta vale 1 moeda; se apostares moedas nas previsões,
-              o valor dobra. Os acertos continuam a contar para a classificação.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={carregar}
-            disabled={loading}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-black text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-50"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
-          </button>
-        </div>
+      <PageHeader
+        title={
+          <>
+            Loja de <span className="gradient-text">cosméticos</span>
+          </>
+        }
+        badge="Novo"
+        subtitle="Cores e camuflagens para o nome, cartas e estilos de perfil, pagos com Moedas Locaus. Cada acerto sem aposta vale 1 moeda; se apostares moedas nas previsões, o valor dobra. Os acertos continuam a contar para a classificação."
+      >
+        <button
+          type="button"
+          onClick={carregar}
+          disabled={loading}
+          className="ui-btn ui-btn-ghost ui-btn-sm"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
+        </button>
+      </PageHeader>
 
         {erro && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">
@@ -203,17 +199,14 @@ export default function CosmeticosPage({ isAdmin }) {
             </div>
 
             {/* tabs */}
-            <div className="mb-4 grid grid-cols-3 gap-2">
+            <div className="ui-tabs mb-4">
               {TIPOS.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => setTipo(t.id)}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-[11px] font-black transition sm:text-xs ${
-                    tipo === t.id
-                      ? 'border-[#ff9e9e]/40 bg-[#ff9e9e]/10 text-[#ff9e9e]'
-                      : 'border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white'
-                  }`}
+                  data-active={tipo === t.id}
+                  className="ui-tab"
                 >
                   <t.Icon className="h-4 w-4 shrink-0" /> {t.nome}
                 </button>

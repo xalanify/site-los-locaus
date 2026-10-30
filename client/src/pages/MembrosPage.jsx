@@ -6,6 +6,7 @@ import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1,
 import { authHeaders } from '../lib/auth'
 import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 import ProfileCard from '../components/ProfileCard'
 import ProfileBanner from '../components/ProfileBanner'
 import LiveBadge from '../components/LiveBadge'
@@ -39,28 +40,19 @@ export default function MembrosPage({ onProfile }) {
 
   return (
     <PageShell>
-      {/* Cabeçalho — título e pesquisa na mesma linha (desktop) */}
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
-      >
-        <div>
-          <h1 className="font-black text-white" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)' }}>
-            Membros
-          </h1>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <p className="text-sm text-zinc-400">
-              Toda a comunidade — clica num membro para ver o perfil.
-            </p>
-            <span className="glass-chip rounded-full px-2.5 py-1 text-[11px] font-bold text-zinc-300">
+      <PageHeader
+        title="Membros"
+        subtitle={
+          <>
+            Toda a comunidade — clica num membro para ver o perfil.{' '}
+            <span className="glass-chip ml-1 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold text-zinc-300">
               {membros.length} membros · {online} online
               {ausentes ? ` · ${ausentes} ausente${ausentes > 1 ? 's' : ''}` : ''}
             </span>
-          </div>
-        </div>
-
-        <div className="relative w-full sm:max-w-sm">
+          </>
+        }
+      >
+        <div className="relative w-full sm:w-80">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
           <input
             value={query}
@@ -80,10 +72,9 @@ export default function MembrosPage({ onProfile }) {
             </button>
           )}
         </div>
-      </motion.div>
+      </PageHeader>
 
-      {/* Membros / Cartas */}
-      <div className="mb-4 inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
+      <div className="ui-tabs mb-4 max-w-xs">
         {[
           { id: 'membros', label: 'Membros' },
           { id: 'cartas', label: 'Cartas' },
@@ -92,11 +83,8 @@ export default function MembrosPage({ onProfile }) {
             key={v.id}
             type="button"
             onClick={() => setVista(v.id)}
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition-colors ${
-              vista === v.id
-                ? 'bg-[#ff9e9e] text-[#1a0f0f]'
-                : 'text-zinc-400 hover:text-white'
-            }`}
+            data-active={vista === v.id}
+            className="ui-tab"
           >
             {v.label}
           </button>

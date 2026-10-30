@@ -42,6 +42,8 @@ const PASSOS = [
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_since timestamptz',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_until timestamptz',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_auto boolean NOT NULL DEFAULT true',
+  // Estado manual do perfil: online | away | offline (null = automático)
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS presence_override text',
   // Fonte do perfil removida: todos voltam à fonte Locaus padrão
   "UPDATE public.user_profiles SET fonte_perfil = '' WHERE COALESCE(fonte_perfil, '') <> ''",
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS mouse text',
@@ -129,6 +131,32 @@ const PASSOS = [
   `CREATE TABLE IF NOT EXISTS public.chat_typing (
      user_id   bigint primary key references public.users(id) on delete cascade,
      typing_at timestamptz not null default now()
+   )`,
+
+  // ============================================================
+  //  TREINO 3D — pontuações de mira e parkour
+  // ============================================================
+  `CREATE TABLE IF NOT EXISTS public.treino_scores (
+     id          bigint generated always as identity primary key,
+     user_id     bigint not null references public.users(id) on delete cascade,
+     jogo        text not null,
+     modo        text not null,
+     pontos      integer not null default 0,
+     precisao    integer not null default 0,
+     tempo_ms    integer not null default 0,
+     arma        text,
+     criado_em   timestamptz not null default now()
+   )`,
+  'CREATE INDEX IF NOT EXISTS treino_scores_lookup ON public.treino_scores (jogo, modo, pontos DESC, tempo_ms ASC)',
+  'ALTER TABLE public.treino_scores ADD COLUMN IF NOT EXISTS mortes integer NOT NULL DEFAULT 0',
+  'ALTER TABLE public.treino_scores ADD COLUMN IF NOT EXISTS mapa text',
+  `CREATE TABLE IF NOT EXISTS public.cod_stats (
+     user_id    bigint primary key references public.users(id) on delete cascade,
+     kills      integer not null default 0,
+     deaths     integer not null default 0,
+     matches    integer not null default 0,
+     xp         integer not null default 0,
+     updated_at timestamptz not null default now()
    )`,
 
   // ============================================================

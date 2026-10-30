@@ -84,6 +84,7 @@ import {
   Square,
 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
+import PageHeader from '../components/PageHeader'
 import PcsPage from './PcsPage'
 
 /* Mapa de ícones Lucide por nome (todos os do catálogo de programas) */
@@ -855,7 +856,7 @@ export default function FerramentasPage({ isAdmin = false }) {
   /* A app LOCAUS-PC é obrigatória para entrar nas ferramentas. */
   if (appVerificada && !podeExecutar) {
     return (
-      <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28">
+      <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
         <div className="mx-auto max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
@@ -893,28 +894,17 @@ export default function FerramentasPage({ isAdmin = false }) {
   }
 
   return (
-    <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(6rem+env(safe-area-inset-top))] sm:px-6 sm:pt-28">
+    <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
       <div className="mx-auto max-w-6xl">
         {/* ---------------- Cabeçalho ---------------- */}
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1
-              className="font-black gradient-text"
-              style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-            >
-              Ferramentas Windows
-            </h1>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ff9e9e] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-[#1a0f0f]">
-              Novo
-            </span>
-          </div>
-          <p className="mt-2 max-w-2xl text-sm text-gray-400">
-            Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada.
-          </p>
-        </motion.div>
+        <PageHeader
+          title="Ferramentas Windows"
+          badge="Novo"
+          subtitle="Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada."
+        />
 
         {/* Separadores (o de PCs / Specs só existe no PC) */}
-        <div className="mb-4 hidden items-center gap-2 rounded-2xl border border-white/10 bg-[#121214]/80 p-1 lg:flex">
+        <div className="ui-tabs mb-4 hidden lg:flex">
           {[
             { id: 'ferramentas', nome: 'Ferramentas', Icon: Wrench },
             { id: 'pcs', nome: 'PCs / Specs', Icon: Cpu },
@@ -923,11 +913,8 @@ export default function FerramentasPage({ isAdmin = false }) {
               key={id}
               type="button"
               onClick={() => setAbaFerr(id)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-black uppercase tracking-wider transition-colors ${
-                abaFerr === id
-                  ? 'bg-gradient-to-b from-zinc-500 to-zinc-600 text-white shadow-lg shadow-zinc-950/40'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
+              data-active={abaFerr === id}
+              className="ui-tab"
             >
               <Icon className="h-4 w-4" /> {nome}
             </button>
@@ -1041,11 +1028,8 @@ export default function FerramentasPage({ isAdmin = false }) {
               <button
                 key={c}
                 onClick={() => setCat(c)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-black uppercase tracking-wide transition-colors ${
-                  cat === c
-                    ? 'bg-zinc-500 text-white'
-                    : 'btn-glass text-gray-400 hover:text-white'
-                }`}
+                data-active={cat === c}
+                className="ui-tab ui-tab--auto"
               >
                 {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
                 {c}
@@ -1055,10 +1039,8 @@ export default function FerramentasPage({ isAdmin = false }) {
           {cat === 'Programas' && (
             <button
               onClick={alternarSoInstalados}
-              className={`ml-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-black uppercase tracking-wide transition-colors ${
-                soInstalados
-                  ? 'bg-emerald-500 text-white'
-                  : 'btn-glass text-gray-400 hover:text-white'
+              className={`ui-btn ui-btn-sm ml-auto ${
+                soInstalados ? 'ui-btn-primary' : 'ui-btn-ghost'
               }`}
               title="Mostra só os programas que já tens instalados no PC (deteta automaticamente)"
             >

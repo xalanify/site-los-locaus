@@ -519,11 +519,14 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
     try {
       const url = URL.createObjectURL(f)
       const v = document.createElement('video')
-      v.preload = 'metadata'
+      v.preload = 'auto'
       v.muted = true
       v.playsInline = true
       v.src = url
       let feito = false
+      let tentativa = 0
+      // posições a experimentar (a primeira que não for preta ganha)
+      const posicoes = [0.35, 0.6, 0.15, 0.75, 0.5, 0.9]
       const limpar = () => {
         try {
           URL.revokeObjectURL(url)
@@ -533,9 +536,23 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         v.removeAttribute('src')
         v.load()
       }
+      // brilho médio do frame — serve para detetar capas pretas
+      const brilhoMedio = (ctx, w, h) => {
+        try {
+          const d = ctx.getImageData(0, 0, w, h).data
+          let soma = 0
+          let n = 0
+          for (let i = 0; i < d.length; i += 4 * 29) {
+            soma += (d[i] + d[i + 1] + d[i + 2]) / 3
+            n += 1
+          }
+          return n ? soma / n : 0
+        } catch {
+          return 128 // canvas "sujo": confia no frame
+        }
+      }
       const apanhar = () => {
         if (feito) return
-        feito = true
         try {
           const larg = Math.min(960, v.videoWidth || 960)
           const alt = Math.max(1, Math.round((larg * (v.videoHeight || 540)) / (v.videoWidth || 960)))
@@ -544,24 +561,36 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
           cv.height = alt
           const ctx = cv.getContext('2d')
           ctx.drawImage(v, 0, 0, larg, alt)
-          const data = cv.toDataURL('image/jpeg', 0.78)
-          if (data && data.length < 900 * 1024) setThumb(data)
+          const brilho = brilhoMedio(ctx, larg, alt)
+          // frame preto (arranque do vídeo, ainda sem imagem): tenta outra posição
+          if (brilho < 14 && tentativa < posicoes.length - 1) {
+            tentativa += 1
+            procurar()
+            return
+          }
+          const data = cv.toDataURL('image/jpeg', 0.8)
+          // preto demais -> não mandamos capa nenhuma; o servidor gera uma
+          if (brilho >= 14 && data && data.length < 900 * 1024) setThumb(data)
+          feito = true
+          limpar()
         } catch {
           /* sem canvas — fica sem capa nossa */
+          feito = true
+          limpar()
         }
-        limpar()
       }
-      v.addEventListener('loadedmetadata', () => {
-        const d = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 1
-        // posição aleatória (entre 10% e 80% do vídeo)
+      const procurar = () => {
+        const d = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0
+        const p = posicoes[Math.min(tentativa, posicoes.length - 1)]
         try {
-          v.currentTime = d * (0.1 + Math.random() * 0.7)
+          if (!d) return apanhar()
+          v.currentTime = Math.max(0.1, d * p)
         } catch {
           apanhar()
         }
-      })
-      v.addEventListener('seeked', apanhar, { once: true })
-      v.addEventListener('loadeddata', () => setTimeout(apanhar, 400), { once: true })
+      }
+      v.addEventListener('loadedmetadata', procurar)
+      v.addEventListener('seeked', () => setTimeout(apanhar, 80))
       v.addEventListener('error', () => {
         feito = true
         limpar()
@@ -569,7 +598,7 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
       // rede lenta: não fica preso à espera
       setTimeout(() => {
         if (!feito) apanhar()
-      }, 6000)
+      }, 15000)
     } catch {
       /* sem suporte — segue sem capa */
     }
