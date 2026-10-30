@@ -8,7 +8,6 @@ import RightColumn from './components/RightColumn'
 import MobileMenu from './components/MobileMenu'
 import Hero from './components/Hero'
 import BetaBadge from './components/BetaBadge'
-import TorneiosContagem from './components/TorneiosContagem'
 import InstalarApp from './components/InstalarApp'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
@@ -273,8 +272,6 @@ function App() {
                       path="/"
                       element={
                         <>
-                          {/* Contagem regressiva até aos próximos torneios */}
-                          <TorneiosContagem />
                           {/* Anúncios presos no topo — só aparece se houver */}
                           <BarraAnuncios />
                           {/* O canal: foto, nome, subscritores e visualizações */}
