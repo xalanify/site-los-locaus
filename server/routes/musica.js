@@ -7,6 +7,7 @@
    ============================================================ */
 const express = require('express');
 const { Readable } = require('stream');
+const { requireAdmin } = require('../middleware/auth');
 const { resolverAudio, buscar, ID_RE } = require('../musica');
 
 const router = express.Router();
@@ -14,8 +15,8 @@ const router = express.Router();
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
-/* Pesquisa aberta a todos os membros (yt-dlp -> Piped -> API do YouTube). */
-router.get('/search', async (req, res) => {
+/* Pesquisa de música (só admin). */
+router.get('/search', requireAdmin, async (req, res) => {
   try {
     const q = String(req.query.q || '').trim().slice(0, 80);
     if (!q) return res.json({ ok: true, resultados: [] });

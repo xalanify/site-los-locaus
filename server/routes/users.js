@@ -726,8 +726,11 @@ router.put('/me/profile', attachAuth, async (req, res) => {
       }
     }
     if (hasMusicUrl || hasMusicNome || hasMusicInicio || hasMusicFim) {
-      // A música do YouTube (pesquisa, pré-visualização e corte) está aberta
-      // a todos os membros.
+      const conta = await store.findById(uid);
+      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
+      // Música pesquisada no YouTube: só admin. Para os restantes membros
+      // estes campos são ignorados (sem erro) — usam as músicas fixas.
+      if (souAdmin) {
       if (hasMusicUrl) {
         const url = String(body.musica_url || '').trim();
         if (url && !/^yt:[A-Za-z0-9_-]{11}$/.test(url)) {
@@ -763,6 +766,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
             'UPDATE user_profiles SET musica_inicio = ?, musica_fim = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
           )
           .run(inicio, fim, uid);
+      }
       }
     }
     if (hasAccent) {

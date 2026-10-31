@@ -470,12 +470,12 @@ export default function ProfilePage({
         background_id: form.background_id,
         musica_id: form.musica_id,
         dynamic_colors: form.dynamic_colors,
-        musica_url: form.musica_url,
-        musica_nome: form.musica_nome,
-        musica_inicio: Number(form.musica_inicio) || 0,
-        musica_fim: Number(form.musica_fim) || 0,
         ...(isAdmin || me.is_admin
           ? {
+              musica_url: form.musica_url,
+              musica_nome: form.musica_nome,
+              musica_inicio: Number(form.musica_inicio) || 0,
+              musica_fim: Number(form.musica_fim) || 0,
               name_color: form.name_color,
               name_effect: form.name_effect,
               card_style: form.card_style,
@@ -1036,7 +1036,7 @@ export default function ProfilePage({
                   />
                 )}
 
-                <AdminMusica form={form} setForm={setForm} />
+                {(isAdmin || me.is_admin) && <AdminMusica form={form} setForm={setForm} />}
               </div>
               </section>
 
