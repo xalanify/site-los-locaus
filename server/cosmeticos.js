@@ -150,12 +150,17 @@ const NOMES_PRECO = comEscada([...CORES, ...CAMOS], 10, 3);
 const CORES_PRECO = NOMES_PRECO.filter((x) => CORES.some((c) => c.id === x.id));
 const CAMOS_PRECO = NOMES_PRECO.filter((x) => CAMOS.some((c) => c.id === x.id));
 
-/* As cartas com as artes novas ficam num patamar próprio, no topo. */
-const CARTAS_ARTE = CARTAS.filter((x) => String(x.valor || '').startsWith('arte-'));
+/* As cartas com as artes novas ficam num patamar próprio, no topo.
+   A Carta Tranzit é peça de colecionador: fica sozinha acima de todas. */
+const CARTA_TRANZIT = CARTAS.find((x) => x.id === 'carta-arte-tranzit');
+const CARTAS_ARTE = CARTAS.filter(
+  (x) => String(x.valor || '').startsWith('arte-') && x.id !== 'carta-arte-tranzit',
+);
 const CARTAS_NORMAIS = CARTAS.filter((x) => !String(x.valor || '').startsWith('arte-'));
 const CARTAS_PRECO = [
   ...comEscada(CARTAS_NORMAIS, 40, 2),
   ...comEscada(CARTAS_ARTE, 90, 4),
+  ...(CARTA_TRANZIT ? [{ ...CARTA_TRANZIT, custo: 320 }] : []),
 ];
 
 /* Os banners e os efeitos saíram da loja. Os banners continuam
