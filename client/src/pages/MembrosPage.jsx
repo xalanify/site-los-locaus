@@ -11,6 +11,7 @@ import ProfileCard from '../components/ProfileCard'
 import ProfileBanner from '../components/ProfileBanner'
 import LiveBadge from '../components/LiveBadge'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
+import { infoRato, nomeRato } from '../lib/ratos'
 
 /* ============================================================
    Página de membros — grelha de cartões da comunidade
@@ -132,10 +133,13 @@ export default function MembrosPage({ onProfile }) {
           ))}
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <ul className="membros-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filtrados.map((m) => {
             const dists = distincoesOverclock(m.distincoes)
-            const gear = [m.mouse, m.dpi ? `${m.dpi} DPI` : ''].filter(Boolean).join(' · ')
+            const rato = infoRato(m.mouse)
+            const gear = [nomeRato(m.mouse), m.dpi ? `${m.dpi} DPI` : '']
+              .filter(Boolean)
+              .join(' · ')
             return (
               <li key={m.id}>
                 <button
@@ -201,8 +205,19 @@ export default function MembrosPage({ onProfile }) {
                       </span>
                     </span>
 
-                    <span className="mt-2 block truncate text-[11px] text-zinc-400">
-                      {gear || 'Membro Locaus'}
+                    <span className="mt-2 flex items-center gap-1.5 truncate text-[11px] text-zinc-400">
+                      {rato?.logo && (
+                        <img
+                          src={rato.logo}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                          className="h-3.5 w-3.5 shrink-0 rounded-sm object-contain"
+                        />
+                      )}
+                      <span className="truncate">{gear || 'Membro Locaus'}</span>
                     </span>
 
                     <span className="mt-3 flex items-center justify-between gap-2 border-t border-white/[0.06] pt-2.5">
@@ -214,7 +229,7 @@ export default function MembrosPage({ onProfile }) {
                           <Sparkles className="h-3.5 w-3.5" /> {dists.length}
                         </span>
                         <span
-                          className="truncate"
+                          className="membro-visto truncate"
                           title={
                             !m.online && m.last_seen
                               ? new Date(m.last_seen).toLocaleString('pt-PT')

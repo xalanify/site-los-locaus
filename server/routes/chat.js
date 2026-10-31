@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const { getDb } = require('../database');
 const { requireUser, requireUserOrAdmin } = require('../middleware/auth');
 const notify = require('../notify');
+const sse = require('../sse');
 const storage = require('../storage');
 
 const router = express.Router();
@@ -456,7 +457,10 @@ router.post('/:id/react', requireUser, async (req, res) => {
         .run(id, uid, emoji);
     }
     const reacoes = await reacoesPorMensagens(db, [id]);
-    res.json({ ok: true, reactions: (reacoes.get(id) || []).map((g) => ({ ...g, mine: g.users.some((u) => u.id === uid) })) });
+    const lista = (reacoes.get(id) || []).map((g) => ({ ...g, mine: g.users.some((u) => u.id === uid) }));
+    // os outros recebem os grupos "crus" — cada browser calcula o seu `mine`
+    sse.broadcast('chat:reaction', { id, reactions: reacoes.get(id) || [] });
+    res.json({ ok: true, reactions: lista });
   } catch (error) {
     console.error('Erro chat react:', error.message);
     res.status(500).json({ error: 'Não deu para reagir.' });
@@ -484,6 +488,10 @@ router.post('/:id/pin', requireUser, async (req, res) => {
          ON CONFLICT (message_id) DO UPDATE SET pinned_by = EXCLUDED.pinned_by, pinned_at = now()`,
       )
       .run(id, uid);
+    sse.broadcast('chat:pin', {
+      id,
+      pinned: { pinned_at: new Date().toISOString(), username: String(req.auth.username || '') },
+    });
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro chat pin:', error.message);
@@ -500,6 +508,7 @@ router.delete('/:id/pin', requireUser, async (req, res) => {
     const u = await db.prepare('SELECT is_admin FROM users WHERE id = ?').get(uid);
     if (!u || !u.is_admin) return res.status(403).json({ error: 'Só o admin desfixa.' });
     await db.prepare('DELETE FROM public.chat_pins WHERE message_id = ?').run(id);
+    sse.broadcast('chat:pin', { id, pinned: null });
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro chat unpin:', error.message);
@@ -537,6 +546,7 @@ router.post('/tema', requireUser, async (req, res) => {
          ON CONFLICT (chave) DO UPDATE SET valor = EXCLUDED.valor`,
       )
       .run(tema);
+    sse.broadcast('chat:tema', { tema });
     res.json({ ok: true, tema });
   } catch (error) {
     console.error('Erro chat tema:', error.message);
@@ -623,7 +633,7 @@ router.post('/', requireUser, async (req, res) => {
     if (replyTo) {
       const rRow = await db
         .prepare(
-          `SELECT m.id, m.body, u.username, up.avatar_url
+          `SELECT m.id, m.body, m.user_id, u.username, up.avatar_url
            FROM chat_messages m JOIN users u ON u.id = m.user_id
            LEFT JOIN user_profiles up ON up.user_id = m.user_id
            WHERE m.id = ?`,
@@ -636,10 +646,30 @@ router.post('/', requireUser, async (req, res) => {
           username: rRow.username || '???',
           avatar_url: rRow.avatar_url || null,
         };
+        // avisa quem foi respondido (sino + push), sem bloquear o envio
+        const destino = Number(rRow.user_id);
+        if (destino && destino !== Number(uid)) {
+          notify
+            .notify({
+              userId: destino,
+              actorId: uid,
+              type: 'chat_reply',
+              entity: 'chat',
+              entityId: msg.id,
+              title: `💬 ${msg.user.username || 'Alguém'} respondeu-te`,
+              body: (body || 'Enviou-te uma mensagem no chat.').slice(0, 140),
+              link: '/chat',
+              image: msg.user.avatar_url || null,
+            })
+            .catch(() => {});
+        }
       }
     }
     msg.reactions = [];
     msg.pinned = null;
+
+    // tempo real: os outros separadores/membros recebem já a mensagem
+    sse.broadcast('chat:message', msg, { except: uid });
 
     /* notificação Windows/PWA para os outros membros (sem bloquear o envio) */
     const previa =
@@ -693,6 +723,11 @@ router.post('/typing', requireUser, async (req, res) => {
         'INSERT INTO chat_typing (user_id, typing_at) VALUES (?, now()) ON CONFLICT (user_id) DO UPDATE SET typing_at = now()',
       )
       .run(uid);
+    sse.broadcast(
+      'chat:typing',
+      { user_id: Number(uid), username: String(req.auth.username || '') },
+      { except: uid },
+    );
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro chat typing:', error.message);
@@ -809,6 +844,7 @@ router.delete('/:id', requireUserOrAdmin, async (req, res) => {
       return res.status(403).json({ error: 'Sem permissões' });
     }
     await db.prepare('DELETE FROM chat_messages WHERE id = ?').run(id);
+    sse.broadcast('chat:delete', { id });
     res.json({ ok: true });
   } catch (error) {
     console.error('Erro chat DELETE:', error.message);

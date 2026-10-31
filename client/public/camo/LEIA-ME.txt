@@ -1,0 +1,13 @@
+Artes novas do mercado — guarda as imagens nesta pasta com estes nomes:
+
+arte-topo.jpg
+arte-nebula.jpg
+arte-neon.jpg
+arte-tempestade.jpg
+arte-brasas.jpg
+arte-galaxia.jpg
+arte-cristal.jpg
+arte-metal.jpg
+
+São usadas nos nomes (fundo das letras) e nas cartas.
+Enquanto não existirem, aparece um gradiente parecido por baixo.

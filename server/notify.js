@@ -7,6 +7,7 @@
 // ============================================================
 const webpush = require('web-push');
 const { getDb } = require('./database');
+const sse = require('./sse');
 
 const publicKey = process.env.VAPID_PUBLIC_KEY;
 const privateKey = process.env.VAPID_PRIVATE_KEY;
@@ -50,11 +51,102 @@ async function notify({
          VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       )
       .run(userId, actorId || null, type, entity, entityId, title, body, link);
+    const id = Number(r.lastInsertRowid);
+    // empurra já para o sino aberto (sem esperar pelo próximo refresh)
+    try {
+      sse.sendTo(userId, 'notification', {
+        id,
+        type,
+        entity,
+        entity_id: entityId,
+        title,
+        body,
+        link,
+        created_at: new Date().toISOString(),
+      });
+    } catch {
+      /* sem ligações abertas */
+    }
     enviarPush({ userId, title, body, link, image }).catch(() => {});
-    return Number(r.lastInsertRowid);
+    return id;
   } catch (e) {
     console.error('notify:', e.message);
     return null;
+  }
+}
+
+/**
+ * O mesmo aviso para todos os membros (menos o autor).
+ * Usado quando sai um clip novo ou um torneio está a começar.
+ */
+async function notifyTodos({ excluirUserId = null, ...dados }) {
+  try {
+    const db = getDb();
+    const rows = await db
+      .prepare(`SELECT id FROM users WHERE password_hash NOT LIKE '!%'`)
+      .all();
+    const excluir = Number(excluirUserId || 0);
+    let n = 0;
+    for (const r of rows) {
+      const id = Number(r.id);
+      if (!id || id === excluir) continue;
+      const criada = await notify({ userId: id, ...dados }).catch(() => null);
+      if (criada) n += 1;
+    }
+    return n;
+  } catch (e) {
+    console.error('notifyTodos:', e.message);
+    return 0;
+  }
+}
+
+/**
+ * Avisa (sino + push) quando falta ~1 hora para o próximo torneio R6.
+ * Corre de 10 em 10 minutos; a tabela `avisos_push` garante que só
+ * avisa uma vez por torneio.
+ */
+async function avisarTorneios() {
+  try {
+    const { proximoTorneio } = require('./r6previsoes');
+    const t = await proximoTorneio();
+    if (!t || !t.inicio) return false;
+    const falta = new Date(t.inicio).getTime() - Date.now();
+    // janela de 50 a 70 minutos: com verificações de 10 em 10, apanha sempre
+    if (!(falta >= 50 * 60000 && falta <= 70 * 60000)) return false;
+
+    const nome = t.nome || t.campeonato || 'Torneio';
+    const chave = `torneio:${nome}:${t.inicio}`;
+    const db = getDb();
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS public.avisos_push (
+           chave text primary key,
+           criado_em timestamptz not null default now()
+         )`,
+      )
+      .run()
+      .catch(() => {});
+    const novo = await db
+      .prepare(
+        `INSERT INTO public.avisos_push (chave) VALUES (?)
+         ON CONFLICT (chave) DO NOTHING RETURNING chave`,
+      )
+      .get(chave);
+    if (!novo) return false;
+
+    await notifyTodos({
+      type: 'torneio',
+      entity: 'torneio',
+      entityId: null,
+      title: `🏆 ${nome} começa em 1 hora`,
+      body: [t.fase, t.regiao].filter(Boolean).join(' · ') || 'Vê os jogos nas previsões.',
+      link: '/previsoes',
+      image: t.logo || null,
+    });
+    return true;
+  } catch (e) {
+    console.error('avisarTorneios:', e.message);
+    return false;
   }
 }
 
@@ -248,6 +340,8 @@ async function avisarJogoAoVivo(jogo, match) {
 
 module.exports = {
   notify,
+  notifyTodos,
+  avisarTorneios,
   enviarPush,
   pushTodos,
   avisarUmaVez,

@@ -4,7 +4,11 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { LiveProvider } from './lib/live'
 import './index.css'
+import './kova.css'
 import { registarSW } from './lib/pwa'
+
+// Tema experimental (localhost) — tira a classe para voltar ao anterior.
+document.body.classList.add('kova')
 
 // PWA: regista o service worker (cache do site + notificações push)
 registarSW()

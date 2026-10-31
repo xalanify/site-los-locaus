@@ -4,48 +4,37 @@
    as secções. A janela volta a aparecer quando a versão muda.
    ============================================================ */
 
-export const NOVIDADES_VERSAO = '2026-10-28-1'
+export const NOVIDADES_VERSAO = '2026-10-31-2'
 
 export const NOVIDADES = {
   versao: NOVIDADES_VERSAO,
-  titulo: 'Design totalmente refeito',
-  subtitulo: 'Mais limpo, mais rápido e pronto para o telemóvel.',
-  data: '28 de outubro de 2026',
+  titulo: 'Novo design + Mercado',
+  subtitulo: 'O site mudou e chegou o mercado ao vivo.',
+  data: '31 de outubro de 2026',
   secoes: [
     {
-      titulo: 'Design totalmente refeito',
-      texto: 'Novo visual em todas as páginas.',
+      titulo: 'Novo design',
+      texto:
+        'Visual completamente refeito: navbar com ícones, tipografia nova, fundo vivo e cartões repensados.',
       tipo: 'design',
     },
     {
-      titulo: 'Loja de cosméticos aberta a todos',
-      texto: 'Cores de nome, cartas e estilos de perfil.',
+      titulo: 'Mercado novo',
+      texto:
+        'Preços a subir e a descer, gráficos, compras e vendas. Há automação real: o mercado mexe-se sozinho e compra anúncios quando o preço é justo.',
       tipo: 'loja',
     },
     {
-      titulo: 'Notícias no lugar da Loja de Jogos',
-      texto: 'Só notícias de gaming e hardware.',
-      tipo: 'noticias',
-    },
-    {
-      titulo: 'Cartas com zoom',
-      texto: 'Clica numa carta da loja para a veres em grande.',
+      titulo: 'Novas cores — em breve',
+      texto:
+        'Já podes pré-visualizar as artes novas para os nomes. A compra abre em breve.',
       tipo: 'cartas',
     },
     {
-      titulo: 'Estilos de perfil — em breve',
-      texto: 'Já podes espreitar os 12 estilos na loja.',
+      titulo: 'Novas cartas — em breve',
+      texto:
+        'Chegaram cartas com artes exclusivas. Já aparecem no mercado para veres, mas ainda não estão à venda.',
       tipo: 'estilos',
-    },
-    {
-      titulo: 'PCs / Specs e Ferramentas Windows para todos',
-      texto: 'Programas e limpeza abertos a todos os membros.',
-      tipo: 'ferramentas',
-    },
-    {
-      titulo: 'Previsões: aviso de resultados',
-      texto: 'Ao entrar, vês logo se acertaste nas partidas que já terminaram.',
-      tipo: 'previsoes',
     },
   ],
 }

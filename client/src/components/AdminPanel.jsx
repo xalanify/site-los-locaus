@@ -29,6 +29,8 @@ import {
   Bell,
   Flame,
   Target,
+  Gift,
+  Coins,
 } from 'lucide-react'
 import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
@@ -38,6 +40,8 @@ import AdminDashboard from './AdminDashboard'
 import { BADGES, BadgeGem } from './BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { confirmar, toast } from './Feedback'
+import AdminPacks from './AdminPacks'
+import AdminEconomia from './AdminEconomia'
 
 /* Data simples das contas (dd mmm aaaa) */
 const fmtUserDate = (iso) => {
@@ -997,6 +1001,8 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'utilizadores', label: 'Utilizadores', Icon: Users },
               { id: 'presenca', label: 'Presença', Icon: Eye },
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
+              { id: 'packs', label: 'Locaus Packs', Icon: Gift },
+              { id: 'economia', label: 'Economia', Icon: Coins },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
               { id: 'fortnite', label: 'Fortnite', Icon: Flame },
@@ -1304,6 +1310,10 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               </div>
             )}
           </div>
+        ) : tab === 'packs' ? (
+          <AdminPacks />
+        ) : tab === 'economia' ? (
+          <AdminEconomia />
         ) : tab === 'anuncios' ? (
           /* ---------- ANÚNCIOS (só admin cria) ---------- */
           <div>

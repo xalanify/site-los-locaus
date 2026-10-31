@@ -4,7 +4,7 @@ export default function BetaBadge() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed right-16 top-1.5 z-[70] hidden select-none text-right sm:right-28 sm:top-2 lg:right-6 lg:top-3 lg:block"
+      className="beta-badge pointer-events-none fixed right-16 top-1.5 z-[70] hidden select-none text-right sm:right-28 sm:top-2 lg:right-6 lg:top-3 lg:block"
     >
       <span className="font-display text-[8px] font-black uppercase tracking-[0.18em] text-zinc-300 sm:text-[9px] lg:text-[10px]">
         Beta

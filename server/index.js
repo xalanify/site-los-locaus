@@ -204,9 +204,15 @@ app.use('/api/previsoes', previsoesRouter);
 // Loja de cosméticos (só admin, paga com acertos das previsões)
 const { cosmeticosRouter } = require('./routes/cosmeticos');
 app.use('/api/cosmeticos', cosmeticosRouter);
+// Mercado ao vivo + Locaus Packs
+const { mercadoRouter } = require('./routes/mercado');
+app.use('/api/mercado', mercadoRouter);
 
 const { treinoRouter } = require('./routes/treino');
 app.use('/api/treino', treinoRouter);
+// Tempo real (SSE) — chat e notificações sem polling
+const { eventsRouter } = require('./routes/events');
+app.use('/api/events', eventsRouter);
 // Preços de jogos — IsThereAnyDeal / CheapShark
 const { itadRouter } = require('./routes/itad');
 app.use('/api/itad', itadRouter);
@@ -260,6 +266,19 @@ if (!IS_VERCEL) {
   setInterval(() => {
     require('./cs2inventory').sincronizarValores().catch(() => {});
   }, 6 * 60 * 60 * 1000);
+
+  // Aviso "o torneio começa em 1 hora" — verifica de 10 em 10 minutos.
+  setTimeout(() => {
+    require('./notify').avisarTorneios().catch(() => {});
+  }, 45000);
+  setInterval(() => {
+    require('./notify').avisarTorneios().catch(() => {});
+  }, 10 * 60 * 1000);
+
+  // Mercado ao vivo: mexe os preços a cada 45 segundos.
+  setInterval(() => {
+    require('./mercado').tick().catch(() => {});
+  }, 45 * 1000);
 }
 
 // R6 — modo manual (tracker.gg importado no painel admin).

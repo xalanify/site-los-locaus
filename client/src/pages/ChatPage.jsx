@@ -33,6 +33,7 @@ import { tocarSom } from '../lib/sons'
 import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import { confirmar, toast } from '../components/Feedback'
+import { subscribe, ligado } from '../lib/sse'
 /* Temas do chat — só o admin muda; aplica a todos.
    Cada tema = cor principal + fundo do chat. */
 const TEMAS = {
@@ -221,6 +222,19 @@ export default function ChatPage({ user }) {
   }, [])
 
   useEffect(() => {
+    // Chegou mensagem nova: som, scroll e/ou aviso "há mensagens novas"
+    const juntarNovas = (novas, comSom) => {
+      if (!novas || !novas.length) return
+      const recebidas = novas.filter((m) => Number(m.user.id) !== Number(user && user.id))
+      if (comSom && recebidas.length) tocarSom('recebido')
+      const antes = listaRef.current
+      const perto = !antes || antes.scrollHeight - antes.scrollTop - antes.clientHeight < 140
+      juntar(novas)
+      if (perto) setTimeout(() => scrollFundo(true), 40)
+      else setNovasMensagens(true)
+    }
+
+    /* Recurso: só corre se o canal em tempo real estiver em baixo. */
     const tick = async () => {
       if (document.hidden || aPollarRef.current) return
       aPollarRef.current = true
@@ -233,23 +247,11 @@ export default function ChatPage({ user }) {
           const d = await r.json()
           if (d.typing) {
             setTyping(d.typing)
-            // se alguém começou a escrever, desce ao fim para ver a bolha
             if (pertoDoFundoRef.current && d.typing.length) {
               setTimeout(() => scrollFundo(true), 50)
             }
           }
-          if (d.messages && d.messages.length) {
-            const recebidas = d.messages.filter(
-              (m) => Number(m.user.id) !== Number(user && user.id),
-            )
-            if (recebidas.length && depois) tocarSom('recebido')
-            const antes = listaRef.current
-            const perto =
-              !antes || antes.scrollHeight - antes.scrollTop - antes.clientHeight < 140
-            juntar(d.messages)
-            if (perto) setTimeout(() => scrollFundo(true), 40)
-            else setNovasMensagens(true)
-          }
+          juntarNovas(d.messages, Boolean(depois))
         }
       } catch {
         /* rede intermitente */
@@ -257,8 +259,72 @@ export default function ChatPage({ user }) {
         aPollarRef.current = false
       }
     }
-    const t = setInterval(tick, 1800)
-    return () => clearInterval(t)
+
+    /* Tempo real: o servidor empurra mensagens, reações, pins e tema. */
+    const off = subscribe((tipo, d) => {
+      if (tipo === 'chat:message' && d) {
+        if (Number(d.user.id) === Number(user && user.id)) return // já está no ecrã
+        juntarNovas([d], true)
+        lastIdRef.current = Math.max(lastIdRef.current, Number(d.id) || 0)
+        setTyping((prev) => prev.filter((t) => Number(t.user_id) !== Number(d.user.id)))
+        return
+      }
+      if (tipo === 'chat:typing' && d) {
+        setTyping((prev) => {
+          const outros = prev.filter((t) => Number(t.user_id) !== Number(d.user_id))
+          return [...outros, { user_id: d.user_id, username: d.username, _t: Date.now() }]
+        })
+        if (pertoDoFundoRef.current) setTimeout(() => scrollFundo(true), 50)
+        return
+      }
+      if (tipo === 'chat:reaction' && d) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            Number(m.id) === Number(d.id)
+              ? {
+                  ...m,
+                  reactions: (d.reactions || []).map((g) => ({
+                    ...g,
+                    mine: (g.users || []).some((u) => Number(u.id) === Number(user && user.id)),
+                  })),
+                }
+              : m,
+          ),
+        )
+        return
+      }
+      if (tipo === 'chat:delete' && d) {
+        setMessages((prev) => prev.filter((m) => Number(m.id) !== Number(d.id)))
+        return
+      }
+      if (tipo === 'chat:pin' && d) {
+        setMessages((prev) =>
+          prev.map((m) => (Number(m.id) === Number(d.id) ? { ...m, pinned: d.pinned } : m)),
+        )
+        if (!d.pinned) setPinned((atual) => (atual && Number(atual.id) === Number(d.id) ? null : atual))
+        return
+      }
+      if (tipo === 'chat:tema' && d && TEMAS[d.tema]) {
+        setTema(d.tema)
+      }
+    })
+
+    // "A escrever…" desaparece sozinho ao fim de ~7 s
+    const limparTyping = setInterval(() => {
+      setTyping((prev) => prev.filter((t) => !t._t || Date.now() - t._t < 7000))
+    }, 3000)
+
+    // Rede de segurança: se o SSE estiver em baixo, atualiza de 15 em 15 s
+    const t = setInterval(() => {
+      if (!ligado()) tick()
+    }, 15000)
+
+    return () => {
+      off()
+      clearInterval(t)
+      clearInterval(limparTyping)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Marca as mensagens como vistas (contador do menu lateral)

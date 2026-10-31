@@ -27,6 +27,15 @@ const CORES = [
   { id: 'cor-diamond', nome: 'Diamond (BO2)', valor: 'diamond', custo: 28, cor: '#fde68a' },
   { id: 'cor-chrome', nome: 'Chrome', valor: 'chrome', custo: 25, cor: '#e5e7eb' },
   { id: 'cor-rainbow', nome: 'Dark Aether', valor: 'rainbow', custo: 34, cor: '#c084fc' },
+  /* Artes novas (imagens em client/public/camo/arte-*.jpg) */
+  { id: 'cor-arte-topo', nome: 'Topográfico', valor: 'arte-topo', custo: 120, cor: '#ff7a59' },
+  { id: 'cor-arte-nebula', nome: 'Nebulosa', valor: 'arte-nebula', custo: 122, cor: '#a855f7' },
+  { id: 'cor-arte-neon', nome: 'Neon Flux', valor: 'arte-neon', custo: 124, cor: '#67e8f9' },
+  { id: 'cor-arte-tempestade', nome: 'Tempestade', valor: 'arte-tempestade', custo: 126, cor: '#ff3b3b' },
+  { id: 'cor-arte-brasas', nome: 'Brasas', valor: 'arte-brasas', custo: 128, cor: '#ef4444' },
+  { id: 'cor-arte-galaxia', nome: 'Galáxia', valor: 'arte-galaxia', custo: 130, cor: '#f472b6' },
+  { id: 'cor-arte-cristal', nome: 'Cristal', valor: 'arte-cristal', custo: 132, cor: '#a78bfa' },
+  { id: 'cor-arte-metal', nome: 'Hex Metal', valor: 'arte-metal', custo: 134, cor: '#cbd5e1' },
 ];
 
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
@@ -68,6 +77,15 @@ const CARTAS = [
   { id: 'carta-violet', nome: 'Carta Violet', valor: 'violet', custo: 70, cor: '#c084fc' },
   { id: 'carta-sleepin', nome: 'Carta Sleepin', valor: 'sleepin', custo: 75, cor: '#e4e4e7' },
   { id: 'carta-river', nome: 'Carta River', valor: 'river', custo: 80, cor: '#f9a8d4' },
+  /* Cartas com as artes novas */
+  { id: 'carta-arte-topo', nome: 'Carta Topográfica', valor: 'arte-topo', custo: 85, cor: '#ff7a59' },
+  { id: 'carta-arte-nebula', nome: 'Carta Nebulosa', valor: 'arte-nebula', custo: 87, cor: '#a855f7' },
+  { id: 'carta-arte-neon', nome: 'Carta Neon Flux', valor: 'arte-neon', custo: 89, cor: '#67e8f9' },
+  { id: 'carta-arte-tempestade', nome: 'Carta Tempestade', valor: 'arte-tempestade', custo: 91, cor: '#ff3b3b' },
+  { id: 'carta-arte-brasas', nome: 'Carta Brasas', valor: 'arte-brasas', custo: 93, cor: '#ef4444' },
+  { id: 'carta-arte-galaxia', nome: 'Carta Galáxia', valor: 'arte-galaxia', custo: 95, cor: '#f472b6' },
+  { id: 'carta-arte-cristal', nome: 'Carta Cristal', valor: 'arte-cristal', custo: 97, cor: '#a78bfa' },
+  { id: 'carta-arte-metal', nome: 'Carta Hex Metal', valor: 'arte-metal', custo: 99, cor: '#cbd5e1' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.
@@ -88,13 +106,64 @@ const ESTILOS = [
   { id: 'estilo-kichies', nome: 'Estilo Kichies', valor: 'kichies', custo: 140, cor: '#22c55e', emBreve: true },
 ];
 
+/* Hierarquia das cores de nome:
+   - estáticas (simples) -> mais baratas
+   - animadas/texturadas -> mais caras
+   - exceções (as 4 camuflagens premium) -> as mais caras de todas */
+const CORES_ESTATICAS = new Set(['cor-red', 'cor-green', 'cor-pink', 'cor-cyan']);
+const CORES_EXCECAO = new Set([
+  'cor-darkmatter',
+  'cor-damascus',
+  'cor-obsidian',
+  'camo-darkmatter',
+  'camo-damascus',
+  'camo-purple',
+  'camo-gold',
+]);
+
+const nivelCor = (item) => {
+  if (CORES_EXCECAO.has(item.id)) return 2;
+  if (String(item.valor || '').startsWith('arte-')) return 2;
+  if (CORES_ESTATICAS.has(item.id)) return 0;
+  return 1;
+};
+
+/* ------------------------------------------------------------
+   Escada de preços (pedido do admin):
+   - cores de nome: 10, 13, 16, 19, ... (+3)
+   - cartas:        40, 42, 44, 46, ... (+2)
+   As estáticas ficam em baixo, as animadas no meio e as quatro
+   exceções no topo.
+   ------------------------------------------------------------ */
+function comEscada(lista, inicio, passo) {
+  const ordem = [...lista].sort((a, b) => {
+    const na = nivelCor(a);
+    const nb = nivelCor(b);
+    if (na !== nb) return na - nb;
+    return a.custo - b.custo;
+  });
+  return ordem.map((x, i) => ({ ...x, custo: inicio + passo * i }));
+}
+
+const NOMES_PRECO = comEscada([...CORES, ...CAMOS], 10, 3);
+const CORES_PRECO = NOMES_PRECO.filter((x) => CORES.some((c) => c.id === x.id));
+const CAMOS_PRECO = NOMES_PRECO.filter((x) => CAMOS.some((c) => c.id === x.id));
+
+/* As cartas com as artes novas ficam num patamar próprio, no topo. */
+const CARTAS_ARTE = CARTAS.filter((x) => String(x.valor || '').startsWith('arte-'));
+const CARTAS_NORMAIS = CARTAS.filter((x) => !String(x.valor || '').startsWith('arte-'));
+const CARTAS_PRECO = [
+  ...comEscada(CARTAS_NORMAIS, 40, 2),
+  ...comEscada(CARTAS_ARTE, 90, 4),
+];
+
 /* Os banners e os efeitos saíram da loja. Os banners continuam
    disponíveis no editor de perfil; os efeitos já comprados ficam
    guardados na conta, mas deixam de aparecer para compra. */
 const ITENS = [
-  ...CORES.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
-  ...CAMOS.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
-  ...CARTAS.map((x) => ({ ...x, tipo: 'carta', campo: 'card_style' })),
+  ...CORES_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
+  ...CAMOS_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
+  ...CARTAS_PRECO.map((x) => ({ ...x, tipo: 'carta', campo: 'card_style' })),
   ...ESTILOS.map((x) => ({ ...x, tipo: 'estilo', campo: 'profile_style' })),
 ];
 
@@ -161,6 +230,19 @@ async function gastosDe(uid) {
   return Number(row && row.gastos) || 0;
 }
 
+/* Créditos do mercado (vendas). Positivo = entrou dinheiro,
+   negativo = gasto numa compra do mercado. */
+async function creditosDe(uid) {
+  try {
+    const row = await getDb()
+      .prepare('SELECT COALESCE(SUM(valor), 0) AS c FROM public.mercado_ledger WHERE user_id = ?')
+      .get(uid);
+    return Math.round(Number(row && row.c) || 0);
+  } catch {
+    return 0;
+  }
+}
+
 async function listar(uid) {
   await garantirTabela();
   const db = getDb();
@@ -177,11 +259,13 @@ async function listar(uid) {
 
   const acertos = await acertosDe(uid);
   const gastos = await gastosDe(uid);
+  const creditos = await creditosDe(uid);
 
   return {
     acertos,
     gastos,
-    disponiveis: Math.max(0, acertos - gastos),
+    creditos,
+    disponiveis: Math.max(0, acertos - gastos + creditos),
     perfil: perfil || {
       name_color: null,
       name_effect: null,
@@ -206,7 +290,8 @@ async function saldo(uid) {
   await garantirTabela();
   const acertos = await acertosDe(uid);
   const gastos = await gastosDe(uid);
-  return { acertos, gastos, disponiveis: Math.max(0, acertos - gastos) };
+  const creditos = await creditosDe(uid);
+  return { acertos, gastos, creditos, disponiveis: Math.max(0, acertos - gastos + creditos) };
 }
 
 async function comprar(uid, itemId) {
@@ -243,7 +328,6 @@ async function aplicar(uid, itemId) {
   await garantirTabela();
   const item = POR_ID.get(String(itemId || ''));
   if (!item) throw new Error('Item inválido.');
-  if (item.emBreve) throw new Error('Este estilo de perfil chega em breve.');
 
   const db = getDb();
   const comprado = await db

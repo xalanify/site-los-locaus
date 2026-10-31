@@ -8,11 +8,9 @@ import RightColumn from './components/RightColumn'
 import MobileMenu from './components/MobileMenu'
 import Hero from './components/Hero'
 import BetaBadge from './components/BetaBadge'
-import InstalarApp from './components/InstalarApp'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import NovidadesModal from './components/NovidadesModal'
-import BarraAnuncios from './components/BarraAnuncios'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
@@ -21,8 +19,13 @@ import BackToTop from './components/BackToTop'
 import BootScreen from './components/BootScreen'
 import ErrorBoundary from './components/ErrorBoundary'
 import MorphPointer from './components/MorphPointer'
+import ClickSplash from './components/ClickSplash'
+import KovaTopbar from './components/KovaTopbar'
+import FundoVivo from './components/FundoVivo'
+import ManutencaoPage from './pages/ManutencaoPage'
 import { Toasts, Dialogos } from './components/Feedback'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
+import { fechar as fecharSSE } from './lib/sse'
 import { enviarSpecs } from './lib/specs'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
@@ -161,6 +164,11 @@ function App() {
   }
   const handleUserLogout = () => {
     clearUserSession()
+    try {
+      fecharSSE()
+    } catch {
+      /* nada */
+    }
     setUser(null)
     setShowAdminPanel(false)
   }
@@ -177,6 +185,9 @@ function App() {
   return (
     <div className="min-h-screen">
       <MorphPointer />
+      <ClickSplash />
+      {/* Fundo animado (rosa salmão) */}
+      {authed && <FundoVivo />}
       {/* Ecrã de carregamento — entra sozinho depois da barra encher */}
       <BootScreen visible={!entered} onEnter={() => setEntered(true)} />
 
@@ -225,13 +236,16 @@ function App() {
             )}
 
             {/* Com conta -> site completo */}
-            {authed && !needsRecovery && (
+            {authed && !needsRecovery && isAdmin && (
               <>
+                {/* Barra de topo (desktop) — tema experimental */}
+                <KovaTopbar user={user} isAdmin={isAdmin} />
                 {/* Barra de navegação (só no telemóvel) */}
                 <Navbar
                   isAdmin={isAdmin}
                   user={user}
-                  onMenu={() => setMenuOpen(true)}
+                  menuOpen={menuOpen}
+                  onMenu={() => setMenuOpen((v) => !v)}
                 />
                 {/* Menu lateral estilo X (só no telemóvel) */}
                 <MobileMenu
@@ -272,12 +286,8 @@ function App() {
                       path="/"
                       element={
                         <>
-                          {/* Anúncios presos no topo — só aparece se houver */}
-                          <BarraAnuncios />
                           {/* O canal: foto, nome, subscritores e visualizações */}
                           <Hero onVerVideos={() => setShowVideos(true)} />
-                          {/* Só no telemóvel: instalar o site como app */}
-                          <InstalarApp />
                           {/* Próximos torneios com contagem ao vivo (R6 e CS2) */}
                           <TorneiosHome />
                         </>
@@ -391,6 +401,11 @@ function App() {
                   />
                 )}
               </>
+            )}
+
+            {/* Site fechado para membros — só admins entram */}
+            {authed && !isAdmin && (
+              <ManutencaoPage user={user} onLogout={handleUserLogout} />
             )}
           </motion.div>
         )}

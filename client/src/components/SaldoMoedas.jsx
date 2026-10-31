@@ -6,7 +6,7 @@ import MoedaLocaus from './MoedaLocaus'
    Indicador de Moedas Locaus (sidebar)
    1 acerto = 1 moeda. O saldo é o mesmo da loja de cosméticos.
    ============================================================ */
-export default function SaldoMoedas({ user }) {
+export default function SaldoMoedas({ user, compacto = false }) {
   const [saldo, setSaldo] = useState(null)
 
   useEffect(() => {
@@ -35,6 +35,15 @@ export default function SaldoMoedas({ user }) {
   }, [user])
 
   if (!user || !saldo) return null
+
+  if (compacto) {
+    return (
+      <span className="kova-moedas" title="Moedas Locaus">
+        <MoedaLocaus size={16} />
+        <b>{Number(saldo.disponiveis).toLocaleString('pt-PT')}</b>
+      </span>
+    )
+  }
 
   return (
     <div className="glass flex items-center gap-3 rounded-2xl border border-white/10 px-3 py-2.5">

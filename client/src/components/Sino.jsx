@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { Bell, BellRing, Check, CheckCheck, Heart, MessageSquare, Award, Sparkles, Trash2, ChevronRight } from 'lucide-react'
+import { Bell, BellRing, Check, CheckCheck, Heart, MessageSquare, Award, Sparkles, Trash2, ChevronRight, Clapperboard, Trophy } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import { ativarPush, desligarPush, pushLigado, temPWA } from '../lib/pwa'
+import { subscribe } from '../lib/sse'
 import Estado from './Estado'
 
 /* Ícone e cor por tipo de notificação */
 const TIPOS = {
   comment: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
   reply: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
+  chat_reply: { Icon: MessageSquare, cor: 'text-[#f7a8a8]', fundo: 'bg-[#f7a8a8]/15' },
+  clip: { Icon: Clapperboard, cor: 'text-[#f7a8a8]', fundo: 'bg-[#f7a8a8]/15' },
+  torneio: { Icon: Trophy, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },
   like: { Icon: Heart, cor: 'text-rose-300', fundo: 'bg-rose-400/15' },
   save: { Icon: Sparkles, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },
   badge: { Icon: Award, cor: 'text-zinc-300', fundo: 'bg-zinc-400/15' },
@@ -87,6 +91,19 @@ export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
       vivo = false
     }
   }, [])
+
+  /* Tempo real: aparece no sino no instante em que chega */
+  useEffect(() => {
+    if (!user) return undefined
+    return subscribe((tipo, d) => {
+      if (tipo !== 'notification' || !d) return
+      setItems((prev) => {
+        if (prev.some((x) => Number(x.id) === Number(d.id))) return prev
+        return [{ ...d, read: false }, ...prev].slice(0, 50)
+      })
+      setNLidas((n) => n + 1)
+    })
+  }, [user])
 
   /* ao abrir o painel, confirma se o servidor tem este dispositivo ligado */
   useEffect(() => {

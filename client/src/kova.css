@@ -1,0 +1,1791 @@
+/* ============================================================
+   TEMA "KOVA" â€” experiÃªncia local (localhost)
+   ------------------------------------------------------------
+   Camada por cima do index.css. NÃ£o apaga nada: sÃ³ reescreve
+   cores, tipografia, cartÃµes e botÃµes para o look da referÃªncia
+   (preto quase absoluto, serif nos tÃ­tulos, acento salmÃ£o).
+
+   Para desligar: tira a classe `kova` do <body>.
+   ============================================================ */
+
+body.kova {
+  --k-bg: #0a0a0b;
+  --k-bg-2: #0e0e10;
+  --k-surface: #111113;
+  --k-surface-2: #161618;
+  --k-line: rgba(255, 255, 255, 0.07);
+  --k-line-2: rgba(255, 255, 255, 0.12);
+  --k-text: #f2f2f3;
+  --k-muted: #8b8b91;
+  --k-dim: #5f5f66;
+  --k-accent: #f7a8a8;
+  --k-accent-2: #ffbdbd;
+
+  font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  background-color: var(--k-bg);
+  background-image: radial-gradient(
+    60rem 30rem at 50% -10rem,
+    rgba(255, 255, 255, 0.04),
+    transparent 70%
+  );
+  color: var(--k-text);
+}
+
+/* ---------- Tipografia ---------- */
+body.kova h1,
+body.kova h2 {
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.015em;
+  text-transform: none;
+}
+
+body.kova .brand-serif {
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-style: italic;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: #fff;
+}
+
+body.kova .gradient-text {
+  background: linear-gradient(92deg, #ffffff 0%, var(--k-accent) 70%, var(--k-accent-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.kova .text-gray-500,
+body.kova .text-gray-400 {
+  color: var(--k-muted);
+}
+
+/* ---------- SuperfÃ­cies ---------- */
+body.kova .glass,
+body.kova .right-card,
+body.kova .ui-card,
+body.kova .painel-fixo section {
+  background-color: var(--k-surface) !important;
+  border-color: var(--k-line) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.kova .painel-fixo {
+  background-color: var(--k-bg) !important;
+  border-color: var(--k-line) !important;
+}
+
+body.kova aside.painel-fixo {
+  background-color: var(--k-bg) !important;
+}
+
+body.kova .navbar-pill > div {
+  background-color: rgba(17, 17, 19, 0.94) !important;
+  border-color: var(--k-line) !important;
+}
+
+body.kova #topbar {
+  background-color: rgba(10, 10, 11, 0.92) !important;
+  border-color: var(--k-line) !important;
+}
+
+/* ---------- BotÃµes ---------- */
+body.kova .ui-btn,
+body.kova .btn-glass,
+body.kova button.rounded-full {
+  border-radius: 10px;
+}
+
+body.kova .ui-btn-primary {
+  background: var(--k-accent) !important;
+  border-color: var(--k-accent) !important;
+  color: #0a0a0b !important;
+  font-weight: 700 !important;
+}
+
+body.kova .ui-btn-primary:hover {
+  background: var(--k-accent-2) !important;
+}
+
+body.kova .ui-btn-ghost,
+body.kova .btn-glass {
+  background: var(--k-surface-2) !important;
+  border: 1px solid var(--k-line) !important;
+  color: var(--k-text) !important;
+}
+
+body.kova .ui-btn-ghost:hover,
+body.kova .btn-glass:hover {
+  border-color: var(--k-line-2) !important;
+  background: #1c1c1f !important;
+}
+
+/* links e estados ativos puxam o acento */
+body.kova a:hover {
+  color: var(--k-accent);
+}
+
+body.kova .text-\[\#ff9e9e\],
+body.kova .text-zinc-300,
+body.kova .text-zinc-400 {
+  color: var(--k-accent) !important;
+}
+
+/* ---------- Inputs ---------- */
+body.kova input,
+body.kova textarea,
+body.kova select {
+  background-color: var(--k-surface) !important;
+  border-color: var(--k-line) !important;
+  color: var(--k-text) !important;
+  border-radius: 10px !important;
+}
+
+body.kova input::placeholder,
+body.kova textarea::placeholder {
+  color: var(--k-dim) !important;
+}
+
+body.kova input:focus,
+body.kova textarea:focus,
+body.kova select:focus {
+  border-color: rgba(247, 168, 168, 0.55) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(247, 168, 168, 0.12) !important;
+}
+
+/* ---------- Scrollbar discreta ---------- */
+body.kova ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body.kova ::-webkit-scrollbar-thumb {
+  background: #232327;
+  border-radius: 999px;
+  border: 2px solid var(--k-bg);
+}
+body.kova ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ============================================================
+   HERO â€” abertura da home no estilo da referÃªncia
+   ============================================================ */
+.kova-hero {
+  position: relative;
+  padding: clamp(2.5rem, 7vw, 6rem) 1rem 3rem;
+  text-align: center;
+}
+
+.kova-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.9rem 0.35rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--k-line);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--k-muted);
+}
+
+.kova-hero-pill b {
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  background: var(--k-accent);
+  color: #0a0a0b;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.kova-hero h1 {
+  margin: 1.4rem auto 0;
+  max-width: 18ch;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(2.6rem, 7.2vw, 5.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: #fafafa;
+}
+
+.kova-hero h1 em {
+  font-style: italic;
+  color: var(--k-accent);
+}
+
+.kova-hero p {
+  margin: 1.3rem auto 0;
+  max-width: 46ch;
+  font-size: clamp(0.95rem, 2vw, 1.08rem);
+  line-height: 1.55;
+  color: var(--k-muted);
+}
+
+.kova-hero-acoes {
+  margin-top: 1.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+}
+
+.kova-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.kova-btn:active {
+  transform: scale(0.98);
+}
+
+.kova-btn--primario {
+  background: var(--k-accent);
+  color: #0a0a0b;
+}
+
+.kova-btn--primario:hover {
+  background: var(--k-accent-2);
+  color: #0a0a0b;
+}
+
+.kova-btn--fantasma {
+  background: var(--k-surface-2);
+  border-color: var(--k-line);
+  color: var(--k-text);
+}
+
+.kova-btn--fantasma:hover {
+  border-color: var(--k-line-2);
+  background: #1c1c1f;
+  color: #fff;
+}
+
+.kova-hero-avatares {
+  margin-top: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--k-muted);
+}
+
+.kova-hero-avatares img {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--k-line-2);
+  margin-left: -0.55rem;
+  background: var(--k-surface-2);
+}
+
+.kova-hero-avatares img:first-child {
+  margin-left: 0;
+}
+
+.kova-hero-stats {
+  margin: 3rem auto 0;
+  max-width: 62rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 1rem;
+  border-top: 1px solid var(--k-line);
+  padding-top: 2rem;
+}
+
+@media (min-width: 720px) {
+  .kova-hero-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.kova-hero-stats b {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+}
+
+.kova-hero-stats span {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--k-muted);
+}
+
+/* ============================================================
+   BARRA DE TOPO (desktop)
+   ============================================================ */
+.kova-topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 60px;
+  z-index: 45;
+  background: rgba(10, 10, 11, 0.86);
+  border-bottom: 1px solid var(--k-line);
+  backdrop-filter: blur(14px);
+}
+
+.kova-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  height: 100%;
+  max-width: 86rem;
+  margin: 0 auto;
+  padding: 0 1.6rem;
+}
+
+.kova-brand {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 1.55rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.kova-brand span {
+  color: var(--k-accent);
+}
+
+.kova-links {
+  display: flex;
+  align-items: center;
+  gap: 1.35rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--k-muted);
+}
+
+.kova-links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0;
+  transition: color 0.15s ease;
+}
+
+.kova-links a:hover {
+  color: #fff;
+}
+
+.kova-links > a[data-active='true'] {
+  color: #fff;
+}
+
+.kova-links > a[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -14px;
+  height: 2px;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.kova-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+/* ---------- Menu "Mais" ---------- */
+.kova-mais {
+  position: relative;
+}
+
+.kova-mais-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--k-muted);
+}
+
+.kova-mais-btn:hover {
+  color: #fff;
+}
+
+.kova-mais-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  padding: 0.35rem;
+  border: 1px solid var(--k-line);
+  border-radius: 11px;
+  background: var(--k-surface-2);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+  z-index: 60;
+}
+
+.kova-mais-menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--k-text);
+  white-space: nowrap;
+}
+
+.kova-mais-menu a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.kova-mais-menu a[data-active='true'] {
+  color: var(--k-accent);
+}
+
+.kova-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 250px;
+  height: 34px;
+  padding: 0 0.65rem;
+  border: 1px solid var(--k-line);
+  border-radius: 9px;
+  background: var(--k-surface);
+  color: var(--k-dim);
+}
+
+.kova-search input {
+  flex: 1;
+  min-width: 0;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 0.8rem;
+  color: var(--k-text) !important;
+}
+
+.kova-search kbd {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--k-line);
+  border-radius: 4px;
+  color: var(--k-dim);
+}
+
+.kova-resultados {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  overflow: hidden;
+  border: 1px solid var(--k-line);
+  border-radius: 10px;
+  background: var(--k-surface-2);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.kova-resultados button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--k-text);
+  text-align: left;
+}
+
+.kova-resultados button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.kova-ponto {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #3a3a40;
+}
+
+.kova-ponto.on {
+  background: #4ade80;
+}
+
+.kova-user {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--k-line-2);
+  background: var(--k-surface-2);
+  overflow: hidden;
+}
+
+.kova-user:hover {
+  border-color: rgba(247, 168, 168, 0.5);
+}
+
+.kova-moedas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding: 0 0.6rem;
+  border: 1px solid var(--k-line);
+  border-radius: 9px;
+  background: var(--k-surface);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--k-text);
+  white-space: nowrap;
+}
+
+.kova-moedas b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A etiqueta "beta" tapa a barra nova â€” esconde-se no tema. */
+body.kova .beta-badge {
+  display: none !important;
+}
+
+/* Em ecrÃ£s largos o tema usa a barra de topo em vez da sidebar. */
+@media (min-width: 1024px) {
+  body.kova aside.painel-fixo.left-0 {
+    display: none !important;
+  }
+  body.kova main {
+    padding-left: 0 !important;
+    padding-top: 60px;
+  }
+  body.kova .page-shell {
+    padding-top: calc(2.5rem + env(safe-area-inset-top));
+  }
+}
+
+@media (min-width: 1280px) {
+  body.kova aside.painel-fixo.right-0 {
+    display: none !important;
+  }
+  body.kova main {
+    padding-right: 0 !important;
+  }
+}
+
+/* ============================================================
+   TELEMÃ“VEL â€” barra de topo, menu e pÃ­lula de baixo
+   ============================================================ */
+.kova-mobilebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: calc(56px + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  background: rgba(10, 10, 11, 0.93);
+  border-bottom: 1px solid var(--k-line);
+  backdrop-filter: blur(14px);
+}
+
+.kova-mobilebar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 0.85rem;
+}
+
+.kova-mobilebar-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.kova-mobilebar-acoes > button,
+.kova-mobilebar-acoes > .relative > button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--k-line);
+  border-radius: 9px;
+  background: var(--k-surface);
+  color: var(--k-text);
+}
+
+.kova-mobilebar-acoes > button:active {
+  background: #1c1c1f;
+}
+
+.kova-mobilebar-user {
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+/* ---------- Procura (telemÃ³vel) ---------- */
+.kova-busca {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  background: var(--k-bg);
+  padding-top: env(safe-area-inset-top);
+}
+
+.kova-busca-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--k-line);
+}
+
+.kova-busca-campo {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 0.7rem;
+  border: 1px solid var(--k-line);
+  border-radius: 10px;
+  background: var(--k-surface);
+  color: var(--k-dim);
+}
+
+.kova-busca-campo input {
+  flex: 1;
+  min-width: 0;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 0.9rem;
+  color: var(--k-text) !important;
+}
+
+.kova-busca-x {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--k-line);
+  border-radius: 10px;
+  background: var(--k-surface);
+  color: var(--k-text);
+}
+
+.kova-busca-lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.kova-busca-lista button {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.6rem 0.65rem;
+  border-radius: 10px;
+  color: var(--k-text);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.kova-busca-lista button:active {
+  background: #1a1a1d;
+}
+
+.kova-busca-vazio {
+  padding: 1.2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--k-dim);
+}
+
+/* ---------- Menu (painel inteiro) ---------- */
+.kova-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  overflow-y: auto;
+  background: var(--k-bg);
+  padding-top: calc(64px + env(safe-area-inset-top));
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+
+.kova-menu-inner {
+  padding: 0.4rem 0.85rem 0;
+}
+
+.kova-menu-secao-bloco {
+  margin-bottom: 1.1rem;
+}
+
+.kova-menu-secao {
+  margin: 0 0 0.45rem 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--k-dim);
+}
+
+.kova-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-bottom: 0.25rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  text-align: left;
+  color: var(--k-text);
+}
+
+.kova-menu-item[data-active='true'] {
+  background: #161618;
+  border-color: var(--k-line);
+}
+
+.kova-menu-icone {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--k-line);
+  border-radius: 9px;
+  background: #131315;
+  color: var(--k-muted);
+}
+
+.kova-menu-item[data-active='true'] .kova-menu-icone {
+  color: var(--k-accent);
+  border-color: rgba(247, 168, 168, 0.28);
+}
+
+.kova-menu-nome {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.kova-menu-badge {
+  margin-left: auto;
+  display: grid;
+  min-width: 20px;
+  place-items: center;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--k-accent);
+  color: #0a0a0b;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.kova-menu-etiqueta {
+  margin-left: auto;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--k-line);
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--k-muted);
+}
+
+.kova-menu-ponto {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--k-accent);
+}
+
+.kova-menu-sair {
+  color: #f87171;
+}
+
+.kova-menu-sair .kova-menu-icone {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.25);
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.kova-menu-rodape {
+  padding: 0.6rem 0.35rem 1rem;
+  font-size: 0.7rem;
+  color: var(--k-dim);
+}
+
+/* ---------- PÃ­lula de baixo ---------- */
+.kova-bottomnav {
+  position: fixed;
+  bottom: calc(0.7rem + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: calc(100vw - 1rem);
+  max-width: 27rem;
+}
+
+.kova-bottomnav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem;
+  padding: 0.35rem;
+  border: 1px solid var(--k-line);
+  border-radius: 14px;
+  background: rgba(17, 17, 19, 0.96);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+}
+
+.kova-bottomnav-item {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 42px;
+  border-radius: 10px;
+  color: var(--k-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.kova-bottomnav-item span {
+  display: none;
+}
+
+@media (min-width: 420px) {
+  .kova-bottomnav-item span {
+    display: inline;
+  }
+}
+
+.kova-bottomnav-item[data-active='true'] {
+  background: #242428;
+  color: #fff;
+}
+
+@media (max-width: 1023px) {
+  body.kova .page-shell {
+    padding-top: calc(4.6rem + env(safe-area-inset-top));
+  }
+}
+
+/* Nome do perfil em serif, como na referÃªncia. */
+body.kova .profile-style .profile-hero .font-display,
+body.kova .profile-style .page-container h2,
+body.kova .profile-style .page-container h3 {
+  font-family: 'Instrument Serif', Georgia, serif !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: -0.01em;
+}
+
+body.kova .profile-style .profile-hero .font-display {
+  font-size: clamp(1.7rem, 5.6vw, 2.5rem) !important;
+}
+
+/* Membros em duas colunas no telemÃ³vel (como a referÃªncia). */
+@media (max-width: 639px) {
+  body.kova .membros-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+  body.kova .membros-grid > li .glass {
+    border-radius: 12px;
+  }
+  body.kova .membros-grid > li .h-28 {
+    height: 4.5rem;
+  }
+  body.kova .membros-grid > li .h-14 {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+  body.kova .membros-grid .membro-visto {
+    display: none;
+  }
+  body.kova .membros-grid > li .text-\[15px\] {
+    font-size: 0.82rem;
+  }
+}
+
+/* ============================================================
+   FUNDO VIVO â€” manchas rosa salmÃ£o a mexer-se devagar
+   ============================================================ */
+.fundo-vivo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #0a0a0b;
+}
+
+.fundo-vivo span {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.45;
+  will-change: transform;
+}
+
+.fundo-vivo span:nth-child(1) {
+  width: 55vw;
+  height: 55vw;
+  left: -14vw;
+  top: -18vh;
+  background: radial-gradient(circle, #ff9e9e 0%, rgba(255, 158, 158, 0) 68%);
+  animation: fundo-vivo-a 26s ease-in-out infinite alternate;
+}
+
+.fundo-vivo span:nth-child(2) {
+  width: 48vw;
+  height: 48vw;
+  right: -12vw;
+  top: 8vh;
+  background: radial-gradient(circle, #ff8fa3 0%, rgba(255, 143, 163, 0) 70%);
+  animation: fundo-vivo-b 32s ease-in-out infinite alternate;
+}
+
+.fundo-vivo span:nth-child(3) {
+  width: 60vw;
+  height: 60vw;
+  left: 18vw;
+  bottom: -26vh;
+  background: radial-gradient(circle, #f7a8a8 0%, rgba(247, 168, 168, 0) 66%);
+  animation: fundo-vivo-c 38s ease-in-out infinite alternate;
+}
+
+.fundo-vivo span:nth-child(4) {
+  width: 34vw;
+  height: 34vw;
+  right: 16vw;
+  bottom: 6vh;
+  background: radial-gradient(circle, #ffb3c1 0%, rgba(255, 179, 193, 0) 70%);
+  animation: fundo-vivo-d 22s ease-in-out infinite alternate;
+}
+
+/* escurece as bordas para o texto respirar */
+.fundo-vivo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    72% 62% at 50% 34%,
+    rgba(10, 10, 11, 0.05) 0%,
+    rgba(10, 10, 11, 0.55) 62%,
+    #0a0a0b 100%
+  );
+}
+
+@keyframes fundo-vivo-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(10vw, 9vh, 0) scale(1.18);
+  }
+}
+
+@keyframes fundo-vivo-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-9vw, 12vh, 0) scale(0.92);
+  }
+}
+
+@keyframes fundo-vivo-c {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(8vw, -10vh, 0) scale(1.12);
+  }
+}
+
+@keyframes fundo-vivo-d {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(-7vw, -8vh, 0) scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fundo-vivo span {
+    animation: none;
+  }
+}
+
+body.kova main {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   SPLASH DO CLIQUE â€” pequeno estrela de 8 raios no cursor
+   ============================================================ */
+.kova-splash {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  margin-top: -22px;
+  animation: kova-splash-sai 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.kova-splash i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--k-accent);
+  transform-origin: 50% 0;
+  animation: kova-splash-raio 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.kova-splash i:nth-child(1) { transform: rotate(0deg) translateY(-4px); }
+.kova-splash i:nth-child(2) { transform: rotate(45deg) translateY(-4px); }
+.kova-splash i:nth-child(3) { transform: rotate(90deg) translateY(-4px); }
+.kova-splash i:nth-child(4) { transform: rotate(135deg) translateY(-4px); }
+.kova-splash i:nth-child(5) { transform: rotate(180deg) translateY(-4px); }
+.kova-splash i:nth-child(6) { transform: rotate(225deg) translateY(-4px); }
+.kova-splash i:nth-child(7) { transform: rotate(270deg) translateY(-4px); }
+.kova-splash i:nth-child(8) { transform: rotate(315deg) translateY(-4px); }
+
+@keyframes kova-splash-sai {
+  0% { opacity: 0; transform: scale(0.55); }
+  18% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+
+@keyframes kova-splash-raio {
+  0% { height: 4px; opacity: 0.9; }
+  100% { height: 13px; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sem movimento: fica sÃ³ um brilho estÃ¡tico que desaparece. */
+  .kova-splash {
+    animation: kova-splash-fade 320ms ease-out forwards;
+  }
+  .kova-splash i {
+    animation: none;
+    height: 9px;
+    opacity: 0.85;
+  }
+}
+
+@keyframes kova-splash-fade {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* ============================================================
+   LOCAUS PACKS — cartões e animação de abertura
+   ============================================================ */
+.pack-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transition: transform 0.25s ease;
+}
+
+.pack-card:hover {
+  transform: translateY(-4px);
+}
+
+.pack-glow {
+  position: absolute;
+  inset: 8% 0 14%;
+  background: radial-gradient(60% 55% at 50% 45%, var(--pack-brilho, rgba(255, 255, 255, 0.25)), transparent 70%);
+  filter: blur(22px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.pack-sachet {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px 10px 14px 14px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 24%, transparent 42%),
+    linear-gradient(180deg, #1b1b1f 0%, #101013 55%, #0a0a0c 100%);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.pack-sachet::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8%;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.18) 0 2px,
+    transparent 2px 6px
+  );
+  opacity: 0.35;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pack-sachet::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 60%;
+  height: 180%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  transform: rotate(18deg);
+  animation: pack-shine 4.5s ease-in-out infinite;
+}
+
+@keyframes pack-shine {
+  0%,
+  100% {
+    left: -60%;
+  }
+  50% {
+    left: 120%;
+  }
+}
+
+.pack-furo {
+  position: absolute;
+  top: 3.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #0a0a0c;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 0 0 2px #1b1b1f;
+}
+
+.pack-selo {
+  position: absolute;
+  top: 8.5%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.pack-fecho {
+  position: absolute;
+  inset: auto 0 0;
+  height: 6%;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0 2px,
+    transparent 2px 6px
+  );
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0.35;
+}
+
+.pack-faixa {
+  position: absolute;
+  top: 18%;
+  left: 0;
+  right: 0;
+  padding: 0.35rem 0;
+  background: var(--pack-cor, #f7a8a8);
+  color: #0a0a0b;
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.pack-logo {
+  position: absolute;
+  left: 12%;
+  top: 42%;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.pack-simbolo {
+  position: absolute;
+  right: 12%;
+  bottom: 12%;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--pack-cor, #f7a8a8);
+  text-shadow: 0 0 20px var(--pack-brilho, rgba(255, 255, 255, 0.3));
+}
+
+.pack-rodape {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--k-muted);
+}
+
+.pack-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 5, 6, 0.93);
+  backdrop-filter: blur(10px);
+}
+
+.pack-palco {
+  position: relative;
+  width: min(92vw, 430px);
+  min-height: 380px;
+  display: grid;
+  place-items: center;
+}
+
+.pack-animando {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--pack-cor, #f7a8a8);
+}
+
+.pack-anel {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 2px solid var(--pack-cor, #f7a8a8);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: pack-anel 1.2s ease-out infinite;
+}
+
+.pack-anel--2 {
+  animation-delay: 0.6s;
+}
+
+@keyframes pack-anel {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.pack-raridade {
+  position: relative;
+  text-align: center;
+}
+
+.pack-raridade-brilho {
+  position: absolute;
+  inset: -120px;
+  background: radial-gradient(circle, var(--rar-cor, #f7a8a8), transparent 60%);
+  opacity: 0.5;
+  filter: blur(24px);
+  animation: pack-flash 0.9s ease-out;
+}
+
+.pack-raridade-nome {
+  position: relative;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(2.6rem, 9vw, 3.6rem);
+  line-height: 1;
+  color: var(--rar-cor, #f7a8a8);
+  text-shadow: 0 0 40px var(--rar-cor, #f7a8a8);
+}
+
+.pack-raridade-sub {
+  position: relative;
+  margin-top: 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #a1a1aa;
+}
+
+@keyframes pack-flash {
+  0% {
+    opacity: 1;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+}
+
+.pack-resultado {
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+
+.pack-fechar {
+  position: absolute;
+  right: 0;
+  top: -8px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d4d4d8;
+}
+
+.pack-resultado-raridade {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rar-cor, #f7a8a8);
+}
+
+.pack-resultado-caixa {
+  margin-top: 1rem;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--rar-cor, #f7a8a8);
+  border-radius: 16px;
+  background: #101012;
+  box-shadow:
+    0 0 60px -20px var(--rar-cor, #f7a8a8),
+    inset 0 0 40px -30px var(--rar-cor, #f7a8a8);
+}
+
+.pack-continuar {
+  margin-top: 1.2rem;
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 10px;
+  background: #f7a8a8;
+  color: #0a0a0b;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-anel,
+  .pack-raridade-brilho {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   Pré-visualizações (mercado + packs)
+   ============================================================ */
+.preview-cor,
+.pack-preview-cor {
+  padding: 1.2rem 0;
+  text-align: center;
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.preview-carta,
+.pack-preview-carta {
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.preview-carta > *,
+.pack-preview-carta > * {
+  transform: scale(0.92);
+  transform-origin: top center;
+}
+
+.pack-card {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.pack-card:active {
+  cursor: grabbing;
+}
+
+.pack-palco {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* Miniaturas da aba "Os meus itens" */
+.mini-cor,
+.mini-carta,
+.mini-estilo {
+  display: block;
+  position: relative;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border: 1px solid var(--k-line);
+  border-radius: 10px;
+  background: #151518;
+}
+
+.mini-cor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+}
+
+.mini-cor > span {
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.mini-carta > *,
+.mini-estilo > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 166px;
+  transform: scale(0.35);
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+/* ============================================================
+   ARTES NOVAS — nomes e cartas
+   ------------------------------------------------------------
+   As imagens vão para client/public/camo/arte-*.jpg.
+   Se o ficheiro ainda não existir, fica o gradiente por baixo.
+   ============================================================ */
+
+/* ---------- Nomes ---------- */
+.nome-cor-arte-topo,
+.nome-cor-arte-nebula,
+.nome-cor-arte-neon,
+.nome-cor-arte-tempestade,
+.nome-cor-arte-brasas,
+.nome-cor-arte-galaxia,
+.nome-cor-arte-cristal,
+.nome-cor-arte-metal {
+  background-size: cover, 240% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: nomePan 8s linear infinite;
+}
+
+.nome-cor-arte-topo {
+  background-image:
+    url('/camo/arte-topo.jpg'),
+    linear-gradient(120deg, #0b3b4d, #ff7a59, #7c2d12, #0b3b4d);
+}
+
+.nome-cor-arte-nebula {
+  background-image:
+    url('/camo/arte-nebula.jpg'),
+    linear-gradient(120deg, #1e1b4b, #7c3aed, #22d3ee, #a855f7, #1e1b4b);
+}
+
+.nome-cor-arte-neon {
+  background-image:
+    url('/camo/arte-neon.jpg'),
+    linear-gradient(120deg, #050505, #22d3ee, #a3e635, #f472b6, #050505);
+}
+
+.nome-cor-arte-tempestade {
+  background-image:
+    url('/camo/arte-tempestade.jpg'),
+    linear-gradient(120deg, #1a0505, #ff3b3b, #7f1d1d, #1a0505);
+}
+
+.nome-cor-arte-brasas {
+  background-image:
+    url('/camo/arte-brasas.jpg'),
+    linear-gradient(120deg, #050505, #7f1d1d, #ef4444, #050505);
+}
+
+.nome-cor-arte-galaxia {
+  background-image:
+    url('/camo/arte-galaxia.jpg'),
+    linear-gradient(120deg, #1e0b2e, #f472b6, #be123c, #1e0b2e);
+}
+
+.nome-cor-arte-cristal {
+  background-image:
+    url('/camo/arte-cristal.jpg'),
+    linear-gradient(120deg, #1e1b4b, #a78bfa, #6d28d9, #1e1b4b);
+}
+
+.nome-cor-arte-metal {
+  background-image:
+    url('/camo/arte-metal.jpg'),
+    linear-gradient(120deg, #1f2937, #cbd5e1, #475569, #1f2937);
+}
+
+/* ---------- Cartas ---------- */
+.profile-card--arte-topo,
+.profile-card--arte-nebula,
+.profile-card--arte-neon,
+.profile-card--arte-tempestade,
+.profile-card--arte-brasas,
+.profile-card--arte-galaxia,
+.profile-card--arte-cristal,
+.profile-card--arte-metal {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.profile-card--arte-topo {
+  background-image:
+    linear-gradient(180deg, rgba(4, 10, 18, 0.45), rgba(4, 10, 18, 0.86)),
+    url('/camo/arte-topo.jpg');
+  border-color: rgba(255, 122, 89, 0.5);
+}
+
+.profile-card--arte-nebula {
+  background-image:
+    linear-gradient(180deg, rgba(12, 4, 30, 0.4), rgba(12, 4, 30, 0.86)),
+    url('/camo/arte-nebula.jpg');
+  border-color: rgba(168, 85, 247, 0.55);
+}
+
+.profile-card--arte-neon {
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9)),
+    url('/camo/arte-neon.jpg');
+  border-color: rgba(103, 232, 249, 0.55);
+}
+
+.profile-card--arte-tempestade {
+  background-image:
+    linear-gradient(180deg, rgba(20, 3, 3, 0.45), rgba(20, 3, 3, 0.9)),
+    url('/camo/arte-tempestade.jpg');
+  border-color: rgba(255, 59, 59, 0.55);
+}
+
+.profile-card--arte-brasas {
+  background-image:
+    linear-gradient(180deg, rgba(8, 2, 2, 0.55), rgba(8, 2, 2, 0.92)),
+    url('/camo/arte-brasas.jpg');
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.profile-card--arte-galaxia {
+  background-image:
+    linear-gradient(180deg, rgba(25, 6, 35, 0.4), rgba(25, 6, 35, 0.88)),
+    url('/camo/arte-galaxia.jpg');
+  border-color: rgba(244, 114, 182, 0.55);
+}
+
+.profile-card--arte-cristal {
+  background-image:
+    linear-gradient(180deg, rgba(15, 10, 40, 0.4), rgba(15, 10, 40, 0.88)),
+    url('/camo/arte-cristal.jpg');
+  border-color: rgba(167, 139, 250, 0.55);
+}
+
+.profile-card--arte-metal {
+  background-image:
+    linear-gradient(180deg, rgba(10, 15, 22, 0.45), rgba(10, 15, 22, 0.9)),
+    url('/camo/arte-metal.jpg');
+  border-color: rgba(203, 213, 225, 0.5);
+}
+
+/* ============================================================
+   PÁGINA DE MANUTENÇÃO (só admins entram no site)
+   ============================================================ */
+.manutencao {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2.5rem 1rem;
+}
+
+.manutencao-card {
+  width: min(94vw, 560px);
+  padding: 2rem;
+  border: 1px solid var(--k-line);
+  border-radius: 20px;
+  background: rgba(17, 17, 19, 0.92);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+}
+
+.manutencao-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(247, 168, 168, 0.3);
+  border-radius: 999px;
+  background: rgba(247, 168, 168, 0.08);
+  color: var(--k-accent);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.manutencao h1 {
+  margin-top: 1.2rem;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+}
+
+.manutencao h1 em {
+  font-style: italic;
+  color: var(--k-accent);
+}
+
+.manutencao-sub {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--k-muted);
+}
+
+.manutencao-lista {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+}
+
+.manutencao-lista li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.manutencao-icone {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--k-line);
+  border-radius: 9px;
+  background: #131315;
+  color: var(--k-accent);
+}
+
+.manutencao-hora {
+  margin-top: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(247, 168, 168, 0.25);
+  border-radius: 10px;
+  background: rgba(247, 168, 168, 0.06);
+  color: var(--k-text);
+  font-size: 0.8rem;
+}
+
+.manutencao-hora b {
+  color: var(--k-accent);
+}
+
+.manutencao-conta {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--k-line);
+}
+
+.manutencao-sair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--k-line);
+  border-radius: 8px;
+  background: var(--k-surface-2);
+  color: var(--k-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+}

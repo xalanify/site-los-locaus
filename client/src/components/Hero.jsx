@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Youtube, ArrowUpRight, Play, Swords } from 'lucide-react'
+import { Youtube, ArrowUpRight, Play } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
    Cabeçalho do canal — a home abre com o essencial e nada mais:
    a foto, o nome, os subscritores e as visualizações.
-   Sem botões, sem blocos extra: o resto da página são os vídeos.
    ============================================================ */
 export default function Hero({ onVerVideos }) {
   const [channel, setChannel] = useState(null)
@@ -44,7 +43,6 @@ export default function Hero({ onVerVideos }) {
           transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
           className="glass relative overflow-hidden rounded-3xl"
         >
-          {/* faixa fina de cor no topo do cartão */}
           <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-500/60 to-transparent" />
 
           <div className="flex items-center gap-4 p-5 sm:gap-5 sm:p-6">
@@ -59,10 +57,7 @@ export default function Hero({ onVerVideos }) {
               className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-white/10 sm:h-20 sm:w-20"
             />
             <div className="min-w-0">
-              <h1
-                className="font-display font-black uppercase leading-tight text-white"
-                style={{ fontSize: 'clamp(1.2rem, 5.6vw, 2.1rem)' }}
-              >
+              <h1 className="font-display font-black uppercase leading-tight text-white" style={{ fontSize: 'clamp(1.2rem, 5.6vw, 2.1rem)' }}>
                 {channel?.snippet?.title || 'Ashow e Jazer'}
               </h1>
               <a
@@ -76,10 +71,8 @@ export default function Hero({ onVerVideos }) {
                 <ArrowUpRight className="h-3 w-3" />
               </a>
             </div>
-
           </div>
 
-          {/* botão para a janela flutuante com os vídeos do canal */}
           <div className="px-5 pb-4 sm:px-6">
             <button
               type="button"
@@ -91,7 +84,6 @@ export default function Hero({ onVerVideos }) {
             </button>
           </div>
 
-          {/* números do canal — o que interessa ver de relance */}
           <div className="grid grid-cols-2 border-t border-white/10">
             <div className="p-5 text-center sm:p-6">
               <div className="font-display text-3xl font-black leading-none text-white sm:text-4xl">
@@ -112,7 +104,6 @@ export default function Hero({ onVerVideos }) {
           </div>
         </motion.div>
 
-        {/* legenda — estes números vêm do canal em tempo real */}
         <p className="mt-3 flex items-center justify-center gap-2 text-[11px] font-semibold text-gray-500">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />

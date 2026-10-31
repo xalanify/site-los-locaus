@@ -25,6 +25,14 @@ const VARIANT_LABEL = {
   sleepin: 'AIMER LICENSE',
   river: 'MENTALIST',
   dev: 'AIMER LICENSE',
+  'arte-topo': 'TOPO CARD',
+  'arte-nebula': 'NEBULA CARD',
+  'arte-neon': 'NEON FLUX',
+  'arte-tempestade': 'STORM CARD',
+  'arte-brasas': 'EMBER CARD',
+  'arte-galaxia': 'GALAXY CARD',
+  'arte-cristal': 'CRYSTAL CARD',
+  'arte-metal': 'HEX METAL',
 }
 
 const VARIANT_ACCENT = {
@@ -41,6 +49,14 @@ const VARIANT_ACCENT = {
   sleepin: '#e4e4e7',
   river: '#f9a8d4',
   dev: '#e4e4e7',
+  'arte-topo': '#ff7a59',
+  'arte-nebula': '#a855f7',
+  'arte-neon': '#67e8f9',
+  'arte-tempestade': '#ff3b3b',
+  'arte-brasas': '#ef4444',
+  'arte-galaxia': '#f472b6',
+  'arte-cristal': '#a78bfa',
+  'arte-metal': '#cbd5e1',
 }
 
 const ano = (iso) => {
@@ -49,33 +65,7 @@ const ano = (iso) => {
   return Number.isNaN(d.getTime()) ? '2026' : String(d.getFullYear())
 }
 
-/* Maior rank entre os jogos ligados (R6, CS2, BF, Fortnite...). */
-const rankScore = (r) =>
-  Number(r?.valor ?? r?.elo ?? r?.points ?? r?.level ?? 0) || 0
-
-function rankDoPerfil(perfil) {
-  const entradas = Object.entries(perfil?.game_ranks || {}).filter(
-    ([, r]) => r && (r.name || r.icon),
-  )
-  if (!entradas.length) return null
-  entradas.sort((a, b) => rankScore(b[1]) - rankScore(a[1]))
-  const [jogo, rank] = entradas[0]
-  return { jogo, ...rank }
-}
-
-function RankBadge({ rank, compacto = false }) {
-  if (!rank) return null
-  return (
-    <span className={`pc-rank ${compacto ? 'pc-rank--compacto' : ''}`}>
-      {rank.icon ? (
-        <img src={rank.icon} alt="" loading="lazy" />
-      ) : (
-        <Star className="h-3 w-3" />
-      )}
-      <span>{rank.name || 'Rank'}</span>
-    </span>
-  )
-}
+/* As cartas já não mostram ranks de jogos — só a identidade do membro. */
 
 export default function ProfileCard({
   perfil = {},
@@ -93,7 +83,6 @@ export default function ProfileCard({
   const id = perfil.display_id ?? perfil.id ?? '—'
   const avatar = perfil.avatar_url || svgAvatar(username, '#a1a1aa')
   const nomeCls = classesNome(perfil.name_color, perfil.name_effect)
-  const rank = rankDoPerfil(perfil)
   const marca = v === 'dev' ? 'desenvolvedor' : username
   const badges = [
     ...badgesDe(perfil.badges),
@@ -225,12 +214,11 @@ export default function ProfileCard({
                 <h3 className={`sleepin-name ${nomeCls || 'text-white'}`}>{username}</h3>
                 <p>@{username} · Membro #{id}</p>
               </div>
-              <RankBadge rank={rank} />
             </div>
             <div className="sleepin-grid">
               <div><span>NAME</span><strong>{username}</strong></div>
               <div><span>TEAM</span><strong>{perfil.team || 'LOCAUS'}</strong></div>
-              <div><span>RANK</span><strong>{rank?.name || '—'}</strong></div>
+              <div><span>STATUS</span><strong>LOCAUS</strong></div>
               <div><span>COUNTRY</span><strong>{perfil.country || 'PT'} {ano(perfil.created_at)}</strong></div>
               <div><span>SENS</span><strong>{perfil.sens || '—'}</strong></div>
               <div><span>DPI</span><strong>{perfil.dpi || '—'}</strong></div>
@@ -269,7 +257,7 @@ export default function ProfileCard({
             </div>
             <div className="river-chips">
               <span className="river-chip river-chip--master">master</span>
-              <span className="river-chip">{rank?.name || 'voltaic s5.5'}</span>
+              <span className="river-chip">locaus</span>
               <span className="river-chip">sea aim</span>
             </div>
             <div className="river-stats">
@@ -294,7 +282,6 @@ export default function ProfileCard({
             {VARIANT_LABEL[v]}
           </span>
           <span className="flex min-w-0 items-center gap-2">
-            <RankBadge rank={rank} compacto />
             <span className="brand-serif shrink-0 text-sm text-white">locaus.</span>
           </span>
         </div>

@@ -10,10 +10,10 @@ import ProfileBanner from './ProfileBanner'
 import LiveBadge from './LiveBadge'
 import SocialLinks from './SocialLinks'
 import { BadgeGem, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
-import { searchMice } from '../data/mice'
 import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import { authHeaders } from '../lib/auth'
+import { infoRato, nomeRato } from '../lib/ratos'
 import { classesCard } from '../data/nomeEfeitos'
 
 /* ============================================================
@@ -113,9 +113,7 @@ export default function ProfileHero({
   primaryLabel = 'Ver publicações',
 }) {
   const views = clips.reduce((total, c) => total + Number(c.views || 0), 0)
-  const mouseInfo = perfil.mouse
-    ? (searchMice(perfil.mouse) || []).find((m) => `${m.brand} ${m.model}` === perfil.mouse)
-    : null
+  const mouseInfo = infoRato(perfil.mouse)
   const [fotoMouse, setFotoMouse] = useState(null)
   const [fotoSemBase, setFotoSemBase] = useState(false)
   const [fotoClara, setFotoClara] = useState(false)
@@ -210,7 +208,7 @@ export default function ProfileHero({
   }, [perfil.mouse])
 
   const bio = perfil.mouse
-    ? `${perfil.mouse}${perfil.dpi ? ` · ${perfil.dpi} DPI` : ''}`
+    ? `${nomeRato(perfil.mouse)}${perfil.dpi ? ` · ${perfil.dpi} DPI` : ''}`
     : 'Membro Locaus'
   const gear = []
   if (perfil.mouse) {
@@ -218,8 +216,9 @@ export default function ProfileHero({
       key: 'mouse',
       tipo: 'Mouse',
       Icon: Mouse,
-      marca: mouseInfo?.brand || 'Rato',
+      marca: mouseInfo?.brand || '',
       modelo: mouseInfo?.model || perfil.mouse,
+      logo: mouseInfo?.logo || null,
       detalhe: perfil.dpi ? `${perfil.dpi} DPI` : 'Periférico',
       img: fotoMouse || null,
       semBase: fotoSemBase,
@@ -368,7 +367,6 @@ export default function ProfileHero({
           </p>
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             {jogos.map((g) => {
-              const rank = gameRanks[g]
               const logoLargo = ['cod', 'cs2'].includes(g)
               return (
                 <div key={g} className="flex w-[104px] flex-col items-center gap-1">
@@ -391,24 +389,6 @@ export default function ProfileHero({
                       <span className="text-[11px] font-black text-zinc-300">{abrevJogo(g)}</span>
                     )}
                   </span>
-                  {rank && (
-                    <span
-                      className="flex max-w-full flex-col items-center gap-1 text-[11px] font-bold leading-tight text-zinc-300"
-                      title={rank.modo ? `${rank.name} · ${rank.modo}` : rank.name}
-                    >
-                      {rank.icon ? (
-                        <img
-                          src={rank.icon}
-                          alt=""
-                          loading="lazy"
-                          className="h-7 w-7 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <RankIcon tier={rank.tier} className="h-7 w-7" />
-                      )}
-                      <span className="max-w-[100px] text-center">{rank.name}</span>
-                    </span>
-                  )}
                 </div>
               )
             })}
@@ -448,9 +428,20 @@ export default function ProfileHero({
                       <Icon className="h-12 w-12 text-zinc-500" />
                     )}
                   </div>
-                  <p className="mt-2 text-[10px] text-zinc-500">{g.marca}</p>
-                  <p className="line-clamp-2 text-sm font-bold leading-tight text-white">
-                    {g.modelo}
+                  <p className="mt-2 flex items-center gap-1.5 text-[13px] leading-tight text-white">
+                    {g.logo && (
+                      <img
+                        src={g.logo}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                        className="h-4 w-4 shrink-0 rounded-sm object-contain"
+                      />
+                    )}
+                    {g.marca && <span className="shrink-0 font-black">{g.marca}</span>}
+                    <span className="truncate font-semibold text-zinc-300">{g.modelo}</span>
                   </p>
                 </div>
               )

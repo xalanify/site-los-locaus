@@ -27,15 +27,15 @@ import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
-   Perfil p�blico com página pr�pria � /perfil/:username
+   Perfil público com página própria — /perfil/:username
 
    O design e a ordem sóo EXATAMENTE os do perfil normal da
    sidebar (ProfilePage): saudação grande, cartão da conta com
    letra fantasma e anel violeta, distintivo DEV ao lado do
    nome, membro desde, rato/DPI, distinções e por fim os clips.
-   Nenhum azulejo de contagens � nada de cartão de visitas.
-   S� muda: � a página de OUTRO membro (ou fallback se o nome
-   da rota n�o bater com o utilizador ligado).
+   Nenhum azulejo de contagens — nada de cartão de visitas.
+   Só muda: — a página de OUTRO membro (ou fallback se o nome
+   da rota não bater com o utilizador ligado).
    ============================================================ */
 export default function PublicProfilePage({
   user,
@@ -69,17 +69,17 @@ export default function PublicProfilePage({
       .then(async (r) => {
         const d = await r.json().catch(() => null)
         if (!vivo) return
-        if (!r.ok) setErro(d?.error || 'Perfil n�o encontrado')
+        if (!r.ok) setErro(d?.error || 'Perfil não encontrado')
         else setData(d)
       })
-      .catch(() => vivo && setErro('N�o deu para carregar o perfil.'))
+      .catch(() => vivo && setErro('Não deu para carregar o perfil.'))
       .finally(() => vivo && setCarregado(true))
     return () => {
       vivo = false
     }
   }, [username])
 
-  /* Mensagens p�blicas deste membro (feed do perfil). */
+  /* Mensagens públicas deste membro (feed do perfil). */
   useEffect(() => {
     const uid = data?.profile?.id
     if (!uid) {
@@ -128,7 +128,7 @@ export default function PublicProfilePage({
   }, [estiloAtivo])
 
 
-  /* Fonte do perfil removida � fica sempre a fonte Locaus padr�o. */
+  /* Fonte do perfil removida — fica sempre a fonte Locaus padrão. */
   useEffect(() => {
     const body = document.body
     body.classList.remove('profile-fonte')
@@ -139,7 +139,7 @@ export default function PublicProfilePage({
     return (
       <section className="flex min-h-screen flex-col items-center justify-center gap-3 pt-14">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
-        <p className="text-sm text-gray-500">A abrir o perfil�</p>
+        <p className="text-sm text-gray-500">A abrir o perfil…</p>
       </section>
     )
   }
@@ -156,8 +156,8 @@ export default function PublicProfilePage({
         <Estado
           tipo="erro"
           icon={UserRoundX}
-          titulo="Perfil n�o encontrado"
-          texto={erro || 'Esta conta n�o existe ou foi removida.'}
+          titulo="Perfil não encontrado"
+          texto={erro || 'Esta conta não existe ou foi removida.'}
           acao={{ label: 'Ver os clips', onClick: () => navigate('/clips') }}
         />
       </section>
@@ -206,7 +206,7 @@ export default function PublicProfilePage({
   /* ---- mesma construção de distinções do perfil normal ---- */
   const d = new Date(p.created_at)
   const criado = Number.isNaN(d.getTime())
-    ? '�'
+    ? '—'
     : d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
 
   const badges = Array.isArray(p.badges) ? p.badges : []
@@ -217,7 +217,7 @@ export default function PublicProfilePage({
   ]
 
   const avatarSrc = p.avatar_url || svgAvatar(p.username, '#a1a1aa')
-  /* margem de casal: 0/1 clip p�blico da at� aparecer cheio */
+  /* margem de casal: 0/1 clip público da até aparecer cheio */
 
   return (
     <PageShell
@@ -282,7 +282,7 @@ export default function PublicProfilePage({
               <p className="mx-auto max-w-md text-sm text-gray-400">
                 {souEu
                   ? 'Publica um clip ou uma mensagem e aparece aqui no teu perfil.'
-                  : `${p.username} ainda n�o publicou nada no site.`}
+                  : `${p.username} ainda não publicou nada no site.`}
               </p>
             </div>
           ) : (

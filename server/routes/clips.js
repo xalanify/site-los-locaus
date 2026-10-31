@@ -4,7 +4,7 @@ const { getDb } = require('../database');
 const { requireUser, requireUserOrAdmin, attachAuth } = require('../middleware/auth');
 const storage = require('../storage');
 const { CLIP_GAME_IDS } = require('../clipGames');
-const { notify } = require('../notify');
+const { notify, notifyTodos } = require('../notify');
 const { disponivel, transcodificar } = require('../transcode');
 const yt = require('../youtube');
 
@@ -489,6 +489,20 @@ router.post('/confirm', requireUserOrAdmin, async (req, res) => {
       .prepare(SELECT_SQL + ' WHERE c.id = ?')
       .get(Number(result.lastInsertRowid));
     if (!row) return res.status(500).json({ error: 'Erro ao guardar o clip' });
+    // avisa os outros membros (sino + push), sem atrasar a resposta
+    db.prepare('SELECT username FROM users WHERE id = ?')
+      .get(uid)
+      .then((u) =>
+        avisarClipNovo({
+          uid,
+          clipId: Number(result.lastInsertRowid),
+          title,
+          autor: (u && u.username) || '',
+          capa: null,
+          visibility: meta.visibility,
+        }),
+      )
+      .catch(() => {});
     res.json((await decorate(db, [row], req.auth))[0]);
     // em segundo plano: passa a 720p H.264 (pesa menos no telemóvel)
     if (playlist.length) for (const item of playlist) otimizarClip(item.file);
@@ -607,6 +621,25 @@ async function anunciarClip(db, { title, autor, capa }) {
   }
 }
 
+/* Aviso no sino (e push) a todos os membros quando sai um clip público. */
+async function avisarClipNovo({ uid, clipId, title, autor, capa, visibility }) {
+  if (visibility !== 'public') return;
+  try {
+    await notifyTodos({
+      excluirUserId: uid,
+      type: 'clip',
+      entity: 'clip',
+      entityId: clipId,
+      title: `🎬 ${autor || 'Alguém'} publicou um clip`,
+      body: String(title || '').slice(0, 140),
+      link: '/clips',
+      image: capa || null,
+    });
+  } catch (e) {
+    console.warn('Aviso de clip saltou:', String(e.message).slice(0, 120));
+  }
+}
+
 // Estado da publicação automática (o botão e o aviso do frontend)
 router.get('/pub/estado', requireUserOrAdmin, (req, res) => {
   res.json(yt.estadoPublico());
@@ -717,6 +750,14 @@ router.post('/pub/confirm', requireUserOrAdmin, async (req, res) => {
         .then((u) => (u && u.username) || '')
         .catch(() => '');
       await anunciarClip(db, { title, autor, capa });
+      await avisarClipNovo({
+        uid,
+        clipId: Number(result.lastInsertRowid),
+        title,
+        autor,
+        capa,
+        visibility: meta.visibility,
+      });
     }
 
     res.json({

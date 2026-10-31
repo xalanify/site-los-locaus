@@ -1,28 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, Clapperboard, Home, User, MessageCircle, Trophy } from 'lucide-react'
+import { Menu, X, Home, Clapperboard, MessageCircle, Trophy, User } from 'lucide-react'
 import Sino from './Sino'
+import AvatarImg from './AvatarImg'
 
 /* ============================================================
-   Barra de topo (foto que abre o menu lateral + marca) + barra
-   de navegação flutuante em pílula, em baixo ao centro.
-   Só a aba ativa fica em roxo/brilho; as restantes ficam cinza.
-   O ícone de Conta abre o perfil da conta (/perfil).
+   Telemóvel — barra de topo compacta (marca + sino + conta +
+   menu) e pílula flutuante em baixo.
    ============================================================ */
-export default function Navbar({ isAdmin = false, user = null, onMenu }) {
+export default function Navbar({ isAdmin = false, user = null, onMenu, menuOpen = false }) {
   const navigate = useNavigate()
   const location = useLocation()
-
-  // Navega para a home e faz scroll para a secção
-  const goTo = (hash) => {
-    if (location.pathname !== '/') {
-      navigate('/')
-      setTimeout(() => {
-        document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
-      }, 150)
-    } else {
-      document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   const isHome = location.pathname === '/'
   const isProfile = location.pathname.startsWith('/perfil')
@@ -31,118 +18,72 @@ export default function Navbar({ isAdmin = false, user = null, onMenu }) {
   const isPrevisoes = location.pathname === '/previsoes'
 
   const links = [
+    { name: 'Home', icon: Home, action: () => navigate('/'), active: isHome },
+    { name: 'Clips', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
+    { name: 'Chat', icon: MessageCircle, action: () => navigate('/chat'), active: isChat },
+    { name: 'Previsões', icon: Trophy, action: () => navigate('/previsoes'), active: isPrevisoes },
     {
-      name: 'Home',
-      icon: Home,
-      action: () => goTo('#home'),
-      active: isHome && !location.hash,
-    },
-    {
-      name: 'Clips e Publicações',
-      icon: Clapperboard,
-      action: () => navigate('/clips'),
-      active: isClips,
-    },
-    {
-      name: 'Chat geral',
-      icon: MessageCircle,
-      action: () => navigate('/chat'),
-      active: isChat,
-    },
-    {
-      name: 'Previsões',
-      icon: Trophy,
-      action: () => navigate('/previsoes'),
-      active: isPrevisoes,
+      name: 'Conta',
+      icon: User,
+      action: () =>
+        navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil'),
+      active: isProfile,
     },
   ]
 
   return (
     <>
-      {/* ---------------- Barra de topo (só no telemóvel) ---------------- */}
-      <nav
-        id="topbar"
-        className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-[#0a0a0b]/95 backdrop-blur-md lg:hidden"
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
-      >
-        <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-2 px-3 sm:h-14 sm:px-6">
-          <div className="flex min-w-0 items-center gap-2">
-            {/* Botão de menu — abre o menu lateral (estilo X) */}
+      {/* ---------------- Barra de topo ---------------- */}
+      <nav id="topbar" className="kova-mobilebar lg:hidden" aria-label="Barra de topo">
+        <div className="kova-mobilebar-inner">
+          <Link to="/" className="kova-brand">
+            locaus<span>.</span>
+          </Link>
+
+          <div className="kova-mobilebar-acoes">
+            <Sino user={user} />
             <button
-              onClick={onMenu}
-              aria-label="Abrir menu"
-              className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 transition-colors hover:bg-white/10 active:scale-95"
+              type="button"
+              onClick={() =>
+                navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
+              }
+              aria-label="Conta"
+              className="kova-mobilebar-user"
             >
-              <Menu className="h-4 w-4 text-gray-200" />
-              <span className="text-[11px] font-bold text-gray-200">Menu</span>
+              <AvatarImg src={user?.avatar_url} name={user?.username || 'AJ'} className="h-7 w-7" />
             </button>
-
-            {/* Marca — ao lado do menu, à esquerda */}
-            <Link to="/" className="flex min-w-0 items-center gap-2">
-              <span className="brand-serif gradient-text truncate font-display text-lg font-black tracking-wide sm:text-xl">
-                Locaus
-              </span>
-              <span className="shrink-0 rounded border border-zinc-400/40 bg-zinc-500/15 px-1.5 py-0.5 font-display text-[8px] font-black uppercase leading-none tracking-wider text-zinc-300">
-                Beta
-              </span>
-            </Link>
+            <button
+              type="button"
+              onClick={onMenu}
+              aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
           </div>
-
-          {/* Notificações (sino) — só para contas com sessão */}
-          <Sino user={user} />
         </div>
       </nav>
 
-      {/* ---------------- Barra flutuante (pílula) ----------------
-          No telemóvel só os ícones (as etiquetas empurravam a pílula
-          para duas linhas e ela ficava enorme); os nomes aparecem a
-          partir do ecrã médio. */}
-      <nav
-        id="bottomnav"
-        aria-label="Navegação principal"
-        className="navbar-pill fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100vw-1rem)] max-w-3xl -translate-x-1/2 sm:bottom-[calc(1rem+env(safe-area-inset-bottom))] sm:w-[calc(100vw-1.5rem)] lg:hidden"
-      >
-        <div className="flex flex-nowrap items-center justify-between gap-1 rounded-3xl border border-white/10 bg-[#161618]/95 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:flex-wrap sm:justify-center sm:gap-1.5 sm:rounded-full">
-          {links.map((link) => {
-            const Icon = link.icon
+      {/* ---------------- Pílula em baixo ---------------- */}
+      <nav className="kova-bottomnav lg:hidden" aria-label="Navegação principal">
+        <div className="kova-bottomnav-inner">
+          {links.map((l) => {
+            const Icon = l.icon
             return (
               <button
-                key={link.name}
-                onClick={link.action}
-                title={link.name}
-                aria-label={link.name}
-                aria-current={link.active ? 'page' : undefined}
-                className={`flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full px-2 transition-all duration-300 sm:h-12 sm:flex-none sm:px-4 ${
-                  link.active
-                    ? 'bg-white/10 text-[#ff9e9e]'
-                    : 'text-gray-400 hover:bg-white/10 hover:text-white'
-                }`}
+                key={l.name}
+                type="button"
+                onClick={l.action}
+                data-active={l.active ? 'true' : 'false'}
+                className="kova-bottomnav-item"
+                aria-label={l.name}
+                aria-current={l.active ? 'page' : undefined}
               >
-                <Icon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-                <span className="hidden whitespace-nowrap text-sm font-bold md:inline">
-                  {link.name}
-                </span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{l.name}</span>
               </button>
             )
           })}
-
-          {/* Conta — abre o perfil da conta */}
-          <button
-            onClick={() =>
-              navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
-            }
-            title={user ? `Conta: ${user.username}` : 'Conta'}
-            aria-label="Conta"
-            aria-current={isProfile ? 'page' : undefined}
-            className={`flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full px-2 transition-all duration-300 sm:h-12 sm:flex-none sm:px-4 ${
-              isProfile
-                ? 'bg-white/10 text-[#ff9e9e]'
-                : 'text-gray-400 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <User className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-            <span className="hidden whitespace-nowrap text-sm font-bold md:inline">Conta</span>
-          </button>
         </div>
       </nav>
     </>
