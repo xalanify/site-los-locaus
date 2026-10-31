@@ -162,4 +162,107 @@ function limparCaches() {
   cacheAudio.clear();
 }
 
-module.exports = { pesquisar, resolverAudio, limparCaches, acharYtDlp, ID_RE };
+/* ---------- pesquisa alternativa (Piped) ---------- */
+const PIPED = [
+  'https://api.piped.private.coffee',
+  'https://pipedapi.ducks.party',
+  'https://pipedapi.vyper.me',
+];
+
+async function pesquisarPiped(texto, limite = 14) {
+  const q = String(texto || '').trim();
+  if (!q) return [];
+  for (const base of PIPED) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 7000);
+      const r = await fetch(`${base}/search?q=${encodeURIComponent(q)}&filter=videos`, {
+        signal: ctrl.signal,
+        headers: { accept: 'application/json' },
+      });
+      clearTimeout(timer);
+      if (!r.ok) continue;
+      const j = await r.json();
+      const itens = (j.items || [])
+        .filter((x) => x && x.type === 'stream' && x.url)
+        .map((x) => ({
+          id: String(x.url).replace('/watch?v=', ''),
+          titulo: x.title || 'Sem título',
+          canal: x.uploaderName || '',
+          duracao: Math.max(0, Math.round(Number(x.duration) || 0)),
+          thumb: x.thumbnail || null,
+        }))
+        .filter((x) => ID_RE.test(x.id));
+      if (itens.length) return itens.slice(0, limite);
+    } catch {
+      /* tenta a próxima instância */
+    }
+  }
+  return [];
+}
+
+/* ---------- pesquisa alternativa (API do YouTube, se houver chave) ---------- */
+async function pesquisarYoutubeApi(texto, chave, limite = 14) {
+  const q = String(texto || '').trim();
+  if (!q || !chave) return [];
+  const url =
+    'https://www.googleapis.com/youtube/v3/search?' +
+    new URLSearchParams({
+      part: 'snippet',
+      type: 'video',
+      maxResults: String(Math.min(20, limite)),
+      q,
+      key: chave,
+    });
+  const r = await fetch(url);
+  if (!r.ok) return [];
+  const j = await r.json();
+  return (j.items || [])
+    .map((it) => ({
+      id: it.id && it.id.videoId,
+      titulo: (it.snippet && it.snippet.title) || 'Sem título',
+      canal: (it.snippet && it.snippet.channelTitle) || '',
+      duracao: 0,
+      thumb:
+        it.snippet &&
+        it.snippet.thumbnails &&
+        (it.snippet.thumbnails.medium?.url || it.snippet.thumbnails.default?.url),
+    }))
+    .filter((x) => x.id && ID_RE.test(String(x.id)));
+}
+
+/* Pesquisa completa: yt-dlp (local) -> Piped -> API do YouTube. */
+async function buscar(texto, limite = 14) {
+  const q = String(texto || '').trim().slice(0, 120);
+  if (!q) return [];
+  const chave = q.toLowerCase();
+  const guardado = cacheBusca.get(chave);
+  if (guardado && Date.now() - guardado.t < CACHE_BUSCA_MS) return guardado.v;
+
+  let v = [];
+  try {
+    v = await pesquisar(q, limite);
+  } catch (e) {
+    if (e.codigo !== 'SEM_YTDLP') console.warn('Música (yt-dlp):', e.message);
+  }
+  if (!v.length) v = await pesquisarPiped(q, limite);
+  if (!v.length) {
+    try {
+      v = await pesquisarYoutubeApi(q, (process.env.YOUTUBE_API_KEY || '').trim(), limite);
+    } catch {
+      /* sem resultados */
+    }
+  }
+  if (v.length) cacheBusca.set(chave, { t: Date.now(), v });
+  return v;
+}
+
+module.exports = {
+  pesquisar,
+  pesquisarPiped,
+  buscar,
+  resolverAudio,
+  limparCaches,
+  acharYtDlp,
+  ID_RE,
+};

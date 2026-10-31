@@ -725,48 +725,44 @@ router.put('/me/profile', attachAuth, async (req, res) => {
         }
       }
     }
-    if (hasMusicUrl || hasMusicNome) {
-      const conta = await store.findById(uid);
-      const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
-      // As músicas pesquisadas no YouTube são só para o admin. Para os
-      // restantes users, estes campos são simplesmente ignorados (sem erro).
-      if (souAdmin) {
-        if (hasMusicUrl) {
-          const url = String(body.musica_url || '').trim();
-          if (url && !/^yt:[A-Za-z0-9_-]{11}$/.test(url)) {
-            return res.status(400).json({ error: 'Música inválida.' });
-          }
+    if (hasMusicUrl || hasMusicNome || hasMusicInicio || hasMusicFim) {
+      // A música do YouTube (pesquisa, pré-visualização e corte) está aberta
+      // a todos os membros.
+      if (hasMusicUrl) {
+        const url = String(body.musica_url || '').trim();
+        if (url && !/^yt:[A-Za-z0-9_-]{11}$/.test(url)) {
+          return res.status(400).json({ error: 'Música inválida.' });
+        }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET musica_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(url || null, uid);
+        if (!url) {
           await db
             .prepare(
-              'UPDATE user_profiles SET musica_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+              'UPDATE user_profiles SET musica_inicio = 0, musica_fim = 0, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
             )
-            .run(url || null, uid);
-          if (!url) {
-            await db
-              .prepare(
-                'UPDATE user_profiles SET musica_inicio = 0, musica_fim = 0, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-              )
-              .run(uid);
-          }
+            .run(uid);
         }
-        if (hasMusicNome) {
-          const nome = String(body.musica_nome || '').trim().slice(0, 120);
-          await db
-            .prepare(
-              'UPDATE user_profiles SET musica_nome = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-            )
-            .run(nome || null, uid);
-        }
-        if (hasMusicInicio || hasMusicFim) {
-          const inicio = Math.max(0, Math.min(86400, Math.round(Number(body.musica_inicio) || 0)));
-          let fim = Math.max(0, Math.min(86400, Math.round(Number(body.musica_fim) || 0)));
-          if (fim <= inicio) fim = 0;
-          await db
-            .prepare(
-              'UPDATE user_profiles SET musica_inicio = ?, musica_fim = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-            )
-            .run(inicio, fim, uid);
-        }
+      }
+      if (hasMusicNome) {
+        const nome = String(body.musica_nome || '').trim().slice(0, 120);
+        await db
+          .prepare(
+            'UPDATE user_profiles SET musica_nome = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(nome || null, uid);
+      }
+      if (hasMusicInicio || hasMusicFim) {
+        const inicio = Math.max(0, Math.min(86400, Math.round(Number(body.musica_inicio) || 0)));
+        let fim = Math.max(0, Math.min(86400, Math.round(Number(body.musica_fim) || 0)));
+        if (fim <= inicio) fim = 0;
+        await db
+          .prepare(
+            'UPDATE user_profiles SET musica_inicio = ?, musica_fim = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(inicio, fim, uid);
       }
     }
     if (hasAccent) {

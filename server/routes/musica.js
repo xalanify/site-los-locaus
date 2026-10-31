@@ -7,12 +7,29 @@
    ============================================================ */
 const express = require('express');
 const { Readable } = require('stream');
-const { resolverAudio, ID_RE } = require('../musica');
+const { resolverAudio, buscar, ID_RE } = require('../musica');
 
 const router = express.Router();
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
+
+/* Pesquisa aberta a todos os membros (yt-dlp -> Piped -> API do YouTube). */
+router.get('/search', async (req, res) => {
+  try {
+    const q = String(req.query.q || '').trim().slice(0, 80);
+    if (!q) return res.json({ ok: true, resultados: [] });
+    const resultados = await buscar(q, 14);
+    res.json({ ok: true, resultados });
+  } catch (e) {
+    console.error('Erro musica/search:', e.message);
+    res.status(502).json({
+      ok: false,
+      error: 'Não foi possível pesquisar músicas.',
+      resultados: [],
+    });
+  }
+});
 
 function passarCabecalhos(origem, res) {
   const uteis = [

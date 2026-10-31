@@ -75,8 +75,8 @@ export default function ProfileMusic({
           playerVars: {
             autoplay: 1,
             controls: 0,
-            loop: 1,
-            playlist: ytId,
+            loop: comInicio ? 0 : 1,
+            ...(comInicio ? {} : { playlist: ytId }),
             playsinline: 1,
             origin: window.location.origin,
           },
@@ -86,6 +86,7 @@ export default function ProfileMusic({
               setYtPronto(true)
               try {
                 e.target.setVolume(Math.round(volume * 100))
+                if (comInicio) e.target.seekTo(inicio, true)
                 e.target.playVideo()
               } catch {
                 /* autoplay bloqueado */
@@ -95,6 +96,14 @@ export default function ProfileMusic({
               if (!vivo) return
               setATocar(e.data === 1)
               if (e.data === 1) setBloqueado(false)
+              if (e.data === 0 && comInicio) {
+                try {
+                  e.target.seekTo(inicio, true)
+                  e.target.playVideo()
+                } catch {
+                  /* nada */
+                }
+              }
             },
           },
         })
@@ -126,7 +135,25 @@ export default function ProfileMusic({
       ytRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modo, ytId])
+  }, [modo, ytId, comInicio, inicio])
+
+  /* no modo YouTube, mantém o trecho em loop */
+  useEffect(() => {
+    if (modo !== 'youtube' || !comFim) return
+    const t = setInterval(() => {
+      const p = ytRef.current
+      if (!p || !p.getCurrentTime) return
+      const agora = Number(p.getCurrentTime()) || 0
+      if (agora >= fim) {
+        try {
+          p.seekTo(inicio, true)
+        } catch {
+          /* nada */
+        }
+      }
+    }, 500)
+    return () => clearInterval(t)
+  }, [modo, comFim, inicio, fim])
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume

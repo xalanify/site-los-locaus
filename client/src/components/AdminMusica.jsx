@@ -13,8 +13,8 @@ const idDaMusica = (url) => {
   return m ? m[1] : null
 }
 
-/* Pesquisa de música (só admin): procura no YouTube via yt-dlp,
-   pré-visualiza o áudio completo e deixa cortar o trecho. */
+/* Pesquisa de música: procura no YouTube (yt-dlp/Piped/API),
+   pré-visualiza o áudio e deixa cortar o trecho. */
 export default function AdminMusica({ form, setForm }) {
   const [q, setQ] = useState('')
   const [resultados, setResultados] = useState([])
@@ -22,6 +22,10 @@ export default function AdminMusica({ form, setForm }) {
   const [erro, setErro] = useState('')
 
   const audioRef = useRef(null)
+  const ytBox = useRef(null)
+  const ytRef = useRef(null)
+  const inicioRef = useRef(0)
+  const [modo, setModo] = useState('audio') // audio | youtube
   const [tocando, setTocando] = useState(false)
   const [atual, setAtual] = useState(0)
   const [duracao, setDuracao] = useState(0)
@@ -33,12 +37,17 @@ export default function AdminMusica({ form, setForm }) {
   const fim = Math.max(0, Number(form.musica_fim) || 0)
 
   useEffect(() => {
+    inicioRef.current = inicio
+  }, [inicio])
+
+  useEffect(() => {
     setTocando(false)
     setAtual(0)
     setPronto(false)
     setDuracao(0)
     setTrecho(false)
     setErro('')
+    setModo('audio')
   }, [id])
 
   const procurar = async (e) => {
@@ -48,7 +57,7 @@ export default function AdminMusica({ form, setForm }) {
     setLoading(true)
     setErro('')
     try {
-      const r = await fetch(`/api/admin/musica/search?q=${encodeURIComponent(texto)}`, {
+      const r = await fetch(`/api/musica/search?q=${encodeURIComponent(texto)}`, {
         headers: authHeaders(),
         cache: 'no-store',
       })
@@ -80,7 +89,111 @@ export default function AdminMusica({ form, setForm }) {
     setForm((f) => ({ ...f, musica_url: '', musica_nome: '', musica_inicio: 0, musica_fim: 0 }))
   }
 
+  /* player do YouTube (alternativa quando o proxy de áudio não existe) */
+  useEffect(() => {
+    if (modo !== 'youtube' || !id) return
+    let vivo = true
+    const criar = () => {
+      if (!vivo || !ytBox.current || !window.YT || !window.YT.Player) return
+      try {
+        ytRef.current = new window.YT.Player(ytBox.current, {
+          videoId: id,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            playsinline: 1,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: (e) => {
+              if (!vivo) return
+              setPronto(true)
+              const dur = Number(e.target.getDuration()) || 0
+              setDuracao(dur)
+              if (inicioRef.current > 0 && inicioRef.current < dur) {
+                e.target.seekTo(inicioRef.current, true)
+                setAtual(inicioRef.current)
+              }
+              try {
+                e.target.playVideo()
+              } catch {
+                /* autoplay bloqueado */
+              }
+            },
+            onStateChange: (e) => setTocando(e.data === 1),
+            onError: () => setErro('Esta música não pode ser tocada aqui. Tenta outra.'),
+          },
+        })
+      } catch {
+        setErro('Não foi possível abrir o player do YouTube.')
+      }
+    }
+    if (window.YT && window.YT.Player) criar()
+    else {
+      const antigo = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        if (antigo) antigo()
+        criar()
+      }
+      if (!document.querySelector('script[data-locaus-yt]')) {
+        const s = document.createElement('script')
+        s.src = 'https://www.youtube.com/iframe_api'
+        s.dataset.locausYt = '1'
+        document.body.appendChild(s)
+      }
+    }
+    return () => {
+      vivo = false
+      try {
+        if (ytRef.current && ytRef.current.destroy) ytRef.current.destroy()
+      } catch {
+        /* nada */
+      }
+      ytRef.current = null
+    }
+  }, [modo, id])
+
+  /* relógio do player do YouTube */
+  useEffect(() => {
+    if (modo !== 'youtube') return
+    const t = setInterval(() => {
+      const p = ytRef.current
+      if (!p || !p.getCurrentTime) return
+      const agora = Number(p.getCurrentTime()) || 0
+      setAtual(agora)
+      if (trecho && fim > inicio && agora >= fim) {
+        try {
+          p.pauseVideo()
+          p.seekTo(inicio, true)
+        } catch {
+          /* nada */
+        }
+        setAtual(inicio)
+        setTocando(false)
+        setTrecho(false)
+      }
+    }, 500)
+    return () => clearInterval(t)
+  }, [modo, trecho, inicio, fim])
+
   const alternar = async () => {
+    if (modo === 'youtube') {
+      const p = ytRef.current
+      if (!p) return
+      try {
+        if (tocando) {
+          p.pauseVideo()
+          setTocando(false)
+        } else {
+          p.playVideo()
+          setTocando(true)
+          setErro('')
+        }
+      } catch {
+        setErro('Não foi possível controlar o player.')
+      }
+      return
+    }
     const a = audioRef.current
     if (!a) return
     if (!a.paused) {
@@ -98,6 +211,21 @@ export default function AdminMusica({ form, setForm }) {
   }
 
   const ouvirTrecho = async () => {
+    if (modo === 'youtube') {
+      const p = ytRef.current
+      if (!p) return
+      try {
+        p.seekTo(inicio, true)
+        setAtual(inicio)
+        setTrecho(true)
+        p.playVideo()
+        setTocando(true)
+        setErro('')
+      } catch {
+        setErro('Não foi possível tocar este trecho.')
+      }
+      return
+    }
     const a = audioRef.current
     if (!a) return
     try {
@@ -127,7 +255,7 @@ export default function AdminMusica({ form, setForm }) {
 
   const marcarInicio = () => {
     const a = audioRef.current
-    const t = Math.floor((a && a.currentTime) || 0)
+    const t = Math.floor(modo === 'youtube' ? atual : (a && a.currentTime) || 0)
     setForm((f) => ({
       ...f,
       musica_inicio: t,
@@ -137,14 +265,14 @@ export default function AdminMusica({ form, setForm }) {
 
   const marcarFim = () => {
     const a = audioRef.current
-    const t = Math.floor((a && a.currentTime) || 0)
+    const t = Math.floor(modo === 'youtube' ? atual : (a && a.currentTime) || 0)
     setForm((f) => ({ ...f, musica_fim: t > (Number(f.musica_inicio) || 0) ? t : 0 }))
   }
 
   return (
     <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">
       <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">
-        Pesquisar música (admin)
+        Pesquisar música
       </p>
 
       <form onSubmit={procurar} className="mt-2 flex gap-2">
@@ -251,9 +379,19 @@ export default function AdminMusica({ form, setForm }) {
               setTocando(false)
               setTrecho(false)
             }}
-            onError={() => setErro('Não foi possível carregar o áudio desta música.')}
+            onError={() => {
+              // Sem proxy de áudio (ex.: servidor na nuvem) -> player do YouTube
+              setErro('')
+              setModo('youtube')
+            }}
             className="hidden"
           />
+
+          {modo === 'youtube' && (
+            <div className="pointer-events-none fixed -left-[9999px] top-0 h-1 w-1 overflow-hidden">
+              <div ref={ytBox} />
+            </div>
+          )}
 
           <input
             type="range"
@@ -262,10 +400,17 @@ export default function AdminMusica({ form, setForm }) {
             step="1"
             value={Math.min(atual, Math.floor(duracao) || 1)}
             onChange={(e) => {
-              const a = audioRef.current
-              if (!a) return
               const t = Number(e.target.value)
-              a.currentTime = t
+              if (modo === 'youtube') {
+                try {
+                  ytRef.current && ytRef.current.seekTo(t, true)
+                } catch {
+                  /* nada */
+                }
+              } else {
+                const a = audioRef.current
+                if (a) a.currentTime = t
+              }
               setAtual(t)
             }}
             disabled={!pronto}
@@ -364,8 +509,9 @@ export default function AdminMusica({ form, setForm }) {
           </div>
 
           <p className="mt-2 text-[10px] leading-relaxed text-gray-500">
-            O perfil toca só este trecho, em loop. O áudio vem completo (sem anúncios) e funciona no
-            PC e no telemóvel.
+            {modo === 'youtube'
+              ? 'Pré-visualização pelo YouTube (pode ter anúncios). O perfil toca só o trecho escolhido, em loop.'
+              : 'O perfil toca só este trecho, em loop. O áudio vem completo (sem anúncios) e funciona no PC e no telemóvel.'}
           </p>
         </div>
       )}

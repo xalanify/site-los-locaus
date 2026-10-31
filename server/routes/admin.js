@@ -494,55 +494,13 @@ router.get('/r6/links', requireAdmin, async (req, res) => {
   }
 });
 
-/* ---------- Música do perfil (admin): pesquisa ---------- */
+/* ---------- Música do perfil: pesquisa (admin) ---------- */
 router.get('/musica/search', requireAdmin, async (req, res) => {
   try {
     const q = String(req.query.q || '').trim().slice(0, 80);
     if (!q) return res.json({ ok: true, resultados: [] });
-
-    // Caminho principal: yt-dlp (sem quota e com resultados completos)
-    try {
-      const { pesquisar } = require('../musica');
-      const resultados = await pesquisar(q, 14);
-      return res.json({ ok: true, resultados });
-    } catch (e) {
-      if (e.codigo !== 'SEM_YTDLP') throw e;
-    }
-
-    // Alternativa: API do YouTube (se estiver configurada)
-    const key = (process.env.YOUTUBE_API_KEY || '').trim();
-    if (!key) {
-      return res.status(503).json({
-        ok: false,
-        error: 'O yt-dlp não está instalado no servidor e não há YOUTUBE_API_KEY.',
-        resultados: [],
-      });
-    }
-    const url =
-      'https://www.googleapis.com/youtube/v3/search?' +
-      new URLSearchParams({
-        part: 'snippet',
-        type: 'video',
-        maxResults: '12',
-        q,
-        key,
-      });
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('youtube ' + r.status);
-    const j = await r.json();
-    const resultados = (j.items || [])
-      .map((it) => ({
-        id: it.id && it.id.videoId,
-        titulo: it.snippet && it.snippet.title,
-        canal: it.snippet && it.snippet.channelTitle,
-        duracao: 0,
-        thumb:
-          it.snippet &&
-          it.snippet.thumbnails &&
-          (it.snippet.thumbnails.medium?.url || it.snippet.thumbnails.default?.url),
-      }))
-      .filter((x) => x.id);
-    res.json({ ok: true, resultados });
+    const { buscar } = require('../musica');
+    res.json({ ok: true, resultados: await buscar(q, 14) });
   } catch (e) {
     console.error('Erro admin musica/search:', e.message);
     res.status(502).json({
