@@ -1309,6 +1309,16 @@ body.kova main {
   backdrop-filter: blur(10px);
 }
 
+@media (max-width: 1023px) {
+  .pack-overlay {
+    padding: 1rem 1rem calc(5.5rem + env(safe-area-inset-bottom));
+  }
+  .pack-palco {
+    max-height: calc(100dvh - 8rem);
+    overflow-y: auto;
+  }
+}
+
 .pack-palco {
   position: relative;
   width: min(92vw, 430px);
@@ -1788,4 +1798,14 @@ body.kova main {
   color: var(--k-text);
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+/* Botoes do detalhe do mercado: sempre visiveis no telemovel */
+.mercado-acoes {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-bottom: -0.75rem;
+  padding: 0.75rem 0;
+  background: linear-gradient(to top, #111113 72%, rgba(17, 17, 19, 0));
 }

@@ -1034,21 +1034,28 @@ async function economia() {
          SELECT user_id,
                 count(*) FILTER (WHERE correct IS TRUE AND COALESCE(stake, 0) = 0)::int AS base,
                 COALESCE(SUM(CASE WHEN correct IS TRUE AND COALESCE(stake, 0) > 0 THEN 2 * stake ELSE 0 END), 0)::int AS payout,
-                COALESCE(SUM(COALESCE(stake, 0)), 0)::int AS stakes
+                COALESCE(SUM(COALESCE(stake, 0)), 0)::int AS stakes,
+                count(*) FILTER (WHERE correct IS TRUE)::int AS ok,
+                COALESCE(SUM(CASE WHEN correct IS NULL THEN COALESCE(stake, 0) ELSE 0 END), 0)::int AS em_jogo
          FROM r6_predictions GROUP BY user_id
          UNION ALL
          SELECT user_id,
                 count(*) FILTER (WHERE correct IS TRUE AND COALESCE(stake, 0) = 0)::int AS base,
                 COALESCE(SUM(CASE WHEN correct IS TRUE AND COALESCE(stake, 0) > 0 THEN 2 * stake ELSE 0 END), 0)::int AS payout,
-                COALESCE(SUM(COALESCE(stake, 0)), 0)::int AS stakes
+                COALESCE(SUM(COALESCE(stake, 0)), 0)::int AS stakes,
+                count(*) FILTER (WHERE correct IS TRUE)::int AS ok,
+                COALESCE(SUM(CASE WHEN correct IS NULL THEN COALESCE(stake, 0) ELSE 0 END), 0)::int AS em_jogo
          FROM cs2_predictions GROUP BY user_id
        ),
        agg AS (
-         SELECT user_id, SUM(base)::int AS base, SUM(payout)::int AS payout, SUM(stakes)::int AS stakes
+         SELECT user_id, SUM(base)::int AS base, SUM(payout)::int AS payout, SUM(stakes)::int AS stakes,
+                SUM(ok)::int AS ok, SUM(em_jogo)::int AS em_jogo
          FROM pred GROUP BY user_id
        )
        SELECT u.id, u.username,
               COALESCE(a.base, 0) + COALESCE(a.payout, 0) - COALESCE(a.stakes, 0) AS acertos,
+              COALESCE(a.ok, 0) AS ok,
+              COALESCE(a.em_jogo, 0) AS em_jogo,
               COALESCE((SELECT SUM(custo) FROM public.cosmeticos_compras c WHERE c.user_id = u.id), 0) AS gastos,
               COALESCE((SELECT SUM(valor) FROM public.mercado_ledger l WHERE l.user_id = u.id), 0) AS creditos
        FROM users u LEFT JOIN agg a ON a.user_id = u.id
@@ -1065,6 +1072,8 @@ async function economia() {
       id: Number(u.id),
       username: u.username,
       acertos,
+      ok: Number(u.ok) || 0,
+      emJogo: Number(u.em_jogo) || 0,
       gastos,
       creditos,
       disponivel: Math.max(0, acertos - gastos + creditos),

@@ -152,7 +152,7 @@ export default function AdminEconomia() {
                 <span className="w-5 shrink-0 text-center font-black text-zinc-500">{i + 1}</span>
                 <span className="min-w-0 flex-1 truncate font-bold text-white">{f.username}</span>
                 <span className="shrink-0 text-[10px] text-zinc-500">
-                  {fmt(f.acertos)} acertos · {fmt(f.creditos)} mercado
+                  {fmt(f.ok)} acertos · {fmt(f.emJogo)} em jogo · {fmt(f.creditos)} mercado
                 </span>
                 <span className="w-16 shrink-0 text-right font-black tabular-nums text-amber-200">
                   {fmt(f.disponivel)}
@@ -160,6 +160,10 @@ export default function AdminEconomia() {
               </li>
             ))}
           </ul>
+          <p className="mt-2 text-[10px] leading-relaxed text-zinc-600">
+            “Em jogo” = apostas ainda por resolver (o valor já saiu do saldo). “Acertos” = número de
+            previsões certas; “mercado” = créditos de vendas.
+          </p>
         </div>
 
         <div className="space-y-3">
