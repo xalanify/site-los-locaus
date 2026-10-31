@@ -22,7 +22,6 @@ import MorphPointer from './components/MorphPointer'
 import ClickSplash from './components/ClickSplash'
 import KovaTopbar from './components/KovaTopbar'
 import FundoVivo from './components/FundoVivo'
-import ManutencaoPage from './pages/ManutencaoPage'
 import { Toasts, Dialogos } from './components/Feedback'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 import { fechar as fecharSSE } from './lib/sse'
@@ -236,7 +235,7 @@ function App() {
             )}
 
             {/* Com conta -> site completo */}
-            {authed && !needsRecovery && isAdmin && (
+            {authed && !needsRecovery && (
               <>
                 {/* Barra de topo (desktop) — tema experimental */}
                 <KovaTopbar user={user} isAdmin={isAdmin} />
@@ -401,11 +400,6 @@ function App() {
                   />
                 )}
               </>
-            )}
-
-            {/* Site fechado para membros — só admins entram */}
-            {authed && !isAdmin && (
-              <ManutencaoPage user={user} onLogout={handleUserLogout} />
             )}
           </motion.div>
         )}
