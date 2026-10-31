@@ -86,6 +86,7 @@ const CARTAS = [
   { id: 'carta-arte-galaxia', nome: 'Carta Galáxia', valor: 'arte-galaxia', custo: 95, cor: '#f472b6' },
   { id: 'carta-arte-cristal', nome: 'Carta Cristal', valor: 'arte-cristal', custo: 97, cor: '#a78bfa' },
   { id: 'carta-arte-metal', nome: 'Carta Hex Metal', valor: 'arte-metal', custo: 99, cor: '#cbd5e1' },
+  { id: 'carta-arte-tranzit', nome: 'Carta Tranzit', valor: 'arte-tranzit', custo: 105, cor: '#d9a441' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.

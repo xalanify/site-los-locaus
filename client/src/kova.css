@@ -1680,6 +1680,148 @@ body.kova main {
   border-color: rgba(203, 213, 225, 0.5);
 }
 
+/* ---------- Carta Tranzit (design próprio, tipo postal) ---------- */
+.profile-card--arte-tranzit {
+  display: flex;
+  flex-direction: column;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(26, 13, 8, 0.3) 0%,
+      rgba(26, 13, 8, 0.06) 32%,
+      rgba(12, 6, 4, 0.72) 62%,
+      #090403 100%
+    ),
+    radial-gradient(130% 90% at 50% 0%, rgba(150, 45, 20, 0.22), transparent 62%),
+    url('/camo/arte-tranzit.jpg');
+  background-size: cover;
+  background-position: center, center, 50% 42%;
+  background-repeat: no-repeat;
+  border-color: rgba(201, 162, 39, 0.55);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.55),
+    inset 0 0 70px rgba(0, 0, 0, 0.35);
+}
+
+.tranzit-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.profile-card--arte-tranzit .pc-body {
+  flex: 1 1 auto;
+}
+
+.tranzit-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tranzit-tag {
+  padding: 0.22rem 0.5rem 0.2rem;
+  border: 1px solid rgba(243, 223, 174, 0.38);
+  border-radius: 3px;
+  background: rgba(18, 8, 4, 0.55);
+  color: #f3dfae;
+  font-family: 'Black Ops One', Impact, sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+
+.tranzit-stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 66px;
+  border: 1px dashed rgba(243, 223, 174, 0.7);
+  border-radius: 4px;
+  background: rgba(243, 223, 174, 0.08);
+  color: #f3dfae;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  line-height: 1.15;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  transform: rotate(7deg);
+}
+
+.tranzit-stamp b {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+
+.tranzit-stamp i {
+  font-style: normal;
+  font-size: 6.5px;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+}
+
+.tranzit-center {
+  margin-top: auto;
+}
+
+.tranzit-kicker {
+  display: block;
+  color: rgba(243, 223, 174, 0.72);
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+.tranzit-name {
+  margin: 0.18rem 0 0;
+  color: #f6e7c8;
+  font-family: 'Black Ops One', Impact, sans-serif;
+  font-size: clamp(1.45rem, 8vw, 2rem);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-shadow:
+    0 1px 0 #2a0909,
+    0 8px 26px rgba(0, 0, 0, 0.9);
+}
+
+.tranzit-user {
+  display: block;
+  margin-top: 0.4rem;
+  color: #d9b98a;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tranzit-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(243, 223, 174, 0.3);
+  color: rgba(243, 223, 174, 0.7);
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tranzit-postmark {
+  padding: 0.16rem 0.5rem;
+  border: 1px solid rgba(243, 223, 174, 0.35);
+  border-radius: 999px;
+}
+
 /* Botoes do detalhe do mercado: rodape fixo do painel */
 .mercado-acoes {
   display: flex;

@@ -33,6 +33,7 @@ const VARIANT_LABEL = {
   'arte-galaxia': 'GALAXY CARD',
   'arte-cristal': 'CRYSTAL CARD',
   'arte-metal': 'HEX METAL',
+  'arte-tranzit': 'TRANZIT CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -57,6 +58,7 @@ const VARIANT_ACCENT = {
   'arte-galaxia': '#f472b6',
   'arte-cristal': '#a78bfa',
   'arte-metal': '#cbd5e1',
+  'arte-tranzit': '#d9a441',
 }
 
 const ano = (iso) => {
@@ -273,6 +275,27 @@ export default function ProfileCard({
             </ul>
             <div className="river-foot">
               #{id} · 9 GEAR · {ano(perfil.created_at)} <span>kova.</span>
+            </div>
+          </div>
+        ) : v === 'arte-tranzit' ? (
+          <div className="tranzit-body">
+            <div className="tranzit-top">
+              <span className="tranzit-tag">Tranzit</span>
+              <span className="tranzit-stamp" aria-hidden="true">
+                <b>GREEN RUN</b>
+                <i>PT · {ano(perfil.created_at)}</i>
+              </span>
+            </div>
+
+            <div className="tranzit-center">
+              <span className="tranzit-kicker">Greetings from</span>
+              <h3 className={`tranzit-name ${nomeCls || ''}`}>{username}</h3>
+              <span className="tranzit-user">@{username} · Membro #{id}</span>
+            </div>
+
+            <div className="tranzit-foot">
+              <span className="tranzit-postmark">Locaus · {ano(perfil.created_at)}</span>
+              <span className="tranzit-serial">#{id}</span>
             </div>
           </div>
         ) : (
