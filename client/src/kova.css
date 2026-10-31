@@ -1538,6 +1538,18 @@ body.kova main {
   pointer-events: none;
 }
 
+/* Miniatura na lista do mercado (mais pequena) */
+.mini-carta--lista {
+  width: 42px;
+  height: 48px;
+  border-radius: 7px;
+}
+
+.mini-carta--lista > * {
+  width: 168px;
+  transform: scale(0.25);
+}
+
 /* ============================================================
    ARTES NOVAS — nomes e cartas
    ------------------------------------------------------------

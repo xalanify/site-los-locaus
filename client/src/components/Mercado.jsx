@@ -15,6 +15,7 @@ import {
 import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
+import ItemMini from './ItemMini'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
 import { classesNome } from '../data/nomeEfeitos'
@@ -354,6 +355,9 @@ export default function Mercado({ onSaldo }) {
                   style={{ background: CORES_RARIDADE[item.raridade] }}
                   title={NOME_RARIDADE[item.raridade]}
                 />
+                {item.tipo === 'carta' && (
+                  <ItemMini item={item} me={me} className="mini-carta--lista" />
+                )}
                 <span className="min-w-0 flex-1">
                   <span
                     className={`block truncate text-sm font-bold ${

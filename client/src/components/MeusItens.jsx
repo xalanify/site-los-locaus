@@ -5,8 +5,7 @@ import { Loader2, Tag, X, TrendingUp, TrendingDown, Coins, RefreshCw } from 'luc
 import { authHeaders } from '../lib/auth'
 import { toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
-import ProfileCard from './ProfileCard'
-import ProfileStylePreview from './ProfileStylePreview'
+import ItemMini from './ItemMini'
 import { classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
@@ -18,32 +17,6 @@ const fmt = (n) =>
   Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 const NOME_TIPO = { cor: 'Cor de nome', carta: 'Carta', estilo: 'Estilo de perfil' }
-
-function Mini({ item, me }) {
-  if (item.tipo === 'cor') {
-    return (
-      <span className="mini-cor">
-        <span className={classesNome(item.valor)}>{me?.username || 'Nome'}</span>
-      </span>
-    )
-  }
-  if (item.tipo === 'carta') {
-    return (
-      <span className="mini-carta">
-        <ProfileCard
-          perfil={{ ...(me || {}), card_style: item.valor }}
-          variant={item.valor}
-          jogos={[]}
-        />
-      </span>
-    )
-  }
-  return (
-    <span className="mini-estilo">
-      <ProfileStylePreview style={item.valor} nome={me?.username || 'Nome'} />
-    </span>
-  )
-}
 
 export default function MeusItens() {
   const [dados, setDados] = useState(null)
@@ -165,7 +138,7 @@ export default function MeusItens() {
             >
               <div className="flex items-start gap-3">
                 <span className="shrink-0">
-                  <Mini item={item} me={me} />
+                  <ItemMini item={item} me={me} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p
