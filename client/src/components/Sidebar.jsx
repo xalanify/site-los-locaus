@@ -69,9 +69,9 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
-    // Loja de cosméticos: aberta a todos os membros
+    // Loja: aberta a todos os membros
     {
-      name: 'Loja de cosméticos',
+      name: 'Loja',
       icon: Sparkles,
       action: () => navigate('/cosmeticos'),
       active: isCosmeticos,

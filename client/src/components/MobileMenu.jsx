@@ -51,7 +51,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
         { name: 'Notícias', icon: Newspaper, path: '/noticias' },
         { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
         { name: 'Distinções', icon: Trophy, path: '/distincoes' },
-        { name: 'Loja de cosméticos', icon: Sparkles, path: '/cosmeticos' },
+        { name: 'Loja', icon: Sparkles, path: '/cosmeticos' },
       ],
     },
     {
