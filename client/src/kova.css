@@ -1743,3 +1743,38 @@ body.kova main {
     transform: none;
   }
 }
+/* Editor do perfil: por cima das barras e do player de musica */
+.perfil-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  padding: calc(3.5rem + env(safe-area-inset-top) + 0.5rem) 0.75rem
+    calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.perfil-edit-painel {
+  width: 100%;
+  max-width: 56rem;
+  max-height: calc(
+    100dvh - 3.5rem - env(safe-area-inset-top) - 0.5rem - 5.5rem - env(safe-area-inset-bottom)
+  );
+  margin-block: auto;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .perfil-edit-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .perfil-edit-painel {
+    max-height: 92dvh;
+  }
+}

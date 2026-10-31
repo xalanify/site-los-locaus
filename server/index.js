@@ -175,6 +175,7 @@ app.use('/api', trackVisitor);
 app.use('/api', apiLimiter);
 
 app.use('/api/youtube', youtubeRouter);
+app.use('/api/musica', require('./routes/musica').musicaRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/posts', postsRouter);

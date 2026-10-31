@@ -3,26 +3,45 @@ import { createPortal } from 'react-dom'
 import { Music2, Pause, Play, Volume2 } from 'lucide-react'
 import { musicaDe } from '../data/temasPerfil'
 
-/* Música do perfil: ficheiro local ou vídeo do YouTube (admin).
-   Começa baixinho e tem controles flutuantes no canto inferior direito. */
-export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
+/* Música do perfil: ficheiro local ou música do YouTube servida pelo
+   nosso proxy (/api/musica/stream) — sem anúncios e com corte
+   (começa em `musicaInicio` e repete até `musicaFim`).
+   Se o proxy não estiver disponível (ex.: servidor sem yt-dlp),
+   cai para o player do YouTube. */
+export default function ProfileMusic({
+  musicaId,
+  musicaUrl,
+  musicaNome,
+  musicaInicio,
+  musicaFim,
+}) {
   const musica = musicaDe(musicaId)
-  const ytId = musicaUrl && /^yt:[\w-]{11}$/.test(musicaUrl) ? musicaUrl.slice(3) : null
+  const ytId = (() => {
+    const m = /^yt:([A-Za-z0-9_-]{11})$/.exec(String(musicaUrl || ''))
+    return m ? m[1] : null
+  })()
+  const inicio = Math.max(0, Number(musicaInicio) || 0)
+  const fim = Math.max(0, Number(musicaFim) || 0)
+  const temCorte = fim > inicio
   const nome = ytId ? musicaNome || 'Música do YouTube' : musica?.nome || ''
+  const src = ytId ? `/api/musica/stream/${ytId}` : musica?.ficheiro || ''
+
   const audioRef = useRef(null)
   const ytBox = useRef(null)
   const ytRef = useRef(null)
+  const [modo, setModo] = useState('audio') // audio | youtube
   const [aTocar, setATocar] = useState(false)
   const [volume, setVolume] = useState(0.12)
   const [bloqueado, setBloqueado] = useState(false)
   const [ytPronto, setYtPronto] = useState(false)
 
-  /* áudio local */
+  /* áudio (ficheiro local ou proxy) */
   useEffect(() => {
+    if (modo !== 'audio') return
     const audio = audioRef.current
-    if (!audio || !musica || ytId) return
+    if (!audio || !src) return
     audio.volume = volume
-    audio.loop = true
+    audio.loop = !temCorte
     setBloqueado(false)
     const tentar = audio.play()
     if (tentar && tentar.catch) {
@@ -41,11 +60,11 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [musica?.id, ytId])
+  }, [src, inicio, fim, modo])
 
-  /* player do YouTube */
+  /* player do YouTube (alternativa quando o proxy falha) */
   useEffect(() => {
-    if (!ytId || !ytBox.current) return
+    if (modo !== 'youtube' || !ytId || !ytBox.current) return
     let vivo = true
     const criar = () => {
       if (!vivo || !ytBox.current || !window.YT || !window.YT.Player) return
@@ -75,14 +94,6 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
               if (!vivo) return
               setATocar(e.data === 1)
               if (e.data === 1) setBloqueado(false)
-              if (e.data === 0) {
-                try {
-                  e.target.seekTo(0)
-                  e.target.playVideo()
-                } catch {
-                  /* nada */
-                }
-              }
             },
           },
         })
@@ -114,7 +125,7 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
       ytRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ytId])
+  }, [modo, ytId])
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume
@@ -129,7 +140,7 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
   useEffect(() => {
     const estava = { atual: false }
     const aoComecarVideo = () => {
-      if (ytId) {
+      if (modo === 'youtube') {
         try {
           if (ytRef.current && ytRef.current.getPlayerState && ytRef.current.getPlayerState() === 1) {
             estava.atual = true
@@ -152,7 +163,7 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
     const aoPararVideo = () => {
       if (!estava.atual) return
       estava.atual = false
-      if (ytId) {
+      if (modo === 'youtube') {
         try {
           ytRef.current && ytRef.current.playVideo()
           setATocar(true)
@@ -174,12 +185,12 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
       window.removeEventListener('locaus:video-play', aoComecarVideo)
       window.removeEventListener('locaus:video-stop', aoPararVideo)
     }
-  }, [ytId])
+  }, [modo])
 
   if (!musica && !ytId) return null
 
   const alternar = () => {
-    if (ytId) {
+    if (modo === 'youtube') {
       try {
         if (!ytPronto) {
           setBloqueado(true)
@@ -203,25 +214,64 @@ export default function ProfileMusic({ musicaId, musicaUrl, musicaNome }) {
     if (aTocar) {
       audio.pause()
       setATocar(false)
-    } else {
-      audio
-        .play()
-        .then(() => {
-          setATocar(true)
-          setBloqueado(false)
-        })
-        .catch(() => setBloqueado(true))
+      return
     }
+    try {
+      if (temCorte && (audio.currentTime < inicio || audio.currentTime >= fim)) {
+        audio.currentTime = inicio
+      }
+    } catch {
+      /* nada */
+    }
+    audio
+      .play()
+      .then(() => {
+        setATocar(true)
+        setBloqueado(false)
+      })
+      .catch(() => setBloqueado(true))
   }
 
   return (
     <>
-      {ytId ? (
+      {modo === 'audio' ? (
+        <audio
+          ref={audioRef}
+          src={src}
+          preload="auto"
+          loop={!temCorte}
+          onLoadedMetadata={(e) => {
+            const a = e.currentTarget
+            if (temCorte && inicio > 0 && inicio < a.duration) {
+              try {
+                a.currentTime = inicio
+              } catch {
+                /* nada */
+              }
+            }
+          }}
+          onTimeUpdate={(e) => {
+            const a = e.currentTarget
+            if (temCorte && !a.paused && a.currentTime >= fim) {
+              try {
+                a.currentTime = inicio
+              } catch {
+                /* nada */
+              }
+            }
+          }}
+          onPlay={() => setATocar(true)}
+          onPause={() => setATocar(false)}
+          onEnded={() => setATocar(false)}
+          onError={() => {
+            // Proxy indisponível (ex.: servidor sem yt-dlp) -> player do YouTube
+            if (ytId) setModo('youtube')
+          }}
+        />
+      ) : (
         <div className="pointer-events-none fixed -left-[9999px] top-0 h-1 w-1 overflow-hidden">
           <div ref={ytBox} />
         </div>
-      ) : (
-        <audio ref={audioRef} src={musica.ficheiro} preload="auto" loop />
       )}
       {createPortal(
         <div className="fixed bottom-24 right-3 z-[100] flex items-center gap-2 rounded-2xl border border-white/15 bg-[#0b0b0c]/90 px-2.5 py-2 shadow-2xl shadow-black/50 backdrop-blur-md sm:right-5 lg:bottom-5">

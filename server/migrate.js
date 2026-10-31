@@ -29,6 +29,9 @@ const PASSOS = [
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_id text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_url text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_nome text',
+  // Trecho da música: segundo onde começa e onde acaba (0 = sem corte)
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_inicio integer NOT NULL DEFAULT 0',
+  'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS musica_fim integer NOT NULL DEFAULT 0',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS accent_color text',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS dynamic_colors boolean NOT NULL DEFAULT true',
   'ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS name_color text',

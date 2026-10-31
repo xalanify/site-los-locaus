@@ -23,6 +23,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import PlatformIcon from '../components/PlatformIcon'
+import AdminMusica from '../components/AdminMusica'
 import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
@@ -132,6 +133,8 @@ const formDe = (u) => ({
   musica_id: u?.musica_id || '',
   musica_url: u?.musica_url || '',
   musica_nome: u?.musica_nome || '',
+  musica_inicio: Number(u?.musica_inicio) || 0,
+  musica_fim: Number(u?.musica_fim) || 0,
   dynamic_colors: u?.dynamic_colors !== false,
   name_color: u?.name_color || '',
   name_effect: u?.name_effect || '',
@@ -161,9 +164,6 @@ export default function ProfilePage({
   const [edit, setEdit] = useState(Boolean(standaloneEdit))
   const [secaoEdit, setSecaoEdit] = useState('perfil')
   const [previewTema, setPreviewTema] = useState(null)
-  const [musicaQ, setMusicaQ] = useState('')
-  const [musicaResultados, setMusicaResultados] = useState([])
-  const [musicaLoading, setMusicaLoading] = useState(false)
   const [musicaAlterada, setMusicaAlterada] = useState(false)
   const [form, setForm] = useState(() => formDe(user))
   const abriuState = useRef(false)
@@ -409,25 +409,6 @@ export default function ProfilePage({
     cropDragRef.current = null
   }
 
-  const procurarMusica = async (e) => {
-    e?.preventDefault()
-    const q = musicaQ.trim()
-    if (!q) return
-    setMusicaLoading(true)
-    setMusicaResultados([])
-    try {
-      const r = await fetch(`/api/admin/musica/search?q=${encodeURIComponent(q)}`, {
-        headers: authHeaders(),
-      })
-      const d = await r.json().catch(() => ({}))
-      setMusicaResultados(Array.isArray(d?.resultados) ? d.resultados : [])
-    } catch {
-      setMusicaResultados([])
-    } finally {
-      setMusicaLoading(false)
-    }
-  }
-
   const sincronizarInventario = async () => {
     setASyncInv(true)
     try {
@@ -493,6 +474,8 @@ export default function ProfilePage({
           ? {
               musica_url: form.musica_url,
               musica_nome: form.musica_nome,
+              musica_inicio: Number(form.musica_inicio) || 0,
+              musica_fim: Number(form.musica_fim) || 0,
               name_color: form.name_color,
               name_effect: form.name_effect,
               card_style: form.card_style,
@@ -571,10 +554,10 @@ export default function ProfilePage({
     })
   }, [clipsMostrados, myPosts, filtroFeed])
 
-  const modalEdicao = edit ? (
+  const modalEdicao = edit ? createPortal(
 
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
-              <div className="glass max-h-[92dvh] w-full max-w-4xl space-y-5 overflow-y-auto rounded-3xl border border-zinc-500/30 p-4 shadow-2xl sm:p-6">
+            <div className="perfil-edit-overlay">
+              <div className="perfil-edit-painel glass space-y-5 rounded-3xl border border-zinc-500/30 p-4 shadow-2xl sm:p-6">
               <div className="sticky -top-4 z-20 -mx-4 -mt-4 mb-2 flex items-start justify-between gap-3 border-b border-white/10 bg-[#141416]/95 px-4 py-3 backdrop-blur sm:-top-6 sm:-mx-6 sm:-mt-6 sm:px-6">
                 <div>
                   <h2 className="font-display text-xl font-black text-white">Editar perfil</h2>
@@ -593,7 +576,7 @@ export default function ProfilePage({
               </div>
 
               {/* separadores do editor */}
-              <div className="flex gap-1.5 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-1.5">
+              <div className="flex flex-wrap gap-1.5 rounded-2xl border border-white/10 bg-black/20 p-1.5 sm:flex-nowrap sm:overflow-x-auto">
                 {SECOES_EDIT.filter(
                   (s) =>
                     (s.id !== 'redes' || me?.is_admin) &&
@@ -1053,72 +1036,7 @@ export default function ProfilePage({
                   />
                 )}
 
-                {(isAdmin || me.is_admin) && (
-                  <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">
-                      Pesquisar música (admin)
-                    </p>
-                    <form onSubmit={procurarMusica} className="mt-2 flex gap-2">
-                      <input
-                        value={musicaQ}
-                        onChange={(e) => setMusicaQ(e.target.value)}
-                        placeholder="Ex.: GTA 5 theme, COD WaW…"
-                        className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 text-[12px] text-white outline-none focus:border-amber-400/50"
-                      />
-                      <button
-                        type="submit"
-                        className="rounded-lg bg-amber-500 px-3 py-1.5 text-[11px] font-black text-black hover:bg-amber-400"
-                      >
-                        {musicaLoading ? '…' : 'Procurar'}
-                      </button>
-                    </form>
-                    {form.musica_url && (
-                      <p className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2.5 py-1.5 text-[11px] text-gray-300">
-                        <span className="truncate">
-                          Música escolhida: <b className="text-white">{form.musica_nome}</b>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setForm((f) => ({ ...f, musica_url: '', musica_nome: '' }))
-                          }
-                          className="shrink-0 text-red-300 hover:text-red-200"
-                        >
-                          Remover
-                        </button>
-                      </p>
-                    )}
-                    {musicaResultados.length > 0 && (
-                      <div className="mt-2 max-h-44 space-y-1 overflow-y-auto">
-                        {musicaResultados.map((m) => (
-                          <button
-                            key={m.id}
-                            type="button"
-                            onClick={() =>
-                              setForm((f) => ({
-                                ...f,
-                                musica_id: '',
-                                musica_url: `yt:${m.id}`,
-                                musica_nome: m.titulo,
-                              }))
-                            }
-                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-white/10"
-                          >
-                            {m.thumb && (
-                              <img src={m.thumb} alt="" className="h-9 w-14 shrink-0 rounded object-cover" />
-                            )}
-                            <span className="min-w-0">
-                              <span className="block truncate text-[11px] font-bold text-white">
-                                {m.titulo}
-                              </span>
-                              <span className="block truncate text-[10px] text-gray-500">{m.canal}</span>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {(isAdmin || me.is_admin) && <AdminMusica form={form} setForm={setForm} />}
               </div>
               </section>
 
@@ -1362,9 +1280,9 @@ export default function ProfilePage({
                 </button>
               </div>
             </div>
-            </div>
-
-  ) : null
+            </div>,
+            document.body,
+          ) : null
 
   /* Pré-visualização (zoom) de banners/fundos. Fica fora do modal de
      edição para funcionar tanto na página normal como em /perfil/editar. */
@@ -1536,6 +1454,8 @@ export default function ProfilePage({
             musicaId={me.musica_id}
             musicaUrl={me.musica_url}
             musicaNome={me.musica_nome}
+            musicaInicio={me.musica_inicio}
+            musicaFim={me.musica_fim}
           />
         )}
         {previewOverlay}

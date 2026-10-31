@@ -122,7 +122,7 @@ const profileOf = async (userId) => {
   try {
     const row = await getDb()
       .prepare(
-        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil,
+        `SELECT avatar_url, game_nick, mouse, dpi, banner_id, background_id, musica_id, musica_url, musica_nome, musica_inicio, musica_fim, dynamic_colors, accent_color, name_color, name_effect, borda_cor, fonte_perfil,
                 socials, live_platform, live_url, live_since, live_until, live_auto,
                 card_style, profile_style, cs2_inventory_eur, presence_override
          FROM user_profiles WHERE user_id = ?`,
@@ -138,6 +138,8 @@ const profileOf = async (userId) => {
       musica_id: (row && row.musica_id) || null,
       musica_url: (row && row.musica_url) || null,
       musica_nome: (row && row.musica_nome) || null,
+      musica_inicio: row && row.musica_inicio != null ? Number(row.musica_inicio) : 0,
+      musica_fim: row && row.musica_fim != null ? Number(row.musica_fim) : 0,
       dynamic_colors: row && row.dynamic_colors != null ? Boolean(row.dynamic_colors) : true,
       accent_color: (row && row.accent_color) || null,
       name_color: (row && row.name_color) || null,
@@ -172,6 +174,8 @@ const profileOf = async (userId) => {
       musica_id: null,
       musica_url: null,
       musica_nome: null,
+      musica_inicio: 0,
+      musica_fim: 0,
       dynamic_colors: true,
       accent_color: null,
       name_color: null,
@@ -593,6 +597,8 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     const hasMusic = Object.prototype.hasOwnProperty.call(body, 'musica_id');
     const hasMusicUrl = Object.prototype.hasOwnProperty.call(body, 'musica_url');
     const hasMusicNome = Object.prototype.hasOwnProperty.call(body, 'musica_nome');
+    const hasMusicInicio = Object.prototype.hasOwnProperty.call(body, 'musica_inicio');
+    const hasMusicFim = Object.prototype.hasOwnProperty.call(body, 'musica_fim');
     const hasAccent = Object.prototype.hasOwnProperty.call(body, 'accent_color');
     const hasDynamic = Object.prototype.hasOwnProperty.call(body, 'dynamic_colors');
     const hasNameColor = Object.prototype.hasOwnProperty.call(body, 'name_color');
@@ -735,6 +741,13 @@ router.put('/me/profile', attachAuth, async (req, res) => {
               'UPDATE user_profiles SET musica_url = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
             )
             .run(url || null, uid);
+          if (!url) {
+            await db
+              .prepare(
+                'UPDATE user_profiles SET musica_inicio = 0, musica_fim = 0, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+              )
+              .run(uid);
+          }
         }
         if (hasMusicNome) {
           const nome = String(body.musica_nome || '').trim().slice(0, 120);
@@ -743,6 +756,16 @@ router.put('/me/profile', attachAuth, async (req, res) => {
               'UPDATE user_profiles SET musica_nome = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
             )
             .run(nome || null, uid);
+        }
+        if (hasMusicInicio || hasMusicFim) {
+          const inicio = Math.max(0, Math.min(86400, Math.round(Number(body.musica_inicio) || 0)));
+          let fim = Math.max(0, Math.min(86400, Math.round(Number(body.musica_fim) || 0)));
+          if (fim <= inicio) fim = 0;
+          await db
+            .prepare(
+              'UPDATE user_profiles SET musica_inicio = ?, musica_fim = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(inicio, fim, uid);
         }
       }
     }
@@ -1175,7 +1198,7 @@ router.get('/list', attachAuth, async (req, res) => {
       .prepare(
         `SELECT u.id, u.username,
                 (SELECT COUNT(*)::int FROM users u2 WHERE u2.id <= u.id AND COALESCE(u2.password_hash, '') NOT LIKE '!%') AS display_id,
-                p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
+                p.avatar_url, p.mouse, p.dpi, p.banner_id, p.background_id, p.musica_id, p.musica_url, p.musica_nome, p.musica_inicio, p.musica_fim, p.dynamic_colors, p.accent_color, p.name_color, p.name_effect, p.borda_cor, p.fonte_perfil,
                 p.card_style, p.profile_style, p.cs2_inventory_eur, p.presence_override,
                 p.socials, p.live_platform, p.live_url, p.live_since, p.live_until, p.live_auto,
                 (p2.last_seen IS NOT NULL AND p2.last_seen > now() - interval '2 minutes') AS online,
@@ -1211,6 +1234,8 @@ router.get('/list', attachAuth, async (req, res) => {
         musica_id: r.musica_id || null,
         musica_url: r.musica_url || null,
         musica_nome: r.musica_nome || null,
+        musica_inicio: r.musica_inicio != null ? Number(r.musica_inicio) : 0,
+        musica_fim: r.musica_fim != null ? Number(r.musica_fim) : 0,
         dynamic_colors: r.dynamic_colors != null ? Boolean(r.dynamic_colors) : true,
         accent_color: r.accent_color || null,
         name_color: r.name_color || null,

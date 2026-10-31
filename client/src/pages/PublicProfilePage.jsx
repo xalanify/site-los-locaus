@@ -367,6 +367,8 @@ export default function PublicProfilePage({
           musicaId={p.musica_id}
           musicaUrl={p.musica_url}
           musicaNome={p.musica_nome}
+          musicaInicio={p.musica_inicio}
+          musicaFim={p.musica_fim}
         />
     </PageShell>
   )

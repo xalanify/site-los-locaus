@@ -494,51 +494,62 @@ router.get('/r6/links', requireAdmin, async (req, res) => {
   }
 });
 
-/* ---------- Música do perfil (admin): pesquisa no YouTube ---------- */
-const MUSICA_CACHE = new Map();
+/* ---------- Música do perfil (admin): pesquisa ---------- */
 router.get('/musica/search', requireAdmin, async (req, res) => {
   try {
     const q = String(req.query.q || '').trim().slice(0, 80);
     if (!q) return res.json({ ok: true, resultados: [] });
+
+    // Caminho principal: yt-dlp (sem quota e com resultados completos)
+    try {
+      const { pesquisar } = require('../musica');
+      const resultados = await pesquisar(q, 14);
+      return res.json({ ok: true, resultados });
+    } catch (e) {
+      if (e.codigo !== 'SEM_YTDLP') throw e;
+    }
+
+    // Alternativa: API do YouTube (se estiver configurada)
     const key = (process.env.YOUTUBE_API_KEY || '').trim();
     if (!key) {
       return res.status(503).json({
         ok: false,
-        error: 'Falta a YOUTUBE_API_KEY no servidor para pesquisar músicas.',
+        error: 'O yt-dlp não está instalado no servidor e não há YOUTUBE_API_KEY.',
         resultados: [],
       });
-    }
-    const hit = MUSICA_CACHE.get(q);
-    if (hit && Date.now() - hit.t < 10 * 60 * 1000) {
-      return res.json({ ok: true, resultados: hit.v });
     }
     const url =
       'https://www.googleapis.com/youtube/v3/search?' +
       new URLSearchParams({
         part: 'snippet',
         type: 'video',
-        videoCategoryId: '10',
-        maxResults: '8',
+        maxResults: '12',
         q,
         key,
       });
     const r = await fetch(url);
     if (!r.ok) throw new Error('youtube ' + r.status);
     const j = await r.json();
-    const resultados = (j.items || []).map((it) => ({
-      id: it.id && it.id.videoId,
-      titulo: it.snippet && it.snippet.title,
-      canal: it.snippet && it.snippet.channelTitle,
-      thumb:
-        it.snippet &&
-        it.snippet.thumbnails &&
-        (it.snippet.thumbnails.medium?.url || it.snippet.thumbnails.default?.url),
-    })).filter((x) => x.id);
-    MUSICA_CACHE.set(q, { t: Date.now(), v: resultados });
+    const resultados = (j.items || [])
+      .map((it) => ({
+        id: it.id && it.id.videoId,
+        titulo: it.snippet && it.snippet.title,
+        canal: it.snippet && it.snippet.channelTitle,
+        duracao: 0,
+        thumb:
+          it.snippet &&
+          it.snippet.thumbnails &&
+          (it.snippet.thumbnails.medium?.url || it.snippet.thumbnails.default?.url),
+      }))
+      .filter((x) => x.id);
     res.json({ ok: true, resultados });
   } catch (e) {
     console.error('Erro admin musica/search:', e.message);
-    res.status(502).json({ ok: false, error: 'Não foi possível pesquisar no YouTube.', resultados: [] });
+    res.status(502).json({
+      ok: false,
+      error: 'Não foi possível pesquisar músicas.',
+      resultados: [],
+    });
   }
 });
 
