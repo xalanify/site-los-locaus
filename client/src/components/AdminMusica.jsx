@@ -346,7 +346,11 @@ export default function AdminMusica({ form, setForm }) {
               className="flex items-center gap-1 rounded-lg border border-amber-400/30 bg-amber-400/10 px-2.5 py-1.5 text-[10px] font-black text-amber-200 hover:bg-amber-400/20 disabled:opacity-50"
             >
               <Scissors className="h-3 w-3" />
-              {fim ? `Ouvir ${fmtTempo(inicio)} → ${fmtTempo(fim)}` : 'Ouvir do início'}
+              {fim
+                ? `Ouvir ${fmtTempo(inicio)} → ${fmtTempo(fim)}`
+                : inicio
+                  ? `Ouvir de ${fmtTempo(inicio)}`
+                  : 'Ouvir do início'}
             </button>
             {(inicio > 0 || fim > 0) && (
               <button

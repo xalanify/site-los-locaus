@@ -22,7 +22,8 @@ export default function ProfileMusic({
   })()
   const inicio = Math.max(0, Number(musicaInicio) || 0)
   const fim = Math.max(0, Number(musicaFim) || 0)
-  const temCorte = fim > inicio
+  const comInicio = inicio > 0
+  const comFim = fim > inicio
   const nome = ytId ? musicaNome || 'Música do YouTube' : musica?.nome || ''
   const src = ytId ? `/api/musica/stream/${ytId}` : musica?.ficheiro || ''
 
@@ -41,7 +42,7 @@ export default function ProfileMusic({
     const audio = audioRef.current
     if (!audio || !src) return
     audio.volume = volume
-    audio.loop = !temCorte
+    audio.loop = !comInicio
     setBloqueado(false)
     const tentar = audio.play()
     if (tentar && tentar.catch) {
@@ -217,7 +218,7 @@ export default function ProfileMusic({
       return
     }
     try {
-      if (temCorte && (audio.currentTime < inicio || audio.currentTime >= fim)) {
+      if (comInicio && (audio.currentTime < inicio || (comFim && audio.currentTime >= fim))) {
         audio.currentTime = inicio
       }
     } catch {
@@ -239,10 +240,10 @@ export default function ProfileMusic({
           ref={audioRef}
           src={src}
           preload="auto"
-          loop={!temCorte}
+          loop={!comInicio}
           onLoadedMetadata={(e) => {
             const a = e.currentTarget
-            if (temCorte && inicio > 0 && inicio < a.duration) {
+            if (comInicio && inicio < a.duration) {
               try {
                 a.currentTime = inicio
               } catch {
@@ -252,7 +253,7 @@ export default function ProfileMusic({
           }}
           onTimeUpdate={(e) => {
             const a = e.currentTarget
-            if (temCorte && !a.paused && a.currentTime >= fim) {
+            if (comFim && !a.paused && a.currentTime >= fim) {
               try {
                 a.currentTime = inicio
               } catch {
@@ -262,7 +263,19 @@ export default function ProfileMusic({
           }}
           onPlay={() => setATocar(true)}
           onPause={() => setATocar(false)}
-          onEnded={() => setATocar(false)}
+          onEnded={(e) => {
+            const a = e.currentTarget
+            if (comInicio) {
+              try {
+                a.currentTime = inicio
+                a.play().catch(() => setATocar(false))
+              } catch {
+                setATocar(false)
+              }
+              return
+            }
+            setATocar(false)
+          }}
           onError={() => {
             // Proxy indisponível (ex.: servidor sem yt-dlp) -> player do YouTube
             if (ytId) setModo('youtube')
