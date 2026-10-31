@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import {
   Loader2,
@@ -423,16 +424,17 @@ export default function Mercado({ onSaldo }) {
       )}
 
       {/* Detalhe */}
-      {detalhe && (
+      {detalhe &&
+        createPortal(
         <div
-          className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/85 p-3 pb-24 pt-4 backdrop-blur-sm sm:items-center sm:pb-4"
+          className="mercado-modal"
           onClick={() => setDetalhe(null)}
           role="presentation"
         >
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111113]"
+            className="mercado-modal-painel"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
@@ -513,55 +515,6 @@ export default function Mercado({ onSaldo }) {
 
               <Grafico serie={detalhe.historico} cor={detalhe.variacao >= 0 ? '#34d399' : '#f87171'} />
 
-              <div className="mercado-acoes mt-3 flex flex-wrap gap-2">
-                {detalhe.emBreve ? (
-                  <p className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-center text-[11px] font-bold text-zinc-400">
-                    Em breve — os estilos de perfil ainda não estão à venda.
-                  </p>
-                ) : detalhe.comprado ? (
-                  <>
-                    {!equipado(detalhe) && (
-                      <button
-                        type="button"
-                        onClick={() => equipar(detalhe)}
-                        disabled={busy === detalhe.id}
-                        className="ui-btn ui-btn-primary ui-btn-sm flex-1 justify-center"
-                      >
-                        {busy === detalhe.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="h-4 w-4" />
-                        )}
-                        Equipar
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => vender(detalhe)}
-                      disabled={busy === detalhe.id}
-                      className="ui-btn ui-btn-ghost ui-btn-sm flex-1 justify-center"
-                    >
-                      <ShoppingBag className="h-4 w-4" />
-                      Vender por {fmt(detalhe.preco_venda)}
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => comprar(detalhe)}
-                    disabled={busy === detalhe.id}
-                    className="ui-btn ui-btn-primary ui-btn-sm flex-1 justify-center"
-                  >
-                    {busy === detalhe.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                    Comprar por {fmt(detalhe.preco_compra)}
-                  </button>
-                )}
-              </div>
-
               {detalhe.minhasVendas.length > 0 && (
                 <div className="mt-4">
                   <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
@@ -581,8 +534,58 @@ export default function Mercado({ onSaldo }) {
                 </div>
               )}
             </div>
+
+            <div className="mercado-acoes">
+              {detalhe.emBreve ? (
+                <p className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-center text-[11px] font-bold text-zinc-400">
+                  Em breve — os estilos de perfil ainda não estão à venda.
+                </p>
+              ) : detalhe.comprado ? (
+                <>
+                  {!equipado(detalhe) && (
+                    <button
+                      type="button"
+                      onClick={() => equipar(detalhe)}
+                      disabled={busy === detalhe.id}
+                      className="ui-btn ui-btn-primary ui-btn-sm flex-1 justify-center"
+                    >
+                      {busy === detalhe.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      Equipar
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => vender(detalhe)}
+                    disabled={busy === detalhe.id}
+                    className="ui-btn ui-btn-ghost ui-btn-sm flex-1 justify-center"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    Vender por {fmt(detalhe.preco_venda)}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => comprar(detalhe)}
+                  disabled={busy === detalhe.id}
+                  className="ui-btn ui-btn-primary ui-btn-sm flex-1 justify-center"
+                >
+                  {busy === detalhe.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  Comprar por {fmt(detalhe.preco_compra)}
+                </button>
+              )}
+            </div>
           </motion.div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

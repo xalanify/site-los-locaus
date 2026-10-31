@@ -1800,12 +1800,66 @@ body.kova main {
   font-weight: 700;
 }
 
-/* Botoes do detalhe do mercado: sempre visiveis no telemovel */
+/* Botoes do detalhe do mercado: rodape fixo do painel */
 .mercado-acoes {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  margin-bottom: -0.75rem;
-  padding: 0.75rem 0;
-  background: linear-gradient(to top, #111113 72%, rgba(17, 17, 19, 0));
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #111113;
+}
+/* Detalhe do mercado: entre a barra de cima e a de baixo, sem cortar o topo */
+.mercado-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  padding: calc(3.5rem + env(safe-area-inset-top) + 0.75rem) 0.75rem
+    calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.mercado-modal-painel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 36rem;
+  max-height: calc(
+    100dvh - 3.5rem - env(safe-area-inset-top) - 0.75rem - 5.5rem - env(safe-area-inset-bottom)
+  );
+  margin-block: auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: #111113;
+}
+
+@media (min-width: 1024px) {
+  .mercado-modal {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .mercado-modal-painel {
+    max-height: calc(100dvh - 2rem);
+  }
+}
+
+/* Cartas em pre-visualizacao: mais pequenas no telemovel */
+@media (max-width: 1023px) {
+  .preview-carta,
+  .pack-preview-carta {
+    zoom: 0.62;
+  }
+
+  .preview-carta > *,
+  .pack-preview-carta > * {
+    transform: none;
+  }
 }

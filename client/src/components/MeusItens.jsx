@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { Loader2, Tag, X, TrendingUp, TrendingDown, Coins, RefreshCw } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
@@ -246,16 +247,17 @@ export default function MeusItens() {
         })}
       </div>
 
-      {venda && (
+      {venda &&
+        createPortal(
         <div
-          className="fixed inset-0 z-[125] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[125] flex items-start justify-center overflow-y-auto bg-black/85 p-4 pb-24 backdrop-blur-sm sm:items-center sm:pb-4"
           onClick={() => setVenda(null)}
           role="presentation"
         >
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#111113] p-4"
+            className="my-auto w-full max-w-sm rounded-2xl border border-white/10 bg-[#111113] p-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
@@ -316,7 +318,8 @@ export default function MeusItens() {
               </button>
             </div>
           </motion.div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

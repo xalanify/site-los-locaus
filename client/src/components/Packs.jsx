@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { Gift, Loader2, Sparkles, Coins, X, ArrowRight } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
@@ -258,7 +259,8 @@ export default function Packs() {
       )}
 
       {/* ---------------- Animação de abertura ---------------- */}
-      {aberto && (
+      {aberto &&
+        createPortal(
         <div className="pack-overlay" role="dialog" aria-modal="true" aria-label="Abrir pack">
           <div className="pack-palco">
             {fase === 'abrindo' && (
@@ -334,7 +336,8 @@ export default function Packs() {
               </motion.div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )
