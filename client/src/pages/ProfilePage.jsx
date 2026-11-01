@@ -1011,6 +1011,8 @@ export default function ProfilePage({
                           musica_id: m.id,
                           musica_url: '',
                           musica_nome: '',
+                          musica_inicio: 0,
+                          musica_fim: 0,
                         }))
                       }}
                       className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${

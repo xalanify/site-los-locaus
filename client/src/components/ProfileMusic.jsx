@@ -20,8 +20,8 @@ export default function ProfileMusic({
     const m = /^yt:([A-Za-z0-9_-]{11})$/.exec(String(musicaUrl || ''))
     return m ? m[1] : null
   })()
-  const inicio = Math.max(0, Number(musicaInicio) || 0)
-  const fim = Math.max(0, Number(musicaFim) || 0)
+  const inicio = ytId ? Math.max(0, Number(musicaInicio) || 0) : 0
+  const fim = ytId ? Math.max(0, Number(musicaFim) || 0) : 0
   const comInicio = inicio > 0
   const comFim = fim > inicio
   const nome = ytId ? musicaNome || 'Música do YouTube' : musica?.nome || ''

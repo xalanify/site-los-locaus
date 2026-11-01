@@ -719,7 +719,7 @@ router.put('/me/profile', attachAuth, async (req, res) => {
         if (!souAdmin) {
           await db
             .prepare(
-              'UPDATE user_profiles SET musica_url = NULL, musica_nome = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+              'UPDATE user_profiles SET musica_url = NULL, musica_nome = NULL, musica_inicio = 0, musica_fim = 0, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
             )
             .run(uid);
         }
