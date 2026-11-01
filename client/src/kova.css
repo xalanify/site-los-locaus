@@ -345,7 +345,7 @@ body.kova ::-webkit-scrollbar-track {
 .kova-topbar-inner {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 2.4rem;
   height: 100%;
   max-width: 86rem;
   margin: 0 auto;
@@ -369,7 +369,7 @@ body.kova ::-webkit-scrollbar-track {
 .kova-links {
   display: flex;
   align-items: center;
-  gap: 1.7rem;
+  gap: 2.2rem;
   font-size: 0.84rem;
   font-weight: 500;
   color: var(--k-muted);
@@ -405,7 +405,7 @@ body.kova ::-webkit-scrollbar-track {
 
 .kova-actions {
   margin-left: auto;
-  padding-left: 1.25rem;
+  padding-left: 3rem;
   display: flex;
   align-items: center;
   gap: 0.8rem;
