@@ -234,7 +234,7 @@ async function tick() {
        UPDATE public.mercado_precos p
        SET tendencia = n.nova,
            preco = ROUND(
-             GREATEST(p.base * 0.55, LEAST(p.base * 2.2, p.preco * (1 + n.nova + (random() - 0.5) * 0.006)))::numeric,
+             GREATEST(p.base * 0.1, p.preco * (1 + n.nova + (random() - 0.5) * 0.006))::numeric,
              2
            ),
            atualizado_em = now()
@@ -284,7 +284,7 @@ async function simularNegocios(db, atualizados) {
     const r = await db
       .prepare(
         `UPDATE public.mercado_precos
-         SET preco = ROUND(GREATEST(base * 0.55, LEAST(base * 2.2, preco * (1 + ?::numeric)))::numeric, 2),
+         SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric, 2),
              atualizado_em = now()
          WHERE item_id = ?
          RETURNING preco`,
@@ -511,7 +511,7 @@ async function ajustarPreco(itemId, fator) {
   const r = await db
     .prepare(
       `UPDATE public.mercado_precos
-       SET preco = ROUND(GREATEST(base * 0.55, LEAST(base * 2.2, preco * (1 + ?::numeric)))::numeric, 2),
+       SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric, 2),
            atualizado_em = now()
        WHERE item_id = ?
        RETURNING preco`,

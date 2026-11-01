@@ -8,7 +8,6 @@ import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import PageHeader from '../components/PageHeader'
 import ProfileCard from '../components/ProfileCard'
-import CartasGaleria from '../components/CartasGaleria'
 import ProfileBanner from '../components/ProfileBanner'
 import LiveBadge from '../components/LiveBadge'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
@@ -23,7 +22,6 @@ export default function MembrosPage({ onProfile }) {
   const [membros, setMembros] = useState([])
   const [aCarregar, setACarregar] = useState(true)
   const [query, setQuery] = useState('')
-  const [vista, setVista] = useState('membros')
   const [cartaZoom, setCartaZoom] = useState(null)
 
   useEffect(() => {
@@ -76,23 +74,6 @@ export default function MembrosPage({ onProfile }) {
         </div>
       </PageHeader>
 
-      <div className="ui-tabs mb-4 max-w-xs">
-        {[
-          { id: 'membros', label: 'Membros' },
-          { id: 'cartas', label: 'Cartas' },
-        ].map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => setVista(v.id)}
-            data-active={vista === v.id}
-            className="ui-tab"
-          >
-            {v.label}
-          </button>
-        ))}
-      </div>
-
       {aCarregar ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-7 w-7 animate-spin text-zinc-500" />
@@ -109,8 +90,6 @@ export default function MembrosPage({ onProfile }) {
             </button>
           )}
         </div>
-      ) : vista === 'cartas' ? (
-        <CartasGaleria membros={filtrados} onVer={setCartaZoom} />
       ) : (
         <ul className="membros-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filtrados.map((m) => {
