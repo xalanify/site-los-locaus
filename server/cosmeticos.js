@@ -172,6 +172,25 @@ const nivelCor = (item) => {
   return 1;
 };
 
+/* As 7 artes mais recentes ficam com valores altos (cores e cartas). */
+const PRECOS_ALTOS = {
+  'cor-arte-asfalto': 220,
+  'cor-arte-ouro-negro': 235,
+  'cor-arte-glitch': 250,
+  'cor-arte-anjo': 265,
+  'cor-arte-teia': 280,
+  'cor-arte-suspenso': 295,
+  'cor-arte-prisma': 310,
+  'carta-arte-asfalto': 280,
+  'carta-arte-ouro-negro': 300,
+  'carta-arte-glitch': 320,
+  'carta-arte-anjo': 340,
+  'carta-arte-teia': 360,
+  'carta-arte-suspenso': 380,
+  'carta-arte-prisma': 400,
+};
+const comPrecoAlto = (x) => (PRECOS_ALTOS[x.id] ? { ...x, custo: PRECOS_ALTOS[x.id] } : x);
+
 /* ------------------------------------------------------------
    Escada de preços (pedido do admin):
    - cores de nome: 10, 13, 16, 19, ... (+3)
@@ -189,7 +208,7 @@ function comEscada(lista, inicio, passo) {
   return ordem.map((x, i) => ({ ...x, custo: inicio + passo * i }));
 }
 
-const NOMES_PRECO = comEscada([...CORES, ...CAMOS], 10, 3);
+const NOMES_PRECO = comEscada([...CORES, ...CAMOS], 10, 3).map(comPrecoAlto);
 const CORES_PRECO = NOMES_PRECO.filter((x) => CORES.some((c) => c.id === x.id));
 const CAMOS_PRECO = NOMES_PRECO.filter((x) => CAMOS.some((c) => c.id === x.id));
 
@@ -204,7 +223,7 @@ const CARTAS_PRECO = [
   ...comEscada(CARTAS_NORMAIS, 40, 2),
   ...comEscada(CARTAS_ARTE, 90, 4),
   ...(CARTA_TRANZIT ? [{ ...CARTA_TRANZIT, custo: 320 }] : []),
-];
+].map(comPrecoAlto);
 
 /* Os banners e os efeitos saíram da loja. Os banners continuam
    disponíveis no editor de perfil; os efeitos já comprados ficam
