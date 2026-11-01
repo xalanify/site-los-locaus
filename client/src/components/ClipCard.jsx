@@ -24,6 +24,7 @@ import {
   ArrowUp,
   ArrowDown,
   Music,
+  Youtube,
 } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import LiveBadge from './LiveBadge'
@@ -132,6 +133,15 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   const [cheio, setCheio] = useState(false)
   /* qualidade manual do vídeo */
   const [menuQual, setMenuQual] = useState(false)
+  /* controlos nativos do YouTube: a engrenagem de qualidade deles é a
+     única forma fiável de mudar a qualidade — ligada por defeito. */
+  const [controlosYt, setControlosYt] = useState(() => {
+    try {
+      return localStorage.getItem('aj-clip-ytcontrols') !== '0'
+    } catch {
+      return true
+    }
+  })
   const [niveisQual, setNiveisQual] = useState([]) // chaves YT disponíveis
   const qualEsc = useRef(qualGravada())
   const [qualAtual, setQualAtual] = useState('auto')
@@ -213,17 +223,21 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             host: 'https://www.youtube-nocookie.com',
             playerVars: {
               autoplay: 0,
-              controls: 0, // sem barra deles
+              controls: controlosYt ? 1 : 0, // barra nativa (com qualidade) ou a nossa
               modestbranding: 1, // sem logotipo
               rel: 0,
               showinfo: 0,
               iv_load_policy: 3,
               playsinline: 1,
-              fs: 0, // sem botão deles de ecrã inteiro
-              disablekb: 1,
+              fs: controlosYt ? 1 : 0, // sem botão deles de ecrã inteiro
+              disablekb: controlosYt ? 0 : 1,
               enablejsapi: 1,
               origin: window.location.origin,
-              ...(vqPedida !== 'auto' ? { vq: vqPedida } : {}),
+              ...(controlosYt
+                ? { vq: 'highres' }
+                : vqPedida !== 'auto'
+                  ? { vq: vqPedida }
+                  : {}),
               start: Math.floor(tempoRef.current),
 
             },
@@ -242,7 +256,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                 if (ifr) ifr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0'
                 /* qualidade máxima: espera o YouTube listar os níveis reais
                    (às vezes no início só aparecem 240p/360p) */
-                iniciarQualidade(e.target)
+                if (!controlosYt) iniciarQualidade(e.target)
               },
               onStateChange: (e) => {
                 if (!vivo) return
@@ -352,7 +366,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
       api.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aberto, semApi, id, processando, vqPedida])
+  }, [aberto, semApi, id, processando, vqPedida, controlosYt])
 
   /* qualidade o mais alta possível: pede "highres" e, se o leitor
      baixar, volta a pedir (só 2 tentativas para não loop).
@@ -662,6 +676,18 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
     } catch {}
   }
 
+  /* troca entre os controlos do site e os do YouTube (a engrenagem
+     de qualidade do YouTube é a que funciona mesmo) */
+  const alternarControlos = (v) => {
+    try {
+      localStorage.setItem('aj-clip-ytcontrols', v ? '1' : '0')
+    } catch {}
+    setControlosYt(v)
+    setMenuQual(false)
+    setVeuQual(null)
+    limpaWatchdog()
+  }
+
   /* ecrã inteiro (nosso botão, não o deles) */
   useEffect(() => {
     const f = () => setCheio(!!(document.fullscreenElement || document.webkitFullscreenElement))
@@ -799,19 +825,37 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
           </div>
         )}
 
-        {/* clica no vídeo -> pausa / continua (ou repete, no fim) */}
-        <button
-          type="button"
-          onClick={aoClicar}
-          className="absolute inset-0 z-[6]"
-          aria-label={estado === 0 ? 'Repetir' : tocando ? 'Pausar' : 'Reproduzir'}
-        />
+        {/* clica no vídeo -> pausa / continua (ou repete, no fim).
+            Com os controlos do YouTube ligados, o clique é deles. */}
+        {!controlosYt && (
+          <button
+            type="button"
+            onClick={aoClicar}
+            className="absolute inset-0 z-[6]"
+            aria-label={estado === 0 ? 'Repetir' : tocando ? 'Pausar' : 'Reproduzir'}
+          />
+        )}
+
+        {/* com os controlos do YouTube, um botão pequeno para voltar aos nossos */}
+        {controlosYt && (
+          <button
+            type="button"
+            onClick={() => alternarControlos(false)}
+            className="absolute right-2 top-2 z-20 grid h-7 w-7 place-items-center rounded-full bg-black/50 text-gray-300 opacity-60 backdrop-blur transition-opacity hover:bg-black/80 hover:opacity-100"
+            title="Usar controlos do site"
+            aria-label="Usar controlos do site"
+          >
+            <Settings className="h-3.5 w-3.5" />
+          </button>
+        )}
 
         {/* Máscaras permanentes: escondem título, "não listado" e logótipo
             que o leitor remoto insiste em mostrar (topo e canto inferior
             direito), sem tapar o vídeo. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-20 bg-gradient-to-b from-black/95 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-16 bg-gradient-to-t from-black/90 to-transparent" />
+        {!controlosYt && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-16 bg-gradient-to-t from-black/90 to-transparent" />
+        )}
         {veu !== 'nada' && (
           <button
             type="button"
@@ -860,6 +904,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
 
         {/* OS NOSSOS controlos — só aparece ao passar o rato
             (ou sempre que o vídeo está pausado) */}
+        {!controlosYt && (
         <div
           className={
             'player-controlos pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/55 to-transparent px-3 pb-2 pt-10 transition-opacity duration-200 group-focus-within/vid:opacity-100 group-hover/vid:opacity-100 ' +
@@ -934,6 +979,17 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
               />
             </div>
 
+            {/* controlos nativos do YouTube (qualidade a sério) */}
+            <button
+              type="button"
+              onClick={() => alternarControlos(true)}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
+              aria-label="Controlos do YouTube"
+              title="Controlos do YouTube (qualidade)"
+            >
+              <Youtube className="h-4 w-4" />
+            </button>
+
             {/* qualidade manual */}
             <div className="relative shrink-0">
               <button
@@ -965,6 +1021,13 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
                   {!niveisQual.length && (
                     <p className="px-3 py-1.5 text-[10px] text-gray-500">A carregar níveis…</p>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => alternarControlos(true)}
+                    className="mt-1 flex w-full items-center gap-1.5 border-t border-white/10 px-3 py-1.5 text-left text-[11px] font-bold text-amber-200 hover:bg-white/10"
+                  >
+                    <Youtube className="h-3.5 w-3.5" /> Qualidade no YouTube
+                  </button>
                 </div>
               )}
             </div>
@@ -979,6 +1042,7 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             </button>
           </div>
         </div>
+        )}
       </div>
     )
   }
