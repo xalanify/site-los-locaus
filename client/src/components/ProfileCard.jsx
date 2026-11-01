@@ -34,6 +34,12 @@ const VARIANT_LABEL = {
   'arte-cristal': 'CRYSTAL CARD',
   'arte-metal': 'HEX METAL',
   'arte-tranzit': 'TRANZIT CARD',
+  'arte-hipnose': 'PSYCHIC CARD',
+  'arte-eter': 'ETER CARD',
+  'arte-rubra': 'ID CARD',
+  'arte-oxido': 'OXIDE CARD',
+  'arte-cromo': 'CHROME CARD',
+  'arte-aurora': 'AURORA CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -59,6 +65,12 @@ const VARIANT_ACCENT = {
   'arte-cristal': '#a78bfa',
   'arte-metal': '#cbd5e1',
   'arte-tranzit': '#d9a441',
+  'arte-hipnose': '#c084fc',
+  'arte-eter': '#818cf8',
+  'arte-rubra': '#dc2626',
+  'arte-oxido': '#b45309',
+  'arte-cromo': '#e5e7eb',
+  'arte-aurora': '#5eead4',
 }
 
 const ano = (iso) => {
@@ -297,6 +309,127 @@ export default function ProfileCard({
               <span className="tranzit-postmark">Locaus · {ano(perfil.created_at)}</span>
               <span className="tranzit-serial">#{id}</span>
             </div>
+          </div>
+        ) : v === 'arte-hipnose' ? (
+          <div className="hip-body">
+            <div className="hip-top">
+              <span className="hip-nome">{username}</span>
+              <span className="hip-hp">HP <b>100</b></span>
+            </div>
+            <div className="hip-tipo">
+              <span className="hip-badge">Psychic</span>
+              <span className="hip-num">#{id}</span>
+            </div>
+            <div className="hip-ataque">
+              <div className="hip-ataque-top">
+                <span>Hipnose</span>
+                <b>40</b>
+              </div>
+              <p>O adversário fica confuso e vê o perfil em loop.</p>
+            </div>
+            <div className="hip-rodape">
+              <span>Fraqueza · sono</span>
+              <span>Locaus {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-eter' ? (
+          <div className="eter-body">
+            <div className="eter-head">
+              <span className="eter-badge">Trainer</span>
+              <span className="eter-num">#{id}</span>
+            </div>
+            <h3 className="eter-nome">{username}</h3>
+            <div className="eter-caixa">
+              <p>
+                <b>Éter</b> — cura 30 de dano de cada membro do teu lado.
+              </p>
+              <p className="eter-flavor">“O vazio também respira.”</p>
+            </div>
+            <div className="eter-rodape">
+              <span>Locaus · {ano(perfil.created_at)}</span>
+              <span>90/90</span>
+            </div>
+          </div>
+        ) : v === 'arte-rubra' ? (
+          <div className="rub-body">
+            <div className="rub-head">
+              <span>República Locaus</span>
+              <span>Cartão de membro</span>
+            </div>
+            <div className="rub-meio">
+              <span className="rub-foto">
+                <img
+                  src={avatar}
+                  alt={username}
+                  loading="lazy"
+                  onError={(e) => {
+                    if (e.currentTarget.dataset.fb) return
+                    e.currentTarget.dataset.fb = '1'
+                    e.currentTarget.src = svgAvatar(username, '#a1a1aa')
+                  }}
+                />
+              </span>
+              <div className="rub-dados">
+                <p>
+                  <span>Nome</span>
+                  <b>{username}</b>
+                </p>
+                <p>
+                  <span>Nº</span>
+                  <b>#{id}</b>
+                </p>
+                <p>
+                  <span>Desde</span>
+                  <b>{ano(perfil.created_at)}</b>
+                </p>
+              </div>
+            </div>
+            <div className="rub-chip" />
+            <p className="rub-serie">{barcode}</p>
+          </div>
+        ) : v === 'arte-oxido' ? (
+          <div className="oxi-body">
+            <div className="oxi-head">
+              <span>Locaus · Registo</span>
+              <span className="oxi-carimbo">válido</span>
+            </div>
+            <div className="oxi-nome">{username}</div>
+            <div className="oxi-linhas">
+              <p>
+                Operador <b>#{id}</b>
+              </p>
+              <p>
+                Setor <b>Ferro-velho</b>
+              </p>
+              <p>
+                Desde <b>{ano(perfil.created_at)}</b>
+              </p>
+            </div>
+            <p className="oxi-rodape">Propriedade da Locaus · não transferível</p>
+          </div>
+        ) : v === 'arte-cromo' ? (
+          <div className="crom-body">
+            <div className="crom-top">
+              <span>Locaus</span>
+              <span>{ano(perfil.created_at)}</span>
+            </div>
+            <div className="crom-centro">
+              <span className="crom-mono">{String(username).slice(0, 1).toUpperCase()}</span>
+              <h3 className="crom-nome">{username}</h3>
+              <span className="crom-sub">Membro #{id}</span>
+            </div>
+            <div className="crom-rodape">
+              <span className="crom-linha" />
+              <span>Cromo · série {id}</span>
+            </div>
+          </div>
+        ) : v === 'arte-aurora' ? (
+          <div className="aur-body">
+            <span className="aur-kicker">Locaus</span>
+            <h3 className="aur-nome">{username}</h3>
+            <span className="aur-sub">Membro #{id} · {ano(perfil.created_at)}</span>
+            <span className="aur-rule" />
+            <span className="aur-rodape">Aurora</span>
           </div>
         ) : (
           <>

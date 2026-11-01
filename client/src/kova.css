@@ -1932,3 +1932,586 @@ body.kova main {
     max-height: 92dvh;
   }
 }
+/* ============================================================
+   ARTES NOVAS 2 - Hipnose, Eter, Rubra, Oxido, Cromo, Aurora
+   ============================================================ */
+
+.profile-card--arte-hipnose,
+.profile-card--arte-eter,
+.profile-card--arte-rubra,
+.profile-card--arte-oxido,
+.profile-card--arte-cromo,
+.profile-card--arte-aurora {
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.profile-card--arte-hipnose .pc-body,
+.profile-card--arte-eter .pc-body,
+.profile-card--arte-rubra .pc-body,
+.profile-card--arte-oxido .pc-body,
+.profile-card--arte-cromo .pc-body,
+.profile-card--arte-aurora .pc-body {
+  flex: 1 1 auto;
+}
+
+.profile-card--arte-hipnose {
+  background-image:
+    linear-gradient(180deg, rgba(8, 3, 16, 0.15) 0%, rgba(8, 3, 16, 0.3) 38%, rgba(8, 3, 16, 0.92) 100%),
+    url('/camo/arte-hipnose.jpg');
+  border-color: rgba(250, 204, 21, 0.55);
+}
+
+.hip-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: #f8ecc2;
+  font-family: 'Inter Tight', sans-serif;
+}
+
+.hip-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hip-nome {
+  font-family: 'Black Ops One', Impact, sans-serif;
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff3c4;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.hip-hp {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #fde68a;
+}
+
+.hip-hp b {
+  color: #fca5a5;
+}
+
+.hip-tipo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hip-badge {
+  padding: 0.12rem 0.42rem;
+  border-radius: 3px;
+  background: #c4b5fd;
+  color: #2e1065;
+  font-size: 0.5rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hip-num {
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hip-ataque {
+  margin-top: auto;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid rgba(253, 230, 138, 0.35);
+  border-radius: 6px;
+  background: rgba(10, 4, 20, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.hip-ataque-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.hip-ataque p {
+  margin-top: 0.15rem;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.hip-rodape {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(253, 230, 138, 0.6);
+}
+
+/* ---------- Eter ---------- */
+.profile-card--arte-eter {
+  background-image:
+    linear-gradient(180deg, rgba(20, 8, 40, 0.18) 0%, rgba(12, 6, 30, 0.35) 40%, rgba(12, 6, 30, 0.9) 100%),
+    url('/camo/arte-eter.jpg');
+  border-color: rgba(129, 140, 248, 0.55);
+}
+
+.eter-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  color: #ede9fe;
+  font-family: 'Inter Tight', sans-serif;
+}
+
+.eter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eter-badge {
+  padding: 0.14rem 0.45rem;
+  border-radius: 3px;
+  background: #c4b5fd;
+  color: #1e1b4b;
+  font-size: 0.48rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.eter-num {
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: rgba(237, 233, 254, 0.6);
+}
+
+.eter-nome {
+  margin-top: 0.55rem;
+  font-family: 'Black Ops One', Impact, sans-serif;
+  font-size: 1.02rem;
+  text-transform: uppercase;
+  color: #f5f3ff;
+  text-shadow: 0 2px 14px rgba(76, 29, 149, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.eter-caixa {
+  margin-top: auto;
+  padding: 0.5rem;
+  border: 1px solid rgba(196, 181, 253, 0.4);
+  border-radius: 6px;
+  background: rgba(30, 27, 75, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.eter-caixa p {
+  font-size: 0.58rem;
+  line-height: 1.4;
+  color: rgba(237, 233, 254, 0.85);
+}
+
+.eter-caixa b {
+  color: #ddd6fe;
+}
+
+.eter-flavor {
+  margin-top: 0.3rem;
+  font-style: italic;
+  color: rgba(196, 181, 253, 0.75) !important;
+}
+
+.eter-rodape {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(237, 233, 254, 0.55);
+}
+
+/* ---------- Rubra ---------- */
+.profile-card--arte-rubra {
+  background-image:
+    linear-gradient(180deg, rgba(30, 4, 4, 0.3), rgba(18, 2, 2, 0.88)),
+    url('/camo/arte-rubra.jpg');
+  border-color: rgba(220, 38, 38, 0.55);
+}
+
+.rub-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  color: #f7e6cf;
+  font-family: 'Inter Tight', sans-serif;
+}
+
+.rub-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(247, 230, 207, 0.35);
+}
+
+.rub-head span:first-child {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.rub-head span:last-child {
+  font-size: 0.46rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(247, 230, 207, 0.6);
+}
+
+.rub-meio {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+}
+
+.rub-foto {
+  width: 62px;
+  height: 76px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid rgba(247, 230, 207, 0.4);
+  border-radius: 4px;
+  background: #1a0b0b;
+}
+
+.rub-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rub-dados {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rub-dados p {
+  display: flex;
+  flex-direction: column;
+}
+
+.rub-dados span {
+  font-size: 0.42rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(247, 230, 207, 0.55);
+}
+
+.rub-dados b {
+  font-size: 0.66rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.rub-chip {
+  margin-top: auto;
+  width: 34px;
+  height: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f5d08a, #b45309);
+}
+
+.rub-serie {
+  margin-top: 0.45rem;
+  overflow: hidden;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 0.42rem;
+  letter-spacing: 0.12em;
+  color: rgba(247, 230, 207, 0.55);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Oxido ---------- */
+.profile-card--arte-oxido {
+  background-image:
+    linear-gradient(180deg, rgba(20, 12, 6, 0.3), rgba(12, 7, 4, 0.9)),
+    url('/camo/arte-oxido.jpg');
+  border-color: rgba(180, 83, 9, 0.55);
+}
+
+.oxi-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  color: #e9d5b5;
+  font-family: 'Special Elite', 'Courier New', monospace;
+}
+
+.oxi-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.oxi-head > span:first-child {
+  font-size: 0.52rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(233, 213, 181, 0.75);
+}
+
+.oxi-carimbo {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 2px solid rgba(220, 38, 38, 0.75);
+  border-radius: 50%;
+  color: #fca5a5;
+  font-size: 0.46rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-12deg);
+}
+
+.oxi-nome {
+  margin-top: 0.7rem;
+  font-family: 'Black Ops One', Impact, sans-serif;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  color: #f3e3c3;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.oxi-linhas {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(233, 213, 181, 0.35);
+}
+
+.oxi-linhas p {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(233, 213, 181, 0.7);
+}
+
+.oxi-linhas b {
+  color: #f3e3c3;
+}
+
+.oxi-rodape {
+  margin-top: 0.55rem;
+  font-size: 0.42rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(233, 213, 181, 0.45);
+}
+
+/* ---------- Cromo ---------- */
+.profile-card--arte-cromo {
+  background-image:
+    linear-gradient(180deg, rgba(10, 10, 12, 0.3), rgba(10, 10, 12, 0.85)),
+    url('/camo/arte-cromo.jpg');
+  border-color: rgba(229, 231, 235, 0.55);
+}
+
+.crom-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  color: #f4f4f5;
+  font-family: 'Inter Tight', sans-serif;
+}
+
+.crom-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 245, 0.7);
+}
+
+.crom-centro {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.crom-mono {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 3.2rem;
+  line-height: 0.8;
+  color: rgba(244, 244, 245, 0.9);
+}
+
+.crom-nome {
+  margin-top: 0.2rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.crom-sub {
+  margin-top: 0.2rem;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 245, 0.6);
+}
+
+.crom-rodape {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.crom-linha {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(244, 244, 245, 0.6), transparent);
+}
+
+.crom-rodape span:last-child {
+  font-size: 0.46rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 245, 0.55);
+}
+
+/* ---------- Aurora ---------- */
+.profile-card--arte-aurora {
+  background-image:
+    linear-gradient(180deg, rgba(6, 10, 20, 0.2), rgba(6, 10, 20, 0.82)),
+    url('/camo/arte-aurora.jpg');
+  border-color: rgba(94, 234, 212, 0.5);
+}
+
+.aur-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #f0fdfa;
+}
+
+.aur-kicker {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(240, 253, 250, 0.7);
+}
+
+.aur-nome {
+  margin-top: 0.5rem;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 1.85rem;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
+  overflow-wrap: anywhere;
+}
+
+.aur-sub {
+  margin-top: 0.4rem;
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(240, 253, 250, 0.7);
+}
+
+.aur-rule {
+  margin-top: 0.9rem;
+  width: 44px;
+  height: 1px;
+  background: rgba(240, 253, 250, 0.5);
+}
+
+.aur-rodape {
+  margin-top: auto;
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(240, 253, 250, 0.55);
+}
+
+/* ---------- Nomes (cores) das artes novas 2 ---------- */
+.nome-cor-arte-hipnose,
+.nome-cor-arte-eter,
+.nome-cor-arte-rubra,
+.nome-cor-arte-oxido,
+.nome-cor-arte-cromo,
+.nome-cor-arte-aurora {
+  background-size: cover, 240% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: nomePan 8s linear infinite;
+}
+
+.nome-cor-arte-hipnose {
+  background-image: url('/camo/arte-hipnose.jpg'), linear-gradient(120deg, #1e1b4b, #a855f7, #22d3ee, #1e1b4b);
+}
+
+.nome-cor-arte-eter {
+  background-image: url('/camo/arte-eter.jpg'), linear-gradient(120deg, #1e1b4b, #818cf8, #22d3ee, #1e1b4b);
+}
+
+.nome-cor-arte-rubra {
+  background-image: url('/camo/arte-rubra.jpg'), linear-gradient(120deg, #450a0a, #dc2626, #f59e0b, #450a0a);
+}
+
+.nome-cor-arte-oxido {
+  background-image: url('/camo/arte-oxido.jpg'), linear-gradient(120deg, #1c1917, #b45309, #14b8a6, #1c1917);
+}
+
+.nome-cor-arte-cromo {
+  background-image: url('/camo/arte-cromo.jpg'), linear-gradient(120deg, #18181b, #e5e7eb, #71717a, #18181b);
+}
+
+.nome-cor-arte-aurora {
+  background-image: url('/camo/arte-aurora.jpg'), linear-gradient(120deg, #042f2e, #5eead4, #818cf8, #042f2e);
+}

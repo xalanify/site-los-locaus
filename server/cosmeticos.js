@@ -36,6 +36,12 @@ const CORES = [
   { id: 'cor-arte-galaxia', nome: 'Galáxia', valor: 'arte-galaxia', custo: 130, cor: '#f472b6' },
   { id: 'cor-arte-cristal', nome: 'Cristal', valor: 'arte-cristal', custo: 132, cor: '#a78bfa' },
   { id: 'cor-arte-metal', nome: 'Hex Metal', valor: 'arte-metal', custo: 134, cor: '#cbd5e1' },
+  { id: 'cor-arte-hipnose', nome: 'Hipnose', valor: 'arte-hipnose', custo: 150, cor: '#a855f7' },
+  { id: 'cor-arte-eter', nome: 'Éter', valor: 'arte-eter', custo: 152, cor: '#818cf8' },
+  { id: 'cor-arte-rubra', nome: 'Rubra', valor: 'arte-rubra', custo: 154, cor: '#dc2626' },
+  { id: 'cor-arte-oxido', nome: 'Óxido', valor: 'arte-oxido', custo: 156, cor: '#b45309' },
+  { id: 'cor-arte-cromo', nome: 'Cromo Líquido', valor: 'arte-cromo', custo: 158, cor: '#e5e7eb' },
+  { id: 'cor-arte-aurora', nome: 'Aurora', valor: 'arte-aurora', custo: 160, cor: '#5eead4' },
 ];
 
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
@@ -87,6 +93,12 @@ const CARTAS = [
   { id: 'carta-arte-cristal', nome: 'Carta Cristal', valor: 'arte-cristal', custo: 97, cor: '#a78bfa' },
   { id: 'carta-arte-metal', nome: 'Carta Hex Metal', valor: 'arte-metal', custo: 99, cor: '#cbd5e1' },
   { id: 'carta-arte-tranzit', nome: 'Carta Tranzit', valor: 'arte-tranzit', custo: 105, cor: '#d9a441' },
+  { id: 'carta-arte-hipnose', nome: 'Carta Hipnose', valor: 'arte-hipnose', custo: 120, cor: '#c084fc' },
+  { id: 'carta-arte-eter', nome: 'Carta Éter', valor: 'arte-eter', custo: 125, cor: '#818cf8' },
+  { id: 'carta-arte-rubra', nome: 'Carta Rubra', valor: 'arte-rubra', custo: 130, cor: '#dc2626' },
+  { id: 'carta-arte-oxido', nome: 'Carta Óxido', valor: 'arte-oxido', custo: 135, cor: '#b45309' },
+  { id: 'carta-arte-cromo', nome: 'Carta Cromo', valor: 'arte-cromo', custo: 140, cor: '#e5e7eb' },
+  { id: 'carta-arte-aurora', nome: 'Carta Aurora', valor: 'arte-aurora', custo: 145, cor: '#5eead4' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.
