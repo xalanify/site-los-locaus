@@ -3016,25 +3016,3 @@ body.kova main {
 .nome-cor-arte-teia { background-image: url('/camo/arte-teia.jpg'), linear-gradient(120deg, #020617, #cbd5e1, #f8fafc, #020617); }
 .nome-cor-arte-suspenso { background-image: url('/camo/arte-suspenso.jpg'), linear-gradient(120deg, #0a0a0a, #e5e7eb, #ffffff, #0a0a0a); }
 .nome-cor-arte-prisma { background-image: url('/camo/arte-prisma.jpg'), linear-gradient(120deg, #ffffff, #a5f3fc, #f0abfc, #ffffff); }
-
-/* ---------- Nome 3D prata (segue o rato no cartao) ---------- */
-.nome-cor-3d-prata {
-  display: inline-block;
-  background: linear-gradient(180deg, #ffffff 0%, #d1d5db 28%, #6b7280 52%, #e5e7eb 72%, #ffffff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  text-shadow:
-    0 1px 0 #9ca3af,
-    0 2px 0 #8b93a0,
-    0 3px 0 #7c8592,
-    0 4px 0 #6b7280,
-    0 5px 0 #525a66,
-    0 6px 0 #3f4650,
-    0 10px 18px rgba(0, 0, 0, 0.55);
-  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transform-style: preserve-3d;
-  transition: transform 0.12s ease-out;
-  will-change: transform;
-}

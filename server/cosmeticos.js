@@ -51,7 +51,6 @@ const CORES = [
   { id: 'cor-arte-mercurio', nome: 'Mercúrio', valor: 'arte-mercurio', custo: 182, cor: '#cbd5e1' },
   { id: 'cor-arte-marmore', nome: 'Mármore', valor: 'arte-marmore', custo: 184, cor: '#1d4ed8' },
   { id: 'cor-arte-tinta', nome: 'Tinta', valor: 'arte-tinta', custo: 186, cor: '#14b8a6' },
-  { id: 'cor-3d-prata', nome: 'Prata 3D', valor: '3d-prata', custo: 190, cor: '#e5e7eb' },
   { id: 'cor-arte-asfalto', nome: 'Asfalto', valor: 'arte-asfalto', custo: 188, cor: '#64748b' },
   { id: 'cor-arte-ouro-negro', nome: 'Ouro Negro', valor: 'arte-ouro-negro', custo: 190, cor: '#b45309' },
   { id: 'cor-arte-glitch', nome: 'Glitch', valor: 'arte-glitch', custo: 192, cor: '#ef4444' },
@@ -164,7 +163,6 @@ const CORES_EXCECAO = new Set([
   'camo-damascus',
   'camo-purple',
   'camo-gold',
-  'cor-3d-prata',
 ]);
 
 const nivelCor = (item) => {
