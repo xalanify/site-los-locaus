@@ -8,7 +8,7 @@ export const NOVIDADES_VERSAO = '2026-11-01-3'
 export const NOVIDADES = {
   versao: NOVIDADES_VERSAO,
   titulo: 'Novas cartas + cores',
-  subtitulo: '13 cartas e 13 cores de nome com artes novas. Já no mercado.',
+  subtitulo: '18 cartas e 15 cores de nome com artes novas. Já no mercado.',
   data: '1 de novembro de 2026',
   secoes: [],
 }

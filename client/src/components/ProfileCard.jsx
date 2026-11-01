@@ -117,9 +117,6 @@ export default function ProfileCard({
 }) {
   const v = VARIANT_LABEL[variant] ? variant : 'padrao'
   const accent = VARIANT_ACCENT[v]
-  const holo = /^arte-(hipnose|eter|rubra|cromo|malaquite|filigrana|dragao|estrela|ouro|vidro|operador|inverno|corrente|vela|siberia|mercurio|marmore|tinta)$/.test(
-    v,
-  )
   const wide =
     v === 'license' || v === 'blood' || v === 'crimson' || v === 'sleepin' || v === 'dev'
   const violet = v === 'violet'
@@ -209,8 +206,6 @@ export default function ProfileCard({
       onPointerCancel={aoSoltar}
       onClick={aoClicarCarta}
       className={`profile-card profile-card--${v} group ${
-        holo ? 'profile-card--holo' : ''
-      } ${
         wide
           ? 'profile-card--wide'
           : violet
@@ -237,7 +232,6 @@ export default function ProfileCard({
       </span>
       <span className="pc-glow" aria-hidden="true" />
       <span className="pc-ripple" aria-hidden="true" />
-      {holo && <span className="pc-holo" aria-hidden="true" />}
 
       <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' ? 'p-0' : 'p-4 sm:p-5'}`}>
         {v === 'sleepin' || v === 'dev' ? (

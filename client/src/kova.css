@@ -2847,6 +2847,10 @@ body.kova main {
 .nome-cor-arte-marmore,
 .nome-cor-arte-tinta {
   background-size: cover, 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
   animation: nomePan 4.5s linear infinite, nomeBrilho 3s ease-in-out infinite;
 }
 

@@ -11,6 +11,7 @@ import BetaBadge from './components/BetaBadge'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import NovidadesModal from './components/NovidadesModal'
+import Bonus5Modal from './components/Bonus5Modal'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
@@ -383,6 +384,7 @@ function App() {
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
                 <NovidadesModal user={user} />
+                <Bonus5Modal user={user} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

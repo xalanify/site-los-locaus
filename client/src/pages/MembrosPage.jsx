@@ -109,14 +109,15 @@ export default function MembrosPage({ onProfile }) {
           )}
         </div>
       ) : vista === 'cartas' ? (
-        <div className="columns-1 gap-4 sm:columns-2 xl:columns-3 2xl:columns-4">
+        <div className="flex flex-wrap gap-3">
           {filtrados.map((m) => (
-            <div key={m.id} className="mb-4 break-inside-avoid">
-              <button
-                type="button"
-                onClick={() => setCartaZoom(m)}
-                className="block w-full text-left"
-              >
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setCartaZoom(m)}
+              className="group relative h-[150px] w-[132px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"
+            >
+              <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.34] -translate-x-1/2 -translate-y-1/2">
                 <ProfileCard
                   perfil={m}
                   variant={m.card_style || 'padrao'}
@@ -126,10 +127,13 @@ export default function MembrosPage({ onProfile }) {
                       ...Object.keys(m.game_ranks || {}),
                     ]),
                   ].filter((g) => g !== 'csgo')}
-                  className="w-full"
+                  className="w-[380px]"
                 />
-              </button>
-            </div>
+              </span>
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-300">
+                {m.username}
+              </span>
+            </button>
           ))}
         </div>
       ) : (

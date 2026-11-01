@@ -26,28 +26,41 @@ const PERFIL_EXEMPLO = {
 export default function NovidadesModal({ user }) {
   const [aberto, setAberto] = useState(false)
 
-  const chave = `locaus:novidades:${NOVIDADES.versao}:ocultar:${user?.id || user?.username || 'anon'}`
+  const chaveNaoMostrar = `locaus:novidades:nao-mostrar:${user?.id || user?.username || 'anon'}`
 
   useEffect(() => {
+    let mostrar = true
     try {
-      if (!localStorage.getItem(chave)) setAberto(true)
+      mostrar = !localStorage.getItem(chaveNaoMostrar)
     } catch {
-      setAberto(true)
+      mostrar = true
+    }
+    if (mostrar) setAberto(true)
+    else {
+      // sem novidades para mostrar: o aviso das 5 moedas pode seguir
+      setTimeout(() => window.dispatchEvent(new Event('locaus:novidades-fechou')), 0)
     }
     const abrir = () => setAberto(true)
     window.addEventListener('locaus:abrir-novidades', abrir)
     return () => window.removeEventListener('locaus:abrir-novidades', abrir)
-  }, [chave])
+  }, [chaveNaoMostrar])
 
-  const fechar = () => setAberto(false)
-
-  const entendi = () => {
+  const fechar = () => {
+    setAberto(false)
     try {
-      localStorage.setItem(chave, '1')
+      window.dispatchEvent(new Event('locaus:novidades-fechou'))
+    } catch {
+      /* nada */
+    }
+  }
+
+  const naoMostrar = () => {
+    try {
+      localStorage.setItem(chaveNaoMostrar, '1')
     } catch {
       /* sem armazenamento */
     }
-    setAberto(false)
+    fechar()
   }
 
   return createPortal(
@@ -140,13 +153,20 @@ export default function NovidadesModal({ user }) {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-white/10 px-5 py-3.5 sm:px-6">
+            <div className="flex items-center justify-end gap-2 border-t border-white/10 px-5 py-3.5 sm:px-6">
               <button
                 type="button"
-                onClick={entendi}
+                onClick={fechar}
+                className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-bold text-zinc-300 transition-colors hover:bg-white/5"
+              >
+                Continuar
+              </button>
+              <button
+                type="button"
+                onClick={naoMostrar}
                 className="rounded-xl bg-[#ff9e9e] px-5 py-2.5 text-sm font-bold text-[#1a0f0f] transition-[filter] hover:brightness-105"
               >
-                Entendi
+                Não mostrar novamente
               </button>
             </div>
           </motion.div>

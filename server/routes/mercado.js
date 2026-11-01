@@ -10,6 +10,23 @@ const router = express.Router();
 
 const uidDe = (req) => Number(req.auth && req.auth.uid);
 
+/* Bónus de 5 moedas (nov/2026): só quem recebeu vê o aviso. */
+const MOTIVO_BONUS5 = 'Bónus de 5 moedas (nov/2026)';
+
+router.get('/bonus5', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    const row = await getDb()
+      .prepare('SELECT 1 AS ok FROM mercado_ledger WHERE user_id = ? AND motivo = ? LIMIT 1')
+      .get(uid, MOTIVO_BONUS5);
+    res.json({ bonus: Boolean(row) });
+  } catch (e) {
+    console.error('Mercado bonus5:', e.message);
+    res.status(500).json({ error: 'Não foi possível verificar o bónus.' });
+  }
+});
+
 router.get('/', requireUser, async (req, res) => {
   try {
     const uid = uidDe(req);
