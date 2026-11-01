@@ -40,6 +40,15 @@ const VARIANT_LABEL = {
   'arte-oxido': 'OXIDE CARD',
   'arte-cromo': 'CHROME CARD',
   'arte-aurora': 'AURORA CARD',
+  'arte-malaquite': 'MALAQUITE CARD',
+  'arte-filigrana': 'FILIGRANA CARD',
+  'arte-dragao': 'DRAGON CARD',
+  'arte-estrela': 'STAR CARD',
+  'arte-ouro': 'GOLD CARD',
+  'arte-vidro': 'GLASS CARD',
+  'arte-operador': 'OPERATOR CARD',
+  'arte-inverno': 'WINTER CARD',
+  'arte-corrente': 'CHAIN CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -71,6 +80,15 @@ const VARIANT_ACCENT = {
   'arte-oxido': '#b45309',
   'arte-cromo': '#e5e7eb',
   'arte-aurora': '#5eead4',
+  'arte-malaquite': '#10b981',
+  'arte-filigrana': '#bfdbfe',
+  'arte-dragao': '#ef4444',
+  'arte-estrela': '#dc2626',
+  'arte-ouro': '#f5c542',
+  'arte-vidro': '#e2e8f0',
+  'arte-operador': '#a1a1aa',
+  'arte-inverno': '#bfdbfe',
+  'arte-corrente': '#94a3b8',
 }
 
 const ano = (iso) => {
@@ -430,6 +448,129 @@ export default function ProfileCard({
             <span className="aur-sub">Membro #{id} · {ano(perfil.created_at)}</span>
             <span className="aur-rule" />
             <span className="aur-rodape">Aurora</span>
+          </div>
+        ) : v === 'arte-malaquite' ? (
+          <div className="mal-body">
+            <div className="mal-top">
+              <span>Malaquite</span>
+              <span>47°N · 8°W</span>
+            </div>
+            <div className="mal-centro">
+              <span className="mal-coord">Elev. 1.240 m</span>
+              <h3 className="mal-nome">{username}</h3>
+            </div>
+            <div className="mal-grade">
+              <span>Setor {id}</span>
+              <span>Escala 1:{id}00</span>
+              <span>Locaus {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-filigrana' ? (
+          <div className="fil-body">
+            <span className="fil-orn">❦</span>
+            <h3 className="fil-nome">{username}</h3>
+            <span className="fil-rule" />
+            <span className="fil-sub">Filigrana · Membro #{id}</span>
+            <span className="fil-rodape">Locaus {ano(perfil.created_at)}</span>
+          </div>
+        ) : v === 'arte-dragao' ? (
+          <div className="dra-body">
+            <div className="dra-lado">
+              <span className="dra-selo">{String(username).slice(0, 1).toUpperCase()}</span>
+              <h3 className="dra-vertical">{username}</h3>
+            </div>
+            <div className="dra-dir">
+              <span className="dra-titulo">Dragão</span>
+              <span className="dra-sub">
+                Membro #{id}
+                <br />
+                Locaus {ano(perfil.created_at)}
+              </span>
+            </div>
+          </div>
+        ) : v === 'arte-estrela' ? (
+          <div className="est-body">
+            <div className="est-top">
+              <span>Estrela</span>
+              <span>#{id}</span>
+            </div>
+            <h3 className="est-nome">{username}</h3>
+            <span className="est-linha" />
+            <span className="est-sub">Membro Locaus · {ano(perfil.created_at)}</span>
+            <div className="est-rodape">
+              <span>Olho aberto</span>
+              <span>Locaus</span>
+            </div>
+          </div>
+        ) : v === 'arte-ouro' ? (
+          <div className="our-body">
+            <span className="our-kicker">Locaus</span>
+            <h3 className="our-nome">{username}</h3>
+            <span className="our-rule" />
+            <span className="our-sub">Ouro · Membro #{id}</span>
+            <span className="our-rodape">{ano(perfil.created_at)} · Série {id}</span>
+          </div>
+        ) : v === 'arte-vidro' ? (
+          <div className="vid-body">
+            <div className="vid-top">
+              <span>Obj: Vidro</span>
+              <span>#{id}</span>
+            </div>
+            <div className="vid-centro">
+              <span className="vid-obj">Material · cristal</span>
+              <h3 className="vid-nome">{username}</h3>
+              <span className="vid-linha" />
+            </div>
+            <div className="vid-rodape">
+              <span>Locaus</span>
+              <span>{ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-operador' ? (
+          <div className="ope-body">
+            <div className="ope-top">
+              <span>Dossiê · Operador</span>
+              <span className="ope-selo">Ativo</span>
+            </div>
+            <h3 className="ope-nome">{username}</h3>
+            <span className="ope-redig" />
+            <div className="ope-linhas">
+              <p>
+                ID <b>#{id}</b>
+              </p>
+              <p>
+                Unidade <b>Locaus</b>
+              </p>
+              <p>
+                Estado <b>Ativo</b>
+              </p>
+            </div>
+            <p className="ope-rodape">Confidencial · {ano(perfil.created_at)}</p>
+          </div>
+        ) : v === 'arte-inverno' ? (
+          <div className="inv-body">
+            <span className="inv-top">Inverno</span>
+            <h3 className="inv-nome">{username}</h3>
+            <span className="inv-rule" />
+            <div className="inv-rodape">
+              <span>Membro #{id}</span>
+              <span>Locaus {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-corrente' ? (
+          <div className="cor-body">
+            <div className="cor-top">
+              <span>Chain</span>
+              <span>#{id}</span>
+            </div>
+            <div className="cor-centro">
+              <h3 className="cor-nome">{username}</h3>
+              <span className="cor-sub">Membro Locaus</span>
+            </div>
+            <div className="cor-rodape">
+              <span>{ano(perfil.created_at)}</span>
+              <span>Série {id}</span>
+            </div>
           </div>
         ) : (
           <>

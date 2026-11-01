@@ -39,9 +39,16 @@ const CORES = [
   { id: 'cor-arte-hipnose', nome: 'Hipnose', valor: 'arte-hipnose', custo: 150, cor: '#a855f7' },
   { id: 'cor-arte-eter', nome: 'Éter', valor: 'arte-eter', custo: 152, cor: '#818cf8' },
   { id: 'cor-arte-rubra', nome: 'Rubra', valor: 'arte-rubra', custo: 154, cor: '#dc2626' },
-  { id: 'cor-arte-oxido', nome: 'Óxido', valor: 'arte-oxido', custo: 156, cor: '#b45309' },
   { id: 'cor-arte-cromo', nome: 'Cromo Líquido', valor: 'arte-cromo', custo: 158, cor: '#e5e7eb' },
-  { id: 'cor-arte-aurora', nome: 'Aurora', valor: 'arte-aurora', custo: 160, cor: '#5eead4' },
+  { id: 'cor-arte-malaquite', nome: 'Malaquite', valor: 'arte-malaquite', custo: 160, cor: '#10b981' },
+  { id: 'cor-arte-filigrana', nome: 'Filigrana', valor: 'arte-filigrana', custo: 162, cor: '#bfdbfe' },
+  { id: 'cor-arte-dragao', nome: 'Dragão', valor: 'arte-dragao', custo: 164, cor: '#ef4444' },
+  { id: 'cor-arte-estrela', nome: 'Estrela', valor: 'arte-estrela', custo: 166, cor: '#dc2626' },
+  { id: 'cor-arte-ouro', nome: 'Ouro', valor: 'arte-ouro', custo: 168, cor: '#f5c542' },
+  { id: 'cor-arte-vidro', nome: 'Vidro', valor: 'arte-vidro', custo: 170, cor: '#e2e8f0' },
+  { id: 'cor-arte-operador', nome: 'Operador', valor: 'arte-operador', custo: 172, cor: '#a1a1aa' },
+  { id: 'cor-arte-inverno', nome: 'Inverno', valor: 'arte-inverno', custo: 174, cor: '#bfdbfe' },
+  { id: 'cor-arte-corrente', nome: 'Corrente', valor: 'arte-corrente', custo: 176, cor: '#94a3b8' },
 ];
 
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
@@ -96,9 +103,16 @@ const CARTAS = [
   { id: 'carta-arte-hipnose', nome: 'Carta Hipnose', valor: 'arte-hipnose', custo: 120, cor: '#c084fc' },
   { id: 'carta-arte-eter', nome: 'Carta Éter', valor: 'arte-eter', custo: 125, cor: '#818cf8' },
   { id: 'carta-arte-rubra', nome: 'Carta Rubra', valor: 'arte-rubra', custo: 130, cor: '#dc2626' },
-  { id: 'carta-arte-oxido', nome: 'Carta Óxido', valor: 'arte-oxido', custo: 135, cor: '#b45309' },
   { id: 'carta-arte-cromo', nome: 'Carta Cromo', valor: 'arte-cromo', custo: 140, cor: '#e5e7eb' },
-  { id: 'carta-arte-aurora', nome: 'Carta Aurora', valor: 'arte-aurora', custo: 145, cor: '#5eead4' },
+  { id: 'carta-arte-malaquite', nome: 'Carta Malaquite', valor: 'arte-malaquite', custo: 145, cor: '#10b981' },
+  { id: 'carta-arte-filigrana', nome: 'Carta Filigrana', valor: 'arte-filigrana', custo: 150, cor: '#bfdbfe' },
+  { id: 'carta-arte-dragao', nome: 'Carta Dragão', valor: 'arte-dragao', custo: 155, cor: '#ef4444' },
+  { id: 'carta-arte-estrela', nome: 'Carta Estrela', valor: 'arte-estrela', custo: 160, cor: '#dc2626' },
+  { id: 'carta-arte-ouro', nome: 'Carta Ouro', valor: 'arte-ouro', custo: 165, cor: '#f5c542' },
+  { id: 'carta-arte-vidro', nome: 'Carta Vidro', valor: 'arte-vidro', custo: 170, cor: '#e2e8f0' },
+  { id: 'carta-arte-operador', nome: 'Carta Operador', valor: 'arte-operador', custo: 175, cor: '#a1a1aa' },
+  { id: 'carta-arte-inverno', nome: 'Carta Inverno', valor: 'arte-inverno', custo: 180, cor: '#bfdbfe' },
+  { id: 'carta-arte-corrente', nome: 'Carta Corrente', valor: 'arte-corrente', custo: 185, cor: '#94a3b8' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.

@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Sparkles, ChevronRight } from 'lucide-react'
+import { X } from 'lucide-react'
 import { NOVIDADES } from '../data/novidades'
+import { ARTES_NOVAS } from '../data/artesNovas'
 import ProfileCard from './ProfileCard'
-import ProfileStylePreview from './ProfileStylePreview'
 
 /* ============================================================
-   Janela de novidades — títulos curtos e exemplos visuais.
-   Aparece uma vez por versão e volta a aparecer quando a versão
-   muda. Pensada para o telemóvel.
+   Janela de novidades — só as artes novas (cores + cartas).
+   Aparece uma vez por versão.
    ============================================================ */
 
 const PERFIL_EXEMPLO = {
@@ -23,18 +22,6 @@ const PERFIL_EXEMPLO = {
   game_accounts: ['r6', 'cs2'],
   created_at: '2026-01-01',
 }
-
-const CARTAS_EXEMPLO = [
-  { valor: 'license', nome: 'License' },
-  { valor: 'felony', nome: 'Felony' },
-  { valor: 'cosmic', nome: 'Cosmic' },
-]
-
-const ESTILOS_EXEMPLO = [
-  { valor: 'neon', nome: 'Neon' },
-  { valor: 'blood', nome: 'Blood' },
-  { valor: 'cosmic', nome: 'Cosmic' },
-]
 
 export default function NovidadesModal({ user }) {
   const [aberto, setAberto] = useState(false)
@@ -103,79 +90,57 @@ export default function NovidadesModal({ user }) {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
-              <ul className="grid gap-2.5 sm:grid-cols-2">
-                {NOVIDADES.secoes.map((s) => (
-                  <li
-                    key={s.titulo}
-                    className="flex items-start gap-2.5 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5"
-                  >
-                    <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#ff9e9e]/15 text-[#ff9e9e]">
-                      <Sparkles className="h-3 w-3" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[12.5px] font-bold leading-snug text-zinc-100">
-                        {s.titulo}
-                      </p>
-                      <p className="mt-0.5 text-[11px] leading-snug text-zinc-500">{s.texto}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              {/* exemplos visuais */}
-              <div className="mt-4 space-y-3">
-                <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
-                    Cartas de perfil
-                  </p>
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {CARTAS_EXEMPLO.map((c) => (
-                      <div
-                        key={c.valor}
-                        className="relative h-[132px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"
+              <div>
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                  Cores de nome
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {ARTES_NOVAS.map((a) => (
+                    <div
+                      key={a.slug}
+                      className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-center"
+                    >
+                      <span
+                        className={`nome-cor-arte-${a.slug} block truncate text-base font-black`}
                       >
-                        <div className="pointer-events-none absolute left-1/2 top-1/2 origin-center scale-[0.3] -translate-x-1/2 -translate-y-1/2">
-                          <ProfileCard
-                            perfil={{ ...PERFIL_EXEMPLO, card_style: c.valor }}
-                            variant={c.valor}
-                            jogos={['r6', 'cs2']}
-                            className="w-[380px]"
-                          />
-                        </div>
-                        <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-300">
-                          {c.nome}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                        Los Locaus
+                      </span>
+                      <span className="mt-0.5 block text-[9px] font-black uppercase tracking-wider text-zinc-500">
+                        {a.nome}
+                      </span>
+                    </div>
+                  ))}
                 </div>
+              </div>
 
-                <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
-                    Estilos de perfil · em breve
-                  </p>
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {ESTILOS_EXEMPLO.map((e) => (
-                      <div key={e.valor} className="w-[190px] shrink-0">
-                        <ProfileStylePreview style={e.valor} nome="Los Locaus" />
-                        <p className="mt-1 text-center text-[9px] font-black uppercase tracking-wider text-zinc-500">
-                          {e.nome}
-                        </p>
+              <div className="mt-4">
+                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                  Cartas de perfil
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {ARTES_NOVAS.map((a) => (
+                    <div
+                      key={a.slug}
+                      className="relative h-[150px] w-[132px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"
+                    >
+                      <div className="pointer-events-none absolute left-1/2 top-1/2 origin-center scale-[0.32] -translate-x-1/2 -translate-y-1/2">
+                        <ProfileCard
+                          perfil={{ ...PERFIL_EXEMPLO, card_style: `arte-${a.slug}` }}
+                          variant={`arte-${a.slug}`}
+                          jogos={['r6', 'cs2']}
+                          className="w-[380px]"
+                        />
                       </div>
-                    ))}
-                  </div>
+                      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-300">
+                        {a.nome}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-3.5 sm:px-6">
-              <a
-                href="/distincoes"
-                onClick={fechar}
-                className="inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-300 transition-colors hover:text-white"
-              >
-                Todas as atualizações <ChevronRight className="h-3.5 w-3.5" />
-              </a>
+            <div className="flex items-center justify-end gap-3 border-t border-white/10 px-5 py-3.5 sm:px-6">
               <button
                 type="button"
                 onClick={entendi}

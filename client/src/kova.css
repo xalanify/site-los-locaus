@@ -2515,3 +2515,202 @@ body.kova main {
 .nome-cor-arte-aurora {
   background-image: url('/camo/arte-aurora.jpg'), linear-gradient(120deg, #042f2e, #5eead4, #818cf8, #042f2e);
 }
+/* ============================================================
+   ARTES 3 - Malaquite, Filigrana, Dragao, Estrela, Ouro,
+   Vidro, Operador, Inverno, Corrente
+   ============================================================ */
+
+.profile-card--arte-malaquite,
+.profile-card--arte-filigrana,
+.profile-card--arte-dragao,
+.profile-card--arte-estrela,
+.profile-card--arte-ouro,
+.profile-card--arte-vidro,
+.profile-card--arte-operador,
+.profile-card--arte-inverno,
+.profile-card--arte-corrente {
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.profile-card--arte-malaquite .pc-body,
+.profile-card--arte-filigrana .pc-body,
+.profile-card--arte-dragao .pc-body,
+.profile-card--arte-estrela .pc-body,
+.profile-card--arte-ouro .pc-body,
+.profile-card--arte-vidro .pc-body,
+.profile-card--arte-operador .pc-body,
+.profile-card--arte-inverno .pc-body,
+.profile-card--arte-corrente .pc-body {
+  flex: 1 1 auto;
+}
+
+.profile-card--arte-malaquite {
+  background-image:
+    linear-gradient(180deg, rgba(2, 10, 6, 0.12) 0%, rgba(2, 10, 6, 0.35) 45%, rgba(2, 10, 6, 0.9) 100%),
+    url('/camo/arte-malaquite.jpg');
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.mal-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #d1fae5; font-family: 'Archivo', sans-serif; }
+.mal-top { display: flex; justify-content: space-between; font-size: 0.5rem; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(209, 250, 229, 0.7); }
+.mal-centro { margin-top: auto; }
+.mal-coord { display: block; font-family: 'Special Elite', monospace; font-size: 0.5rem; letter-spacing: 0.16em; color: rgba(209, 250, 229, 0.65); }
+.mal-nome { margin-top: 0.25rem; font-size: 1.45rem; font-weight: 900; letter-spacing: -0.01em; line-height: 0.95; text-transform: uppercase; color: #ecfdf5; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.85); overflow-wrap: anywhere; }
+.mal-grade { margin-top: 0.9rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.3rem; padding-top: 0.45rem; border-top: 1px solid rgba(209, 250, 229, 0.25); font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(209, 250, 229, 0.6); }
+
+.profile-card--arte-filigrana {
+  background-image:
+    linear-gradient(180deg, rgba(2, 4, 20, 0.2) 0%, rgba(2, 4, 20, 0.35) 45%, rgba(2, 4, 20, 0.88) 100%),
+    url('/camo/arte-filigrana.jpg');
+  border-color: rgba(191, 219, 254, 0.5);
+}
+
+.fil-body { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #e0e7ff; }
+.fil-orn { font-family: 'Instrument Serif', Georgia, serif; font-size: 1.1rem; color: rgba(224, 231, 255, 0.85); }
+.fil-nome { margin-top: 0.35rem; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 1.95rem; line-height: 1; color: #fff; text-shadow: 0 4px 24px rgba(0, 0, 0, 0.8); overflow-wrap: anywhere; }
+.fil-rule { margin-top: 0.7rem; width: 56px; height: 1px; background: rgba(224, 231, 255, 0.55); box-shadow: 0 2px 0 rgba(224, 231, 255, 0.18); }
+.fil-sub { margin-top: 0.5rem; font-size: 0.46rem; letter-spacing: 0.32em; text-transform: uppercase; color: rgba(224, 231, 255, 0.65); }
+.fil-rodape { margin-top: auto; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(224, 231, 255, 0.5); }
+
+.profile-card--arte-dragao {
+  background-image:
+    linear-gradient(180deg, rgba(4, 10, 24, 0.08) 0%, rgba(4, 10, 24, 0.25) 45%, rgba(4, 10, 24, 0.85) 100%),
+    url('/camo/arte-dragao.jpg');
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.dra-body { display: flex; flex: 1 1 auto; flex-direction: row; gap: 0.6rem; color: #e2e8f0; }
+.dra-lado { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.dra-selo { display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid rgba(220, 38, 38, 0.85); border-radius: 3px; color: #fca5a5; font-family: 'Special Elite', monospace; font-size: 0.7rem; font-weight: 900; transform: rotate(-6deg); }
+.dra-vertical { writing-mode: vertical-rl; font-family: 'Bebas Neue', Impact, sans-serif; font-size: 1.5rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f8fafc; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9); overflow-wrap: anywhere; max-height: 100%; }
+.dra-dir { display: flex; flex: 1; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: 0.3rem; }
+.dra-titulo { font-family: 'Black Ops One', Impact, sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; color: #fca5a5; text-transform: uppercase; }
+.dra-sub { font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(226, 232, 240, 0.6); text-align: right; }
+
+.profile-card--arte-estrela {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 45%, rgba(255, 255, 255, 0.92) 100%),
+    url('/camo/arte-estrela.jpg');
+  border-color: rgba(220, 38, 38, 0.6);
+}
+
+.est-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #0a0a0a; }
+.est-top { display: flex; justify-content: space-between; font-size: 0.5rem; font-weight: 900; letter-spacing: 0.24em; text-transform: uppercase; color: #18181b; }
+.est-nome { margin-top: auto; font-family: 'Inter Tight', sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 0.9; letter-spacing: -0.02em; text-transform: uppercase; color: #0a0a0a; overflow-wrap: anywhere; }
+.est-linha { margin-top: 0.4rem; width: 60%; height: 6px; background: #dc2626; }
+.est-sub { margin-top: 0.4rem; font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.14em; text-transform: uppercase; color: #3f3f46; }
+.est-rodape { margin-top: auto; display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.14em; text-transform: uppercase; color: #52525b; }
+
+.profile-card--arte-ouro {
+  background-image:
+    linear-gradient(180deg, rgba(8, 6, 2, 0.15) 0%, rgba(8, 6, 2, 0.35) 45%, rgba(8, 6, 2, 0.88) 100%),
+    url('/camo/arte-ouro.jpg');
+  border-color: rgba(245, 197, 66, 0.55);
+}
+
+.our-body { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #f5e6c8; }
+.our-kicker { font-family: 'Special Elite', monospace; font-size: 0.46rem; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(245, 230, 200, 0.7); }
+.our-nome { margin-top: 0.5rem; font-family: 'Instrument Serif', Georgia, serif; font-size: 1.9rem; line-height: 1; color: #f7e7c1; text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9); overflow-wrap: anywhere; }
+.our-rule { margin-top: 0.8rem; width: 40px; height: 1px; background: rgba(245, 197, 66, 0.7); }
+.our-sub { margin-top: 0.5rem; font-size: 0.44rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245, 230, 200, 0.6); }
+.our-rodape { margin-top: auto; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(245, 197, 66, 0.65); }
+
+.profile-card--arte-vidro {
+  background-image:
+    linear-gradient(180deg, rgba(4, 6, 10, 0.25) 0%, rgba(4, 6, 10, 0.4) 45%, rgba(4, 6, 10, 0.9) 100%),
+    url('/camo/arte-vidro.jpg');
+  border-color: rgba(226, 232, 240, 0.5);
+}
+
+.vid-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #e2e8f0; font-family: 'Michroma', 'Inter Tight', sans-serif; }
+.vid-top { display: flex; justify-content: space-between; font-size: 0.4rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(226, 232, 240, 0.65); }
+.vid-centro { margin-top: auto; }
+.vid-obj { display: block; font-size: 0.42rem; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(148, 163, 184, 0.8); }
+.vid-nome { margin-top: 0.3rem; font-size: 0.92rem; letter-spacing: 0.06em; text-transform: uppercase; color: #f8fafc; overflow-wrap: anywhere; }
+.vid-linha { margin-top: 0.5rem; height: 1px; background: linear-gradient(90deg, rgba(226, 232, 240, 0.7), transparent); }
+.vid-rodape { margin-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.38rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(148, 163, 184, 0.7); }
+
+.profile-card--arte-operador {
+  background-image:
+    linear-gradient(180deg, rgba(8, 8, 9, 0.15) 0%, rgba(8, 8, 9, 0.35) 45%, rgba(8, 8, 9, 0.9) 100%),
+    url('/camo/arte-operador.jpg');
+  border-color: rgba(161, 161, 170, 0.45);
+}
+
+.ope-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #d4d4d8; font-family: 'Special Elite', 'Courier New', monospace; }
+.ope-top { display: flex; justify-content: space-between; font-size: 0.44rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(212, 212, 216, 0.7); }
+.ope-selo { padding: 0.1rem 0.35rem; border: 1px solid rgba(220, 38, 38, 0.8); color: #fca5a5; font-size: 0.38rem; letter-spacing: 0.14em; transform: rotate(-4deg); }
+.ope-nome { margin-top: 0.8rem; font-family: 'Black Ops One', Impact, sans-serif; font-size: 1.05rem; text-transform: uppercase; color: #f4f4f5; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9); overflow-wrap: anywhere; }
+.ope-redig { margin-top: 0.3rem; width: 70%; height: 8px; background: rgba(244, 244, 245, 0.85); }
+.ope-linhas { margin-top: auto; display: flex; flex-direction: column; gap: 0.22rem; padding-top: 0.45rem; border-top: 1px dashed rgba(212, 212, 216, 0.3); }
+.ope-linhas p { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.42rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(212, 212, 216, 0.65); }
+.ope-linhas b { color: #f4f4f5; }
+.ope-rodape { margin-top: 0.45rem; font-size: 0.38rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(248, 113, 113, 0.7); }
+
+.profile-card--arte-inverno {
+  background-image:
+    linear-gradient(180deg, rgba(6, 12, 30, 0.1) 0%, rgba(6, 12, 30, 0.2) 45%, rgba(6, 12, 30, 0.72) 100%),
+    url('/camo/arte-inverno.jpg');
+  border-color: rgba(191, 219, 254, 0.5);
+}
+
+.inv-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #eff6ff; }
+.inv-top { font-family: 'Inter Tight', sans-serif; font-size: 0.46rem; font-weight: 300; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(239, 246, 255, 0.8); }
+.inv-nome { margin-top: auto; font-family: 'Inter Tight', sans-serif; font-size: 1.3rem; font-weight: 300; letter-spacing: 0.01em; color: #fff; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5); overflow-wrap: anywhere; }
+.inv-rule { margin-top: 0.6rem; width: 100%; height: 1px; background: rgba(239, 246, 255, 0.35); }
+.inv-rodape { margin-top: 0.5rem; display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(239, 246, 255, 0.6); }
+
+.profile-card--arte-corrente {
+  background-image:
+    linear-gradient(180deg, rgba(2, 4, 8, 0.15) 0%, rgba(2, 4, 8, 0.35) 45%, rgba(2, 4, 8, 0.9) 100%),
+    url('/camo/arte-corrente.jpg');
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+.cor-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #e2e8f0; }
+.cor-top { display: flex; justify-content: space-between; font-family: 'Rajdhani', sans-serif; font-size: 0.48rem; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(226, 232, 240, 0.65); }
+.cor-centro { margin-top: auto; }
+.cor-nome { font-family: 'Rajdhani', sans-serif; font-size: 1.65rem; font-weight: 700; line-height: 0.9; letter-spacing: 0.04em; text-transform: uppercase; color: transparent; -webkit-text-stroke: 1px rgba(226, 232, 240, 0.9); overflow-wrap: anywhere; }
+.cor-sub { margin-top: 0.3rem; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(226, 232, 240, 0.55); }
+.cor-rodape { margin-top: auto; display: flex; justify-content: space-between; padding-top: 0.45rem; border-top: 1px solid rgba(226, 232, 240, 0.25); font-family: 'Special Elite', monospace; font-size: 0.38rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(148, 163, 184, 0.7); }
+
+/* ---------- Nomes (cores) das artes 3 ---------- */
+.nome-cor-arte-malaquite,
+.nome-cor-arte-filigrana,
+.nome-cor-arte-dragao,
+.nome-cor-arte-estrela,
+.nome-cor-arte-ouro,
+.nome-cor-arte-vidro,
+.nome-cor-arte-operador,
+.nome-cor-arte-inverno,
+.nome-cor-arte-corrente {
+  background-size: cover, 240% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: nomePan 8s linear infinite;
+}
+
+.nome-cor-arte-malaquite { background-image: url('/camo/arte-malaquite.jpg'), linear-gradient(120deg, #022c22, #10b981, #a7f3d0, #022c22); }
+.nome-cor-arte-filigrana { background-image: url('/camo/arte-filigrana.jpg'), linear-gradient(120deg, #020617, #93c5fd, #e0e7ff, #020617); }
+.nome-cor-arte-dragao { background-image: url('/camo/arte-dragao.jpg'), linear-gradient(120deg, #0c1a3a, #ef4444, #e2e8f0, #0c1a3a); }
+.nome-cor-arte-estrela { background-image: url('/camo/arte-estrela.jpg'), linear-gradient(120deg, #ffffff, #dc2626, #0a0a0a, #ffffff); }
+.nome-cor-arte-ouro { background-image: url('/camo/arte-ouro.jpg'), linear-gradient(120deg, #0a0802, #f5c542, #fff3c4, #0a0802); }
+.nome-cor-arte-vidro { background-image: url('/camo/arte-vidro.jpg'), linear-gradient(120deg, #020617, #e2e8f0, #64748b, #020617); }
+.nome-cor-arte-operador { background-image: url('/camo/arte-operador.jpg'), linear-gradient(120deg, #09090b, #a1a1aa, #f4f4f5, #09090b); }
+.nome-cor-arte-inverno { background-image: url('/camo/arte-inverno.jpg'), linear-gradient(120deg, #0c1a3a, #bfdbfe, #fff, #0c1a3a); }
+.nome-cor-arte-corrente { background-image: url('/camo/arte-corrente.jpg'), linear-gradient(120deg, #020617, #94a3b8, #e2e8f0, #020617); }
+/* cores com arte escura: brilho extra para o nome ficar legivel */
+.nome-cor-arte-filigrana,
+.nome-cor-arte-estrela,
+.nome-cor-arte-ouro,
+.nome-cor-arte-vidro,
+.nome-cor-arte-operador,
+.nome-cor-arte-corrente {
+  background-blend-mode: screen;
+}
