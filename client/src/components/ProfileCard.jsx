@@ -54,6 +54,13 @@ const VARIANT_LABEL = {
   'arte-mercurio': 'MERCURY CARD',
   'arte-marmore': 'MARBLE CARD',
   'arte-tinta': 'INK CARD',
+  'arte-asfalto': 'ASPHALT CARD',
+  'arte-ouro-negro': 'BLACK GOLD',
+  'arte-glitch': 'GLITCH CARD',
+  'arte-anjo': 'ANGEL CARD',
+  'arte-teia': 'WEB CARD',
+  'arte-suspenso': 'SUSPENDED CARD',
+  'arte-prisma': 'PRISM CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -99,6 +106,13 @@ const VARIANT_ACCENT = {
   'arte-mercurio': '#cbd5e1',
   'arte-marmore': '#1d4ed8',
   'arte-tinta': '#14b8a6',
+  'arte-asfalto': '#64748b',
+  'arte-ouro-negro': '#b45309',
+  'arte-glitch': '#ef4444',
+  'arte-anjo': '#a1a1aa',
+  'arte-teia': '#cbd5e1',
+  'arte-suspenso': '#e5e7eb',
+  'arte-prisma': '#e0f2fe',
 }
 
 const ano = (iso) => {
@@ -143,10 +157,15 @@ export default function ProfileCard({
     const y = (e.clientY - r.top) / r.height - 0.5
     el.style.setProperty('--mx', `${(x + 0.5) * 100}%`)
     el.style.setProperty('--my', `${(y + 0.5) * 100}%`)
+    el.style.setProperty('--rx', `${(-y * 16).toFixed(2)}deg`)
+    el.style.setProperty('--ry', `${(x * 20).toFixed(2)}deg`)
     el.style.transform = `perspective(900px) rotateX(${(-y * 8).toFixed(2)}deg) rotateY(${(x * 10).toFixed(2)}deg) translateY(-4px)`
   }
   const aoSair = () => {
-    if (ref.current) ref.current.style.transform = ''
+    if (!ref.current) return
+    ref.current.style.transform = ''
+    ref.current.style.setProperty('--rx', '0deg')
+    ref.current.style.setProperty('--ry', '0deg')
   }
   const arrasto = useRef({ x: 0, y: 0, ativo: false, ultimo: 0 })
   const aoClicar = (e) => {
@@ -629,6 +648,121 @@ export default function ProfileCard({
             <h3 className="tin-nome">{username}</h3>
             <span className="tin-sub">Tinta · #{id}</span>
             <span className="tin-rodape">Locaus {ano(perfil.created_at)}</span>
+          </div>
+        ) : v === 'arte-asfalto' ? (
+          <div className="asf-body">
+            <div className="asf-top">
+              <span>Asfalto</span>
+              <span>280 km/h</span>
+            </div>
+            <div className="asf-centro">
+              <span className="asf-kicker">Night drive</span>
+              <h3 className="asf-nome">{username}</h3>
+              <span className="asf-linha" />
+            </div>
+            <div className="asf-rodape">
+              <span>Locaus {ano(perfil.created_at)}</span>
+              <span>#{id}</span>
+            </div>
+          </div>
+        ) : v === 'arte-ouro-negro' ? (
+          <div className="oun-body">
+            <span className="oun-barra">{String(username).slice(0, 1).toUpperCase()}</span>
+            <div className="oun-dir">
+              <span className="oun-kicker">Ouro Negro</span>
+              <h3 className="oun-nome">{username}</h3>
+              <span className="oun-sub">Membro #{id} · {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-glitch' ? (
+          <div className="gli-body">
+            <div className="gli-top">
+              <span>Glitch</span>
+              <span>ERR 0x{id}</span>
+            </div>
+            <h3 className="gli-nome">{username}</h3>
+            <div className="gli-rodape">
+              <span>Signal lost</span>
+              <span>Locaus</span>
+            </div>
+          </div>
+        ) : v === 'arte-anjo' ? (
+          <div className="anj-body">
+            <span className="anj-halo" aria-hidden="true" />
+            <span className="anj-foto">
+              <img
+                src={avatar}
+                alt={username}
+                loading="lazy"
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fb) return
+                  e.currentTarget.dataset.fb = '1'
+                  e.currentTarget.src = svgAvatar(username, '#a1a1aa')
+                }}
+              />
+            </span>
+            <h3 className="anj-nome">{username}</h3>
+            <span className="anj-sub">Anjo · Membro #{id}</span>
+            <span className="anj-rodape">Locaus {ano(perfil.created_at)}</span>
+          </div>
+        ) : v === 'arte-teia' ? (
+          <div className="tei-body">
+            <div className="tei-top">
+              <span>Teia</span>
+              <span>Web 0{id}</span>
+            </div>
+            <div className="tei-centro">
+              <span className="tei-foto">
+                <img
+                  src={avatar}
+                  alt={username}
+                  loading="lazy"
+                  onError={(e) => {
+                    if (e.currentTarget.dataset.fb) return
+                    e.currentTarget.dataset.fb = '1'
+                    e.currentTarget.src = svgAvatar(username, '#a1a1aa')
+                  }}
+                />
+              </span>
+              <h3 className="tei-nome">{username}</h3>
+              <span className="tei-sub">Membro Locaus</span>
+            </div>
+            <div className="tei-rodape">
+              <span>{ano(perfil.created_at)}</span>
+              <span>Série {id}</span>
+            </div>
+          </div>
+        ) : v === 'arte-suspenso' ? (
+          <div className="sus-body">
+            <div className="sus-moldura">
+              <div className="sus-top">
+                <span>Suspenso</span>
+                <span>Gravidade 0</span>
+              </div>
+              <span className="sus-foto">
+                <img
+                  src={avatar}
+                  alt={username}
+                  loading="lazy"
+                  onError={(e) => {
+                    if (e.currentTarget.dataset.fb) return
+                    e.currentTarget.dataset.fb = '1'
+                    e.currentTarget.src = svgAvatar(username, '#a1a1aa')
+                  }}
+                />
+              </span>
+              <h3 className="sus-nome">{username}</h3>
+              <span className="sus-sub">Membro #{id} · {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-prisma' ? (
+          <div className="pri-body">
+            <div className="pri-painel">
+              <span className="pri-kicker">Prisma</span>
+              <h3 className="pri-nome">{username}</h3>
+              <span className="pri-sub">Membro #{id}</span>
+            </div>
+            <span className="pri-rodape">Locaus {ano(perfil.created_at)}</span>
           </div>
         ) : (
           <>

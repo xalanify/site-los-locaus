@@ -51,6 +51,14 @@ const CORES = [
   { id: 'cor-arte-mercurio', nome: 'Mercúrio', valor: 'arte-mercurio', custo: 182, cor: '#cbd5e1' },
   { id: 'cor-arte-marmore', nome: 'Mármore', valor: 'arte-marmore', custo: 184, cor: '#1d4ed8' },
   { id: 'cor-arte-tinta', nome: 'Tinta', valor: 'arte-tinta', custo: 186, cor: '#14b8a6' },
+  { id: 'cor-3d-prata', nome: 'Prata 3D', valor: '3d-prata', custo: 190, cor: '#e5e7eb' },
+  { id: 'cor-arte-asfalto', nome: 'Asfalto', valor: 'arte-asfalto', custo: 188, cor: '#64748b' },
+  { id: 'cor-arte-ouro-negro', nome: 'Ouro Negro', valor: 'arte-ouro-negro', custo: 190, cor: '#b45309' },
+  { id: 'cor-arte-glitch', nome: 'Glitch', valor: 'arte-glitch', custo: 192, cor: '#ef4444' },
+  { id: 'cor-arte-anjo', nome: 'Anjo', valor: 'arte-anjo', custo: 194, cor: '#a1a1aa' },
+  { id: 'cor-arte-teia', nome: 'Teia', valor: 'arte-teia', custo: 196, cor: '#cbd5e1' },
+  { id: 'cor-arte-suspenso', nome: 'Suspenso', valor: 'arte-suspenso', custo: 198, cor: '#e5e7eb' },
+  { id: 'cor-arte-prisma', nome: 'Prisma', valor: 'arte-prisma', custo: 200, cor: '#e0f2fe' },
 ];
 
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
@@ -116,6 +124,13 @@ const CARTAS = [
   { id: 'carta-arte-mercurio', nome: 'Carta Mercúrio', valor: 'arte-mercurio', custo: 200, cor: '#cbd5e1' },
   { id: 'carta-arte-marmore', nome: 'Carta Mármore', valor: 'arte-marmore', custo: 205, cor: '#1d4ed8' },
   { id: 'carta-arte-tinta', nome: 'Carta Tinta', valor: 'arte-tinta', custo: 210, cor: '#14b8a6' },
+  { id: 'carta-arte-asfalto', nome: 'Carta Asfalto', valor: 'arte-asfalto', custo: 215, cor: '#64748b' },
+  { id: 'carta-arte-ouro-negro', nome: 'Carta Ouro Negro', valor: 'arte-ouro-negro', custo: 220, cor: '#b45309' },
+  { id: 'carta-arte-glitch', nome: 'Carta Glitch', valor: 'arte-glitch', custo: 225, cor: '#ef4444' },
+  { id: 'carta-arte-anjo', nome: 'Carta Anjo', valor: 'arte-anjo', custo: 230, cor: '#a1a1aa' },
+  { id: 'carta-arte-teia', nome: 'Carta Teia', valor: 'arte-teia', custo: 235, cor: '#cbd5e1' },
+  { id: 'carta-arte-suspenso', nome: 'Carta Suspenso', valor: 'arte-suspenso', custo: 240, cor: '#e5e7eb' },
+  { id: 'carta-arte-prisma', nome: 'Carta Prisma', valor: 'arte-prisma', custo: 245, cor: '#e0f2fe' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.
@@ -149,6 +164,7 @@ const CORES_EXCECAO = new Set([
   'camo-damascus',
   'camo-purple',
   'camo-gold',
+  'cor-3d-prata',
 ]);
 
 const nivelCor = (item) => {

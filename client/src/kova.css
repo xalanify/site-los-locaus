@@ -2869,3 +2869,172 @@ body.kova main {
 .pc-holo { opacity: 0.52; }
 .pc-holo::after { opacity: 0.68; }
 .profile-card:hover .pc-holo { opacity: 0.9; }
+/* ============================================================
+   ARTES 5 - Asfalto, Ouro Negro, Glitch, Anjo, Teia,
+   Suspenso, Prisma
+   ============================================================ */
+
+.profile-card--arte-asfalto,
+.profile-card--arte-ouro-negro,
+.profile-card--arte-glitch,
+.profile-card--arte-anjo,
+.profile-card--arte-teia,
+.profile-card--arte-suspenso,
+.profile-card--arte-prisma {
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.profile-card--arte-asfalto .pc-body,
+.profile-card--arte-ouro-negro .pc-body,
+.profile-card--arte-glitch .pc-body,
+.profile-card--arte-anjo .pc-body,
+.profile-card--arte-teia .pc-body,
+.profile-card--arte-suspenso .pc-body,
+.profile-card--arte-prisma .pc-body {
+  flex: 1 1 auto;
+}
+
+.profile-card--arte-asfalto {
+  background-image:
+    linear-gradient(180deg, rgba(4, 6, 8, 0.05) 0%, rgba(4, 6, 8, 0.45) 45%, rgba(4, 6, 8, 0.95) 100%),
+    url('/camo/arte-asfalto.jpg');
+  border-color: rgba(100, 116, 139, 0.5);
+}
+.asf-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #e2e8f0; }
+.asf-top { display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.46rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(226, 232, 240, 0.7); }
+.asf-centro { margin-top: auto; }
+.asf-kicker { font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.34em; text-transform: uppercase; color: rgba(248, 113, 113, 0.85); }
+.asf-nome { margin-top: 0.25rem; font-family: 'Bebas Neue', Impact, sans-serif; font-size: 2.05rem; line-height: 0.85; letter-spacing: 0.04em; text-transform: uppercase; color: #f8fafc; text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9); overflow-wrap: anywhere; }
+.asf-linha { display: block; margin-top: 0.5rem; width: 64%; height: 2px; background: linear-gradient(90deg, #ef4444, transparent); }
+.asf-rodape { margin-top: 0.6rem; display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(226, 232, 240, 0.6); }
+
+.profile-card--arte-ouro-negro {
+  background-image:
+    linear-gradient(180deg, rgba(8, 6, 2, 0.15) 0%, rgba(8, 6, 2, 0.45) 45%, rgba(8, 6, 2, 0.92) 100%),
+    url('/camo/arte-ouro-negro.jpg');
+  border-color: rgba(245, 197, 66, 0.55);
+}
+.oun-body { display: flex; flex: 1 1 auto; gap: 0.7rem; color: #f5e6c8; }
+.oun-barra { display: grid; place-items: center; width: 46px; flex-shrink: 0; border: 1px solid rgba(245, 197, 66, 0.5); background: linear-gradient(180deg, rgba(245, 197, 66, 0.18), rgba(0, 0, 0, 0.4)); font-family: 'Instrument Serif', serif; font-size: 1.8rem; color: #f5c542; }
+.oun-dir { display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; }
+.oun-kicker { font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245, 197, 66, 0.8); }
+.oun-nome { margin-top: 0.3rem; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 1.75rem; line-height: 1; color: #fff; text-shadow: 0 4px 24px rgba(0, 0, 0, 0.85); overflow-wrap: anywhere; }
+.oun-sub { margin-top: 0.35rem; font-size: 0.42rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245, 230, 200, 0.6); }
+
+.profile-card--arte-glitch {
+  background-image:
+    linear-gradient(180deg, rgba(6, 2, 4, 0.1) 0%, rgba(6, 2, 4, 0.45) 45%, rgba(6, 2, 4, 0.92) 100%),
+    url('/camo/arte-glitch.jpg');
+  border-color: rgba(239, 68, 68, 0.55);
+}
+.gli-body { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; color: #f4f4f5; }
+.gli-body::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 4px); mix-blend-mode: overlay; }
+.gli-top { display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(244, 244, 245, 0.7); }
+.gli-nome { margin-top: auto; font-family: 'Bebas Neue', Impact, sans-serif; font-size: 2.15rem; line-height: 0.85; letter-spacing: 0.03em; text-transform: uppercase; color: #fff; text-shadow: -2px 0 rgba(255, 0, 60, 0.85), 2px 0 rgba(0, 255, 255, 0.7), 0 0 18px rgba(255, 255, 255, 0.4); overflow-wrap: anywhere; }
+.gli-rodape { margin-top: 0.6rem; display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(248, 113, 113, 0.75); }
+
+.profile-card--arte-anjo {
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.45) 45%, rgba(0, 0, 0, 0.9) 100%),
+    url('/camo/arte-anjo.jpg');
+  border-color: rgba(161, 161, 170, 0.45);
+}
+.anj-body { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #e5e5e5; }
+.anj-halo { position: absolute; top: 26%; left: 50%; width: 104px; height: 104px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.35); box-shadow: 0 0 40px rgba(255, 255, 255, 0.25); transform: translateX(-50%); }
+.anj-foto { position: relative; width: 92px; height: 92px; border-radius: 50%; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7); }
+.anj-foto img { width: 100%; height: 100%; object-fit: cover; }
+.anj-nome { margin-top: 0.7rem; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 1.7rem; line-height: 1; color: #fff; text-shadow: 0 4px 22px rgba(0, 0, 0, 0.85); overflow-wrap: anywhere; }
+.anj-sub { margin-top: 0.3rem; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(229, 229, 229, 0.65); }
+.anj-rodape { margin-top: auto; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(229, 229, 229, 0.5); }
+
+.profile-card--arte-teia {
+  background-image:
+    linear-gradient(180deg, rgba(2, 4, 8, 0.15) 0%, rgba(2, 4, 8, 0.45) 45%, rgba(2, 4, 8, 0.9) 100%),
+    url('/camo/arte-teia.jpg');
+  border-color: rgba(203, 213, 225, 0.5);
+}
+.tei-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #e2e8f0; }
+.tei-top { display: flex; justify-content: space-between; font-family: 'Michroma', 'Inter Tight', sans-serif; font-size: 0.4rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(226, 232, 240, 0.65); }
+.tei-centro { margin-top: auto; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.tei-foto { width: 74px; height: 74px; border-radius: 50%; overflow: hidden; border: 1px solid rgba(226, 232, 240, 0.4); }
+.tei-foto img { width: 100%; height: 100%; object-fit: cover; }
+.tei-nome { margin-top: 0.5rem; font-family: 'Michroma', 'Inter Tight', sans-serif; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; color: #f8fafc; overflow-wrap: anywhere; }
+.tei-sub { margin-top: 0.25rem; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(148, 163, 184, 0.8); }
+.tei-rodape { margin-top: 0.6rem; display: flex; justify-content: space-between; padding-top: 0.4rem; border-top: 1px solid rgba(226, 232, 240, 0.2); font-family: 'Special Elite', monospace; font-size: 0.38rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(148, 163, 184, 0.7); }
+
+.profile-card--arte-suspenso {
+  background-image:
+    linear-gradient(180deg, rgba(10, 10, 12, 0.1) 0%, rgba(10, 10, 12, 0.3) 45%, rgba(10, 10, 12, 0.85) 100%),
+    url('/camo/arte-suspenso.jpg');
+  border-color: rgba(229, 231, 235, 0.55);
+}
+.sus-body { display: flex; flex: 1 1 auto; flex-direction: column; padding: 0.3rem; }
+.sus-moldura { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px solid rgba(10, 10, 10, 0.75); background: rgba(255, 255, 255, 0.93); padding: 0.8rem; color: #0a0a0a; }
+.sus-top { display: flex; justify-content: space-between; width: 100%; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.16em; text-transform: uppercase; color: #3f3f46; }
+.sus-foto { width: 56px; height: 56px; margin-top: 0.7rem; border-radius: 4px; overflow: hidden; border: 1px solid rgba(10, 10, 10, 0.35); }
+.sus-foto img { width: 100%; height: 100%; object-fit: cover; }
+.sus-nome { margin-top: 0.5rem; font-family: 'Inter Tight', sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: -0.01em; text-transform: uppercase; color: #0a0a0a; overflow-wrap: anywhere; }
+.sus-sub { margin-top: 0.3rem; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.14em; text-transform: uppercase; color: #52525b; }
+
+.profile-card--arte-prisma {
+  background-image:
+    linear-gradient(180deg, rgba(6, 10, 20, 0.1) 0%, rgba(6, 10, 20, 0.3) 45%, rgba(6, 10, 20, 0.85) 100%),
+    url('/camo/arte-prisma.jpg');
+  border-color: rgba(224, 242, 254, 0.6);
+}
+.pri-body { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #f0f9ff; }
+.pri-painel { display: flex; flex-direction: column; align-items: center; padding: 1rem 1.2rem; border: 1px solid rgba(255, 255, 255, 0.45); border-radius: 14px; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); }
+.pri-kicker { font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(240, 249, 255, 0.85); }
+.pri-nome { margin-top: 0.4rem; font-family: 'Inter Tight', sans-serif; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; background: linear-gradient(100deg, #fff, #a5f3fc, #f0abfc, #fff); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: priBrilho 7s linear infinite; overflow-wrap: anywhere; }
+.pri-sub { margin-top: 0.35rem; font-size: 0.42rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(240, 249, 255, 0.75); }
+.pri-rodape { margin-top: auto; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(240, 249, 255, 0.6); }
+@keyframes priBrilho { 0% { background-position: 0% 50%; } 100% { background-position: 220% 50%; } }
+
+/* ---------- Nomes (cores) das artes 5 - estaticos, so a imagem ---------- */
+.nome-cor-arte-asfalto,
+.nome-cor-arte-ouro-negro,
+.nome-cor-arte-glitch,
+.nome-cor-arte-anjo,
+.nome-cor-arte-teia,
+.nome-cor-arte-suspenso,
+.nome-cor-arte-prisma {
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.nome-cor-arte-asfalto { background-image: url('/camo/arte-asfalto.jpg'), linear-gradient(120deg, #0f172a, #64748b, #f8fafc, #0f172a); }
+.nome-cor-arte-ouro-negro { background-image: url('/camo/arte-ouro-negro.jpg'), linear-gradient(120deg, #1c1206, #b45309, #f5c542, #1c1206); }
+.nome-cor-arte-glitch { background-image: url('/camo/arte-glitch.jpg'), linear-gradient(120deg, #ef4444, #ffffff, #22d3ee, #ef4444); }
+.nome-cor-arte-anjo { background-image: url('/camo/arte-anjo.jpg'), linear-gradient(120deg, #111111, #a1a1aa, #f4f4f5, #111111); }
+.nome-cor-arte-teia { background-image: url('/camo/arte-teia.jpg'), linear-gradient(120deg, #020617, #cbd5e1, #f8fafc, #020617); }
+.nome-cor-arte-suspenso { background-image: url('/camo/arte-suspenso.jpg'), linear-gradient(120deg, #0a0a0a, #e5e7eb, #ffffff, #0a0a0a); }
+.nome-cor-arte-prisma { background-image: url('/camo/arte-prisma.jpg'), linear-gradient(120deg, #ffffff, #a5f3fc, #f0abfc, #ffffff); }
+
+/* ---------- Nome 3D prata (segue o rato no cartao) ---------- */
+.nome-cor-3d-prata {
+  display: inline-block;
+  background: linear-gradient(180deg, #ffffff 0%, #d1d5db 28%, #6b7280 52%, #e5e7eb 72%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 1px 0 #9ca3af,
+    0 2px 0 #8b93a0,
+    0 3px 0 #7c8592,
+    0 4px 0 #6b7280,
+    0 5px 0 #525a66,
+    0 6px 0 #3f4650,
+    0 10px 18px rgba(0, 0, 0, 0.55);
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+}

@@ -114,7 +114,7 @@ export default function NovidadesModal({ user }) {
                       className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-center"
                     >
                       <span
-                        className={`nome-cor-arte-${a.slug} block truncate text-base font-black`}
+                        className={`${a.classe || `nome-cor-arte-${a.slug}`} block truncate text-base font-black`}
                       >
                         Los Locaus
                       </span>
