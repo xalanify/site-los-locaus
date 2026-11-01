@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { NOVIDADES } from '../data/novidades'
-import { ARTES_NOVAS } from '../data/artesNovas'
+import { CORES_NOVAS, CARTAS_NOVAS } from '../data/artesNovas'
 import ProfileCard from './ProfileCard'
 
 /* ============================================================
@@ -95,7 +95,7 @@ export default function NovidadesModal({ user }) {
                   Cores de nome
                 </p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {ARTES_NOVAS.map((a) => (
+                  {CORES_NOVAS.map((a) => (
                     <div
                       key={a.slug}
                       className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-center"
@@ -118,7 +118,7 @@ export default function NovidadesModal({ user }) {
                   Cartas de perfil
                 </p>
                 <div className="flex gap-2 overflow-x-auto pb-1">
-                  {ARTES_NOVAS.map((a) => (
+                  {CARTAS_NOVAS.map((a) => (
                     <div
                       key={a.slug}
                       className="relative h-[150px] w-[132px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"

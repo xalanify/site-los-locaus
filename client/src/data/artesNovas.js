@@ -1,5 +1,6 @@
-/* As 13 artes novas do mercado (cores de nome + cartas). */
-export const ARTES_NOVAS = [
+/* Artes novas do mercado: cores de nome e cartas. */
+
+export const CORES_NOVAS = [
   { slug: 'hipnose', nome: 'Hipnose' },
   { slug: 'eter', nome: 'Éter' },
   { slug: 'rubra', nome: 'Rubra' },
@@ -9,8 +10,17 @@ export const ARTES_NOVAS = [
   { slug: 'dragao', nome: 'Dragão' },
   { slug: 'estrela', nome: 'Estrela' },
   { slug: 'ouro', nome: 'Ouro' },
+  { slug: 'inverno', nome: 'Inverno' },
+  { slug: 'vela', nome: 'Vela' },
+  { slug: 'siberia', nome: 'Sibéria' },
+  { slug: 'mercurio', nome: 'Mercúrio' },
+  { slug: 'marmore', nome: 'Mármore' },
+  { slug: 'tinta', nome: 'Tinta' },
+]
+
+export const CARTAS_NOVAS = [
+  ...CORES_NOVAS,
   { slug: 'vidro', nome: 'Vidro' },
   { slug: 'operador', nome: 'Operador' },
-  { slug: 'inverno', nome: 'Inverno' },
   { slug: 'corrente', nome: 'Corrente' },
 ]

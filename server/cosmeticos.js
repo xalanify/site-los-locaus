@@ -45,10 +45,12 @@ const CORES = [
   { id: 'cor-arte-dragao', nome: 'Dragão', valor: 'arte-dragao', custo: 164, cor: '#ef4444' },
   { id: 'cor-arte-estrela', nome: 'Estrela', valor: 'arte-estrela', custo: 166, cor: '#dc2626' },
   { id: 'cor-arte-ouro', nome: 'Ouro', valor: 'arte-ouro', custo: 168, cor: '#f5c542' },
-  { id: 'cor-arte-vidro', nome: 'Vidro', valor: 'arte-vidro', custo: 170, cor: '#e2e8f0' },
-  { id: 'cor-arte-operador', nome: 'Operador', valor: 'arte-operador', custo: 172, cor: '#a1a1aa' },
   { id: 'cor-arte-inverno', nome: 'Inverno', valor: 'arte-inverno', custo: 174, cor: '#bfdbfe' },
-  { id: 'cor-arte-corrente', nome: 'Corrente', valor: 'arte-corrente', custo: 176, cor: '#94a3b8' },
+  { id: 'cor-arte-vela', nome: 'Vela', valor: 'arte-vela', custo: 178, cor: '#93c5fd' },
+  { id: 'cor-arte-siberia', nome: 'Sibéria', valor: 'arte-siberia', custo: 180, cor: '#e5e7eb' },
+  { id: 'cor-arte-mercurio', nome: 'Mercúrio', valor: 'arte-mercurio', custo: 182, cor: '#cbd5e1' },
+  { id: 'cor-arte-marmore', nome: 'Mármore', valor: 'arte-marmore', custo: 184, cor: '#1d4ed8' },
+  { id: 'cor-arte-tinta', nome: 'Tinta', valor: 'arte-tinta', custo: 186, cor: '#14b8a6' },
 ];
 
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
@@ -95,10 +97,6 @@ const CARTAS = [
   { id: 'carta-arte-nebula', nome: 'Carta Nebulosa', valor: 'arte-nebula', custo: 87, cor: '#a855f7' },
   { id: 'carta-arte-neon', nome: 'Carta Neon Flux', valor: 'arte-neon', custo: 89, cor: '#67e8f9' },
   { id: 'carta-arte-tempestade', nome: 'Carta Tempestade', valor: 'arte-tempestade', custo: 91, cor: '#ff3b3b' },
-  { id: 'carta-arte-brasas', nome: 'Carta Brasas', valor: 'arte-brasas', custo: 93, cor: '#ef4444' },
-  { id: 'carta-arte-galaxia', nome: 'Carta Galáxia', valor: 'arte-galaxia', custo: 95, cor: '#f472b6' },
-  { id: 'carta-arte-cristal', nome: 'Carta Cristal', valor: 'arte-cristal', custo: 97, cor: '#a78bfa' },
-  { id: 'carta-arte-metal', nome: 'Carta Hex Metal', valor: 'arte-metal', custo: 99, cor: '#cbd5e1' },
   { id: 'carta-arte-tranzit', nome: 'Carta Tranzit', valor: 'arte-tranzit', custo: 105, cor: '#d9a441' },
   { id: 'carta-arte-hipnose', nome: 'Carta Hipnose', valor: 'arte-hipnose', custo: 120, cor: '#c084fc' },
   { id: 'carta-arte-eter', nome: 'Carta Éter', valor: 'arte-eter', custo: 125, cor: '#818cf8' },
@@ -113,6 +111,11 @@ const CARTAS = [
   { id: 'carta-arte-operador', nome: 'Carta Operador', valor: 'arte-operador', custo: 175, cor: '#a1a1aa' },
   { id: 'carta-arte-inverno', nome: 'Carta Inverno', valor: 'arte-inverno', custo: 180, cor: '#bfdbfe' },
   { id: 'carta-arte-corrente', nome: 'Carta Corrente', valor: 'arte-corrente', custo: 185, cor: '#94a3b8' },
+  { id: 'carta-arte-vela', nome: 'Carta Vela', valor: 'arte-vela', custo: 190, cor: '#93c5fd' },
+  { id: 'carta-arte-siberia', nome: 'Carta Sibéria', valor: 'arte-siberia', custo: 195, cor: '#e5e7eb' },
+  { id: 'carta-arte-mercurio', nome: 'Carta Mercúrio', valor: 'arte-mercurio', custo: 200, cor: '#cbd5e1' },
+  { id: 'carta-arte-marmore', nome: 'Carta Mármore', valor: 'arte-marmore', custo: 205, cor: '#1d4ed8' },
+  { id: 'carta-arte-tinta', nome: 'Carta Tinta', valor: 'arte-tinta', custo: 210, cor: '#14b8a6' },
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.

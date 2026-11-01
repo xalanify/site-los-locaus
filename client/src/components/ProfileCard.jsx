@@ -49,6 +49,11 @@ const VARIANT_LABEL = {
   'arte-operador': 'OPERATOR CARD',
   'arte-inverno': 'WINTER CARD',
   'arte-corrente': 'CHAIN CARD',
+  'arte-vela': 'VELA CARD',
+  'arte-siberia': 'SIBERIA CARD',
+  'arte-mercurio': 'MERCURY CARD',
+  'arte-marmore': 'MARBLE CARD',
+  'arte-tinta': 'INK CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -89,6 +94,11 @@ const VARIANT_ACCENT = {
   'arte-operador': '#a1a1aa',
   'arte-inverno': '#bfdbfe',
   'arte-corrente': '#94a3b8',
+  'arte-vela': '#93c5fd',
+  'arte-siberia': '#e5e7eb',
+  'arte-mercurio': '#cbd5e1',
+  'arte-marmore': '#1d4ed8',
+  'arte-tinta': '#14b8a6',
 }
 
 const ano = (iso) => {
@@ -107,6 +117,9 @@ export default function ProfileCard({
 }) {
   const v = VARIANT_LABEL[variant] ? variant : 'padrao'
   const accent = VARIANT_ACCENT[v]
+  const holo = /^arte-(hipnose|eter|rubra|cromo|malaquite|filigrana|dragao|estrela|ouro|vidro|operador|inverno|corrente|vela|siberia|mercurio|marmore|tinta)$/.test(
+    v,
+  )
   const wide =
     v === 'license' || v === 'blood' || v === 'crimson' || v === 'sleepin' || v === 'dev'
   const violet = v === 'violet'
@@ -196,6 +209,8 @@ export default function ProfileCard({
       onPointerCancel={aoSoltar}
       onClick={aoClicarCarta}
       className={`profile-card profile-card--${v} group ${
+        holo ? 'profile-card--holo' : ''
+      } ${
         wide
           ? 'profile-card--wide'
           : violet
@@ -222,6 +237,7 @@ export default function ProfileCard({
       </span>
       <span className="pc-glow" aria-hidden="true" />
       <span className="pc-ripple" aria-hidden="true" />
+      {holo && <span className="pc-holo" aria-hidden="true" />}
 
       <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' ? 'p-0' : 'p-4 sm:p-5'}`}>
         {v === 'sleepin' || v === 'dev' ? (
@@ -571,6 +587,54 @@ export default function ProfileCard({
               <span>{ano(perfil.created_at)}</span>
               <span>Série {id}</span>
             </div>
+          </div>
+        ) : v === 'arte-vela' ? (
+          <div className="vel-body">
+            <div className="vel-top">
+              <span>Vela</span>
+              <span>Alto mar</span>
+            </div>
+            <h3 className="vel-nome">{username}</h3>
+            <div className="vel-linha" />
+            <div className="vel-rodape">
+              <span>Maré 3,2 m</span>
+              <span>Locaus {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-siberia' ? (
+          <div className="sib-body">
+            <div className="sib-top">
+              <span>−40°C</span>
+              <span>Sibéria</span>
+            </div>
+            <h3 className="sib-nome">{username}</h3>
+            <span className="sib-sub">Membro #{id} · {ano(perfil.created_at)}</span>
+          </div>
+        ) : v === 'arte-mercurio' ? (
+          <div className="mer-body">
+            <div className="mer-top">
+              <span>Mercúrio</span>
+              <span>Hg · 80</span>
+            </div>
+            <h3 className="mer-nome">{username}</h3>
+            <div className="mer-linha" />
+            <span className="mer-sub">Membro Locaus · #{id}</span>
+          </div>
+        ) : v === 'arte-marmore' ? (
+          <div className="mar-body">
+            <div className="mar-moldura">
+              <span className="mar-kicker">Mármore</span>
+              <h3 className="mar-nome">{username}</h3>
+              <span className="mar-sub">Membro #{id}</span>
+              <span className="mar-rodape">Locaus {ano(perfil.created_at)}</span>
+            </div>
+          </div>
+        ) : v === 'arte-tinta' ? (
+          <div className="tin-body">
+            <span className="tin-selo">✦</span>
+            <h3 className="tin-nome">{username}</h3>
+            <span className="tin-sub">Tinta · #{id}</span>
+            <span className="tin-rodape">Locaus {ano(perfil.created_at)}</span>
           </div>
         ) : (
           <>

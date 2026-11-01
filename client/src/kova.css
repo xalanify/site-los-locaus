@@ -2714,3 +2714,153 @@ body.kova main {
 .nome-cor-arte-corrente {
   background-blend-mode: screen;
 }
+/* ============================================================
+   ARTES 4 - Vela, Siberia, Mercurio, Marmore, Tinta
+   ============================================================ */
+
+.profile-card--arte-vela,
+.profile-card--arte-siberia,
+.profile-card--arte-mercurio,
+.profile-card--arte-marmore,
+.profile-card--arte-tinta {
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.profile-card--arte-vela .pc-body,
+.profile-card--arte-siberia .pc-body,
+.profile-card--arte-mercurio .pc-body,
+.profile-card--arte-marmore .pc-body,
+.profile-card--arte-tinta .pc-body {
+  flex: 1 1 auto;
+}
+
+.profile-card--arte-vela {
+  background-image:
+    linear-gradient(180deg, rgba(6, 12, 24, 0.08) 0%, rgba(6, 12, 24, 0.35) 45%, rgba(6, 12, 24, 0.82) 100%),
+    url('/camo/arte-vela.jpg');
+  border-color: rgba(191, 219, 254, 0.5);
+}
+
+.vel-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #e8eef7; }
+.vel-top { display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.46rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(232, 238, 247, 0.7); }
+.vel-nome { margin-top: auto; font-family: 'Instrument Serif', Georgia, serif; font-size: 1.85rem; line-height: 1; color: #fff; text-shadow: 0 4px 24px rgba(0, 0, 0, 0.8); overflow-wrap: anywhere; }
+.vel-linha { margin-top: 0.55rem; height: 1px; background: rgba(232, 238, 247, 0.45); box-shadow: 0 2px 0 rgba(232, 238, 247, 0.15); }
+.vel-rodape { margin-top: 0.5rem; display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(232, 238, 247, 0.6); }
+
+.profile-card--arte-siberia {
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.12) 40%, rgba(0, 0, 0, 0.92) 100%),
+    url('/camo/arte-siberia.jpg');
+  border-color: rgba(229, 231, 235, 0.5);
+}
+
+.sib-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #f4f4f5; }
+.sib-top { display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.46rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(244, 244, 245, 0.75); }
+.sib-nome { margin-top: auto; font-family: 'Bebas Neue', Impact, sans-serif; font-size: 2.15rem; line-height: 0.85; letter-spacing: 0.03em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.9); overflow-wrap: anywhere; }
+.sib-sub { margin-top: 0.3rem; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244, 244, 245, 0.6); }
+
+.profile-card--arte-mercurio {
+  background-image:
+    linear-gradient(180deg, rgba(8, 8, 10, 0.08) 0%, rgba(8, 8, 10, 0.4) 45%, rgba(8, 8, 10, 0.92) 100%),
+    url('/camo/arte-mercurio.jpg');
+  border-color: rgba(203, 213, 225, 0.5);
+}
+
+.mer-body { display: flex; flex: 1 1 auto; flex-direction: column; color: #e2e8f0; }
+.mer-top { display: flex; justify-content: space-between; font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(226, 232, 240, 0.65); }
+.mer-nome { margin-top: auto; font-family: 'Inter Tight', sans-serif; font-size: 1.5rem; font-weight: 900; line-height: 0.95; letter-spacing: -0.01em; text-transform: uppercase; background: linear-gradient(100deg, #f8fafc, #94a3b8 35%, #f5c542 55%, #e2e8f0 75%, #f8fafc); background-size: 250% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: merBrilho 6s linear infinite; overflow-wrap: anywhere; }
+.mer-linha { margin-top: 0.5rem; height: 1px; background: linear-gradient(90deg, #e2e8f0, #f5c542, transparent); }
+.mer-sub { margin-top: 0.45rem; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(226, 232, 240, 0.6); }
+@keyframes merBrilho { 0% { background-position: 0% 50%; } 100% { background-position: 250% 50%; } }
+
+.profile-card--arte-marmore {
+  background-image:
+    linear-gradient(180deg, rgba(4, 8, 24, 0.08) 0%, rgba(4, 8, 24, 0.45) 45%, rgba(4, 8, 24, 0.88) 100%),
+    url('/camo/arte-marmore.jpg');
+  border-color: rgba(245, 197, 66, 0.55);
+}
+
+.mar-body { display: flex; flex: 1 1 auto; flex-direction: column; padding: 0.35rem; }
+.mar-moldura { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px solid rgba(245, 197, 66, 0.55); padding: 0.6rem; }
+.mar-kicker { font-family: 'Special Elite', monospace; font-size: 0.44rem; letter-spacing: 0.36em; text-transform: uppercase; color: rgba(245, 197, 66, 0.85); }
+.mar-nome { margin-top: 0.4rem; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 1.75rem; line-height: 1; color: #fff; text-shadow: 0 4px 24px rgba(0, 0, 0, 0.8); overflow-wrap: anywhere; }
+.mar-sub { margin-top: 0.35rem; font-size: 0.44rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255, 255, 255, 0.65); }
+.mar-rodape { margin-top: auto; padding-top: 0.5rem; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245, 197, 66, 0.7); }
+
+.profile-card--arte-tinta {
+  background-image:
+    linear-gradient(180deg, rgba(2, 14, 14, 0.08) 0%, rgba(2, 14, 14, 0.35) 45%, rgba(2, 14, 14, 0.9) 100%),
+    url('/camo/arte-tinta.jpg');
+  border-color: rgba(20, 184, 166, 0.5);
+}
+
+.tin-body { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #ccfbf1; }
+.tin-selo { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(20, 184, 166, 0.6); border-radius: 50%; color: #5eead4; font-size: 1rem; }
+.tin-nome { margin-top: 0.6rem; font-family: 'Inter Tight', sans-serif; font-size: 1.45rem; font-weight: 800; line-height: 1; letter-spacing: -0.01em; background: linear-gradient(100deg, #5eead4, #f5c542, #5eead4); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: merBrilho 7s linear infinite; overflow-wrap: anywhere; }
+.tin-sub { margin-top: 0.35rem; font-family: 'Special Elite', monospace; font-size: 0.42rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(204, 251, 241, 0.65); }
+.tin-rodape { margin-top: auto; font-family: 'Special Elite', monospace; font-size: 0.4rem; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(94, 234, 212, 0.6); }
+
+/* ---------- FOIL / HOLOGRÁFICO ---------- */
+.pc-holo {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: conic-gradient(from 210deg at 50% 50%, rgba(255, 0, 128, 0.3), rgba(0, 255, 255, 0.24), rgba(255, 255, 0, 0.26), rgba(128, 0, 255, 0.26), rgba(255, 0, 128, 0.3));
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+  animation: holoTinta 10s ease-in-out infinite alternate;
+}
+
+.pc-holo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.42) 45%, rgba(120, 255, 255, 0.36) 50%, rgba(255, 120, 255, 0.36) 55%, transparent 70%);
+  background-size: 250% 250%;
+  opacity: 0.55;
+  animation: holoBrilho 6s linear infinite;
+}
+
+.profile-card:hover .pc-holo {
+  opacity: 0.7;
+}
+
+@keyframes holoBrilho {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes holoTinta {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(45deg); }
+}
+
+/* ---------- Nomes animados das artes 4 ---------- */
+.nome-cor-arte-vela,
+.nome-cor-arte-siberia,
+.nome-cor-arte-mercurio,
+.nome-cor-arte-marmore,
+.nome-cor-arte-tinta {
+  background-size: cover, 300% auto;
+  animation: nomePan 4.5s linear infinite, nomeBrilho 3s ease-in-out infinite;
+}
+
+@keyframes nomeBrilho {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.45) drop-shadow(0 0 5px rgba(255, 255, 255, 0.4)); }
+}
+
+.nome-cor-arte-vela { background-image: url('/camo/arte-vela.jpg'), linear-gradient(120deg, #0c1a3a, #93c5fd, #ffffff, #0c1a3a); }
+.nome-cor-arte-siberia { background-image: url('/camo/arte-siberia.jpg'), linear-gradient(120deg, #111111, #e5e7eb, #ffffff, #111111); }
+.nome-cor-arte-mercurio { background-image: url('/camo/arte-mercurio.jpg'), linear-gradient(120deg, #111111, #cbd5e1, #f5c542, #111111); }
+.nome-cor-arte-marmore { background-image: url('/camo/arte-marmore.jpg'), linear-gradient(120deg, #0a1a3a, #1d4ed8, #f5c542, #ffffff); }
+.nome-cor-arte-tinta { background-image: url('/camo/arte-tinta.jpg'), linear-gradient(120deg, #042f2e, #14b8a6, #f5c542, #5eead4); }
+/* holo um pouco mais visivel (sem estragar a arte) */
+.pc-holo { opacity: 0.52; }
+.pc-holo::after { opacity: 0.68; }
+.profile-card:hover .pc-holo { opacity: 0.9; }
