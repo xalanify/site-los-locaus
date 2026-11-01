@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Loader2, X, Award, Sparkles } from 'lucide-react'
+import { Search, Loader2, X, Award, Sparkles, CreditCard } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
@@ -8,6 +8,7 @@ import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import PageHeader from '../components/PageHeader'
 import ProfileCard from '../components/ProfileCard'
+import CartasGaleria from '../components/CartasGaleria'
 import ProfileBanner from '../components/ProfileBanner'
 import LiveBadge from '../components/LiveBadge'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
@@ -109,33 +110,7 @@ export default function MembrosPage({ onProfile }) {
           )}
         </div>
       ) : vista === 'cartas' ? (
-        <div className="flex flex-wrap gap-3">
-          {filtrados.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setCartaZoom(m)}
-              className="group relative h-[150px] w-[132px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"
-            >
-              <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.34] -translate-x-1/2 -translate-y-1/2">
-                <ProfileCard
-                  perfil={m}
-                  variant={m.card_style || 'padrao'}
-                  jogos={[
-                    ...new Set([
-                      ...(m.game_accounts || []),
-                      ...Object.keys(m.game_ranks || {}),
-                    ]),
-                  ].filter((g) => g !== 'csgo')}
-                  className="w-[380px]"
-                />
-              </span>
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-300">
-                {m.username}
-              </span>
-            </button>
-          ))}
-        </div>
+        <CartasGaleria membros={filtrados} onVer={setCartaZoom} />
       ) : (
         <ul className="membros-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filtrados.map((m) => {
@@ -274,6 +249,13 @@ export default function MembrosPage({ onProfile }) {
                       </span>
                     </span>
                   </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCartaZoom(m)}
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] font-bold text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
+                >
+                  <CreditCard className="h-3.5 w-3.5" /> Ver carta
                 </button>
               </li>
             )

@@ -14,6 +14,7 @@ import {
   Swords,
   Newspaper,
   CircuitBoard,
+  CreditCard,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
 import Sino from './Sino'
@@ -44,6 +45,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isDistincoes = location.pathname === '/distincoes'
   const isProfile = location.pathname.startsWith('/perfil')
   const isMembers = location.pathname === '/membros'
+  const isCartas = location.pathname === '/cartas'
   const isGames = location.pathname === '/jogos'
   const isNoticias = location.pathname === '/noticias' || location.pathname === '/jogos-steam'
   const isFerramentas = location.pathname === '/ferramentas'
@@ -67,6 +69,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Notícias', icon: Newspaper, action: () => navigate('/noticias'), active: isNoticias },
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
+    { name: 'Cartas', icon: CreditCard, action: () => navigate('/cartas'), active: isCartas },
     // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
     // Loja: aberta a todos os membros
@@ -112,7 +115,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
         </Link>
 
         {/* Navegação */}
-        <nav className="space-y-1">
+        <nav className="space-y-2">
           {links.map((link) => {
             const Icon = link.icon
             return (
@@ -144,7 +147,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       </div>
 
       {/* Conta em baixo */}
-      <div className="shrink-0 space-y-2 pt-3">
+      <div className="shrink-0 space-y-2 pt-6">
         <SaldoMoedas user={user} />
         <Sino user={user} posicao="lateral" variant="card" />
         <button

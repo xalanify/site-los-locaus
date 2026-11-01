@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Swords,
   Newspaper,
+  CreditCard,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
@@ -48,6 +49,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
           naoLidas: location.pathname !== '/chat' ? naoLidas : 0,
         },
         { name: 'Membros', icon: Users, path: '/membros' },
+        { name: 'Cartas', icon: CreditCard, path: '/cartas' },
         { name: 'Notícias', icon: Newspaper, path: '/noticias' },
         { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
         { name: 'Distinções', icon: Trophy, path: '/distincoes' },

@@ -13,6 +13,7 @@ import {
   Newspaper,
   Wrench,
   CircuitBoard,
+  CreditCard,
 } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
@@ -29,11 +30,12 @@ const LINKS = [
   { nome: 'Chat', path: '/chat', Icon: MessageCircle },
   { nome: 'Previsões', path: '/previsoes', Icon: Swords },
   { nome: 'Membros', path: '/membros', Icon: Users },
-  { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3 },
+  { nome: 'Cartas', path: '/cartas', Icon: CreditCard },
   { nome: 'Loja', path: '/cosmeticos', Icon: ShoppingBag },
 ]
 
 const MAIS = [
+  { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3 },
   { nome: 'Distinções', path: '/distincoes', Icon: Award },
   { nome: 'Notícias', path: '/noticias', Icon: Newspaper },
   { nome: 'Ferramentas Windows', path: '/ferramentas', Icon: Wrench },
