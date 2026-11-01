@@ -670,7 +670,7 @@ export default function ProfilePage({
               {crop &&
                 createPortal(
                   <div
-                    className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 p-3 backdrop-blur-sm"
+                    className="fixed inset-0 z-[150] flex items-center justify-center bg-black/85 p-3 backdrop-blur-sm"
                     onClick={fecharCrop}
                   >
                     <div
