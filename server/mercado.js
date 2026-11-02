@@ -1225,6 +1225,7 @@ const EDICOES = [
   { id: 'edicao-remember', nome: 'Remember', total: 10, preco: 300, raridade: 'lendario' },
   { id: 'edicao-nightops', nome: 'Night Ops', total: 25, preco: 180, raridade: 'epico' },
   { id: 'edicao-stealth', nome: 'Stealth', total: 50, preco: 120, raridade: 'raro' },
+  { id: 'edicao-apex', nome: 'Apex', total: 10, preco: 220, raridade: 'lendario' },
 ];
 const EDICAO_POR_ID = new Map(EDICOES.map((e) => [e.id, e]));
 
