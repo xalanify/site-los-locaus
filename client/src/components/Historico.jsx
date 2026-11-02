@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Loader2, RefreshCw, ArrowDownRight, ArrowUpRight, History, Tag } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
+import MoedaLocaus from './MoedaLocaus'
 
 /* ============================================================
    HISTÓRICO — todas as compras e vendas do mercado.
    ============================================================ */
 
-const fmt = (n) =>
-  Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('pt-PT')
 
 const dataHora = (iso) => {
   const d = new Date(iso)
@@ -227,11 +227,12 @@ export default function Historico() {
                   {dataHora(v.em)}
                 </span>
                 <span
-                  className={`w-20 shrink-0 text-right font-black tabular-nums ${
+                  className={`flex w-20 shrink-0 items-center justify-end gap-1 text-right font-black tabular-nums ${
                     compra ? 'text-emerald-300' : 'text-red-300'
                   }`}
                 >
                   {fmt(v.preco)}
+                  <MoedaLocaus size={11} />
                 </span>
               </li>
             )

@@ -13,8 +13,7 @@ import { classesNome } from '../data/nomeEfeitos'
    preço que eu quiser.
    ============================================================ */
 
-const fmt = (n) =>
-  Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('pt-PT')
 
 const NOME_TIPO = { cor: 'Cor de nome', carta: 'Carta', estilo: 'Estilo de perfil' }
 
@@ -155,6 +154,7 @@ export default function MeusItens() {
                     <span className="font-display text-base font-black text-white">
                       {fmt(item.preco)}
                     </span>
+                    <MoedaLocaus size={12} />
                     <span className="text-[10px] font-semibold text-zinc-500">mercado</span>
                     <span
                       className={`ml-1 flex items-center gap-0.5 text-[10px] font-bold ${

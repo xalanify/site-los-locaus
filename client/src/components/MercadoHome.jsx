@@ -9,8 +9,7 @@ import MoedaLocaus from './MoedaLocaus'
    mini-gráfico e atalho para o mercado completo.
    ============================================================ */
 
-const fmt = (n) =>
-  Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('pt-PT')
 
 const RARIDADE = {
   comum: '#a1a1aa',
@@ -136,9 +135,10 @@ export default function MercadoHome() {
                             cor={sobe ? '#34d399' : '#f87171'}
                           />
                         </span>
-                        <span className="w-[86px] shrink-0 text-right">
-                          <span className="block font-display text-sm font-black tabular-nums text-white">
+                        <span className="w-[96px] shrink-0 text-right">
+                          <span className="flex items-center justify-end gap-1 font-display text-sm font-black tabular-nums text-white">
                             {fmt(item.preco_compra)}
+                            <MoedaLocaus size={12} />
                           </span>
                           <span
                             className={`block text-[10px] font-bold ${

@@ -56,9 +56,10 @@ async function tesouroAjustar(db, delta) {
     .catch(() => {});
 }
 
-const arred = (n) => Math.round(Number(n) * 100) / 100;
-const precoCompra = (preco) => arred(Number(preco) * (1 + SPREAD));
-const precoVenda = (preco) => arred(Number(preco) * (1 - SPREAD));
+/* Moedas são sempre inteiras — sem cêntimos em lado nenhum. */
+const arred = (n) => Math.max(0, Math.round(Number(n) || 0));
+const precoCompra = (preco) => Math.max(1, Math.round(Number(preco) * (1 + SPREAD)));
+const precoVenda = (preco) => Math.max(0, Math.round(Number(preco) * (1 - SPREAD)));
 
 /* Probabilidades por tipo de pack (ordem: comum, raro, epico, lendario) */
 const PESOS = {
@@ -199,7 +200,7 @@ async function semear() {
       .prepare(
         `INSERT INTO public.mercado_historico (item_id, preco, em)
          SELECT p.item_id,
-                ROUND(GREATEST(p.base * 0.6, LEAST(p.base * 1.8, p.base * (0.88 + random() * 0.24)))::numeric, 2),
+                ROUND(GREATEST(p.base * 0.6, LEAST(p.base * 1.8, p.base * (0.88 + random() * 0.24)))::numeric),
                 now() - (g || ' hours')::interval
          FROM public.mercado_precos p
          CROSS JOIN generate_series(1, 24) g
@@ -235,8 +236,7 @@ async function tick() {
        UPDATE public.mercado_precos p
        SET tendencia = n.nova,
            preco = ROUND(
-             GREATEST(p.base * 0.1, p.preco * (1 + n.nova + (random() - 0.5) * 0.006))::numeric,
-             2
+             GREATEST(p.base * 0.1, p.preco * (1 + n.nova + (random() - 0.5) * 0.006))::numeric
            ),
            atualizado_em = now()
        FROM novos n
@@ -288,7 +288,7 @@ async function simularNegocios(db, atualizados) {
     const r = await db
       .prepare(
         `UPDATE public.mercado_precos
-         SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric, 2),
+         SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric),
              atualizado_em = now()
          WHERE item_id = ?
          RETURNING preco`,
@@ -432,7 +432,7 @@ async function listar(uid) {
   const porItem = new Map();
   for (const h of hist) {
     if (!porItem.has(h.item_id)) porItem.set(h.item_id, []);
-    porItem.get(h.item_id).push({ preco: Number(h.preco), em: h.em });
+    porItem.get(h.item_id).push({ preco: Math.round(Number(h.preco) || 0), em: h.em });
   }
 
   const vendas = await db
@@ -461,7 +461,7 @@ async function listar(uid) {
     if (!anunciosPorItem.has(a.item_id)) anunciosPorItem.set(a.item_id, []);
     anunciosPorItem.get(a.item_id).push({
       id: Number(a.id),
-      preco: Number(a.preco),
+      preco: Math.round(Number(a.preco) || 0),
       username: a.username,
       meu: Number(a.user_id) === Number(uid),
     });
@@ -477,8 +477,8 @@ async function listar(uid) {
 
   const itens = CATALOGO.map((item) => {
     const p = mapaPrecos.get(item.id) || { base: item.custo, preco: item.custo };
-    const base = Number(p.base) || Number(item.custo) || 10;
-    const preco = Math.round(Number(p.preco) * 100) / 100;
+    const base = Math.round(Number(p.base) || Number(item.custo) || 10);
+    const preco = Math.round(Number(p.preco) || 0);
     const serie = (porItem.get(item.id) || []).slice(-60);
     const primeiro = serie.length ? serie[0].preco : preco;
     const variacao = primeiro ? ((preco - primeiro) / primeiro) * 100 : 0;
@@ -497,7 +497,7 @@ async function listar(uid) {
         .filter((v) => v.item_id === item.id)
         .slice(0, 6)
         .map((v) => ({
-          preco: Number(v.preco),
+          preco: Math.round(Number(v.preco) || 0),
           tipo: v.tipo,
           em: v.em,
           username: v.username,
@@ -512,7 +512,7 @@ async function listar(uid) {
     ultimasVendas: vendas.slice(0, 20).map((v) => ({
       item_id: v.item_id,
       nome: (POR_ID.get(v.item_id) || {}).nome || v.item_id,
-      preco: Number(v.preco),
+      preco: Math.round(Number(v.preco) || 0),
       tipo: v.tipo,
       em: v.em,
       username: v.username || 'Mercado',
@@ -527,7 +527,7 @@ async function ajustarPreco(itemId, fator) {
   const r = await db
     .prepare(
       `UPDATE public.mercado_precos
-       SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric, 2),
+       SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric),
            atualizado_em = now()
        WHERE item_id = ?
        RETURNING preco`,
@@ -1010,7 +1010,7 @@ async function historico(limite = 100, uid = null) {
     vendas: rows.map((v) => ({
       item_id: v.item_id,
       nome: (POR_ID.get(v.item_id) || {}).nome || v.item_id,
-      preco: Number(v.preco),
+      preco: Math.round(Number(v.preco) || 0),
       tipo: v.tipo,
       em: v.em,
       username: v.username || 'Mercado',
@@ -1020,7 +1020,7 @@ async function historico(limite = 100, uid = null) {
       id: Number(a.id),
       item_id: a.item_id,
       nome: (POR_ID.get(a.item_id) || {}).nome || a.item_id,
-      preco: Number(a.preco),
+      preco: Math.round(Number(a.preco) || 0),
       username: a.username,
       criado_em: a.criado_em,
     })),

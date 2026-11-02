@@ -25,8 +25,7 @@ import { classesNome } from '../data/nomeEfeitos'
    MERCADO — os mesmos cosméticos da loja, com preço a mexer.
    ============================================================ */
 
-const fmt = (n) =>
-  Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n) => Math.round(Number(n) || 0).toLocaleString('pt-PT')
 
 const hora = (iso) => {
   const d = new Date(iso)
@@ -383,7 +382,9 @@ export default function Mercado({ onSaldo }) {
             </span>
           </span>
           <span className="text-right">
-            <span className="mercado-destaque-preco">{fmt(destaque.preco_compra)}</span>
+            <span className="mercado-destaque-preco inline-flex items-center justify-end gap-1">
+              {fmt(destaque.preco_compra)} <MoedaLocaus size={13} />
+            </span>
             <span className="mercado-destaque-var">
               <TrendingUp className="h-3 w-3" /> +{destaque.variacao.toFixed(1)}%
             </span>
@@ -468,13 +469,14 @@ export default function Mercado({ onSaldo }) {
                   <Linha serie={item.historico} cor={cor} />
                 </span>
 
-                <span className="w-[92px] shrink-0 text-right">
+                <span className="w-[104px] shrink-0 text-right">
                   <span
-                    className={`preco block font-display text-sm font-black tabular-nums text-white ${
+                    className={`preco flex items-center justify-end gap-1 font-display text-sm font-black tabular-nums text-white ${
                       flash[item.id] ? `preco--${flash[item.id]}` : ''
                     }`}
                   >
                     {fmt(item.comprado ? item.preco_venda : item.preco_compra)}
+                    <MoedaLocaus size={12} />
                   </span>
                   <span
                     className={`flex items-center justify-end gap-0.5 text-[10px] font-bold ${
@@ -557,8 +559,9 @@ export default function Mercado({ onSaldo }) {
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
               <div className="mb-2 flex items-end justify-between">
                 <div>
-                  <p className="font-display text-3xl font-black leading-none text-white">
+                  <p className="flex items-center gap-1.5 font-display text-3xl font-black leading-none text-white">
                     {fmt(detalhe.comprado ? detalhe.preco_venda : detalhe.preco_compra)}
+                    <MoedaLocaus size={20} />
                   </p>
                   <p className="mt-1 text-[11px] font-semibold text-zinc-500">
                     compra {fmt(detalhe.preco_compra)} · venda {fmt(detalhe.preco_venda)} · base{' '}
