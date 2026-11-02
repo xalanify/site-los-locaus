@@ -36,6 +36,7 @@ import { mmss, parseTime } from '../lib/auth'
 import TabBar from './TabBar'
 import Estado from './Estado'
 import AdminStats from './AdminStats'
+import AnalyticsPainel from './AnalyticsPainel'
 import AdminDashboard from './AdminDashboard'
 import { BADGES, BadgeGem } from './BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
@@ -1004,6 +1005,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'packs', label: 'Locaus Packs', Icon: Gift },
               { id: 'economia', label: 'Economia', Icon: Coins },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
+              { id: 'site', label: 'Site', Icon: Eye },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
               { id: 'fortnite', label: 'Fortnite', Icon: Flame },
               { id: 'bf', label: 'Battlefield', Icon: Target },
@@ -1690,6 +1692,9 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
         ) : tab === 'stats' ? (
           /* ---------- ESTATÍSTICAS ---------- */
           <AdminStats />
+        ) : tab === 'site' ? (
+          /* ---------- ESTATÍSTICAS DO SITE (analytics anónimo) ---------- */
+          <AnalyticsPainel />
         ) : tab === 'ferramentas' ? (
           /* ---------- AUDITORIA DAS FERRAMENTAS WINDOWS ---------- */
           <div>

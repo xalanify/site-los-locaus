@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { ArrowUpRight, Loader2, Sparkles } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import MoedaLocaus from './MoedaLocaus'
+import ProfileCard from './ProfileCard'
+import { classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
    MERCADO (home) — prévia dos cosméticos mais caros, com
@@ -108,7 +110,7 @@ export default function MercadoHome() {
                   return (
                     <li key={item.id}>
                       <Link
-                        to="/cosmeticos"
+                        to={`/cosmeticos?item=${encodeURIComponent(item.id)}`}
                         className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-white/[0.03] sm:px-6"
                       >
                         <span className="w-4 shrink-0 text-center font-display text-sm font-black tabular-nums text-zinc-600">
@@ -121,6 +123,26 @@ export default function MercadoHome() {
                             boxShadow: `0 0 10px ${RARIDADE[item.raridade]}`,
                           }}
                         />
+                        {item.tipo === 'cor' ? (
+                          <span className="hidden h-10 w-[74px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] px-1 sm:flex">
+                            <span
+                              className={`truncate text-[10px] font-black ${classesNome(item.valor)}`}
+                            >
+                              Locaus
+                            </span>
+                          </span>
+                        ) : item.tipo === 'carta' ? (
+                          <span className="relative hidden h-11 w-9 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/30 sm:block">
+                            <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.1] -translate-x-1/2 -translate-y-1/2">
+                              <ProfileCard
+                                perfil={{ username: 'Locaus' }}
+                                variant={item.valor}
+                                jogos={[]}
+                                className="w-[380px]"
+                              />
+                            </span>
+                          </span>
+                        ) : null}
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-bold text-white">
                             {item.nome}

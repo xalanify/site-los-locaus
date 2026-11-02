@@ -10,11 +10,9 @@ import {
   BarChart3,
   ShoppingBag,
   Award,
-  Newspaper,
   Wrench,
   CircuitBoard,
   CreditCard,
-  Radio,
 } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
@@ -36,10 +34,8 @@ const LINKS = [
 ]
 
 const MAIS = [
-  { nome: 'Ao vivo', path: '/aovivo', Icon: Radio },
   { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3 },
   { nome: 'Distinções', path: '/distincoes', Icon: Award },
-  { nome: 'Notícias', path: '/noticias', Icon: Newspaper },
   { nome: 'Ferramentas Windows', path: '/ferramentas', Icon: Wrench },
 ]
 
@@ -123,16 +119,6 @@ export default function KovaTopbar({ user, isAdmin = false }) {
                   >
                     <CircuitBoard className="h-4 w-4 shrink-0" />
                     <span>Componentes e Periféricos</span>
-                  </Link>
-                )}
-                {isAdmin && (
-                  <Link
-                    to="/analytics"
-                    onClick={() => setMaisAberto(false)}
-                    data-active={ativo('/analytics') ? 'true' : 'false'}
-                  >
-                    <BarChart3 className="h-4 w-4 shrink-0" />
-                    <span>Estatísticas do site</span>
                   </Link>
                 )}
               </div>

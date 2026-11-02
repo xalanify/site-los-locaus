@@ -438,8 +438,8 @@ async function carregar() {
   for (const n of selecionadas) {
     if (!n.imagem) n.imagem = imagemFallback(n.titulo, n.fonte);
   }
-  // avisa no Windows/PWA só das duas mais recentes (uma vez por notícia)
-  notify.notificarNoticias(selecionadas.slice(0, 2)).catch(() => {});
+  // Notícias desativadas por agora (sem avisos no Windows/PWA)
+  // notify.notificarNoticias(selecionadas.slice(0, 2)).catch(() => {});
   return selecionadas;
 }
 

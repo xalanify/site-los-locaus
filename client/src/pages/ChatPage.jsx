@@ -314,15 +314,26 @@ export default function ChatPage({ user }) {
       setTyping((prev) => prev.filter((t) => !t._t || Date.now() - t._t < 7000))
     }, 3000)
 
-    // Rede de segurança: se o SSE estiver em baixo, atualiza de 15 em 15 s
+    // Rede de segurança: mesmo que o SSE pareça ligado mas esteja "morto",
+    // atualiza sempre a cada 8 s (e ao voltar ao separador).
     const t = setInterval(() => {
-      if (!ligado()) tick()
-    }, 15000)
+      if (!document.hidden) tick()
+    }, 8000)
+
+    const aoVoltar = () => {
+      if (!document.hidden) tick()
+    }
+    document.addEventListener('visibilitychange', aoVoltar)
+    window.addEventListener('focus', aoVoltar)
+    window.addEventListener('online', aoVoltar)
 
     return () => {
       off()
       clearInterval(t)
       clearInterval(limparTyping)
+      document.removeEventListener('visibilitychange', aoVoltar)
+      window.removeEventListener('focus', aoVoltar)
+      window.removeEventListener('online', aoVoltar)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

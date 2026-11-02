@@ -52,14 +52,14 @@ export default function DiarioModal({ user }) {
         </p>
         <h2 className="mt-1 font-display text-2xl font-black text-white">+1 moeda grátis</h2>
         <p className="mt-1 text-sm leading-relaxed text-zinc-400">
-          Passaste por cá hoje. Recebeste 1 Moeda Locaus — volta amanhã para receber outra.
+          Passaste por cá hoje. Recebeste 1 Moeda Locaus.
         </p>
         <button
           type="button"
           onClick={() => setAberto(false)}
           className="ui-btn ui-btn-primary mt-5 w-full justify-center"
         >
-          Boa, obrigado
+          OK
         </button>
       </motion.div>
     </div>,

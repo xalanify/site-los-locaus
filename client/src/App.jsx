@@ -31,15 +31,12 @@ import { enviarSpecs } from './lib/specs'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
-const SteamStorePage = lazy(() => import('./pages/SteamStorePage'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const CartasPage = lazy(() => import('./pages/CartasPage'))
-const AoVivoPage = lazy(() => import('./pages/AoVivoPage'))
-const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
@@ -311,9 +308,6 @@ function App() {
                     />
                     {/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
-                    {/* Notícias (antiga Loja de Jogos) */}
-                    <Route path="/noticias" element={<SteamStorePage />} />
-                    <Route path="/jogos-steam" element={<Navigate to="/noticias" replace />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     <Route
@@ -344,11 +338,6 @@ function App() {
                       element={<MembrosPage onProfile={openMember} />}
                     />
                     <Route path="/cartas" element={<CartasPage />} />
-                    <Route path="/aovivo" element={<AoVivoPage />} />
-                    <Route
-                      path="/analytics"
-                      element={isAdmin ? <AnalyticsPage /> : <Navigate to="/" replace />}
-                    />
                     <Route
                       path="/clips"
                       element={

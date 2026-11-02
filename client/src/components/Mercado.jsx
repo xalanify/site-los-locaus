@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Loader2,
@@ -144,6 +145,7 @@ export default function Mercado({ onSaldo }) {
   const [detalhe, setDetalhe] = useState(null)
   const [flash, setFlash] = useState({})
   const precosRef = useRef({})
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const carregar = async () => {
     try {
@@ -181,6 +183,18 @@ export default function Mercado({ onSaldo }) {
     else if (ordem === 'nome') copia.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'))
     return copia
   }, [dados, filtro, ordem])
+
+  // Abrir um item vindo de outra página (?item=...)
+  useEffect(() => {
+    const alvo = searchParams.get('item')
+    if (!alvo || !dados) return
+    const achado = (dados.itens || []).find((i) => i.id === alvo)
+    if (achado) setDetalhe(achado)
+    const next = new URLSearchParams(searchParams)
+    next.delete('item')
+    setSearchParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dados, searchParams])
 
   // Pisca o preço quando sobe ou desce entre atualizações
   useEffect(() => {

@@ -60,12 +60,6 @@ export default function BootScreen({ visible, onEnter }) {
       <div className="boot-veu" aria-hidden="true" />
 
       <div className="boot-conteudo">
-        <header className="boot-topo">
-          <h1 className="boot-titulo">
-            Ashow <span className="boot-e">e</span> Jazer
-          </h1>
-        </header>
-
         <main className="boot-meio">
           <button type="button" onClick={entrar} className="boot-entrar" disabled={aEntrar}>
             <span>Entrar</span>

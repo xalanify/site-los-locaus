@@ -10,9 +10,7 @@ import {
   Sparkles,
   MessageCircle,
   Swords,
-  Newspaper,
   CreditCard,
-  Radio,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
@@ -51,8 +49,6 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
         },
         { name: 'Membros', icon: Users, path: '/membros' },
         { name: 'Cartas', icon: CreditCard, path: '/cartas' },
-        { name: 'Ao vivo', icon: Radio, path: '/aovivo' },
-        { name: 'Notícias', icon: Newspaper, path: '/noticias' },
         { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
         { name: 'Distinções', icon: Trophy, path: '/distincoes' },
         { name: 'Loja', icon: Sparkles, path: '/cosmeticos' },
