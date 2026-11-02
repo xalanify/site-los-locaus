@@ -108,6 +108,20 @@ function garantirTabelas() {
         );
         CREATE INDEX IF NOT EXISTS mercado_anuncios_item_idx ON public.mercado_anuncios (item_id, estado);
         CREATE INDEX IF NOT EXISTS mercado_vendas_idx ON public.mercado_vendas (em DESC);
+        CREATE TABLE IF NOT EXISTS public.mercado_edicoes (
+          item_id text PRIMARY KEY,
+          total int NOT NULL,
+          preco int NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS public.mercado_copias (
+          id bigserial PRIMARY KEY,
+          user_id bigint NOT NULL,
+          item_id text NOT NULL,
+          numero int NOT NULL,
+          criado_em timestamptz NOT NULL DEFAULT now(),
+          UNIQUE (item_id, numero)
+        );
+        CREATE INDEX IF NOT EXISTS mercado_copias_user_idx ON public.mercado_copias (user_id);
         CREATE TABLE IF NOT EXISTS public.mercado_ledger (
           id bigserial PRIMARY KEY,
           user_id bigint NOT NULL,
@@ -1202,6 +1216,108 @@ async function ajustarMoedas(uid, valor, motivo) {
   return { ok: true, valor: n, motivo: razao, ...(await cosmeticos.saldo(uid)) };
 }
 
+/* ============================================================
+   EDIÇÕES LIMITADAS (cartas numeradas)
+   Cada compra recebe um número livre aleatório. O nº 1 é sempre
+   o mais raro, mas o preço é o mesmo para todos os números.
+   ============================================================ */
+const EDICOES = [
+  { id: 'edicao-remember', nome: 'Remember', total: 10, preco: 300, raridade: 'lendario' },
+  { id: 'edicao-nightops', nome: 'Night Ops', total: 25, preco: 180, raridade: 'epico' },
+  { id: 'edicao-stealth', nome: 'Stealth', total: 50, preco: 120, raridade: 'raro' },
+];
+const EDICAO_POR_ID = new Map(EDICOES.map((e) => [e.id, e]));
+
+async function edicoes(uid) {
+  await semear();
+  const db = getDb();
+  for (const e of EDICOES) {
+    await db
+      .prepare(
+        `INSERT INTO public.mercado_edicoes (item_id, total, preco) VALUES (?, ?, ?)
+         ON CONFLICT (item_id) DO UPDATE SET total = EXCLUDED.total, preco = EXCLUDED.preco`,
+      )
+      .run(e.id, e.total, e.preco)
+      .catch(() => {});
+  }
+
+  const vendidas = await db
+    .prepare('SELECT item_id, COUNT(*)::int AS n FROM public.mercado_copias GROUP BY item_id')
+    .all()
+    .catch(() => []);
+  const mapa = new Map(vendidas.map((v) => [v.item_id, Number(v.n)]));
+
+  const minhas = await db
+    .prepare(
+      'SELECT id, item_id, numero FROM public.mercado_copias WHERE user_id = ? ORDER BY item_id, numero',
+    )
+    .all(uid)
+    .catch(() => []);
+
+  return EDICOES.map((e) => {
+    const n = mapa.get(e.id) || 0;
+    return {
+      ...e,
+      vendidas: n,
+      disponiveis: Math.max(0, e.total - n),
+      minhas: minhas
+        .filter((m) => m.item_id === e.id)
+        .map((m) => ({ id: Number(m.id), numero: Number(m.numero) })),
+    };
+  });
+}
+
+async function comprarEdicao(uid, itemId) {
+  await semear();
+  const e = EDICAO_POR_ID.get(String(itemId || ''));
+  if (!e) throw new Error('Edição inválida.');
+  const db = getDb();
+
+  const usados = await db
+    .prepare('SELECT numero FROM public.mercado_copias WHERE item_id = ?')
+    .all(e.id)
+    .catch(() => []);
+  const ocupados = new Set(usados.map((u) => Number(u.numero)));
+  if (ocupados.size >= e.total) throw new Error('Esta edição esgotou.');
+
+  const saldo = await cosmeticos.saldo(uid);
+  if (saldo.disponiveis < e.preco) {
+    throw new Error(`Faltam ${e.preco - saldo.disponiveis} moeda(s). Tens ${saldo.disponiveis}.`);
+  }
+
+  const livres = [];
+  for (let i = 1; i <= e.total; i += 1) if (!ocupados.has(i)) livres.push(i);
+  const numero = livres[Math.floor(Math.random() * livres.length)];
+
+  await db
+    .prepare('INSERT INTO public.mercado_copias (user_id, item_id, numero) VALUES (?, ?, ?)')
+    .run(uid, e.id, numero);
+  await db
+    .prepare('INSERT INTO public.mercado_ledger (user_id, valor, motivo) VALUES (?, ?, ?)')
+    .run(uid, -e.preco, `edicao:${e.id}:${numero}`);
+
+  return { ok: true, numero, edicao: e, ...(await cosmeticos.saldo(uid)) };
+}
+
+async function venderEdicao(uid, copiaId) {
+  await semear();
+  const db = getDb();
+  const c = await db
+    .prepare('SELECT id, item_id, numero FROM public.mercado_copias WHERE id = ? AND user_id = ?')
+    .get(Number(copiaId), uid);
+  if (!c) throw new Error('Essa cópia não é tua.');
+  const e = EDICAO_POR_ID.get(c.item_id);
+  if (!e) throw new Error('Edição inválida.');
+
+  const recebido = Math.max(1, Math.round(e.preco * 0.9));
+  await db.prepare('DELETE FROM public.mercado_copias WHERE id = ?').run(c.id);
+  await db
+    .prepare('INSERT INTO public.mercado_ledger (user_id, valor, motivo) VALUES (?, ?, ?)')
+    .run(uid, recebido, `edicao-venda:${e.id}:${c.numero}`);
+
+  return { ok: true, recebido, ...(await cosmeticos.saldo(uid)) };
+}
+
 module.exports = {
   listar,
   meusItens,
@@ -1215,6 +1331,9 @@ module.exports = {
   comprarAnuncio,
   darPacks,
   meusPacks,
+  edicoes,
+  comprarEdicao,
+  venderEdicao,
   abrirPack,
   limparItensDePacks,
   limparCreditos,

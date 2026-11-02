@@ -27,6 +27,61 @@ router.get('/bonus5', requireUser, async (req, res) => {
   }
 });
 
+/* 1 moeda grátis por dia (uma vez por dia, por membro). */
+router.post('/diario', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    const dia = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Lisbon' });
+    const motivo = `diario:${dia}`;
+    const db = getDb();
+    const ja = await db
+      .prepare('SELECT 1 AS ok FROM mercado_ledger WHERE user_id = ? AND motivo = ? LIMIT 1')
+      .get(uid, motivo);
+    if (ja) return res.json({ recebeu: false, valor: 0, dia });
+    await db
+      .prepare('INSERT INTO public.mercado_ledger (user_id, valor, motivo) VALUES (?, 1, ?)')
+      .run(uid, motivo);
+    res.json({ recebeu: true, valor: 1, dia });
+  } catch (e) {
+    console.error('Moeda diária:', e.message);
+    res.status(500).json({ error: 'Não foi possível dar a moeda diária.' });
+  }
+});
+
+/* Edições limitadas (cartas numeradas). */
+router.get('/edicoes', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ edicoes: await mercado.edicoes(uid) });
+  } catch (e) {
+    console.error('Edições:', e.message);
+    res.status(500).json({ error: 'Não foi possível abrir as edições.' });
+  }
+});
+
+router.post('/edicoes/comprar', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    res.json(await mercado.comprarEdicao(uid, req.body && req.body.item_id));
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Não foi possível comprar.' });
+  }
+});
+
+router.post('/edicoes/vender', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    res.json(await mercado.venderEdicao(uid, req.body && req.body.copia_id));
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Não foi possível vender.' });
+  }
+});
+
 router.get('/', requireUser, async (req, res) => {
   try {
     const uid = uidDe(req);

@@ -3582,3 +3582,127 @@ body.kova .tab-ativo {
     transform: none;
   }
 }
+
+/* ============================================================
+   EDIÇÕES LIMITADAS — cartas numeradas
+   ============================================================ */
+.edicoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+@media (max-width: 767px) {
+  .edicoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.edicao {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.edicao:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+.edicao-arte {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: #0b0d0f;
+  overflow: hidden;
+}
+.edicao-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.edicao-selo {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  border: 1px solid;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.12rem 0.4rem;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+.edicao-stock {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.45rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0.12rem 0.42rem;
+  font-size: 9px;
+  font-weight: 800;
+  color: #e4e4e7;
+  font-variant-numeric: tabular-nums;
+}
+.edicao-corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.6rem 0.65rem 0.7rem;
+}
+.edicao-nome {
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+}
+.edicao-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #71717a;
+}
+.edicao-minhas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.edicao-copia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.1rem 0.4rem;
+  font-size: 9px;
+  font-weight: 700;
+  color: #d4d4d8;
+}
+.edicao-copia b {
+  color: #f7a8a8;
+}
+.edicao-copia button {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f87171;
+}
+.edicao-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+.edicao-preco {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}

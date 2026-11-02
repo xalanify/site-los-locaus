@@ -12,6 +12,7 @@ import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import NovidadesModal from './components/NovidadesModal'
 import Bonus5Modal from './components/Bonus5Modal'
+import DiarioModal from './components/DiarioModal'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
@@ -387,6 +388,7 @@ function App() {
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
                 <NovidadesModal user={user} />
                 <Bonus5Modal user={user} />
+                <DiarioModal user={user} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal
