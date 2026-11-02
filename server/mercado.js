@@ -38,6 +38,7 @@ const SPREAD = 0.02;
 const IMPACTO = 0.015;
 const COOLDOWN_MS = 10 * 60 * 1000;
 const TAXA = 0.03; // 3% de taxa em cada venda
+const LIMITE_BOT_DIA = 3; // compras automáticas por membro em 24h
 
 /* Tesouro do mercado: paga as compras automáticas e recebe as taxas. */
 async function tesouroSaldo(db) {
@@ -309,9 +310,10 @@ async function simularNegocios(db, atualizados) {
   }
 }
 
-/* O "Mercado" também compra anúncios de users quando o preço é
-   razoável. Quanto mais acima do valor de mercado, menos chance
-   (e acima de 1,5x nunca compra — aí só mesmo um membro). */
+/* O "Mercado" também compra anúncios de users, mas só quando o
+   preço é igual ou inferior ao valor de mercado. Acima do mercado
+   fica à espera de um membro — assim ninguém imprime moedas a
+   anunciar muito acima do preço real. */
 async function simularCompraAnuncios(db) {
   const anuncios = await db
     .prepare(
@@ -328,6 +330,17 @@ async function simularCompraAnuncios(db) {
   for (const a of anuncios) {
     if (Number(a.idade) < 60) continue; // dá tempo de um membro ver primeiro
 
+    // limite de compras automáticas por membro, para não haver farming
+    const hoje = await db
+      .prepare(
+        `SELECT COUNT(*)::int AS n FROM public.mercado_ledger
+         WHERE user_id = ? AND motivo LIKE 'anuncio-bot:%'
+           AND em > now() - interval '24 hours'`,
+      )
+      .get(a.user_id)
+      .catch(() => null);
+    if (Number(hoje && hoje.n) >= LIMITE_BOT_DIA) continue;
+
     const p = await db
       .prepare('SELECT preco FROM public.mercado_precos WHERE item_id = ?')
       .get(a.item_id)
@@ -336,10 +349,10 @@ async function simularCompraAnuncios(db) {
     const ratio = Number(a.preco) / mercado;
 
     let chance = 0;
-    if (ratio <= 0.95) chance = 0.7;
-    else if (ratio <= 1.1) chance = 0.4;
-    else if (ratio <= 1.25) chance = 0.15;
-    else if (ratio <= 1.5) chance = 0.04;
+    if (ratio <= 0.9) chance = 0.85;
+    else if (ratio <= 0.98) chance = 0.65;
+    else if (ratio <= 1.0) chance = 0.45;
+    else if (ratio <= 1.02) chance = 0.2;
     else chance = 0;
 
     if (Math.random() > chance) continue;

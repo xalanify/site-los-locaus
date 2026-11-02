@@ -264,8 +264,8 @@ export default function MeusItens() {
             </label>
 
             <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
-              O mercado passa a valer este valor. Se alguém comprar, recebes as moedas e o item passa
-              para essa pessoa.
+              O mercado só compra automaticamente anúncios ao preço de mercado (
+              {fmt(venda.preco)} moedas) ou abaixo. Acima disso, fica à espera de um membro.
             </p>
 
             <div className="mt-4 flex gap-2">
