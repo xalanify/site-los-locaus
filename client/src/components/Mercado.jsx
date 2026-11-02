@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import {
@@ -141,6 +141,8 @@ export default function Mercado({ onSaldo }) {
   const [filtro, setFiltro] = useState('todos')
   const [busy, setBusy] = useState('')
   const [detalhe, setDetalhe] = useState(null)
+  const [flash, setFlash] = useState({})
+  const precosRef = useRef({})
 
   const carregar = async () => {
     try {
@@ -170,6 +172,28 @@ export default function Mercado({ onSaldo }) {
     const lista = (dados && dados.itens) || []
     return filtro === 'todos' ? lista : lista.filter((x) => x.tipo === filtro)
   }, [dados, filtro])
+
+  // Pisca o preço quando sobe ou desce entre atualizações
+  useEffect(() => {
+    if (!dados || !Array.isArray(dados.itens)) return undefined
+    const anteriores = precosRef.current
+    const novos = {}
+    const mudou = {}
+    dados.itens.forEach((it) => {
+      const antes = anteriores[it.id]
+      if (typeof antes === 'number' && Math.abs(antes - it.preco_compra) > 0.004) {
+        mudou[it.id] = it.preco_compra > antes ? 'sobe' : 'desce'
+      }
+      novos[it.id] = it.preco_compra
+    })
+    precosRef.current = novos
+    if (Object.keys(mudou).length) {
+      setFlash(mudou)
+      const t = setTimeout(() => setFlash({}), 1500)
+      return () => clearTimeout(t)
+    }
+    return undefined
+  }, [dados])
 
   const comprar = async (item) => {
     const ok = await confirmar(
@@ -277,25 +301,48 @@ export default function Mercado({ onSaldo }) {
   }
 
   if (!dados) {
-    return (
-      <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#121214]/80 py-20 text-sm text-gray-400">
-        {erro ? (
-          <span className="flex items-center gap-2">
+    if (erro) {
+      return (
+        <div className="flex items-center justify-center rounded-2xl border border-white/10 bg-[#121214]/80 py-20 text-sm text-gray-400">
+          <span className="flex flex-wrap items-center justify-center gap-3">
             {erro}
-            <button type="button" onClick={carregar} className="underline">
-              tentar outra vez
+            <button type="button" onClick={carregar} className="ui-btn ui-btn-ghost ui-btn-sm">
+              Tentar outra vez
             </button>
           </span>
-        ) : (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> A abrir o mercado…
-          </>
-        )}
+        </div>
+      )
+    }
+    return (
+      <div aria-busy="true" aria-label="A abrir o mercado">
+        <div className="mercado-resumo">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="mercado-stat">
+              <span className="mercado-skel" style={{ width: '55%' }} />
+              <span className="mercado-skel mercado-skel--lg" style={{ marginTop: 8 }} />
+            </div>
+          ))}
+        </div>
+        <div className="mb-3 h-14 rounded-2xl border border-white/5 bg-white/[0.02]" />
+        <ul className="space-y-1.5">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <li key={i} className="mercado-skel-linha" />
+          ))}
+        </ul>
       </div>
     )
   }
 
   const saldo = dados.saldo || {}
+
+  // Resumo do mercado (sempre sobre todos os itens, não só o filtro)
+  const todos = dados.itens || []
+  const emAlta = todos.filter((x) => x.variacao > 0).length
+  const emBaixa = todos.filter((x) => x.variacao < 0).length
+  const tenho = todos.filter((x) => x.comprado).length
+  const destaque = todos
+    .filter((x) => !x.emBreve)
+    .reduce((melhor, x) => (!melhor || x.variacao > melhor.variacao ? x : melhor), null)
 
   return (
     <div>
@@ -316,6 +363,52 @@ export default function Mercado({ onSaldo }) {
           <RefreshCw className="h-3.5 w-3.5" /> Atualizar
         </button>
       </div>
+
+      {/* resumo rápido */}
+      <div className="mercado-resumo">
+        <div className="mercado-stat">
+          <span>Itens</span>
+          <b>{todos.length}</b>
+        </div>
+        <div className="mercado-stat mercado-stat--sobe">
+          <span>Em alta</span>
+          <b>{emAlta}</b>
+        </div>
+        <div className="mercado-stat mercado-stat--desce">
+          <span>Em baixa</span>
+          <b>{emBaixa}</b>
+        </div>
+        <div className="mercado-stat">
+          <span>Tens</span>
+          <b>{tenho}</b>
+        </div>
+      </div>
+
+      {/* maior subida */}
+      {destaque && (
+        <button
+          type="button"
+          onClick={() => setDetalhe(destaque)}
+          className="mercado-destaque"
+        >
+          <span className="mercado-destaque-icone">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1 text-left">
+            <span className="mercado-destaque-tag">Maior subida agora</span>
+            <span className="mercado-destaque-nome">{destaque.nome}</span>
+            <span className="mercado-destaque-sub">
+              {NOME_RARIDADE[destaque.raridade]} · base {fmt(destaque.base)}
+            </span>
+          </span>
+          <span className="text-right">
+            <span className="mercado-destaque-preco">{fmt(destaque.preco_compra)}</span>
+            <span className="mercado-destaque-var">
+              <TrendingUp className="h-3 w-3" /> +{destaque.variacao.toFixed(1)}%
+            </span>
+          </span>
+        </button>
+      )}
 
       <div className="ui-tabs mb-4 max-w-md">
         {[
@@ -345,7 +438,7 @@ export default function Mercado({ onSaldo }) {
               <button
                 type="button"
                 onClick={() => setDetalhe(item)}
-                className="flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-[#101012]/80 px-3 py-2.5 text-left transition-colors hover:border-white/15 hover:bg-[#151518]"
+                className="mercado-linha flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-[#101012]/80 px-3 py-2.5 text-left transition-colors hover:border-white/15 hover:bg-[#151518]"
               >
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
@@ -367,6 +460,7 @@ export default function Mercado({ onSaldo }) {
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                     {NOME_RARIDADE[item.raridade]} · {item.tipo === 'cor' ? 'cor de nome' : item.tipo}
+                    <span className="hidden text-zinc-600 sm:inline"> · base {fmt(item.base)}</span>
                   </span>
                 </span>
 
@@ -375,7 +469,11 @@ export default function Mercado({ onSaldo }) {
                 </span>
 
                 <span className="w-[92px] shrink-0 text-right">
-                  <span className="block font-display text-sm font-black tabular-nums text-white">
+                  <span
+                    className={`preco block font-display text-sm font-black tabular-nums text-white ${
+                      flash[item.id] ? `preco--${flash[item.id]}` : ''
+                    }`}
+                  >
                     {fmt(item.comprado ? item.preco_venda : item.preco_compra)}
                   </span>
                   <span
@@ -389,7 +487,7 @@ export default function Mercado({ onSaldo }) {
                   </span>
                 </span>
 
-                <span className="hidden shrink-0 items-center gap-1 text-[10px] font-bold text-zinc-500 md:flex">
+                <span className="mercado-seta hidden shrink-0 items-center gap-1 text-[10px] font-bold text-zinc-500 md:flex">
                   {item.emBreve ? 'em breve' : item.comprado ? 'tens' : 'comprar'}
                   <ArrowUpRight className="h-3 w-3" />
                 </span>

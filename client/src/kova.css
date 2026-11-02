@@ -3288,3 +3288,297 @@ body.kova .tabbar-grande .tab-item {
     min-height: 40px;
   }
 }
+
+/* ============================================================
+   MERCADO — resumo, destaque e micro-animações
+   ============================================================ */
+.mercado-resumo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+@media (max-width: 639px) {
+  .mercado-resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.mercado-stat {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.55rem 0.75rem;
+}
+.mercado-stat span {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #71717a;
+}
+.mercado-stat b {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.mercado-stat--sobe b {
+  color: #34d399;
+}
+.mercado-stat--desce b {
+  color: #f87171;
+}
+
+.mercado-destaque {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(247, 168, 168, 0.25);
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(247, 168, 168, 0.14), transparent 60%),
+    rgba(255, 255, 255, 0.02);
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.mercado-destaque:hover {
+  border-color: rgba(247, 168, 168, 0.45);
+  transform: translateY(-1px);
+}
+.mercado-destaque-icone {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: rgba(247, 168, 168, 0.14);
+  color: #f7a8a8;
+}
+.mercado-destaque-tag {
+  display: block;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f7a8a8;
+}
+.mercado-destaque-nome {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mercado-destaque-sub {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #71717a;
+}
+.mercado-destaque-preco {
+  display: block;
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.mercado-destaque-var {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 10px;
+  font-weight: 800;
+  color: #34d399;
+}
+
+/* Linha do mercado */
+.mercado-linha {
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.mercado-linha:hover {
+  transform: translateX(2px);
+}
+.mercado-seta {
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.mercado-linha:hover .mercado-seta {
+  transform: translateX(2px);
+  color: #e4e4e7;
+}
+
+/* Preço que acabou de mudar */
+.preco--sobe {
+  animation: preco-sobe 1.2s ease;
+}
+.preco--desce {
+  animation: preco-desce 1.2s ease;
+}
+@keyframes preco-sobe {
+  0%, 100% { color: #fff; }
+  25% { color: #34d399; }
+}
+@keyframes preco-desce {
+  0%, 100% { color: #fff; }
+  25% { color: #f87171; }
+}
+
+/* Esqueletos de carregamento */
+.mercado-skel {
+  display: block;
+  height: 10px;
+  width: 70%;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  animation: mercado-skel 1.4s ease-in-out infinite;
+}
+.mercado-skel--lg {
+  height: 18px;
+  width: 50%;
+}
+.mercado-skel-linha {
+  height: 58px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  animation: mercado-skel 1.4s ease-in-out infinite;
+}
+@keyframes mercado-skel {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+/* ============================================================
+   DETALHES DE INTERAÇÃO (site + PWA)
+   ============================================================ */
+body.kova ::selection {
+  background: rgba(247, 168, 168, 0.35);
+  color: #fff;
+}
+body.kova {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+/* ícones acompanham o botão */
+body.kova .ui-btn svg,
+body.kova .ui-tab svg,
+body.kova .tab-item svg {
+  transition: transform 0.18s ease;
+}
+body.kova .ui-btn:hover svg,
+body.kova .ui-tab:hover svg,
+body.kova .tab-item:hover svg {
+  transform: translateX(1px);
+}
+body.kova .ui-btn:active svg {
+  transform: scale(0.94);
+}
+
+/* brilho que passa nos botões principais */
+body.kova .ui-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 40%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-12deg);
+  opacity: 0;
+}
+body.kova .ui-btn-primary:hover::before {
+  opacity: 1;
+  animation: ui-brilho 0.8s ease;
+}
+@keyframes ui-brilho {
+  from { left: -40%; }
+  to { left: 120%; }
+}
+
+/* barras de rolagem discretas */
+body.kova ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body.kova ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+body.kova ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+  background-clip: content-box;
+}
+body.kova ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.kova {
+    scroll-behavior: auto;
+  }
+  /* Mesmo com movimento reduzido, os botões mantêm o feedback de cor
+     (só o movimento é que desaparece). */
+  body.kova button,
+  body.kova .btn-glass,
+  body.kova .glass {
+    transition-duration: 0.15s !important;
+  }
+  body.kova .ui-btn:active:not(:disabled) {
+    transform: none;
+  }
+  body.kova .mercado-linha:hover {
+    transform: none;
+  }
+}
+
+/* ---------- Pequenos detalhes de movimento ---------- */
+@keyframes ui-tab-pop {
+  from {
+    transform: scale(0.96);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+body.kova .ui-tab[data-active='true'],
+body.kova .tab-ativo {
+  animation: ui-tab-pop 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* barra de baixo: resposta ao toque */
+.kova-bottomnav-item {
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+.kova-bottomnav-item:active {
+  transform: scale(0.94);
+}
+
+/* menus e janelas não arrastam a página de trás */
+.mercado-modal-painel,
+.kova-menu,
+.kova-busca,
+[role='dialog'] {
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kova-bottomnav-item:active {
+    transform: none;
+  }
+}
