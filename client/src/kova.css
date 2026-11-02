@@ -3016,110 +3016,224 @@ body.kova main {
 .nome-cor-arte-teia { background-image: url('/camo/arte-teia.jpg'), linear-gradient(120deg, #020617, #cbd5e1, #f8fafc, #020617); }
 .nome-cor-arte-suspenso { background-image: url('/camo/arte-suspenso.jpg'), linear-gradient(120deg, #0a0a0a, #e5e7eb, #ffffff, #0a0a0a); }
 .nome-cor-arte-prisma { background-image: url('/camo/arte-prisma.jpg'), linear-gradient(120deg, #ffffff, #a5f3fc, #f0abfc, #ffffff); }
+
 /* ============================================================
-   LIQUID GLASS - barra e botoes do telemovel
+   SISTEMA DE DESIGN — consistência em todas as páginas
+   Botões, separadores, barras de controlo, notas e cartões
+   com as mesmas medidas em todo o site.
    ============================================================ */
-@media (max-width: 1023px) {
-  .kova-mobilebar,
-  body.kova #topbar {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02) 60%, rgba(255, 255, 255, 0.04)),
-      rgba(14, 14, 16, 0.55) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.18),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-      0 10px 30px rgba(0, 0, 0, 0.35);
-  }
 
-  .kova-bottomnav-inner {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.12),
-      rgba(255, 255, 255, 0.03) 45%,
-      rgba(255, 255, 255, 0.06)
-    ) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    backdrop-filter: blur(28px) saturate(190%);
-    -webkit-backdrop-filter: blur(28px) saturate(190%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-      0 18px 45px rgba(0, 0, 0, 0.5);
-  }
+/* ---------- Botões ---------- */
+body.kova .ui-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+body.kova .ui-btn:hover {
+  border-radius: 12px;
+  transform: none;
+}
+body.kova .ui-btn:active:not(:disabled) {
+  border-radius: 12px;
+  transform: scale(0.96);
+}
+body.kova .ui-btn:focus-visible {
+  outline: 2px solid rgba(247, 168, 168, 0.9);
+  outline-offset: 2px;
+}
+body.kova .ui-btn-sm {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+body.kova .ui-btn-lg {
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+body.kova .ui-btn-icon {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 12px;
+}
+body.kova .ui-btn:disabled {
+  transform: none;
+  cursor: not-allowed;
+}
 
-  .kova-bottomnav-inner::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(120% 90% at 15% 0%, rgba(255, 255, 255, 0.25), transparent 55%),
-      radial-gradient(90% 70% at 90% 110%, rgba(255, 255, 255, 0.12), transparent 60%);
+/* Alvos de toque confortáveis no telemóvel */
+@media (max-width: 639px) {
+  body.kova .ui-btn {
+    min-height: 44px;
   }
+  body.kova .ui-btn-sm {
+    min-height: 36px;
+  }
+  body.kova .ui-btn-icon {
+    width: 44px;
+    min-height: 44px;
+  }
+}
 
-  .kova-bottomnav-item {
-    position: relative;
-    z-index: 1;
+/* ---------- Separadores ---------- */
+body.kova .ui-tabs {
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(16, 16, 18, 0.85);
+}
+body.kova .ui-tab {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+body.kova .ui-tab[data-active='true'] {
+  box-shadow: none;
+}
+@media (max-width: 639px) {
+  body.kova .ui-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  body.kova .ui-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  body.kova .ui-tab {
+    flex: 1 0 auto;
+    min-height: 40px;
+    padding: 0 10px;
+  }
+}
 
-  .kova-bottomnav-item[data-active='true'] {
-    background: rgba(255, 255, 255, 0.16);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 4px 14px rgba(0, 0, 0, 0.25);
+/* ---------- Barra de controlo (separadores + filtros) ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.toolbar-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.toolbar-acoes {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+.select-regiao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(16, 16, 18, 0.9);
+  color: #a1a1aa;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.select-regiao:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #e4e4e7;
+}
+.select-regiao select {
+  max-width: 11rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  outline: none;
+}
+@media (max-width: 767px) {
+  .toolbar {
+    flex-wrap: wrap;
   }
+  .toolbar-tabs {
+    width: 100%;
+  }
+  .toolbar-acoes {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .select-regiao {
+    flex: 1 1 auto;
+  }
+  .select-regiao select {
+    width: 100%;
+    max-width: none;
+  }
+}
 
-  body.kova .btn-glass {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05)) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: #fff !important;
-    backdrop-filter: blur(18px) saturate(180%);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 8px 22px rgba(0, 0, 0, 0.35);
-  }
+/* ---------- Notas por baixo do título ---------- */
+.page-notas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: -0.25rem 0 1rem;
+}
+.page-nota {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #a1a1aa;
+}
+.page-nota svg {
+  color: #f7a8a8;
+}
 
-  body.kova .btn-glass:hover {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08)) !important;
+/* ---------- Cartões ---------- */
+body.kova .ui-card {
+  border-radius: 18px;
+  padding: 18px;
+}
+@media (max-width: 639px) {
+  body.kova .ui-card {
+    border-radius: 16px;
+    padding: 14px;
   }
+}
 
-  /* Botoes redondos da barra de topo (sino, procura, menu, conta) */
-  .kova-mobilebar-acoes > button,
-  .kova-mobilebar-acoes > .relative > button {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    color: #fff !important;
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 4px 14px rgba(0, 0, 0, 0.3);
-  }
+/* ---------- Foco visível em tudo o que é interativo ---------- */
+body.kova :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgba(247, 168, 168, 0.85);
+  outline-offset: 2px;
+}
 
-  .kova-mobilebar-acoes > button:active,
-  .kova-mobilebar-acoes > .relative > button:active {
-    background: rgba(255, 255, 255, 0.22) !important;
-  }
-
-  /* Botoes principais (Entrar, Confirmar, etc.) tambem em vidro */
-  body.kova .ui-btn-primary {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04)),
-      rgba(10, 10, 11, 0.35) !important;
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
-    color: #fff !important;
-    backdrop-filter: blur(18px) saturate(190%);
-    -webkit-backdrop-filter: blur(18px) saturate(190%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-      0 8px 22px rgba(0, 0, 0, 0.35);
-  }
+/* ---------- Tipografia ---------- */
+body.kova h1,
+body.kova h2,
+body.kova .page-title {
+  text-wrap: balance;
+}
+body.kova p {
+  text-wrap: pretty;
 }

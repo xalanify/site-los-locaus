@@ -20,6 +20,8 @@ import {
   MapPin,
   Crown,
   Star,
+  Coins,
+  TrendingUp,
 } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import MoedaLocaus from '../components/MoedaLocaus'
@@ -1572,15 +1574,26 @@ export default function PrevisoesPage({ user }) {
         title="Previsões"
         subtitle="Escolhe o jogo, vota nos vencedores e sobe na classificação da comunidade."
       >
-        <div className="flex flex-col items-start gap-1 sm:items-end">
-          <span className="text-[11px] font-semibold text-amber-200/70">
-            Sem aposta: 1 moeda. Com aposta: recebes o dobro.
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300">
-            <RefreshCw className="h-2.5 w-2.5" /> atualiza sozinho
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => setClassificacaoAberta(true)}
+          className="ui-btn ui-btn-ghost"
+        >
+          <Medal className="h-4 w-4" /> Classificações
+        </button>
       </PageHeader>
+
+      <div className="page-notas">
+        <span className="page-nota">
+          <Coins className="h-3 w-3" /> Sem aposta: 1 moeda
+        </span>
+        <span className="page-nota">
+          <TrendingUp className="h-3 w-3" /> Com aposta: recebes o dobro
+        </span>
+        <span className="page-nota">
+          <RefreshCw className="h-3 w-3" /> Atualiza sozinho
+        </span>
+      </div>
 
       {/* seletor de jogo: Rainbow Six · CS2 · Fortnite */}
       <div className="ui-tabs mb-4">
@@ -1599,16 +1612,6 @@ export default function PrevisoesPage({ user }) {
             <g.Icon className="h-4 w-4 shrink-0" /> {g.nome}
           </button>
         ))}
-      </div>
-
-      <div className="mb-4 flex flex-wrap justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => setClassificacaoAberta(true)}
-          className="ui-btn ui-btn-ghost"
-        >
-          <Medal className="h-4 w-4" /> Ver classificações
-        </button>
       </div>
 
       {jogo === 'fortnite' && <FortniteTorneiosTab />}
@@ -1632,33 +1635,9 @@ export default function PrevisoesPage({ user }) {
         }
       />
 
-      {/* próximo torneio — contagem decrescente automática */}
-      <ProximoTorneio />
-
-      {/* filtro de região — jogos Tier 1 de várias regiões */}
-      {regioesDisponiveis.length > 0 && (
-        <div className="mb-3 flex items-center gap-2">
-          <label className="flex shrink-0 items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
-            <MapPin className="h-3.5 w-3.5 text-zinc-400" /> Região
-          </label>
-          <select
-            value={regiao}
-            onChange={(e) => setRegiao(e.target.value)}
-            className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-zinc-400/40"
-          >
-            <option value="Todas" className="bg-[#161618]">Todas as regiões</option>
-            {regioesDisponiveis.map((r) => (
-              <option key={r} value={r} className="bg-[#161618]">
-                {r}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* separadores */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="ui-tabs flex-1">
+      {/* barra de controlo: separadores + região + atualizar */}
+      <div className="toolbar mb-3">
+        <div className="ui-tabs toolbar-tabs">
           {(() => {
             const icones = {
               proximos: <Swords className="h-4 w-4 shrink-0" />,
@@ -1693,13 +1672,31 @@ export default function PrevisoesPage({ user }) {
             ))
           })()}
         </div>
-        <button
-          onClick={() => recarregarRef.current()}
-          title="Atualizar resultados"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#121214]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </button>
+
+        <div className="toolbar-acoes">
+          {regioesDisponiveis.length > 0 && (
+            <label className="select-regiao">
+              <MapPin className="h-3.5 w-3.5" />
+              <select value={regiao} onChange={(e) => setRegiao(e.target.value)}>
+                <option value="Todas">Todas as regiões</option>
+                {regioesDisponiveis.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button
+            type="button"
+            onClick={() => recarregarRef.current()}
+            title="Atualizar resultados"
+            aria-label="Atualizar resultados"
+            className="ui-btn ui-btn-ghost ui-btn-icon"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-gray-500">
@@ -1735,6 +1732,8 @@ export default function PrevisoesPage({ user }) {
         </div>
       ) : tab === 'proximos' ? (
         <div className="space-y-3">
+          {/* próximo torneio — contagem decrescente automática */}
+          <ProximoTorneio />
           {proximosFiltrados.length ? (
             proximosFiltrados.map((m) => (
               <PredictionCard key={m.id} match={m} user={user} onVote={votar} votando={votando === m.id} moedas={moedas} />

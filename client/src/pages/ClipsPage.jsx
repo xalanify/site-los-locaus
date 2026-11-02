@@ -26,6 +26,7 @@ import { badgesDe, BadgeGem } from '../components/BadgeGem'
 import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { authHeaders, mmss, parseTime } from '../lib/auth'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 import { toast } from '../components/Feedback'
 
 const TABS = [
@@ -1418,32 +1419,17 @@ export default function ClipsPage({ user, onRequestAuth, onProfile }) {
         {/* ---------------- Conteúdo ---------------- */}
         <div className="min-w-0 flex-1">
           {/* Cabeçalho */}
-          <div className="mb-6 overflow-hidden rounded-3xl border border-zinc-400/20 bg-gradient-to-br from-zinc-600/15 via-[#161618]/70 to-zinc-600/10 p-4 shadow-xl shadow-zinc-950/10 backdrop-blur-md sm:p-5">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-300">
-                <Film className="h-2.5 w-2.5" /> Feed da comunidade
-              </span>
-              <h1
-                className="font-black gradient-text"
-                style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-              >
-                Clips e Publicações
-              </h1>
-              <p className="mt-1 text-sm text-gray-400">
-                {clips.length}
-                {maisClips ? '+' : ''} clip{clips.length === 1 && !maisClips ? '' : 's'} · cortes
-                do grupo, comentários e guardados
-              </p>
-            </div>
-            <button
-              onClick={abrirPublicar}
-              className="ui-btn ui-btn-primary ui-btn-lg"
-            >
+          <PageHeader
+            title="Clips e Publicações"
+            subtitle={`${clips.length}${maisClips ? '+' : ''} clip${
+              clips.length === 1 && !maisClips ? '' : 's'
+            } · cortes do grupo, comentários e guardados`}
+            badge="Feed da comunidade"
+          >
+            <button onClick={abrirPublicar} className="ui-btn ui-btn-primary">
               <Plus className="h-4 w-4" /> Publicar
             </button>
-          </div>
-          </div>
+          </PageHeader>
 
           {/* Escolha: vídeo ou mensagem */}
           {escolhaPublicar && (

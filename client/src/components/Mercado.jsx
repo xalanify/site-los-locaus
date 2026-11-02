@@ -317,7 +317,7 @@ export default function Mercado({ onSaldo }) {
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-1.5">
+      <div className="ui-tabs mb-4 max-w-md">
         {[
           { id: 'todos', nome: 'Todos' },
           { id: 'cor', nome: 'Cores' },
@@ -328,11 +328,8 @@ export default function Mercado({ onSaldo }) {
             key={f.id}
             type="button"
             onClick={() => setFiltro(f.id)}
-            className={`rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
-              filtro === f.id
-                ? 'border-[#f7a8a8]/50 bg-[#f7a8a8]/15 text-[#f7a8a8]'
-                : 'border-white/10 bg-white/[0.02] text-zinc-400 hover:text-white'
-            }`}
+            data-active={filtro === f.id}
+            className="ui-tab"
           >
             {f.nome}
           </button>
