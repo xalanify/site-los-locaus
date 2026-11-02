@@ -17,7 +17,6 @@ import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
 import ItemMini from './ItemMini'
-import RoupaPreview from './RoupaPreview'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
 import { classesNome } from '../data/nomeEfeitos'
@@ -129,13 +128,6 @@ function Previsao({ item, me }) {
             ]),
           ].filter((g) => g !== 'csgo')}
         />
-      </div>
-    )
-  }
-  if (item.tipo === 'roupa') {
-    return (
-      <div className="flex justify-center py-2">
-        <RoupaPreview valor={item.valor} className="roupa-mini--grande" />
       </div>
     )
   }
@@ -285,6 +277,57 @@ export default function Mercado({ onSaldo }) {
     }
   }
 
+  const comprarEdicao = async (item) => {
+    const ok = await confirmar(
+      `Comprar “${item.nome}” por ${fmt(item.preco_compra)} moedas? O número é sorteado entre os que faltam.`,
+      { titulo: 'Comprar edição limitada?', okTexto: 'Comprar', perigoso: false },
+    )
+    if (!ok) return
+    setBusy(item.id)
+    try {
+      const r = await fetch('/api/mercado/edicoes/comprar', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: item.id }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não foi possível comprar.')
+      toast.ok(`Saiu-te a ${item.nome} nº ${d.numero} de ${item.total}.`)
+      window.dispatchEvent(new Event('locaus:moedas'))
+      setDetalhe(null)
+      await carregar()
+    } catch (e) {
+      toast.erro(e.message)
+    } finally {
+      setBusy('')
+    }
+  }
+
+  const venderEdicao = async (item, copia) => {
+    const ok = await confirmar(
+      `Vender a ${item.nome} nº ${copia.numero} de ${item.total}? Perdes essa cópia.`,
+      { titulo: 'Vender cópia?', okTexto: 'Vender', perigoso: true },
+    )
+    if (!ok) return
+    setBusy(item.id)
+    try {
+      const r = await fetch('/api/mercado/edicoes/vender', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ copia_id: copia.id }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não foi possível vender.')
+      toast.ok(`Vendeste a ${item.nome} nº ${copia.numero} por ${d.recebido} moedas.`)
+      window.dispatchEvent(new Event('locaus:moedas'))
+      await carregar()
+    } catch (e) {
+      toast.erro(e.message)
+    } finally {
+      setBusy('')
+    }
+  }
+
   const comprarAnuncio = async (anuncio) => {
     if (!detalhe) return
     const ok = await confirmar(
@@ -407,7 +450,7 @@ export default function Mercado({ onSaldo }) {
             { id: 'cor', nome: 'Cores' },
             { id: 'carta', nome: 'Cartas' },
             { id: 'estilo', nome: 'Estilos' },
-            { id: 'roupa', nome: 'Roupas' },
+            { id: 'edicao', nome: 'Limitadas' },
           ].map((f) => (
             <button
               key={f.id}
@@ -458,7 +501,17 @@ export default function Mercado({ onSaldo }) {
                 {item.tipo === 'carta' && (
                   <ItemMini item={item} me={me} className="mini-carta--lista" />
                 )}
-                {item.tipo === 'roupa' && <RoupaPreview valor={item.valor} />}
+                {item.tipo === 'edicao' && (
+                  <img
+                    src={item.imagem}
+                    alt=""
+                    loading="lazy"
+                    className="mini-edicao"
+                    onError={(ev) => {
+                      ev.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )}
                 <span className="min-w-0 flex-1">
                   <span
                     className={`block truncate text-sm font-bold ${
@@ -470,13 +523,25 @@ export default function Mercado({ onSaldo }) {
                     {item.nome}
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-                    {NOME_RARIDADE[item.raridade]} · {item.tipo === 'cor' ? 'cor de nome' : item.tipo}
-                    <span className="hidden text-zinc-600 sm:inline"> · base {fmt(item.base)}</span>
+                    {item.tipo === 'edicao' ? (
+                      <>
+                        <span className="text-[#f7a8a8]">limitado</span> ·{' '}
+                        {item.disponiveis} de {item.total}
+                      </>
+                    ) : (
+                      <>
+                        {NOME_RARIDADE[item.raridade]} ·{' '}
+                        {item.tipo === 'cor' ? 'cor de nome' : item.tipo}
+                        <span className="hidden text-zinc-600 sm:inline"> · base {fmt(item.base)}</span>
+                      </>
+                    )}
                   </span>
                 </span>
 
                 <span className="hidden sm:block">
-                  <Linha serie={item.historico} cor={cor} />
+                  {item.tipo === 'edicao' ? null : (
+                    <Linha serie={item.historico} cor={cor} />
+                  )}
                 </span>
 
                 <span className="w-[104px] shrink-0 text-right">
@@ -488,19 +553,33 @@ export default function Mercado({ onSaldo }) {
                     {fmt(item.comprado ? item.preco_venda : item.preco_compra)}
                     <MoedaLocaus size={12} />
                   </span>
-                  <span
-                    className={`flex items-center justify-end gap-0.5 text-[10px] font-bold ${
-                      sobe ? 'text-emerald-400' : 'text-red-400'
-                    }`}
-                  >
-                    {sobe ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {sobe ? '+' : ''}
-                    {item.variacao.toFixed(1)}%
-                  </span>
+                  {item.tipo === 'edicao' ? (
+                    <span className="flex items-center justify-end text-[10px] font-bold text-zinc-500">
+                      {item.disponiveis > 0 ? `${item.disponiveis} restantes` : 'esgotada'}
+                    </span>
+                  ) : (
+                    <span
+                      className={`flex items-center justify-end gap-0.5 text-[10px] font-bold ${
+                        sobe ? 'text-emerald-400' : 'text-red-400'
+                      }`}
+                    >
+                      {sobe ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {sobe ? '+' : ''}
+                      {item.variacao.toFixed(1)}%
+                    </span>
+                  )}
                 </span>
 
                 <span className="mercado-seta hidden shrink-0 items-center gap-1 text-[10px] font-bold text-zinc-500 md:flex">
-                  {item.emBreve ? 'em breve' : item.comprado ? 'tens' : 'comprar'}
+                  {item.tipo === 'edicao'
+                    ? item.disponiveis > 0
+                      ? 'comprar'
+                      : 'esgotada'
+                    : item.emBreve
+                      ? 'em breve'
+                      : item.comprado
+                        ? 'tens'
+                        : 'comprar'}
                   <ArrowUpRight className="h-3 w-3" />
                 </span>
               </button>
@@ -534,8 +613,107 @@ export default function Mercado({ onSaldo }) {
         </div>
       )}
 
+      {/* Detalhe — edição limitada */}
+      {detalhe &&
+        detalhe.tipo === 'edicao' &&
+        createPortal(
+          <div className="mercado-modal" onClick={() => setDetalhe(null)} role="presentation">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mercado-modal-painel"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-black text-white">{detalhe.nome}</p>
+                  <p className="text-[11px] font-semibold text-zinc-500">
+                    Limitado · {detalhe.disponiveis} de {detalhe.total} disponíveis
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDetalhe(null)}
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-zinc-300 hover:bg-white/10"
+                  aria-label="Fechar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+                <img
+                  src={detalhe.imagem}
+                  alt=""
+                  className="mx-auto mb-3 w-full max-w-[260px] rounded-xl border border-white/10 object-cover"
+                  onError={(ev) => {
+                    ev.currentTarget.style.display = 'none'
+                  }}
+                />
+                <div className="mb-3 flex items-end justify-between">
+                  <p className="flex items-center gap-1.5 font-display text-3xl font-black leading-none text-white">
+                    {fmt(detalhe.preco_compra)}
+                    <MoedaLocaus size={20} />
+                  </p>
+                  <p className="text-[11px] font-semibold text-zinc-500">
+                    venda {fmt(detalhe.preco_venda)}
+                  </p>
+                </div>
+
+                {detalhe.minhas && detalhe.minhas.length > 0 ? (
+                  <div className="mb-3">
+                    <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
+                      As tuas cópias
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {detalhe.minhas.map((m) => (
+                        <span key={m.id} className="edicao-copia">
+                          <b>nº {m.numero}</b>/{detalhe.total}
+                          <button
+                            type="button"
+                            onClick={() => venderEdicao(detalhe, m)}
+                            disabled={busy === detalhe.id}
+                          >
+                            vender
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mb-3 text-xs text-zinc-500">Ainda não tens nenhuma cópia.</p>
+                )}
+
+                <p className="text-[11px] leading-relaxed text-zinc-500">
+                  Cada compra recebe um número livre aleatório. O nº 1 é o mais raro.
+                </p>
+              </div>
+
+              <div className="mercado-acoes">
+                <button
+                  type="button"
+                  onClick={() => comprarEdicao(detalhe)}
+                  disabled={!detalhe.disponiveis || busy === detalhe.id}
+                  className="ui-btn ui-btn-primary ui-btn-sm flex-1 justify-center"
+                >
+                  {busy === detalhe.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  {detalhe.disponiveis > 0
+                    ? `Comprar por ${fmt(detalhe.preco_compra)}`
+                    : 'Esgotada'}
+                </button>
+              </div>
+            </motion.div>
+          </div>,
+          document.body,
+        )}
+
       {/* Detalhe */}
       {detalhe &&
+        detalhe.tipo !== 'edicao' &&
         createPortal(
         <div
           className="mercado-modal"
@@ -654,7 +832,7 @@ export default function Mercado({ onSaldo }) {
                 </p>
               ) : detalhe.comprado ? (
                 <>
-                  {detalhe.tipo !== 'roupa' && !equipado(detalhe) && (
+                  {!equipado(detalhe) && (
                     <button
                       type="button"
                       onClick={() => equipar(detalhe)}

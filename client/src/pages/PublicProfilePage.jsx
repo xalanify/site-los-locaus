@@ -21,6 +21,7 @@ import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileHero from '../components/ProfileHero'
+import AlbumCartas from '../components/AlbumCartas'
 import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
 import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
@@ -243,6 +244,8 @@ export default function PublicProfilePage({
           }
           primaryLabel="Ver publicações"
         />
+
+        <AlbumCartas username={p.username} />
 
         {/* ---------------- Feed do membro: clips + mensagens ---------------- */}
         <div id="publicacoes" className="mb-8">

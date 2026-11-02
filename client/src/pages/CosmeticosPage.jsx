@@ -4,7 +4,6 @@ import { Gift } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import PageHeader from '../components/PageHeader'
 import Mercado from '../components/Mercado'
-import EdicoesLimitadas from '../components/EdicoesLimitadas'
 import MeusItens from '../components/MeusItens'
 import Packs from '../components/Packs'
 import Historico from '../components/Historico'
@@ -54,10 +53,7 @@ export default function CosmeticosPage({ isAdmin = false }) {
         </div>
 
         {aba === 'mercado' ? (
-          <>
-            <EdicoesLimitadas />
-            <Mercado />
-          </>
+          <Mercado />
         ) : aba === 'meus' ? (
           <MeusItens />
         ) : aba === 'packs' ? (

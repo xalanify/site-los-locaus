@@ -125,6 +125,16 @@ export default function KovaTopbar({ user, isAdmin = false }) {
                     <span>Componentes e Periféricos</span>
                   </Link>
                 )}
+                {isAdmin && (
+                  <Link
+                    to="/analytics"
+                    onClick={() => setMaisAberto(false)}
+                    data-active={ativo('/analytics') ? 'true' : 'false'}
+                  >
+                    <BarChart3 className="h-4 w-4 shrink-0" />
+                    <span>Estatísticas do site</span>
+                  </Link>
+                )}
               </div>
             )}
           </div>

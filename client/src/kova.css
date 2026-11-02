@@ -3721,33 +3721,15 @@ body.kova .tab-ativo {
   z-index: 2;
 }
 
-/* Roupas no mercado */
-.roupa-mini {
-  position: relative;
-  display: grid;
-  place-items: center;
+
+
+/* Miniatura da carta limitada na lista do mercado */
+.mini-edicao {
   width: 42px;
   height: 48px;
   flex-shrink: 0;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background: #151518;
-}
-.roupa-mini svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.roupa-mini img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-}
-.roupa-mini--grande {
-  width: 180px;
-  height: 200px;
-  border-radius: 14px;
 }

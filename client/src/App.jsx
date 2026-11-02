@@ -39,6 +39,7 @@ const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const CartasPage = lazy(() => import('./pages/CartasPage'))
 const AoVivoPage = lazy(() => import('./pages/AoVivoPage'))
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
@@ -86,6 +87,18 @@ function App() {
   const unlocked = true
   const location = useLocation()
   const navigate = useNavigate()
+
+  // Analytics simples: uma visita por página (sem cookies e sem nomes)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fetch('/api/users/track', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: location.pathname, referrer: document.referrer || '' }),
+      }).catch(() => {})
+    }, 700)
+    return () => clearTimeout(t)
+  }, [location.pathname])
 
   // Sessão de utilizador guardada — obrigatória para entrar no site
   useEffect(() => {
@@ -332,6 +345,10 @@ function App() {
                     />
                     <Route path="/cartas" element={<CartasPage />} />
                     <Route path="/aovivo" element={<AoVivoPage />} />
+                    <Route
+                      path="/analytics"
+                      element={isAdmin ? <AnalyticsPage /> : <Navigate to="/" replace />}
+                    />
                     <Route
                       path="/clips"
                       element={

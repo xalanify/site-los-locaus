@@ -225,16 +225,6 @@ const CARTAS_PRECO = [
   ...(CARTA_TRANZIT ? [{ ...CARTA_TRANZIT, custo: 320 }] : []),
 ].map(comPrecoAlto);
 
-/* Roupas — peças de coleção (t-shirt, calções, calças). */
-const ROUPAS = [
-  { id: 'roupa-tee-stealth', nome: 'T-shirt Stealth', valor: 'tee-stealth', custo: 90, cor: '#cbd5e1' },
-  { id: 'roupa-tee-racing', nome: 'T-shirt Racing', valor: 'tee-racing', custo: 90, cor: '#ef4444' },
-  { id: 'roupa-tee-night', nome: 'T-shirt Night Ops', valor: 'tee-night', custo: 110, cor: '#84cc16' },
-  { id: 'roupa-shorts-operator', nome: 'Calções Operator', valor: 'shorts-operator', custo: 70, cor: '#a3a3a3' },
-  { id: 'roupa-calcas-cargo', nome: 'Calças Cargo', valor: 'calcas-cargo', custo: 120, cor: '#78716c' },
-  { id: 'roupa-calcas-track', nome: 'Calças Track', valor: 'calcas-track', custo: 100, cor: '#f7a8a8' },
-];
-
 /* Os banners e os efeitos saíram da loja. Os banners continuam
    disponíveis no editor de perfil; os efeitos já comprados ficam
    guardados na conta, mas deixam de aparecer para compra. */
@@ -243,7 +233,6 @@ const ITENS = [
   ...CAMOS_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CARTAS_PRECO.map((x) => ({ ...x, tipo: 'carta', campo: 'card_style' })),
   ...ESTILOS.map((x) => ({ ...x, tipo: 'estilo', campo: 'profile_style' })),
-  ...ROUPAS.map((x) => ({ ...x, tipo: 'roupa', campo: 'roupa' })),
 ];
 
 const POR_ID = new Map(ITENS.map((x) => [x.id, x]));

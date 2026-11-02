@@ -1290,6 +1290,132 @@ router.get('/list', attachAuth, async (req, res) => {
 });
 
 // Perfil público (+ clips visíveis ao visitante)
+/* ============================================================
+   Analytics simples — sem cookies, sem nomes, só contagens.
+   ============================================================ */
+let tabelaViews = null;
+function garantirViews() {
+  if (!tabelaViews) {
+    tabelaViews = getDb()
+      .exec(`
+        CREATE TABLE IF NOT EXISTS public.page_views (
+          id bigserial PRIMARY KEY,
+          path text NOT NULL,
+          device text,
+          origem text,
+          user_hash text,
+          dia date NOT NULL DEFAULT (now() AT TIME ZONE 'Europe/Lisbon')::date,
+          em timestamptz NOT NULL DEFAULT now()
+        );
+        CREATE INDEX IF NOT EXISTS page_views_dia_idx ON public.page_views (dia DESC);
+        CREATE INDEX IF NOT EXISTS page_views_path_idx ON public.page_views (path);
+      `)
+      .catch((e) => {
+        tabelaViews = null;
+        throw e;
+      });
+  }
+  return tabelaViews;
+}
+
+const hashMembro = (uid) =>
+  crypto
+    .createHash('sha256')
+    .update(`locaus:${uid}:${String(JWT_SECRET).slice(0, 16)}`)
+    .digest('hex')
+    .slice(0, 10);
+
+router.post('/track', attachAuth, async (req, res) => {
+  try {
+    await garantirViews();
+    const db = getDb();
+    const path = String((req.body && req.body.path) || '/').slice(0, 120);
+    const ref = String((req.body && req.body.referrer) || '').slice(0, 200);
+    let origem = 'direto';
+    if (ref) {
+      try {
+        origem = new URL(ref).hostname.replace(/^www\./, '');
+      } catch {
+        origem = 'outro';
+      }
+    }
+    if (origem.includes('localhost')) origem = 'local';
+    const ua = String(req.headers['user-agent'] || '');
+    const device = /Mobi|Android|iPhone|iPad|iPod/i.test(ua) ? 'telemovel' : 'pc';
+    const uid = req.auth && req.auth.uid;
+    await db
+      .prepare(
+        'INSERT INTO public.page_views (path, device, origem, user_hash) VALUES (?, ?, ?, ?)',
+      )
+      .run(path, device, origem, uid ? hashMembro(uid) : null);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(204).end();
+  }
+});
+
+router.get('/analytics', requireAdmin, async (req, res) => {
+  try {
+    await garantirViews();
+    const db = getDb();
+    const desde = "(now() AT TIME ZONE 'Europe/Lisbon')::date - 13";
+    const totais = await db
+      .prepare(
+        `SELECT COUNT(*)::int AS views,
+                COUNT(DISTINCT user_hash)::int AS membros,
+                COUNT(*) FILTER (WHERE user_hash IS NULL)::int AS anonimas
+         FROM public.page_views WHERE dia >= ${desde}`,
+      )
+      .get();
+    const dias = await db
+      .prepare(
+        `SELECT dia::text AS dia, COUNT(*)::int AS n
+         FROM public.page_views WHERE dia >= ${desde}
+         GROUP BY dia ORDER BY dia`,
+      )
+      .all();
+    const paginas = await db
+      .prepare(
+        `SELECT path,
+                COUNT(*)::int AS n,
+                COUNT(DISTINCT COALESCE(user_hash, 'anon'))::int AS pessoas
+         FROM public.page_views
+         WHERE dia >= ${desde}
+         GROUP BY path ORDER BY n DESC`,
+      )
+      .all();
+    const dispositivos = await db
+      .prepare(
+        `SELECT COALESCE(device, 'pc') AS device, COUNT(*)::int AS n
+         FROM public.page_views WHERE dia >= ${desde}
+         GROUP BY device ORDER BY n DESC`,
+      )
+      .all();
+    const origens = await db
+      .prepare(
+        `SELECT COALESCE(origem, 'direto') AS origem, COUNT(*)::int AS n
+         FROM public.page_views WHERE dia >= ${desde}
+         GROUP BY origem ORDER BY n DESC LIMIT 8`,
+      )
+      .all();
+    const membros = await db
+      .prepare(
+        `SELECT user_hash, COUNT(*)::int AS n,
+                COUNT(DISTINCT path)::int AS paginas
+         FROM public.page_views
+         WHERE dia >= ${desde} AND user_hash IS NOT NULL
+         GROUP BY user_hash ORDER BY n DESC LIMIT 12`,
+      )
+      .all();
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ totais, dias, paginas, dispositivos, origens, membros });
+  } catch (e) {
+    console.error('Analytics:', e.message);
+    res.status(500).json({ error: 'Não foi possível abrir as estatísticas.' });
+  }
+});
+
 router.get('/:username', attachAuth, async (req, res) => {
   try {
     const name = String(req.params.username || '');
@@ -1380,6 +1506,47 @@ router.get('/:username', attachAuth, async (req, res) => {
   } catch (error) {
     console.error('Erro users profile:', error.message);
     res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// Álbum de cartas de um membro (visível a todos)
+router.get('/:username/album', attachAuth, async (req, res) => {
+  try {
+    const name = String(req.params.username || '');
+    const user = await store.findByUsername(name.slice(0, 30));
+    if (!user) return res.status(404).json({ error: 'Perfil não encontrado' });
+
+    const cosmeticos = require('../cosmeticos');
+    const cartas = cosmeticos.ITENS.filter((x) => x.tipo === 'carta');
+    const porId = new Map(cartas.map((c) => [c.id, c]));
+
+    const db = getDb();
+    const rows = await db
+      .prepare(
+        "SELECT item_id FROM public.cosmeticos_compras WHERE user_id = ? AND tipo = 'carta'",
+      )
+      .all(user.id)
+      .catch(() => []);
+    const perfil = await db
+      .prepare('SELECT card_style FROM public.user_profiles WHERE user_id = ?')
+      .get(user.id)
+      .catch(() => null);
+
+    const owned = new Set(rows.map((r) => r.item_id));
+    const lista = [...owned]
+      .map((id) => porId.get(id))
+      .filter(Boolean)
+      .map((c) => ({ valor: c.valor, nome: c.nome }));
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({
+      total: cartas.length,
+      cartas: lista,
+      equipada: (perfil && perfil.card_style) || null,
+    });
+  } catch (e) {
+    console.error('Álbum:', e.message);
+    res.status(500).json({ error: 'Não foi possível abrir o álbum.' });
   }
 });
 
