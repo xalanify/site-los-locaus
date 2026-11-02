@@ -3733,3 +3733,11 @@ body.kova .tab-ativo {
   background: #151518;
   object-fit: cover;
 }
+
+/* Entrada: o botão fica por baixo do texto 3D "Locaus.Fun" */
+body.kova .boot-conteudo {
+  justify-content: flex-end;
+}
+body.kova .boot-meio {
+  margin-bottom: clamp(2.5rem, 13vh, 6rem);
+}
