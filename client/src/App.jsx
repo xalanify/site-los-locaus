@@ -38,6 +38,7 @@ const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const CartasPage = lazy(() => import('./pages/CartasPage'))
+const AoVivoPage = lazy(() => import('./pages/AoVivoPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
@@ -330,6 +331,7 @@ function App() {
                       element={<MembrosPage onProfile={openMember} />}
                     />
                     <Route path="/cartas" element={<CartasPage />} />
+                    <Route path="/aovivo" element={<AoVivoPage />} />
                     <Route
                       path="/clips"
                       element={

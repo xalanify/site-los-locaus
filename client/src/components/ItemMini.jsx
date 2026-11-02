@@ -1,5 +1,6 @@
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
+import RoupaPreview from './RoupaPreview'
 import { classesNome } from '../data/nomeEfeitos'
 
 /* Miniatura de um cosmético: mostra o efeito real (nome, carta ou estilo)
@@ -25,6 +26,10 @@ export default function ItemMini({ item, me, className = '' }) {
         />
       </span>
     )
+  }
+
+  if (item.tipo === 'roupa') {
+    return <RoupaPreview valor={item.valor} className={className} />
   }
 
   return (

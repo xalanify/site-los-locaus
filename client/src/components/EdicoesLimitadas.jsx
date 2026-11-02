@@ -179,6 +179,15 @@ export default function EdicoesLimitadas() {
               <article key={e.id} className="edicao">
                 <div className="edicao-arte">
                   <Arte id={e.id} />
+                  <img
+                    src={`/edicoes/${e.id}.jpg`}
+                    alt=""
+                    className="edicao-img"
+                    loading="lazy"
+                    onError={(ev) => {
+                      ev.currentTarget.style.display = 'none'
+                    }}
+                  />
                   <span className="edicao-selo" style={{ color: rar.cor, borderColor: `${rar.cor}55` }}>
                     {rar.nome}
                   </span>

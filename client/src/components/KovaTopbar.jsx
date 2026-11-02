@@ -14,6 +14,7 @@ import {
   Wrench,
   CircuitBoard,
   CreditCard,
+  Radio,
 } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
@@ -35,6 +36,7 @@ const LINKS = [
 ]
 
 const MAIS = [
+  { nome: 'Ao vivo', path: '/aovivo', Icon: Radio },
   { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3 },
   { nome: 'Distinções', path: '/distincoes', Icon: Award },
   { nome: 'Notícias', path: '/noticias', Icon: Newspaper },

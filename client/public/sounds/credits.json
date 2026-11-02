@@ -1,0 +1,10 @@
+[
+  { "slug": "rifle", "url": "https://cdn.freesound.org/previews/386/386845_5937039-lq.mp3", "licenca": "CC0" },
+  { "slug": "sniper", "url": "https://cdn.freesound.org/previews/654/654375_10435241-lq.mp3", "licenca": "CC0" },
+  { "slug": "shotgun", "url": "https://cdn.freesound.org/previews/668/668353_3271378-lq.mp3", "licenca": "CC0" },
+  { "slug": "pistol", "url": "https://cdn.freesound.org/previews/163/163456_2263027-lq.mp3", "licenca": "CC0" },
+  { "slug": "smg", "url": "https://cdn.freesound.org/previews/258/258198_4675419-lq.mp3", "licenca": "CC0" },
+  { "slug": "knife", "url": "https://cdn.freesound.org/previews/389/389690_6861640-lq.mp3", "licenca": "CC0" },
+  { "slug": "reload", "url": "https://cdn.freesound.org/previews/693/693124_7157894-lq.mp3", "licenca": "CC0" },
+  { "slug": "hit", "url": "https://cdn.freesound.org/previews/478/478057_7667195-lq.mp3", "licenca": "CC0" }
+]

@@ -17,6 +17,7 @@ import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
 import ItemMini from './ItemMini'
+import RoupaPreview from './RoupaPreview'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
 import { classesNome } from '../data/nomeEfeitos'
@@ -128,6 +129,13 @@ function Previsao({ item, me }) {
             ]),
           ].filter((g) => g !== 'csgo')}
         />
+      </div>
+    )
+  }
+  if (item.tipo === 'roupa') {
+    return (
+      <div className="flex justify-center py-2">
+        <RoupaPreview valor={item.valor} className="roupa-mini--grande" />
       </div>
     )
   }
@@ -399,6 +407,7 @@ export default function Mercado({ onSaldo }) {
             { id: 'cor', nome: 'Cores' },
             { id: 'carta', nome: 'Cartas' },
             { id: 'estilo', nome: 'Estilos' },
+            { id: 'roupa', nome: 'Roupas' },
           ].map((f) => (
             <button
               key={f.id}
@@ -449,6 +458,7 @@ export default function Mercado({ onSaldo }) {
                 {item.tipo === 'carta' && (
                   <ItemMini item={item} me={me} className="mini-carta--lista" />
                 )}
+                {item.tipo === 'roupa' && <RoupaPreview valor={item.valor} />}
                 <span className="min-w-0 flex-1">
                   <span
                     className={`block truncate text-sm font-bold ${
@@ -644,7 +654,7 @@ export default function Mercado({ onSaldo }) {
                 </p>
               ) : detalhe.comprado ? (
                 <>
-                  {!equipado(detalhe) && (
+                  {detalhe.tipo !== 'roupa' && !equipado(detalhe) && (
                     <button
                       type="button"
                       onClick={() => equipar(detalhe)}
