@@ -6,8 +6,8 @@ import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import RightColumn from './components/RightColumn'
 import MobileMenu from './components/MobileMenu'
-import Hero from './components/Hero'
 import BetaBadge from './components/BetaBadge'
+import MercadoHome from './components/MercadoHome'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import NovidadesModal from './components/NovidadesModal'
@@ -37,7 +37,6 @@ const ClipsPage = lazy(() => import('./pages/ClipsPage'))
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'))
 const MembrosPage = lazy(() => import('./pages/MembrosPage'))
 const CartasPage = lazy(() => import('./pages/CartasPage'))
-const GeoGuessrPage = lazy(() => import('./pages/GeoGuessrPage'))
 const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
@@ -288,8 +287,8 @@ function App() {
                       path="/"
                       element={
                         <>
-                          {/* O canal: foto, nome, subscritores e visualizações */}
-                          <Hero onVerVideos={() => setShowVideos(true)} />
+                          {/* Prévia do mercado (substitui o cartão do canal) */}
+                          <MercadoHome />
                           {/* Próximos torneios com contagem ao vivo (R6 e CS2) */}
                           <TorneiosHome />
                         </>
@@ -330,7 +329,6 @@ function App() {
                       element={<MembrosPage onProfile={openMember} />}
                     />
                     <Route path="/cartas" element={<CartasPage />} />
-                    <Route path="/geoguessr" element={<GeoGuessrPage />} />
                     <Route
                       path="/clips"
                       element={

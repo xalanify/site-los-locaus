@@ -15,7 +15,6 @@ import {
   Newspaper,
   CircuitBoard,
   CreditCard,
-  MapPin,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
 import Sino from './Sino'
@@ -47,7 +46,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isProfile = location.pathname.startsWith('/perfil')
   const isMembers = location.pathname === '/membros'
   const isCartas = location.pathname === '/cartas'
-  const isGeo = location.pathname === '/geoguessr'
   const isGames = location.pathname === '/jogos'
   const isNoticias = location.pathname === '/noticias' || location.pathname === '/jogos-steam'
   const isFerramentas = location.pathname === '/ferramentas'
@@ -72,7 +70,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     { name: 'Distinções', icon: Trophy, action: () => navigate('/distincoes'), active: isDistincoes },
     { name: 'Membros', icon: Users, action: () => navigate('/membros'), active: isMembers },
     { name: 'Cartas', icon: CreditCard, action: () => navigate('/cartas'), active: isCartas },
-    { name: 'GeoGuessr GTA', icon: MapPin, action: () => navigate('/geoguessr'), active: isGeo },
     // Estatísticas: aberta a todos os membros
     { name: 'Estatísticas', icon: Gamepad2, action: () => navigate('/jogos'), active: isGames },
     // Loja: aberta a todos os membros

@@ -38,17 +38,14 @@ export default function CosmeticosPage({ isAdmin = false }) {
           subtitle="Cores de nome, cartas e estilos com preço a subir e a descer. Compra, vende e equipa — tudo com Moedas Locaus."
         />
 
-        <div className="mb-5 flex flex-wrap gap-1.5">
+        <div className="ui-tabs mb-5">
           {ABAS.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setAba(t.id)}
-              className={`rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${
-                aba === t.id
-                  ? 'border-[#f7a8a8]/50 bg-[#f7a8a8]/15 text-[#f7a8a8]'
-                  : 'border-white/10 bg-white/[0.02] text-zinc-400 hover:text-white'
-              }`}
+              data-active={aba === t.id}
+              className="ui-tab"
             >
               {t.nome}
             </button>

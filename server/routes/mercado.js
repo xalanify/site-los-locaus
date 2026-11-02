@@ -128,7 +128,8 @@ router.get('/historico', requireUser, async (req, res) => {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
     res.setHeader('Cache-Control', 'no-store');
-    res.json(await mercado.historico(req.query.limit));
+    const meu = req.query.meu === '1' || req.query.meu === 'true';
+    res.json(await mercado.historico(req.query.limit, meu ? uid : null));
   } catch (e) {
     console.error('Histórico mercado:', e.message);
     res.status(500).json({ error: 'Não foi possível abrir o histórico.' });

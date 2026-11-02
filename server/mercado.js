@@ -261,13 +261,16 @@ async function tick() {
   // e o mercado também compra anúncios de users, se o preço for razoável
   await simularCompraAnuncios(db).catch(() => {});
 
-  // limpa histórico com mais de 7 dias
+  // limpa histórico com mais de 7 dias (só os negócios simulados do mercado;
+  // as compras e vendas dos membros ficam guardadas para sempre)
   await db
     .prepare("DELETE FROM public.mercado_historico WHERE em < now() - interval '7 days'")
     .run()
     .catch(() => {});
   await db
-    .prepare("DELETE FROM public.mercado_vendas WHERE em < now() - interval '7 days'")
+    .prepare(
+      "DELETE FROM public.mercado_vendas WHERE user_id IS NULL AND em < now() - interval '7 days'",
+    )
     .run()
     .catch(() => {});
   return true;
@@ -366,9 +369,9 @@ async function simularCompraAnuncios(db) {
       .catch(() => {});
     await db
       .prepare(
-        'INSERT INTO public.mercado_vendas (item_id, user_id, preco, tipo, contraparte_id) VALUES (?, NULL, ?, ?, ?)',
+        'INSERT INTO public.mercado_vendas (item_id, user_id, preco, tipo, contraparte_id) VALUES (?, ?, ?, ?, ?)',
       )
-      .run(a.item_id, preco, 'compra', a.user_id)
+      .run(a.item_id, a.user_id, preco, 'venda', null)
       .catch(() => {});
     await db
       .prepare('UPDATE public.mercado_precos SET preco = ?, atualizado_em = now() WHERE item_id = ?')
@@ -764,6 +767,12 @@ async function comprarAnuncio(uid, id) {
       'INSERT INTO public.mercado_vendas (item_id, user_id, preco, tipo, contraparte_id) VALUES (?, ?, ?, ?, ?)',
     )
     .run(item.id, uid, preco, 'compra', a.user_id);
+  // e a venda do lado de quem anunciou
+  await db
+    .prepare(
+      'INSERT INTO public.mercado_vendas (item_id, user_id, preco, tipo, contraparte_id) VALUES (?, ?, ?, ?, ?)',
+    )
+    .run(item.id, a.user_id, preco, 'venda', uid);
 
   // o mercado fica no valor da venda
   await db
@@ -942,21 +951,35 @@ async function limparItensDePacks(uid) {
   return { removidos, itens: packs.length };
 }
 
-/* Histórico completo de compras/vendas (para a aba Histórico). */
-async function historico(limite = 100) {
+/* Histórico de compras/vendas (aba Histórico).
+   Com `uid`, devolve só os movimentos desse membro — de sempre. */
+async function historico(limite = 100, uid = null) {
   await semear();
   const db = getDb();
-  const n = Math.min(300, Math.max(10, Number(limite) || 100));
-  const rows = await db
-    .prepare(
-      `SELECT v.item_id, v.preco, v.tipo, v.em,
-              u.username, c.username AS contraparte
-       FROM public.mercado_vendas v
-       LEFT JOIN users u ON u.id = v.user_id
-       LEFT JOIN users c ON c.id = v.contraparte_id
-       ORDER BY v.em DESC LIMIT ?`,
-    )
-    .all(n);
+  const eu = Number(uid) || null;
+  const n = eu ? 500 : Math.min(300, Math.max(10, Number(limite) || 100));
+  const rows = eu
+    ? await db
+        .prepare(
+          `SELECT v.item_id, v.preco, v.tipo, v.em,
+                  u.username, c.username AS contraparte
+           FROM public.mercado_vendas v
+           LEFT JOIN users u ON u.id = v.user_id
+           LEFT JOIN users c ON c.id = v.contraparte_id
+           WHERE v.user_id = ?
+           ORDER BY v.em DESC LIMIT ?`,
+        )
+        .all(eu, n)
+    : await db
+        .prepare(
+          `SELECT v.item_id, v.preco, v.tipo, v.em,
+                  u.username, c.username AS contraparte
+           FROM public.mercado_vendas v
+           LEFT JOIN users u ON u.id = v.user_id
+           LEFT JOIN users c ON c.id = v.contraparte_id
+           ORDER BY v.em DESC LIMIT ?`,
+        )
+        .all(n);
 
   const anuncios = await db
     .prepare(

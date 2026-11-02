@@ -11,6 +11,7 @@ import {
   Sparkles,
   ArrowUpRight,
   ArrowDownRight,
+  ArrowUpDown,
 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
@@ -139,6 +140,7 @@ export default function Mercado({ onSaldo }) {
   const [me, setMe] = useState(null)
   const [erro, setErro] = useState('')
   const [filtro, setFiltro] = useState('todos')
+  const [ordem, setOrdem] = useState('relevancia')
   const [busy, setBusy] = useState('')
   const [detalhe, setDetalhe] = useState(null)
   const [flash, setFlash] = useState({})
@@ -170,8 +172,16 @@ export default function Mercado({ onSaldo }) {
 
   const itens = useMemo(() => {
     const lista = (dados && dados.itens) || []
-    return filtro === 'todos' ? lista : lista.filter((x) => x.tipo === filtro)
-  }, [dados, filtro])
+    const filtrada = filtro === 'todos' ? lista : lista.filter((x) => x.tipo === filtro)
+    const preco = (x) => (x.comprado ? x.preco_venda : x.preco_compra)
+    const copia = [...filtrada]
+    if (ordem === 'preco-desc') copia.sort((a, b) => preco(b) - preco(a))
+    else if (ordem === 'preco-asc') copia.sort((a, b) => preco(a) - preco(b))
+    else if (ordem === 'subida') copia.sort((a, b) => b.variacao - a.variacao)
+    else if (ordem === 'descida') copia.sort((a, b) => a.variacao - b.variacao)
+    else if (ordem === 'nome') copia.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'))
+    return copia
+  }, [dados, filtro, ordem])
 
   // Pisca o preço quando sobe ou desce entre atualizações
   useEffect(() => {
@@ -315,15 +325,9 @@ export default function Mercado({ onSaldo }) {
     }
     return (
       <div aria-busy="true" aria-label="A abrir o mercado">
-        <div className="mercado-resumo">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="mercado-stat">
-              <span className="mercado-skel" style={{ width: '55%' }} />
-              <span className="mercado-skel mercado-skel--lg" style={{ marginTop: 8 }} />
-            </div>
-          ))}
-        </div>
-        <div className="mb-3 h-14 rounded-2xl border border-white/5 bg-white/[0.02]" />
+        <div className="mercado-skel mercado-skel--lg mb-3" style={{ width: '38%' }} />
+        <div className="mb-3 h-16 rounded-2xl border border-white/5 bg-white/[0.02]" />
+        <div className="mb-4 h-11 max-w-md rounded-xl border border-white/5 bg-white/[0.02]" />
         <ul className="space-y-1.5">
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <li key={i} className="mercado-skel-linha" />
@@ -335,11 +339,8 @@ export default function Mercado({ onSaldo }) {
 
   const saldo = dados.saldo || {}
 
-  // Resumo do mercado (sempre sobre todos os itens, não só o filtro)
+  // Destaque do mercado
   const todos = dados.itens || []
-  const emAlta = todos.filter((x) => x.variacao > 0).length
-  const emBaixa = todos.filter((x) => x.variacao < 0).length
-  const tenho = todos.filter((x) => x.comprado).length
   const destaque = todos
     .filter((x) => !x.emBreve)
     .reduce((melhor, x) => (!melhor || x.variacao > melhor.variacao ? x : melhor), null)
@@ -362,26 +363,6 @@ export default function Mercado({ onSaldo }) {
         <button type="button" onClick={carregar} className="ui-btn ui-btn-ghost ui-btn-sm">
           <RefreshCw className="h-3.5 w-3.5" /> Atualizar
         </button>
-      </div>
-
-      {/* resumo rápido */}
-      <div className="mercado-resumo">
-        <div className="mercado-stat">
-          <span>Itens</span>
-          <b>{todos.length}</b>
-        </div>
-        <div className="mercado-stat mercado-stat--sobe">
-          <span>Em alta</span>
-          <b>{emAlta}</b>
-        </div>
-        <div className="mercado-stat mercado-stat--desce">
-          <span>Em baixa</span>
-          <b>{emBaixa}</b>
-        </div>
-        <div className="mercado-stat">
-          <span>Tens</span>
-          <b>{tenho}</b>
-        </div>
       </div>
 
       {/* maior subida */}
@@ -410,23 +391,42 @@ export default function Mercado({ onSaldo }) {
         </button>
       )}
 
-      <div className="ui-tabs mb-4 max-w-md">
-        {[
-          { id: 'todos', nome: 'Todos' },
-          { id: 'cor', nome: 'Cores' },
-          { id: 'carta', nome: 'Cartas' },
-          { id: 'estilo', nome: 'Estilos' },
-        ].map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => setFiltro(f.id)}
-            data-active={filtro === f.id}
-            className="ui-tab"
-          >
-            {f.nome}
-          </button>
-        ))}
+      <div className="toolbar mb-4">
+        <div className="ui-tabs toolbar-tabs max-w-md">
+          {[
+            { id: 'todos', nome: 'Todos' },
+            { id: 'cor', nome: 'Cores' },
+            { id: 'carta', nome: 'Cartas' },
+            { id: 'estilo', nome: 'Estilos' },
+          ].map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setFiltro(f.id)}
+              data-active={filtro === f.id}
+              className="ui-tab"
+            >
+              {f.nome}
+            </button>
+          ))}
+        </div>
+        <div className="toolbar-acoes">
+          <label className="select-regiao">
+            <ArrowUpDown className="h-3.5 w-3.5" />
+            <select
+              value={ordem}
+              onChange={(e) => setOrdem(e.target.value)}
+              aria-label="Ordenar o mercado"
+            >
+              <option value="relevancia">Ordem do mercado</option>
+              <option value="preco-desc">Preço: maior primeiro</option>
+              <option value="preco-asc">Preço: menor primeiro</option>
+              <option value="subida">Maior subida</option>
+              <option value="descida">Maior descida</option>
+              <option value="nome">Nome (A–Z)</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <ul className="space-y-1.5">

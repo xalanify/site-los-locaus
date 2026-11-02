@@ -24,12 +24,15 @@ export default function Historico() {
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
   const [filtro, setFiltro] = useState('todos')
+  const [scope, setScope] = useState('meu')
   const [users, setUsers] = useState([])
   const [userFiltro, setUserFiltro] = useState('')
 
   const carregar = async () => {
     try {
-      const r = await fetch('/api/mercado/historico?limit=150', {
+      const query =
+        scope === 'meu' ? '/api/mercado/historico?meu=1&limit=500' : '/api/mercado/historico?limit=300'
+      const r = await fetch(query, {
         headers: authHeaders(),
         cache: 'no-store',
       })
@@ -51,7 +54,8 @@ export default function Historico() {
       .catch(() => {})
     const t = setInterval(carregar, 20000)
     return () => clearInterval(t)
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope])
 
   const vendas = useMemo(() => {
     let lista = (dados && dados.vendas) || []
@@ -62,6 +66,24 @@ export default function Historico() {
     }
     return lista
   }, [dados, filtro, userFiltro])
+
+  const resumo = useMemo(() => {
+    const lista = (dados && dados.vendas) || []
+    let compras = 0
+    let vendasN = 0
+    let gasto = 0
+    let recebido = 0
+    lista.forEach((v) => {
+      if (v.tipo === 'compra') {
+        compras += 1
+        gasto += v.preco
+      } else {
+        vendasN += 1
+        recebido += v.preco
+      }
+    })
+    return { compras, vendas: vendasN, gasto, recebido }
+  }, [dados])
 
   const anuncios = useMemo(() => {
     let lista = (dados && dados.anuncios) || []
@@ -85,8 +107,32 @@ export default function Historico() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-1.5">
+      <div className="toolbar mb-3">
+        <div className="ui-tabs toolbar-tabs">
+          {[
+            { id: 'meu', nome: 'As minhas' },
+            { id: 'todas', nome: 'Todas' },
+          ].map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setScope(s.id)}
+              data-active={scope === s.id}
+              className="ui-tab"
+            >
+              {s.nome}
+            </button>
+          ))}
+        </div>
+        <div className="toolbar-acoes">
+          <button type="button" onClick={carregar} className="ui-btn ui-btn-ghost ui-btn-sm">
+            <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div className="toolbar mb-4">
+        <div className="ui-tabs toolbar-tabs">
           {[
             { id: 'todos', nome: 'Tudo' },
             { id: 'compras', nome: 'Compras' },
@@ -96,41 +142,56 @@ export default function Historico() {
               key={f.id}
               type="button"
               onClick={() => setFiltro(f.id)}
-              className={`rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
-                filtro === f.id
-                  ? 'border-[#f7a8a8]/50 bg-[#f7a8a8]/15 text-[#f7a8a8]'
-                  : 'border-white/10 bg-white/[0.02] text-zinc-400 hover:text-white'
-              }`}
+              data-active={filtro === f.id}
+              className="ui-tab"
             >
               {f.nome}
             </button>
           ))}
-
-          <select
-            value={userFiltro}
-            onChange={(e) => setUserFiltro(e.target.value)}
-            className="rounded-full border border-white/10 bg-[#101012] px-3 py-1 text-[11px] font-bold text-zinc-300"
-            aria-label="Filtrar por membro"
-          >
-            <option value="">Todos os users</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.username}>
-                {u.username}
-              </option>
-            ))}
-          </select>
         </div>
-        <button type="button" onClick={carregar} className="ui-btn ui-btn-ghost ui-btn-sm">
-          <RefreshCw className="h-3.5 w-3.5" /> Atualizar
-        </button>
+        {scope === 'todas' && (
+          <div className="toolbar-acoes">
+            <label className="select-regiao">
+              <select
+                value={userFiltro}
+                onChange={(e) => setUserFiltro(e.target.value)}
+                aria-label="Filtrar por membro"
+              >
+                <option value="">Todos os membros</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.username}>
+                    {u.username}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
       </div>
+
+      {scope === 'meu' && (
+        <div className="mb-3 flex flex-wrap gap-2 text-[11px] font-semibold text-zinc-400">
+          <span className="page-nota">
+            <ArrowDownRight className="h-3 w-3" /> {resumo.compras} compra{resumo.compras === 1 ? '' : 's'} ·{' '}
+            {fmt(resumo.gasto)}
+          </span>
+          <span className="page-nota">
+            <ArrowUpRight className="h-3 w-3" /> {resumo.vendas} venda{resumo.vendas === 1 ? '' : 's'} ·{' '}
+            {fmt(resumo.recebido)}
+          </span>
+        </div>
+      )}
 
       {vendas.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-12 text-center">
           <History className="mx-auto h-8 w-8 text-zinc-600" />
-          <p className="mt-3 text-sm font-bold text-white">Ainda sem movimentos</p>
+          <p className="mt-3 text-sm font-bold text-white">
+            {scope === 'meu' ? 'Ainda não fizeste movimentos' : 'Ainda sem movimentos'}
+          </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Assim que houver compras ou vendas, aparecem aqui.
+            {scope === 'meu'
+              ? 'As tuas compras e vendas no mercado ficam guardadas aqui para sempre.'
+              : 'Assim que houver compras ou vendas, aparecem aqui.'}
           </p>
         </div>
       ) : (

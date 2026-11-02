@@ -14,7 +14,6 @@ import {
   Wrench,
   CircuitBoard,
   CreditCard,
-  MapPin,
 } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
@@ -37,7 +36,6 @@ const LINKS = [
 
 const MAIS = [
   { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3 },
-  { nome: 'GeoGuessr GTA', path: '/geoguessr', Icon: MapPin },
   { nome: 'Distinções', path: '/distincoes', Icon: Award },
   { nome: 'Notícias', path: '/noticias', Icon: Newspaper },
   { nome: 'Ferramentas Windows', path: '/ferramentas', Icon: Wrench },
