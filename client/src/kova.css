@@ -3099,9 +3099,10 @@ body.kova .ui-tab {
   min-height: 36px;
   padding: 0 12px;
   border-radius: 10px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 body.kova .ui-tab[data-active='true'] {
@@ -3236,4 +3237,54 @@ body.kova .page-title {
 }
 body.kova p {
   text-wrap: pretty;
+}
+
+/* ---------- Barra de abas antiga (TabBar) igual aos separadores ---------- */
+body.kova .tabbar {
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(16, 16, 18, 0.85);
+}
+body.kova .tab-item {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #a1a1aa;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+body.kova .tab-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+body.kova .tab-ativo,
+body.kova .tab-ativo:hover {
+  background: #ff9e9e;
+  color: #1a0f0f;
+  box-shadow: none;
+}
+body.kova .tab-cont {
+  background: rgba(255, 255, 255, 0.14);
+  color: #e4e4e7;
+  font-size: 10px;
+  padding: 2px 6px;
+}
+body.kova .tab-ativo .tab-cont {
+  background: rgba(0, 0, 0, 0.18);
+  color: #1a0f0f;
+}
+body.kova .tabbar-grande .tab-item {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 12.5px;
+}
+@media (max-width: 639px) {
+  body.kova .tab-item {
+    min-height: 40px;
+  }
 }

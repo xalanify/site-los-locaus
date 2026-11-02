@@ -15,7 +15,7 @@ export default function TabBar({ items = [], value, onChange, ariaLabel, classNa
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={`tabbar glass inline-flex max-w-full flex-wrap items-center gap-1 rounded-full p-1 ${className}`}
+      className={`tabbar inline-flex max-w-full flex-wrap items-center gap-1 p-1 ${className}`}
     >
       {items.map((it) => {
         const ativo = it.id === value
