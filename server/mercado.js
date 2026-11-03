@@ -253,9 +253,9 @@ async function tick() {
              GREATEST(
                p.base * 0.4,
                LEAST(
-                 p.base * 1.8,
+                 p.base * 3.2,
                  p.preco * (1 + n.nova)
-                   + (p.base - p.preco) * 0.03
+                   + (CASE WHEN p.base < 200 THEN (p.base - p.preco) * 0.03 ELSE 0 END)
                    + (CASE WHEN random() < 0.5 THEN -1 ELSE 1 END)
                )
              )::numeric
@@ -314,7 +314,7 @@ async function simularNegocios(db, atualizados) {
                GREATEST(
                  base * 0.4,
                  LEAST(
-                   base * 1.8,
+                   base * 3.2,
                    preco * (1 + ?::numeric)
                      + (CASE WHEN ?::numeric >= 0 THEN 1 ELSE -1 END)
                  )
@@ -605,7 +605,7 @@ async function ajustarPreco(itemId, fator) {
              GREATEST(
                base * 0.4,
                LEAST(
-                 base * 1.8,
+                 base * 3.2,
                  preco * (1 + ?::numeric) + (CASE WHEN ?::numeric >= 0 THEN 1 ELSE -1 END)
                )
              )::numeric
@@ -1290,10 +1290,10 @@ async function ajustarMoedas(uid, valor, motivo) {
    o mais raro, mas o preço é o mesmo para todos os números.
    ============================================================ */
 const EDICOES = [
-  { id: 'edicao-remember', nome: 'Remember', total: 10, preco: 300, raridade: 'lendario' },
-  { id: 'edicao-nightops', nome: 'Night Ops', total: 25, preco: 180, raridade: 'epico' },
-  { id: 'edicao-stealth', nome: 'Stealth', total: 50, preco: 120, raridade: 'raro' },
-  { id: 'edicao-apex', nome: 'Apex', total: 10, preco: 220, raridade: 'lendario' },
+  { id: 'edicao-remember', nome: 'Remember', total: 10, preco: 1500, raridade: 'lendario' },
+  { id: 'edicao-nightops', nome: 'Night Ops', total: 25, preco: 1000, raridade: 'epico' },
+  { id: 'edicao-stealth', nome: 'Stealth', total: 50, preco: 800, raridade: 'raro' },
+  { id: 'edicao-apex', nome: 'Apex', total: 10, preco: 1250, raridade: 'lendario' },
 ];
 const EDICAO_POR_ID = new Map(EDICOES.map((e) => [e.id, e]));
 

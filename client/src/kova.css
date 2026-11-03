@@ -3741,3 +3741,120 @@ body.kova .boot-conteudo {
 body.kova .boot-meio {
   margin-bottom: clamp(2.5rem, 13vh, 6rem);
 }
+
+/* Carta limitada — design de carta com nome, marca de água e tilt */
+.carta-limitada {
+  --cx: 50%;
+  --cy: 50%;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: #0b0d0f;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out;
+  touch-action: pan-y;
+  user-select: none;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+.carta-limitada-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.carta-limitada-veu {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0) 38%,
+    rgba(0, 0, 0, 0.35) 62%,
+    rgba(0, 0, 0, 0.9)
+  );
+}
+.carta-limitada-badge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 3;
+  border-radius: 999px;
+  background: #f7a8a8;
+  padding: 0.14rem 0.45rem;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1a0f0f;
+}
+.carta-limitada-num {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 3;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0.14rem 0.45rem;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+.carta-limitada-info {
+  position: absolute;
+  left: 0.8rem;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.carta-limitada-nome {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  overflow-wrap: anywhere;
+}
+.carta-limitada-sub {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
+}
+.carta-limitada-marca {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: 'Archivo', 'Inter', sans-serif;
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.09);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+.carta-limitada-luz {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(
+    240px circle at var(--cx) var(--cy),
+    rgba(255, 255, 255, 0.14),
+    transparent 65%
+  );
+}

@@ -18,6 +18,7 @@ import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
 import ItemMini from './ItemMini'
+import CartaLimitada from './CartaLimitada'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
 import { classesNome } from '../data/nomeEfeitos'
@@ -656,14 +657,15 @@ export default function Mercado({ onSaldo }) {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-                <img
-                  src={detalhe.imagem}
-                  alt=""
-                  className="mx-auto mb-3 w-full max-w-[260px] rounded-xl border border-white/10 object-cover"
-                  onError={(ev) => {
-                    ev.currentTarget.style.display = 'none'
-                  }}
-                />
+                <div className="mx-auto mb-3 w-full max-w-[260px]">
+                  <CartaLimitada
+                    id={detalhe.id}
+                    nome={detalhe.nome}
+                    username={me?.username || 'Locaus'}
+                    numero={detalhe.minhas && detalhe.minhas[0] ? detalhe.minhas[0].numero : null}
+                    total={detalhe.total}
+                  />
+                </div>
                 <div className="mb-3 flex items-end justify-between">
                   <p className="flex items-center gap-1.5 font-display text-3xl font-black leading-none text-white">
                     {fmt(detalhe.preco_compra)}

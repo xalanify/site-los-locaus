@@ -208,7 +208,12 @@ function comEscada(lista, inicio, passo) {
   return ordem.map((x, i) => ({ ...x, custo: inicio + passo * i }));
 }
 
-const NOMES_PRECO = comEscada([...CORES, ...CAMOS], 10, 3).map(comPrecoAlto);
+const PRECOS_FIXOS = {
+  'cor-obsidian': 17,
+};
+const comPrecoFixo = (x) => (PRECOS_FIXOS[x.id] ? { ...x, custo: PRECOS_FIXOS[x.id] } : x);
+
+const NOMES_PRECO = comEscada([...CORES, ...CAMOS], 10, 3).map(comPrecoAlto).map(comPrecoFixo);
 const CORES_PRECO = NOMES_PRECO.filter((x) => CORES.some((c) => c.id === x.id));
 const CAMOS_PRECO = NOMES_PRECO.filter((x) => CAMOS.some((c) => c.id === x.id));
 
