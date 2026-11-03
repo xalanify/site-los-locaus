@@ -250,7 +250,15 @@ async function tick() {
        UPDATE public.mercado_precos p
        SET tendencia = n.nova,
            preco = ROUND(
-             GREATEST(p.base * 0.1, p.preco * (1 + n.nova + (random() - 0.5) * 0.006))::numeric
+             GREATEST(
+               p.base * 0.4,
+               LEAST(
+                 p.base * 1.8,
+                 p.preco * (1 + n.nova)
+                   + (p.base - p.preco) * 0.03
+                   + (CASE WHEN random() < 0.5 THEN -1 ELSE 1 END)
+               )
+             )::numeric
            ),
            atualizado_em = now()
        FROM novos n
@@ -302,12 +310,21 @@ async function simularNegocios(db, atualizados) {
     const r = await db
       .prepare(
         `UPDATE public.mercado_precos
-         SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric),
+         SET preco = ROUND(
+               GREATEST(
+                 base * 0.4,
+                 LEAST(
+                   base * 1.8,
+                   preco * (1 + ?::numeric)
+                     + (CASE WHEN ?::numeric >= 0 THEN 1 ELSE -1 END)
+                 )
+               )::numeric
+             ),
              atualizado_em = now()
          WHERE item_id = ?
          RETURNING preco`,
       )
-      .get(fator, item.item_id)
+      .get(fator, fator, item.item_id)
       .catch(() => null);
     if (!r) continue;
     const preco = Number(r.preco);
@@ -423,7 +440,7 @@ async function talvezTick() {
     .get()
     .catch(() => null);
   const seg = Number(r && r.seg) || 999;
-  if (seg >= 60) await tick().catch(() => {});
+  if (seg >= 30) await tick().catch(() => {});
 }
 
 async function listar(uid) {
@@ -584,12 +601,20 @@ async function ajustarPreco(itemId, fator) {
   const r = await db
     .prepare(
       `UPDATE public.mercado_precos
-       SET preco = ROUND(GREATEST(base * 0.1, preco * (1 + ?::numeric))::numeric),
+       SET preco = ROUND(
+             GREATEST(
+               base * 0.4,
+               LEAST(
+                 base * 1.8,
+                 preco * (1 + ?::numeric) + (CASE WHEN ?::numeric >= 0 THEN 1 ELSE -1 END)
+               )
+             )::numeric
+           ),
            atualizado_em = now()
        WHERE item_id = ?
        RETURNING preco`,
     )
-    .get(fator, itemId)
+    .get(fator, fator, itemId)
     .catch(() => null);
   if (r) {
     await db
