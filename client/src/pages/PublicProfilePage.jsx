@@ -326,14 +326,6 @@ export default function PublicProfilePage({
 
         {/* ---------------- Dock flutuante do perfil ---------------- */}
         <nav className="perfil-dock" aria-label="Ações do perfil">
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
-            title="Novidades"
-          >
-            <Sparkles />
-            <span>Novidades</span>
-          </button>
           {isAdmin && (
             <button type="button" onClick={onPanelClick} title="Painel Admin">
               <LayoutDashboard />

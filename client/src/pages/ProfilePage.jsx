@@ -1437,13 +1437,6 @@ export default function ProfilePage({
             Ver perfil público
           </button>
           <button
-            onClick={() => window.dispatchEvent(new Event('locaus:abrir-novidades'))}
-            className="ui-btn ui-btn-ghost"
-          >
-            <Sparkles className="h-4 w-4" />
-            Novidades
-          </button>
-          <button
             onClick={onLogout}
             className="flex items-center gap-2 rounded-xl border border-red-500/40 px-5 py-3 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/15"
           >
