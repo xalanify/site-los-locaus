@@ -15,16 +15,32 @@ export default function DiarioModal({ user }) {
   useEffect(() => {
     if (!uid) return undefined
     let vivo = true
-    fetch('/api/mercado/diario', { method: 'POST', headers: authHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (!vivo || !d || !d.recebeu) return
-        setAberto(true)
-        window.dispatchEvent(new Event('locaus:moedas'))
-      })
-      .catch(() => {})
+    let timer = 0
+
+    const pedir = () => {
+      fetch('/api/mercado/diario', { method: 'POST', headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!vivo || !d || !d.recebeu) return
+          setAberto(true)
+          window.dispatchEvent(new Event('locaus:moedas'))
+        })
+        .catch(() => {})
+    }
+
+    const aoFecharNovidades = () => pedir()
+
+    if (window.__novidadesAberta) {
+      window.addEventListener('locaus:novidades-fechou', aoFecharNovidades, { once: true })
+    } else {
+      // pequeno atraso para não competir com o arranque do site
+      timer = window.setTimeout(pedir, 500)
+    }
+
     return () => {
       vivo = false
+      if (timer) clearTimeout(timer)
+      window.removeEventListener('locaus:novidades-fechou', aoFecharNovidades)
     }
   }, [uid])
 

@@ -10,6 +10,7 @@ import BetaBadge from './components/BetaBadge'
 import MercadoHome from './components/MercadoHome'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
+import NovidadesModal from './components/NovidadesModal'
 import DiarioModal from './components/DiarioModal'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
@@ -392,6 +393,7 @@ function App() {
                 <Footer />
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
+                <NovidadesModal />
                 <DiarioModal user={user} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}

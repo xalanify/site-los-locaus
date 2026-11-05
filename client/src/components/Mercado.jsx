@@ -389,7 +389,8 @@ export default function Mercado({ onSaldo }) {
       )
     }
     return (
-      <div aria-busy="true" aria-label="A abrir o mercado">
+      <div aria-busy="true" aria-label="A carregar o mercado">
+        <p className="mb-2 text-[11px] font-semibold text-zinc-500">A carregar o mercado…</p>
         <div className="mercado-skel mercado-skel--lg mb-3" style={{ width: '38%' }} />
         <div className="mb-3 h-16 rounded-2xl border border-white/5 bg-white/[0.02]" />
         <div className="mb-4 h-11 max-w-md rounded-xl border border-white/5 bg-white/[0.02]" />

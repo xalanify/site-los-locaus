@@ -65,6 +65,18 @@ router.post('/edicoes/vender', requireUser, async (req, res) => {
   }
 });
 
+router.get('/home', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    res.setHeader('Cache-Control', 'private, max-age=10');
+    res.json(await mercado.home(uid));
+  } catch (e) {
+    console.error('Mercado home:', e.message);
+    res.status(500).json({ error: 'Não foi possível abrir a prévia do mercado.' });
+  }
+});
+
 router.get('/', requireUser, async (req, res) => {
   try {
     const uid = uidDe(req);

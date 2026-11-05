@@ -53,7 +53,7 @@ export default function MercadoHome() {
   const [dados, setDados] = useState(null)
 
   useEffect(() => {
-    fetch('/api/mercado', { headers: authHeaders(), cache: 'no-store' })
+    fetch('/api/mercado/home', { headers: authHeaders(), cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setDados(d))
       .catch(() => {})
@@ -99,7 +99,7 @@ export default function MercadoHome() {
           <div className="border-t border-white/10">
             {!dados ? (
               <div className="flex items-center justify-center py-12 text-sm text-zinc-500">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> A abrir o mercado…
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> A carregar o mercado…
               </div>
             ) : top.length === 0 ? (
               <p className="py-10 text-center text-sm text-zinc-500">Ainda sem itens no mercado.</p>

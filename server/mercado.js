@@ -1348,8 +1348,49 @@ async function venderEdicao(uid, copiaId) {
   return { ok: true, recebido, ...(await cosmeticos.saldo(uid)) };
 }
 
+/* Prévia rápida para a home: só os 3 mais caros, com 24 pontos. */
+async function home(uid) {
+  await semear();
+  await talvezTick();
+  const db = getDb();
+  const rows = await db
+    .prepare('SELECT item_id, base, preco FROM public.mercado_precos')
+    .all()
+    .catch(() => []);
+  const mapa = new Map(rows.map((r) => [r.item_id, r]));
+
+  const lista = [...POR_ID.values()]
+    .filter((x) => !x.emBreve)
+    .map((x) => {
+      const p = mapa.get(x.id);
+      const base = Number(p && p.base) || Number(x.custo) || 10;
+      const preco = Math.round(Number(p && p.preco) || Number(x.custo) || 10);
+      return { ...x, base, preco };
+    })
+    .sort((a, b) => b.preco - a.preco)
+    .slice(0, 3);
+
+  for (const it of lista) {
+    const serie = await db
+      .prepare(
+        'SELECT preco, em FROM public.mercado_historico WHERE item_id = ? ORDER BY em DESC LIMIT 24',
+      )
+      .all(it.id)
+      .catch(() => []);
+    it.historico = serie.reverse().map((h) => ({ preco: Math.round(Number(h.preco) || 0), em: h.em }));
+    it.preco_compra = precoCompra(it.preco);
+    it.preco_venda = precoVenda(it.preco);
+    it.raridade = raridadeDe(it.base);
+    const primeiro = it.historico.length ? it.historico[0].preco : it.preco;
+    it.variacao = primeiro ? Math.round(((it.preco - primeiro) / primeiro) * 1000) / 10 : 0;
+  }
+
+  return { itens: lista, saldo: await cosmeticos.saldo(uid) };
+}
+
 module.exports = {
   listar,
+  home,
   meusItens,
   historico,
   economia,
