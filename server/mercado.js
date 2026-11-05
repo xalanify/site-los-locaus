@@ -59,7 +59,7 @@ async function tesouroAjustar(db, delta) {
 /* Moedas são sempre inteiras — sem cêntimos em lado nenhum. */
 const arred = (n) => Math.max(0, Math.round(Number(n) || 0));
 const precoCompra = (preco) => Math.max(1, Math.round(Number(preco) * (1 + SPREAD)));
-const precoVenda = (preco) => Math.max(0, Math.round(Number(preco) * (1 - SPREAD)));
+const precoVenda = (preco) => Math.max(1, Math.round(Number(preco) * (1 - SPREAD)));
 
 /* Probabilidades por tipo de pack (ordem: comum, raro, epico, lendario) */
 const PESOS = {
@@ -170,7 +170,7 @@ async function semear() {
 
     // preços base (atualiza se o catálogo mudou de valores)
     for (const item of CATALOGO) {
-      const base = Number(item.custo) || 10;
+      const base = Math.min(100, Number(item.custo) || 10);
       await db
         .prepare(
           `INSERT INTO public.mercado_precos (item_id, base, preco)
@@ -196,7 +196,7 @@ async function semear() {
     if (!ver || ver.valor !== VERSAO) {
       await db.prepare('DELETE FROM public.mercado_historico').run().catch(() => {});
       await db
-        .prepare('UPDATE public.mercado_precos SET preco = base, atualizado_em = now()')
+        .prepare('UPDATE public.mercado_precos SET preco = LEAST(base, 100), atualizado_em = now()')
         .run()
         .catch(() => {});
       await db
@@ -251,11 +251,11 @@ async function tick() {
        SET tendencia = n.nova,
            preco = ROUND(
              GREATEST(
-               p.base * 0.4,
+               1,
                LEAST(
-                 p.base * 3.2,
+                 100,
                  p.preco * (1 + n.nova)
-                   + (CASE WHEN p.base < 200 THEN (p.base - p.preco) * 0.03 ELSE 0 END)
+                   + (LEAST(p.base, 100) - p.preco) * 0.03
                    + (CASE WHEN random() < 0.5 THEN -1 ELSE 1 END)
                )
              )::numeric
@@ -312,9 +312,9 @@ async function simularNegocios(db, atualizados) {
         `UPDATE public.mercado_precos
          SET preco = ROUND(
                GREATEST(
-                 base * 0.4,
+                 1,
                  LEAST(
-                   base * 3.2,
+                   100,
                    preco * (1 + ?::numeric)
                      + (CASE WHEN ?::numeric >= 0 THEN 1 ELSE -1 END)
                  )
@@ -603,9 +603,9 @@ async function ajustarPreco(itemId, fator) {
       `UPDATE public.mercado_precos
        SET preco = ROUND(
              GREATEST(
-               base * 0.4,
+               1,
                LEAST(
-                 base * 3.2,
+                 100,
                  preco * (1 + ?::numeric) + (CASE WHEN ?::numeric >= 0 THEN 1 ELSE -1 END)
                )
              )::numeric
@@ -1290,10 +1290,10 @@ async function ajustarMoedas(uid, valor, motivo) {
    o mais raro, mas o preço é o mesmo para todos os números.
    ============================================================ */
 const EDICOES = [
-  { id: 'edicao-remember', nome: 'Remember', total: 10, preco: 1500, raridade: 'lendario' },
-  { id: 'edicao-nightops', nome: 'Night Ops', total: 25, preco: 1000, raridade: 'epico' },
-  { id: 'edicao-stealth', nome: 'Stealth', total: 50, preco: 800, raridade: 'raro' },
-  { id: 'edicao-apex', nome: 'Apex', total: 10, preco: 1250, raridade: 'lendario' },
+  { id: 'edicao-remember', nome: 'Remember', total: 10, preco: 100, raridade: 'lendario' },
+  { id: 'edicao-nightops', nome: 'Night Ops', total: 25, preco: 96, raridade: 'epico' },
+  { id: 'edicao-stealth', nome: 'Stealth', total: 50, preco: 94, raridade: 'raro' },
+  { id: 'edicao-apex', nome: 'Apex', total: 10, preco: 98, raridade: 'lendario' },
 ];
 const EDICAO_POR_ID = new Map(EDICOES.map((e) => [e.id, e]));
 
