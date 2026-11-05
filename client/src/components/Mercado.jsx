@@ -465,7 +465,6 @@ export default function Mercado({ onSaldo }) {
             { id: 'cor', nome: 'Cores' },
             { id: 'carta', nome: 'Cartas' },
             { id: 'estilo', nome: 'Estilos' },
-            { id: 'edicao', nome: 'Limitadas' },
           ].map((f) => (
             <button
               key={f.id}

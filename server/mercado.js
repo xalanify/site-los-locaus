@@ -58,7 +58,7 @@ async function tesouroAjustar(db, delta) {
 
 /* Moedas são sempre inteiras — sem cêntimos em lado nenhum. */
 const arred = (n) => Math.max(0, Math.round(Number(n) || 0));
-const precoCompra = (preco) => Math.max(1, Math.round(Number(preco) * (1 + SPREAD)));
+const precoCompra = (preco) => Math.min(100, Math.max(1, Math.round(Number(preco) * (1 + SPREAD))));
 const precoVenda = (preco) => Math.max(1, Math.round(Number(preco) * (1 - SPREAD)));
 
 /* Probabilidades por tipo de pack (ordem: comum, raro, epico, lendario) */
@@ -263,6 +263,7 @@ async function tick() {
            atualizado_em = now()
        FROM novos n
        WHERE p.item_id = n.item_id
+         AND p.item_id <> 'cor-obsidian'
        RETURNING p.item_id, p.preco`,
     )
     .all();
@@ -537,47 +538,6 @@ async function listar(uid) {
     };
   }).sort((a, b) => b.preco - a.preco);
 
-  /* Edições limitadas entram na lista como as outras cartas,
-     só com o selo "Limitado" e o stock. */
-  const copiasMinhas = await db
-    .prepare('SELECT id, item_id, numero FROM public.mercado_copias WHERE user_id = ?')
-    .all(uid)
-    .catch(() => []);
-  const copiasTodas = await db
-    .prepare('SELECT item_id, COUNT(*)::int AS n FROM public.mercado_copias GROUP BY item_id')
-    .all()
-    .catch(() => []);
-  const vendidasPorItem = new Map(copiasTodas.map((x) => [x.item_id, Number(x.n)]));
-
-  for (const e of EDICOES) {
-    const vendidas = vendidasPorItem.get(e.id) || 0;
-    itens.push({
-      id: e.id,
-      nome: e.nome,
-      tipo: 'edicao',
-      valor: e.id,
-      campo: 'edicao',
-      imagem: `/edicoes/${e.id}.jpg`,
-      base: e.preco,
-      preco: e.preco,
-      preco_compra: e.preco,
-      preco_venda: Math.max(1, Math.round(e.preco * 0.9)),
-      variacao: 0,
-      historico: [],
-      raridade: e.raridade,
-      comprado: copiasMinhas.some((c) => c.item_id === e.id),
-      limitado: true,
-      total: e.total,
-      disponiveis: Math.max(0, e.total - vendidas),
-      minhas: copiasMinhas
-        .filter((c) => c.item_id === e.id)
-        .map((c) => ({ id: Number(c.id), numero: Number(c.numero) })),
-      anuncios: [],
-      minhasVendas: [],
-      emBreve: false,
-    });
-  }
-
   itens.sort((a, b) => b.preco - a.preco);
 
   return {
@@ -597,6 +557,7 @@ async function listar(uid) {
 }
 
 async function ajustarPreco(itemId, fator) {
+  if (String(itemId) === 'cor-obsidian') return 17;
   const db = getDb();
   const r = await db
     .prepare(

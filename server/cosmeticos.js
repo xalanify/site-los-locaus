@@ -13,7 +13,7 @@
    ============================================================ */
 const { getDb } = require('./database');
 
-const CORES = [
+const CORES_TODAS = [
   { id: 'cor-red', nome: 'Red Tiger', valor: 'red', custo: 7, cor: '#ef4444' },
   { id: 'cor-green', nome: 'Green Tiger', valor: 'green', custo: 8, cor: '#22c55e' },
   { id: 'cor-obsidian', nome: 'Obsidian (MW2019)', valor: 'obsidian', custo: 26, cor: '#334155' },
@@ -60,10 +60,27 @@ const CORES = [
   { id: 'cor-arte-prisma', nome: 'Prisma', valor: 'arte-prisma', custo: 200, cor: '#e0f2fe' },
 ];
 
+/* Normaliza nomes para podermos retirar itens por nome (sem acentos). */
+const normNome = (s) =>
+  String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/^carta\s+/, '')
+    .trim();
+
+const CORES_REMOVER = new Set([
+  'cristal', 'hex metal', 'mercurio', 'anjo', 'ouro', 'teia', 'ouro negro',
+  'roxo camuflado', 'galaxia', 'prisma', 'rubra', 'filigrana', 'topografico',
+  'vela', 'neon camuflado', 'green tiger camuflado', 'desert camuflado',
+]);
+
+const CORES = CORES_TODAS.filter((c) => !CORES_REMOVER.has(normNome(c.nome)));
+
 /* Camuflagens: textura real aplicada às letras (background-clip: text).
    O `valor` coincide com o nome do SVG em client/public/camo/ e com a
    classe .nome-cor-<valor> em index.css. */
-const CAMOS = [
+const CAMOS_TODAS = [
   { id: 'camo-gold', nome: 'Gold Camuflado', valor: 'camo-gold', custo: 39, cor: '#f5c542' },
   { id: 'camo-diamond', nome: 'Diamond Camuflado', valor: 'camo-diamond', custo: 33, cor: '#fde68a' },
   { id: 'camo-damascus', nome: 'Damascus Camuflado', valor: 'camo-damascus', custo: 23, cor: '#60a5fa' },
@@ -86,8 +103,10 @@ const CAMOS = [
   { id: 'camo-purple', nome: 'Roxo Camuflado', valor: 'camo-purple', custo: 40, cor: '#a855f7' },
 ].map((x) => ({ ...x, textura: true }));
 
+const CAMOS = CAMOS_TODAS.filter((c) => !CORES_REMOVER.has(normNome(c.nome)));
+
 /* Cartas de perfil — mudam o estilo do cartão do perfil. */
-const CARTAS = [
+const CARTAS_TODAS = [
   { id: 'carta-license', nome: 'Carta Aimer License', valor: 'license', custo: 50, cor: '#e4e4e7' },
   { id: 'carta-kova', nome: 'Carta Kova', valor: 'kova', custo: 52, cor: '#a1a1aa' },
   { id: 'carta-neon', nome: 'Carta Neon', valor: 'neon', custo: 55, cor: '#e879f9' },
@@ -130,6 +149,30 @@ const CARTAS = [
   { id: 'carta-arte-teia', nome: 'Carta Teia', valor: 'arte-teia', custo: 235, cor: '#cbd5e1' },
   { id: 'carta-arte-suspenso', nome: 'Carta Suspenso', valor: 'arte-suspenso', custo: 240, cor: '#e5e7eb' },
   { id: 'carta-arte-prisma', nome: 'Carta Prisma', valor: 'arte-prisma', custo: 245, cor: '#e0f2fe' },
+];
+
+/* Cartas retiradas por pedido do admin. */
+const CARTAS_REMOVER = new Set([
+  'dragao', 'inverno', 'tempestade', 'nebulosa', 'cromo', 'vidro', 'corrente',
+  'anjo', 'ouro', 'vela', 'ouro negro', 'suspenso', 'prisma', 'hipnose', 'asfalto',
+  'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
+  'blood', 'cismon', 'crimson', 'aimer license',
+]);
+
+/* Cartas novas com foto (as 4 edições passam a cartas normais + 3 fotos). */
+const CARTAS_FOTO = [
+  { id: 'carta-foto-remember', nome: 'Carta Remember', valor: 'foto-remember', custo: 60, cor: '#e25c5c' },
+  { id: 'carta-foto-nightops', nome: 'Carta Night Ops', valor: 'foto-nightops', custo: 62, cor: '#84cc16' },
+  { id: 'carta-foto-stealth', nome: 'Carta Stealth', valor: 'foto-stealth', custo: 64, cor: '#cbd5e1' },
+  { id: 'carta-foto-apex', nome: 'Carta Apex', valor: 'foto-apex', custo: 66, cor: '#ef4444' },
+  { id: 'carta-foto-nfsu1', nome: 'Carta Underground', valor: 'foto-nfsu1', custo: 68, cor: '#22d3ee' },
+  { id: 'carta-foto-nfsu2', nome: 'Carta Underground 2', valor: 'foto-nfsu2', custo: 70, cor: '#f97316' },
+  { id: 'carta-foto-guerra', nome: 'Carta Guerra', valor: 'foto-guerra', custo: 72, cor: '#a1a1aa' },
+];
+
+const CARTAS = [
+  ...CARTAS_TODAS.filter((c) => !CARTAS_REMOVER.has(normNome(c.nome))),
+  ...CARTAS_FOTO,
 ];
 
 /* Estilos de perfil — mudam o design da página de perfil.
@@ -233,12 +276,20 @@ const CARTAS_PRECO = [
 /* Os banners e os efeitos saíram da loja. Os banners continuam
    disponíveis no editor de perfil; os efeitos já comprados ficam
    guardados na conta, mas deixam de aparecer para compra. */
+/* Escala para o mercado: os itens caros ficam distribuídos entre 45 e 90. */
+const escalaPreco = (c) => {
+  const v = Number(c) || 10;
+  if (v <= 45) return Math.round(v);
+  const t = Math.min(1, (v - 45) / 300);
+  return Math.round(45 + t * 45);
+};
+
 const ITENS = [
   ...CORES_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CAMOS_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CARTAS_PRECO.map((x) => ({ ...x, tipo: 'carta', campo: 'card_style' })),
   ...ESTILOS.map((x) => ({ ...x, tipo: 'estilo', campo: 'profile_style' })),
-];
+].map((x) => (x.tipo === 'estilo' ? x : { ...x, custo: escalaPreco(x.custo) }));
 
 const POR_ID = new Map(ITENS.map((x) => [x.id, x]));
 

@@ -6,6 +6,26 @@ import GameLogo from './GameLogo'
 import { classesNome } from '../data/nomeEfeitos'
 import { svgAvatar } from '../lib/avatar'
 
+const FOTO_SRC = {
+  'foto-remember': '/edicoes/edicao-remember.jpg',
+  'foto-nightops': '/edicoes/edicao-nightops.jpg',
+  'foto-stealth': '/edicoes/edicao-stealth.jpg',
+  'foto-apex': '/edicoes/edicao-apex.jpg',
+  'foto-nfsu1': '/cartas/nfsu1.jpg',
+  'foto-nfsu2': '/cartas/nfsu2.jpg',
+  'foto-guerra': '/cartas/guerra.jpg',
+}
+
+const FOTO_TAG = {
+  'foto-remember': 'Remember',
+  'foto-nightops': 'Night Ops',
+  'foto-stealth': 'Stealth',
+  'foto-apex': 'Apex',
+  'foto-nfsu1': 'Underground',
+  'foto-nfsu2': 'Underground 2',
+  'foto-guerra': 'Guerra',
+}
+
 /* ============================================================
    Cartas de perfil — 4 estilos (license, kova, dvd, felony)
    + o estilo padrão. Usadas nos membros, loja e editor.
@@ -61,6 +81,13 @@ const VARIANT_LABEL = {
   'arte-teia': 'WEB CARD',
   'arte-suspenso': 'SUSPENDED CARD',
   'arte-prisma': 'PRISM CARD',
+  'foto-remember': 'REMEMBER CARD',
+  'foto-nightops': 'NIGHT OPS CARD',
+  'foto-stealth': 'STEALTH CARD',
+  'foto-apex': 'APEX CARD',
+  'foto-nfsu1': 'UNDERGROUND CARD',
+  'foto-nfsu2': 'UNDERGROUND 2 CARD',
+  'foto-guerra': 'GUERRA CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -252,8 +279,27 @@ export default function ProfileCard({
       <span className="pc-glow" aria-hidden="true" />
       <span className="pc-ripple" aria-hidden="true" />
 
-      <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' ? 'p-0' : 'p-4 sm:p-5'}`}>
-        {v === 'sleepin' || v === 'dev' ? (
+      <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
+        {v.startsWith('foto-') ? (
+          <div className={`foto-card foto-card--${v.replace('foto-', '')}`}>
+            <img
+              src={FOTO_SRC[v]}
+              alt=""
+              loading="lazy"
+              className="foto-img"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+            <span className="foto-veu" aria-hidden="true" />
+            <span className="foto-tag">{FOTO_TAG[v] || 'Locaus'}</span>
+            <h3 className="foto-nome">{username}</h3>
+            <span className="foto-sub">Membro Locaus · #{id}</span>
+            <span className="foto-marca" aria-hidden="true">
+              {username}
+            </span>
+          </div>
+        ) : v === 'sleepin' || v === 'dev' ? (
           <div className="sleepin-body">
             <div className="sleepin-bg" aria-hidden="true">
               <ProfileBanner bannerId={perfil.banner_id} overlay="from-black/30 via-black/25 to-black/85" />
