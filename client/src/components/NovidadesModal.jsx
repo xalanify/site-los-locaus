@@ -15,9 +15,9 @@ const CARTAS = [
   { nome: 'Night Ops', src: '/edicoes/edicao-nightops.jpg' },
   { nome: 'Stealth', src: '/edicoes/edicao-stealth.jpg' },
   { nome: 'Apex', src: '/edicoes/edicao-apex.jpg' },
-  { nome: 'Underground', src: '/cartas/nfsu1.jpg' },
-  { nome: 'Underground 2', src: '/cartas/nfsu2.jpg' },
-  { nome: 'Guerra', src: '/cartas/guerra.jpg' },
+  { nome: 'Underground', src: '/cartas/nfs1.png' },
+  { nome: 'Underground 2', src: '/cartas/nfs2.png' },
+  { nome: 'Guerra', src: '/cartas/waw.png' },
 ]
 
 export default function NovidadesModal() {
@@ -75,10 +75,6 @@ export default function NovidadesModal() {
               <Sparkles className="h-3 w-3" /> Novidades · 5 de novembro
             </p>
             <h2 className="mt-1 font-display text-2xl font-black text-white">Cartas novas</h2>
-            <p className="mt-1 max-w-md text-sm leading-relaxed text-zinc-400">
-              As antigas <b className="text-white">limitadas</b> passaram a cartas normais — Remember,
-              Night Ops, Stealth e Apex. Entraram também a Underground, Underground 2 e Guerra.
-            </p>
             <p className="mt-1 text-[11px] font-semibold text-amber-200/80">
               O mercado agora só tem itens até <b>100 moedas</b>.
             </p>

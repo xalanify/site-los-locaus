@@ -11,9 +11,9 @@ const FOTO_SRC = {
   'foto-nightops': '/edicoes/edicao-nightops.jpg',
   'foto-stealth': '/edicoes/edicao-stealth.jpg',
   'foto-apex': '/edicoes/edicao-apex.jpg',
-  'foto-nfsu1': '/cartas/nfsu1.jpg',
-  'foto-nfsu2': '/cartas/nfsu2.jpg',
-  'foto-guerra': '/cartas/guerra.jpg',
+  'foto-nfsu1': '/cartas/nfs1.png',
+  'foto-nfsu2': '/cartas/nfs2.png',
+  'foto-guerra': '/cartas/waw.png',
 }
 
 const FOTO_TAG = {

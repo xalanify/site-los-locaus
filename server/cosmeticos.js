@@ -284,12 +284,21 @@ const escalaPreco = (c) => {
   return Math.round(45 + t * 45);
 };
 
+const PRECOS_FOTO = {
+  'carta-foto-remember': 100,
+  'carta-foto-apex': 99,
+  'carta-foto-nightops': 98,
+  'carta-foto-stealth': 97,
+  'carta-foto-guerra': 96,
+  'carta-foto-nfsu1': 95,
+  'carta-foto-nfsu2': 94,
+};
+
 const ITENS = [
   ...CORES_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CAMOS_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CARTAS_PRECO.map((x) => ({ ...x, tipo: 'carta', campo: 'card_style' })),
-  ...ESTILOS.map((x) => ({ ...x, tipo: 'estilo', campo: 'profile_style' })),
-].map((x) => (x.tipo === 'estilo' ? x : { ...x, custo: escalaPreco(x.custo) }));
+].map((x) => ({ ...x, custo: PRECOS_FOTO[x.id] ?? escalaPreco(x.custo) }));
 
 const POR_ID = new Map(ITENS.map((x) => [x.id, x]));
 
