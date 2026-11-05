@@ -3863,8 +3863,8 @@ body.kova .boot-meio {
    CARTAS COM FOTO (edições antigas + fotos novas)
    ============================================================ */
 .foto-card {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  min-height: 440px;
   overflow: hidden;
   border-radius: inherit;
 }

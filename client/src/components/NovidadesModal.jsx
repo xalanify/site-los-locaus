@@ -17,7 +17,7 @@ const CARTAS = [
   { nome: 'Apex', src: '/edicoes/edicao-apex.jpg' },
   { nome: 'Underground', src: '/cartas/nfs1.png' },
   { nome: 'Underground 2', src: '/cartas/nfs2.png' },
-  { nome: 'Guerra', src: '/cartas/waw.png' },
+  { nome: 'COD World at War', src: '/cartas/waw.png' },
 ]
 
 export default function NovidadesModal() {
@@ -99,7 +99,8 @@ export default function NovidadesModal() {
                 <img
                   src={c.src}
                   alt=""
-                  loading="lazy"
+                  loading="eager"
+                  decoding="async"
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none'

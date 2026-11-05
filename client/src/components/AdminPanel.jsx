@@ -1002,7 +1002,6 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'utilizadores', label: 'Utilizadores', Icon: Users },
               { id: 'presenca', label: 'Presença', Icon: Eye },
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
-              { id: 'packs', label: 'Locaus Packs', Icon: Gift },
               { id: 'economia', label: 'Economia', Icon: Coins },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'site', label: 'Site', Icon: Eye },

@@ -23,7 +23,7 @@ const FOTO_TAG = {
   'foto-apex': 'Apex',
   'foto-nfsu1': 'Underground',
   'foto-nfsu2': 'Underground 2',
-  'foto-guerra': 'Guerra',
+  'foto-guerra': 'COD World at War',
 }
 
 /* ============================================================
@@ -285,7 +285,8 @@ export default function ProfileCard({
             <img
               src={FOTO_SRC[v]}
               alt=""
-              loading="lazy"
+              loading="eager"
+              decoding="async"
               className="foto-img"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'

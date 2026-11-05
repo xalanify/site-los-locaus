@@ -156,7 +156,7 @@ const CARTAS_REMOVER = new Set([
   'dragao', 'inverno', 'tempestade', 'nebulosa', 'cromo', 'vidro', 'corrente',
   'anjo', 'ouro', 'vela', 'ouro negro', 'suspenso', 'prisma', 'hipnose', 'asfalto',
   'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
-  'blood', 'cismon', 'crimson', 'aimer license',
+  'blood', 'cismon', 'crimson', 'aimer license', 'mercurio', 'eter', 'marmore', 'neon', 'tinta',
 ]);
 
 /* Cartas novas com foto (as 4 edições passam a cartas normais + 3 fotos). */
@@ -167,7 +167,7 @@ const CARTAS_FOTO = [
   { id: 'carta-foto-apex', nome: 'Carta Apex', valor: 'foto-apex', custo: 66, cor: '#ef4444' },
   { id: 'carta-foto-nfsu1', nome: 'Carta Underground', valor: 'foto-nfsu1', custo: 68, cor: '#22d3ee' },
   { id: 'carta-foto-nfsu2', nome: 'Carta Underground 2', valor: 'foto-nfsu2', custo: 70, cor: '#f97316' },
-  { id: 'carta-foto-guerra', nome: 'Carta Guerra', valor: 'foto-guerra', custo: 72, cor: '#a1a1aa' },
+  { id: 'carta-foto-guerra', nome: 'Carta COD World at War', valor: 'foto-guerra', custo: 72, cor: '#a1a1aa' },
 ];
 
 const CARTAS = [
