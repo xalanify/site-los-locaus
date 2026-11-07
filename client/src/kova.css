@@ -5351,3 +5351,14 @@ body.kova .boot-meio {
   transform: translate(-50%, -50%) scale(0.1);
   transform-origin: center center;
 }
+
+/* O sino e as moedas têm de ter exatamente a mesma altura.
+   No telemóvel o sino estava com 36px e as moedas com 34px. */
+.kova-actions .btn-glass {
+  width: 34px;
+  height: 34px;
+}
+.kova-mobilebar-acoes > .relative > button {
+  width: 34px;
+  height: 34px;
+}

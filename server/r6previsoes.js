@@ -155,10 +155,24 @@ function decorarJogo(m, p, equipasPorId) {
     format: Number(m.matchFormatNumberOfGames) || null,
     team_a_id: ta ? Number(ta.id) || null : null,
     team_a: (infA && infA.name) || '',
-    team_a_logo: infA ? infA.darkLogoUrl || infA.logoForDarkBackgroundUrl || infA.logoUrl || null : null,
+    team_a_logo: infA
+      ? infA.darkLogoUrl ||
+        infA.logoForDarkBackgroundUrl ||
+        infA.logoUrl ||
+        infA.darkLogo ||
+        infA.logo ||
+        null
+      : null,
     team_b_id: tb ? Number(tb.id) || null : null,
     team_b: (infB && infB.name) || '',
-    team_b_logo: infB ? infB.darkLogoUrl || infB.logoForDarkBackgroundUrl || infB.logoUrl || null : null,
+    team_b_logo: infB
+      ? infB.darkLogoUrl ||
+        infB.logoForDarkBackgroundUrl ||
+        infB.logoUrl ||
+        infB.darkLogo ||
+        infB.logo ||
+        null
+      : null,
     start_time: dataInicio,
     status,
     score_a: ta ? Number(ta.score) || 0 : 0,
@@ -322,6 +336,26 @@ async function sincronizar({ force = false } = {}) {
           equipas,
         );
         if (await upsertJogo(db, j)) total++;
+      }
+
+      // Os jogos futuros vêm do calendário com os logos em `logo`/`darkLogo`.
+      // A página da competição às vezes não traz esses campos; completa-se
+      // só os logos (sem mexer em resultados/estado).
+      for (const m of home.matches || []) {
+        if (!m || !m.id || !m.team1 || !m.team2) continue;
+        const logoA = m.team1.darkLogo || m.team1.logo || null;
+        const logoB = m.team2.darkLogo || m.team2.logo || null;
+        if (!logoA && !logoB) continue;
+        await db
+          .prepare(
+            `UPDATE r6_matches
+                SET team_a_logo = COALESCE(?, team_a_logo),
+                    team_b_logo = COALESCE(?, team_b_logo),
+                    updated_at = now()
+              WHERE external_id = ?`,
+          )
+          .run(logoA, logoB, Number(m.id))
+          .catch(() => {});
       }
 
       const resolvidas = await resolverPrevisoes(db);

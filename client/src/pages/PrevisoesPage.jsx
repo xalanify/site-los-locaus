@@ -1414,7 +1414,10 @@ export default function PrevisoesPage({ user }) {
     let n = 0
     const carregar = async (forcar = false) => {
       try {
-        const r = await fetch(`/api/previsoes${forcar ? '?sync=1' : ''}`, { headers: authHeaders() })
+        const r = await fetch(`/api/previsoes${forcar ? '?sync=1' : ''}`, {
+          headers: authHeaders(),
+          cache: 'no-store',
+        })
         const d = await r.json().catch(() => null)
         if (!vivo) return
         if (!r.ok || !d) throw new Error((d && d.error) || 'Não deu para carregar os jogos.')

@@ -205,6 +205,7 @@ router.get('/', attachAuth, async (req, res) => {
       todos.map((m) => Number(m.id)),
     );
 
+    res.setHeader('Cache-Control', 'no-store');
     res.json({
       matches: todos.map((m) => decorar(m, votos.get(Number(m.id)) || [], uid)),
       sync,
