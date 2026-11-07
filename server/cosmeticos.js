@@ -157,7 +157,7 @@ const CARTAS_REMOVER = new Set([
   'anjo', 'ouro', 'vela', 'ouro negro', 'suspenso', 'prisma', 'hipnose', 'asfalto',
   'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
   'blood', 'cismon', 'crimson', 'aimer license', 'mercurio', 'eter', 'marmore', 'neon', 'tinta',
-  'arte-neon',
+  'arte-neon', 'neon flux',
 ]);
 
 /* Cartas novas com foto (as 4 edições passam a cartas normais + 3 fotos). */
