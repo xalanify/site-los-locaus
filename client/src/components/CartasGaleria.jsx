@@ -19,7 +19,7 @@ export default function CartasGaleria({ membros = [], onVer }) {
             key={m.id}
             type="button"
             onClick={() => onVer?.(m)}
-            className="group relative h-[150px] w-[132px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"
+            className="group relative h-[190px] w-[132px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-zinc-500/10 to-black/40"
           >
             <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.34] -translate-x-1/2 -translate-y-1/2">
               <ProfileCard

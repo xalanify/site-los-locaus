@@ -54,10 +54,10 @@ export default function AlbumCartas({ username }) {
         {cartas.map((c) => (
           <div
             key={c.valor}
-            className="relative h-[134px] w-[118px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/30"
+            className="relative h-[172px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/30"
             title={c.nome}
           >
-            <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.31] -translate-x-1/2 -translate-y-1/2">
+            <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.32] -translate-x-1/2 -translate-y-1/2">
               <ProfileCard perfil={{ username }} variant={c.valor} jogos={[]} className="w-[380px]" />
             </span>
             <span className="absolute bottom-1 left-1/2 max-w-[110px] -translate-x-1/2 truncate rounded-full bg-black/70 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-300">
@@ -69,14 +69,14 @@ export default function AlbumCartas({ username }) {
         {Array.from({ length: slots }).map((_, i) => (
           <div
             key={`lock-${i}`}
-            className="grid h-[134px] w-[118px] shrink-0 place-items-center rounded-xl border border-dashed border-white/10 bg-white/[0.015] text-zinc-700"
+            className="grid h-[172px] w-[124px] shrink-0 place-items-center rounded-xl border border-dashed border-white/10 bg-white/[0.015] text-zinc-700"
           >
             <Lock className="h-5 w-5" />
           </div>
         ))}
 
         {restantes > slots && (
-          <div className="grid h-[134px] w-[118px] shrink-0 place-items-center rounded-xl border border-dashed border-white/10 bg-white/[0.015] text-[11px] font-bold text-zinc-500">
+          <div className="grid h-[172px] w-[124px] shrink-0 place-items-center rounded-xl border border-dashed border-white/10 bg-white/[0.015] text-[11px] font-bold text-zinc-500">
             +{restantes - slots}
           </div>
         )}

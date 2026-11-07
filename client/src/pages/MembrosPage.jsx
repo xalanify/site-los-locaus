@@ -249,6 +249,7 @@ export default function MembrosPage({ onProfile }) {
         >
           <div
             className="relative w-full max-w-[560px]"
+            style={{ maxWidth: 'min(560px, calc((100dvh - 12rem) * 5 / 7))' }}
             onClick={(e) => e.stopPropagation()}
           >
             <button

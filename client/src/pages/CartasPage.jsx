@@ -80,7 +80,11 @@ export default function CartasPage() {
           className="fixed inset-0 z-[130] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
           onClick={() => setCartaZoom(null)}
         >
-          <div className="relative w-full max-w-[560px]" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="relative w-full max-w-[560px]"
+            style={{ maxWidth: 'min(560px, calc((100dvh - 12rem) * 5 / 7))' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={() => setCartaZoom(null)}

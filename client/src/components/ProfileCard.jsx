@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Mouse, Keyboard, Headphones, Monitor, Star } from 'lucide-react'
 import ProfileBanner from './ProfileBanner'
+import PokemonCard from './PokemonCard'
 import { BadgeGem, badgesDe, distincoesOverclock } from './BadgeGem'
 import GameLogo from './GameLogo'
 import { classesNome } from '../data/nomeEfeitos'
@@ -27,6 +28,9 @@ const FOTO_TAG = {
   'foto-guerra': 'COD World at War',
   'foto-neon': 'Neon Flux',
 }
+
+/* Cartas TCG novas (design inspirado nas cartas de Pokémon). */
+const TCG_CARDS = new Set(['foto-nfsu1', 'foto-nfsu2', 'foto-guerra'])
 
 /* ============================================================
    Cartas de perfil — 4 estilos (license, kova, dvd, felony)
@@ -256,6 +260,8 @@ export default function ProfileCard({
       onPointerCancel={aoSoltar}
       onClick={aoClicarCarta}
       className={`profile-card profile-card--${v} group ${
+        TCG_CARDS.has(v) ? 'profile-card--tcg' : ''
+      } ${
         wide
           ? 'profile-card--wide'
           : violet
@@ -284,7 +290,9 @@ export default function ProfileCard({
       <span className="pc-ripple" aria-hidden="true" />
 
       <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
-        {v.startsWith('foto-') ? (
+        {TCG_CARDS.has(v) ? (
+          <PokemonCard variant={v} perfil={perfil} username={username} id={id} />
+        ) : v.startsWith('foto-') ? (
           <div
             className={`foto-card foto-card--${v.replace('foto-', '')} ${
               ['foto-nfsu1', 'foto-nfsu2', 'foto-neon'].includes(v) ? 'foto-card--pok' : ''

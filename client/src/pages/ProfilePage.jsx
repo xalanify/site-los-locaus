@@ -94,6 +94,14 @@ const CARD_STYLES = [
   { id: 'dev', nome: 'Desenvolvedor', adminOnly: true },
 ]
 
+/* Cartas TCG novas (admin pode equipar para testar; os membros
+   compram-nas quando a loja reabrir). */
+const CARTAS_TCG = [
+  { id: 'foto-nfsu1', nome: 'Underground' },
+  { id: 'foto-nfsu2', nome: 'Underground 2' },
+  { id: 'foto-guerra', nome: 'World at War' },
+]
+
 const PROFILE_STYLES = [
   { id: 'padrao', nome: 'Padrão Locaus' },
   { id: 'felony', nome: 'Felony' },
@@ -169,8 +177,13 @@ export default function ProfilePage({
   const cartasDisponiveis = useMemo(() => {
     const compradas = meusCos.filter((x) => x.tipo === 'carta').map((x) => ({ id: x.valor, nome: x.nome }))
     const unicas = new Map([{ id: 'padrao', nome: 'Padrão Locaus' }, ...compradas].map((c) => [c.id, c]))
+    if (isAdmin || me?.is_admin) {
+      CARTAS_TCG.forEach((c) => {
+        if (!unicas.has(c.id)) unicas.set(c.id, c)
+      })
+    }
     return [...unicas.values()]
-  }, [meusCos])
+  }, [meusCos, isAdmin, me?.is_admin])
 
   const coresDisponiveis = useMemo(
     () => meusCos.filter((x) => x.tipo === 'cor').map((x) => ({ id: x.valor, valor: x.valor, nome: x.nome })),

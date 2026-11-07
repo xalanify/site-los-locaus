@@ -160,9 +160,31 @@ const CARTAS_REMOVER = new Set([
   'arte-neon', 'neon flux',
 ]);
 
-/* Cartas novas com foto — retiradas a pedido do admin (novembro 2026).
-   Ficam aqui como lista vazia para ser fácil voltar a adicionar. */
-const CARTAS_FOTO = [];
+/* Cartas novas com foto — design TCG inspirado nas cartas de Pokémon.
+   As imagens estão em client/public/cartas/. */
+const CARTAS_FOTO = [
+  {
+    id: 'carta-foto-underground',
+    nome: 'Carta Underground',
+    valor: 'foto-nfsu1',
+    custo: 118,
+    cor: '#22d3ee',
+  },
+  {
+    id: 'carta-foto-underground2',
+    nome: 'Carta Underground 2',
+    valor: 'foto-nfsu2',
+    custo: 122,
+    cor: '#fb923c',
+  },
+  {
+    id: 'carta-foto-worldatwar',
+    nome: 'Carta World at War',
+    valor: 'foto-guerra',
+    custo: 126,
+    cor: '#d6c98a',
+  },
+];
 
 const CARTAS = [
   ...CARTAS_TODAS.filter((c) => !CARTAS_REMOVER.has(normNome(c.nome))),
@@ -278,7 +300,11 @@ const escalaPreco = (c) => {
   return Math.round(45 + t * 45);
 };
 
-const PRECOS_FOTO = {};
+const PRECOS_FOTO = {
+  'carta-foto-underground': 118,
+  'carta-foto-underground2': 122,
+  'carta-foto-worldatwar': 126,
+};
 
 const ITENS = [
   ...CORES_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),

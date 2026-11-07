@@ -25,9 +25,6 @@ const CARTAS_RETIRADAS = [
   'foto-nightops',
   'foto-stealth',
   'foto-apex',
-  'foto-nfsu1',
-  'foto-nfsu2',
-  'foto-guerra',
   'foto-neon',
 ];
 
