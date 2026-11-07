@@ -65,6 +65,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu, menuOpen 
             </button>
           </div>
         </div>
+        <AvisoFotos />
       </nav>
 
       {/* ---------------- Pílula em baixo ---------------- */}

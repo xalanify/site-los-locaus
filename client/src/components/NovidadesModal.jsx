@@ -10,7 +10,7 @@ import OlhosCard from './OlhosCard'
    Aparece uma vez até "não mostrar novamente".
    ============================================================ */
 
-const CHAVE = 'locaus:novidades:2026-11-07-cartas-tcg-v2'
+const CHAVE = 'locaus:novidades:2026-11-07-cartas-tcg-v3'
 
 const CARTAS = [
   {
@@ -164,7 +164,8 @@ export default function NovidadesModal({ user }) {
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5">
             <Sparkles className="h-4 w-4 shrink-0 text-[#f7a8a8]" />
             <p className="text-[11px] font-semibold text-zinc-300">
-              Cada carta tem um verso único. <b className="text-white">Nova</b> no mercado.
+              Cada carta tem um verso único.{' '}
+              <b className="text-white">Já disponíveis no mercado.</b>
             </p>
           </div>
         </div>

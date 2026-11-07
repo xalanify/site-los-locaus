@@ -27,6 +27,8 @@ const CARTAS_RETIRADAS = [
   'foto-apex',
   'foto-neon',
   'foto-nfsu1',
+  'arte-operador',
+  'arte-teia',
 ];
 
 const ITENS_RETIRADOS = [

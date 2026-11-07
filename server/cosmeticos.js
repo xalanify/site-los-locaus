@@ -157,7 +157,7 @@ const CARTAS_REMOVER = new Set([
   'anjo', 'ouro', 'vela', 'ouro negro', 'suspenso', 'prisma', 'hipnose', 'asfalto',
   'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
   'blood', 'cismon', 'crimson', 'aimer license', 'mercurio', 'eter', 'marmore', 'neon', 'tinta',
-  'arte-neon', 'neon flux',
+  'arte-neon', 'neon flux', 'operador', 'teia',
 ]);
 
 /* Cartas novas com foto — design TCG inspirado nas cartas de Pokémon.
