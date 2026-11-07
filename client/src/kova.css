@@ -3988,3 +3988,58 @@ body.kova .boot-meio {
 .foto-card--guerra .foto-veu {
   background: linear-gradient(180deg, rgba(20, 18, 14, 0.2), transparent 30%, rgba(10, 9, 8, 0.92));
 }
+
+/* Detalhes das cartas com foto: avatar, rato e luz que segue o rato/dedo */
+.foto-avatar {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 3;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  object-fit: cover;
+}
+.foto-mouse {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 3.1rem;
+  z-index: 3;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+.foto-luz {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: radial-gradient(
+    220px circle at var(--fx, 50%) var(--fy, 50%),
+    var(--foto-cor, rgba(255, 255, 255, 0.16)),
+    transparent 65%
+  );
+}
+.foto-card:hover .foto-luz {
+  opacity: 1;
+}
+
+/* cor do brilho consoante a carta */
+.foto-card--remember { --foto-cor: rgba(226, 92, 92, 0.22); }
+.foto-card--apex { --foto-cor: rgba(239, 68, 68, 0.22); }
+.foto-card--nightops { --foto-cor: rgba(217, 249, 157, 0.2); }
+.foto-card--stealth { --foto-cor: rgba(30, 41, 59, 0.18); }
+.foto-card--nfsu1 { --foto-cor: rgba(34, 211, 238, 0.2); }
+.foto-card--nfsu2 { --foto-cor: rgba(249, 115, 22, 0.2); }
+.foto-card--guerra { --foto-cor: rgba(148, 163, 184, 0.2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .foto-card {
+    transition: none;
+  }
+}

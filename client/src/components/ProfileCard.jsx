@@ -281,7 +281,20 @@ export default function ProfileCard({
 
       <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
         {v.startsWith('foto-') ? (
-          <div className={`foto-card foto-card--${v.replace('foto-', '')}`}>
+          <div
+            className={`foto-card foto-card--${v.replace('foto-', '')}`}
+            onPointerMove={(e) => {
+              const el = e.currentTarget
+              const r = el.getBoundingClientRect()
+              if (!r.width || !r.height) return
+              el.style.setProperty('--fx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`)
+              el.style.setProperty('--fy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`)
+            }}
+            onPointerLeave={(e) => {
+              e.currentTarget.style.setProperty('--fx', '50%')
+              e.currentTarget.style.setProperty('--fy', '50%')
+            }}
+          >
             <img
               src={FOTO_SRC[v]}
               alt=""
@@ -294,11 +307,28 @@ export default function ProfileCard({
             />
             <span className="foto-veu" aria-hidden="true" />
             <span className="foto-tag">{FOTO_TAG[v] || 'Locaus'}</span>
+            {['foto-remember', 'foto-guerra', 'foto-nfsu1', 'foto-nfsu2'].includes(v) && (
+              <img
+                src={avatar}
+                alt={username}
+                loading="lazy"
+                className="foto-avatar"
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fb) return
+                  e.currentTarget.dataset.fb = '1'
+                  e.currentTarget.src = svgAvatar(username, '#a1a1aa')
+                }}
+              />
+            )}
+            {['foto-remember', 'foto-guerra'].includes(v) && (
+              <span className="foto-mouse">{perfil.mouse || 'Rato Locaus'}</span>
+            )}
             <h3 className="foto-nome">{username}</h3>
             <span className="foto-sub">Membro Locaus · #{id}</span>
             <span className="foto-marca" aria-hidden="true">
               {username}
             </span>
+            <span className="foto-luz" aria-hidden="true" />
           </div>
         ) : v === 'sleepin' || v === 'dev' ? (
           <div className="sleepin-body">

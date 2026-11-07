@@ -71,8 +71,9 @@ const SECOES_EDIT = [
   { id: 'perfil', nome: 'Perfil', Icon: User },
   { id: 'banner', nome: 'Banner', Icon: ImageIcon },
   { id: 'fundo', nome: 'Fundo', Icon: ImageIcon },
-  { id: 'estilo', nome: 'Estilo', Icon: Palette },
-  { id: 'carta', nome: 'Carta', Icon: CreditCard },
+  { id: 'estilo', nome: 'Efeitos', Icon: Palette },
+  { id: 'carta', nome: 'Cartas', Icon: CreditCard },
+  { id: 'cores', nome: 'Cores de nome', Icon: Palette },
   { id: 'estiloPerfil', nome: 'Estilo de perfil', Icon: Sparkles },
   { id: 'musica', nome: 'Música', Icon: Music },
   { id: 'redes', nome: 'Redes & live', Icon: Share2 },
@@ -163,6 +164,19 @@ export default function ProfilePage({
   const [me, setMe] = useState(user)
   const [edit, setEdit] = useState(Boolean(standaloneEdit))
   const [secaoEdit, setSecaoEdit] = useState('perfil')
+  // cosméticos que o membro possui (para as abas Cartas e Cores)
+  const [meusCos, setMeusCos] = useState([])
+
+  const cartasDisponiveis = useMemo(() => {
+    const compradas = meusCos.filter((x) => x.tipo === 'carta').map((x) => ({ id: x.valor, nome: x.nome }))
+    const unicas = new Map([{ id: 'padrao', nome: 'Padrão Locaus' }, ...compradas].map((c) => [c.id, c]))
+    return [...unicas.values()]
+  }, [meusCos])
+
+  const coresDisponiveis = useMemo(
+    () => meusCos.filter((x) => x.tipo === 'cor').map((x) => ({ id: x.valor, valor: x.valor, nome: x.nome })),
+    [meusCos],
+  )
   const [previewTema, setPreviewTema] = useState(null)
   const [musicaAlterada, setMusicaAlterada] = useState(false)
   const [form, setForm] = useState(() => formDe(user))
@@ -197,6 +211,20 @@ export default function ProfilePage({
           setMe(d)
           if (onUserUpdate) onUserUpdate(d)
         }
+      })
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [])
+
+  /* O que o membro possui (cartas e cores) para as abas do editor. */
+  useEffect(() => {
+    let vivo = true
+    fetch('/api/cosmeticos/meus', { headers: authHeaders(), cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (vivo && d && Array.isArray(d.itens)) setMeusCos(d.itens)
       })
       .catch(() => {})
     return () => {
@@ -580,7 +608,6 @@ export default function ProfilePage({
                 {SECOES_EDIT.filter(
                   (s) =>
                     (s.id !== 'redes' || me?.is_admin) &&
-                    (s.id !== 'carta' || me?.is_admin) &&
                     (s.id !== 'estiloPerfil' || me?.is_admin),
                 ).map(({ id, nome, Icon }) => (
                   <button
@@ -1042,16 +1069,15 @@ export default function ProfilePage({
               </div>
               </section>
 
-              {(isAdmin || me.is_admin) && (
-                <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
+              <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
                   <p className="text-xs font-black uppercase tracking-wider text-[#ff9e9e]">
-                    Carta do perfil (admin)
+                    Carta do perfil
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">
-                    Muda o estilo da carta na aba Cartas e no teu perfil.
+                    Escolhe uma das tuas cartas (compradas no mercado) ou volta à padrão.
                   </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {CARD_STYLES.map((c) => (
+                    {cartasDisponiveis.map((c) => (
                       <button
                         key={c.id}
                         type="button"
@@ -1075,34 +1101,82 @@ export default function ProfilePage({
                     ))}
                   </div>
 
-                  <label className="mt-4 block text-xs font-bold text-gray-400">
-                    Inventário CS2 (€)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={form.cs2_inventory_eur}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, cs2_inventory_eur: e.target.value }))
-                    }
-                    className={inputCls}
-                  />
-                  <p className="mt-1 text-[10px] text-gray-500">
-                    O badge de inventário mais caro é atribuído automaticamente a quem tiver o
-                    valor mais alto.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={sincronizarInventario}
-                    disabled={aSyncInv}
-                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold text-zinc-300 hover:bg-white/10 disabled:opacity-50"
-                  >
-                    <RefreshCcw className={`h-3 w-3 ${aSyncInv ? 'animate-spin' : ''}`} />
-                    {aSyncInv ? 'A atualizar…' : 'Atualizar automaticamente'}
-                  </button>
+                  {(isAdmin || me.is_admin) && (
+                    <div className="mt-4">
+                      <label className="block text-xs font-bold text-gray-400">
+                        Inventário CS2 (€)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.cs2_inventory_eur}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, cs2_inventory_eur: e.target.value }))
+                        }
+                        className={inputCls}
+                      />
+                      <p className="mt-1 text-[10px] text-gray-500">
+                        O badge de inventário mais caro é atribuído automaticamente a quem tiver o
+                        valor mais alto.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={sincronizarInventario}
+                        disabled={aSyncInv}
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold text-zinc-300 hover:bg-white/10 disabled:opacity-50"
+                      >
+                        <RefreshCcw className={`h-3 w-3 ${aSyncInv ? 'animate-spin' : ''}`} />
+                        {aSyncInv ? 'A atualizar…' : 'Atualizar automaticamente'}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+
+              <div className={`rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3 ${secaoEdit === 'cores' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-amber-300">
+                    Cor do nome
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-gray-500">
+                    As cores que compraste no mercado. Podes voltar ao normal quando quiseres.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <button
+                      key="sem-cor"
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, name_color: '' }))}
+                      className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
+                        !form.name_color
+                          ? 'border-white/60 bg-white/15'
+                          : 'border-white/10 bg-black/20'
+                      }`}
+                    >
+                      <span className="text-white">Normal</span>
+                    </button>
+                    {coresDisponiveis.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, name_color: c.id }))}
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${
+                          form.name_color === c.id
+                            ? 'border-white/60 bg-white/15'
+                            : 'border-white/10 bg-black/20'
+                        }`}
+                      >
+                        <span className={classesNome(c.valor, '')}>{c.nome}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p
+                    className={`mt-2 truncate font-display text-lg font-black uppercase ${classesNome(
+                      form.name_color,
+                      form.name_effect,
+                    )}`}
+                  >
+                    Pré-visualização do nome
+                  </p>
+                </div>
 
               {(isAdmin || me.is_admin) && (
                 <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'estiloPerfil' ? '' : 'hidden'}`}>

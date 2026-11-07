@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, Home, Clapperboard, MessageCircle, Trophy, User } from 'lucide-react'
 import Sino from './Sino'
+import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
 
 /* ============================================================
@@ -41,6 +42,7 @@ export default function Navbar({ isAdmin = false, user = null, onMenu, menuOpen 
           </Link>
 
           <div className="kova-mobilebar-acoes">
+            <SaldoMoedas user={user} compacto />
             <Sino user={user} />
             <button
               type="button"
