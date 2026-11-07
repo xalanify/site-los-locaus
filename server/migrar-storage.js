@@ -26,9 +26,13 @@ const CARTAS_RETIRADAS = [
   'foto-stealth',
   'foto-apex',
   'foto-neon',
+  'foto-nfsu1',
 ];
 
-const ITENS_RETIRADOS = CARTAS_RETIRADAS.map((v) => `carta-${v}`);
+const ITENS_RETIRADOS = [
+  ...CARTAS_RETIRADAS.map((v) => `carta-${v}`),
+  'carta-foto-underground',
+];
 
 function partesSupabase(url) {
   const m = String(url || '').match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);

@@ -3,6 +3,7 @@ import { Menu, X, Home, Clapperboard, MessageCircle, Trophy, User } from 'lucide
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
+import AvisoFotos from './AvisoFotos'
 
 /* ============================================================
    Telemóvel — barra de topo compacta (marca + sino + conta +

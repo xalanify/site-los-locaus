@@ -287,15 +287,25 @@ async function tick() {
     .all();
 
   if (atualizados.length) {
-    const ids = atualizados.map((x) => x.item_id);
-    const precos = atualizados.map((x) => Number(x.preco));
-    await db
+    // O histórico é para o gráfico, não para cada tick. Guardamos um
+    // ponto a cada 30 minutos para não encher a base de dados.
+    const hist = await db
       .prepare(
-        `INSERT INTO public.mercado_historico (item_id, preco)
-         SELECT * FROM unnest(?::text[], ?::numeric[])`,
+        "SELECT count(*)::int AS n FROM public.mercado_historico WHERE em > now() - interval '30 minutes'",
       )
-      .run(ids, precos)
-      .catch(() => {});
+      .get()
+      .catch(() => null);
+    if (Number(hist && hist.n) === 0) {
+      const ids = atualizados.map((x) => x.item_id);
+      const precos = atualizados.map((x) => Number(x.preco));
+      await db
+        .prepare(
+          `INSERT INTO public.mercado_historico (item_id, preco)
+           SELECT * FROM unnest(?::text[], ?::numeric[])`,
+        )
+        .run(ids, precos)
+        .catch(() => {});
+    }
   }
 
   // "market maker": alguns negócios simulados para o mercado não morrer
@@ -347,10 +357,6 @@ async function simularNegocios(db, atualizados) {
       .catch(() => null);
     if (!r) continue;
     const preco = Number(r.preco);
-    await db
-      .prepare('INSERT INTO public.mercado_historico (item_id, preco) VALUES (?, ?)')
-      .run(item.item_id, preco)
-      .catch(() => {});
     await db
       .prepare(
         'INSERT INTO public.mercado_vendas (item_id, user_id, preco, tipo) VALUES (?, NULL, ?, ?)',
@@ -450,17 +456,24 @@ async function simularCompraAnuncios(db) {
 
 /* Só mexe nos preços se já passou ~1 minuto (funciona também na Vercel,
    onde não há processos em segundo plano). */
+let tickEmCurso = null;
 async function talvezTick() {
-  const db = getDb();
-  const r = await db
-    .prepare(
-      `SELECT EXTRACT(EPOCH FROM (now() - COALESCE(MAX(atualizado_em), now() - interval '1 hour')))::int AS seg
-       FROM public.mercado_precos`,
-    )
-    .get()
-    .catch(() => null);
-  const seg = Number(r && r.seg) || 999;
-  if (seg >= 30) await tick().catch(() => {});
+  if (tickEmCurso) return tickEmCurso
+  tickEmCurso = (async () => {
+    const db = getDb();
+    const r = await db
+      .prepare(
+        `SELECT EXTRACT(EPOCH FROM (now() - COALESCE(MAX(atualizado_em), now() - interval '1 hour')))::int AS seg
+         FROM public.mercado_precos`,
+      )
+      .get()
+      .catch(() => null);
+    const seg = Number(r && r.seg) || 999;
+    if (seg >= 60) await tick().catch(() => {});
+  })().finally(() => {
+    tickEmCurso = null;
+  });
+  return tickEmCurso;
 }
 
 async function listar(uid) {
@@ -1437,6 +1450,7 @@ module.exports = {
   limparItens,
   limparPacks,
   tick,
+  talvezTick,
   RARIDADE_INFO,
   raridadeDe,
 };

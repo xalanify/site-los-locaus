@@ -110,7 +110,17 @@ function decorarJogo(m, p, equipasPorId) {
   const infA = ta && equipasPorId.get(Number(ta.id));
   const infB = tb && equipasPorId.get(Number(tb.id));
 
-  const status = [1, 2, 3, 4].includes(Number(m.status)) ? Number(m.status) : 1;
+  const status = [1, 2, 3, 4].includes(Number(m.status))
+    ? Number(m.status)
+    : m.live
+      ? 2
+      : 1;
+  const ts = Number(m.timestamp);
+  const dataTimestamp =
+    Number.isFinite(ts) && ts > 0
+      ? new Date(ts < 1e12 ? ts * 1000 : ts).toISOString()
+      : null;
+  const dataInicio = m.date || dataTimestamp || m.startDate || m.startTime || null;
   let winner = null;
   if (status === 3) {
     if (ta && Number(ta.result) === 1) winner = 'a';
@@ -149,7 +159,7 @@ function decorarJogo(m, p, equipasPorId) {
     team_b_id: tb ? Number(tb.id) || null : null,
     team_b: (infB && infB.name) || '',
     team_b_logo: infB ? infB.darkLogoUrl || infB.logoForDarkBackgroundUrl || infB.logoUrl || null : null,
-    start_time: m.date || null,
+    start_time: dataInicio,
     status,
     score_a: ta ? Number(ta.score) || 0 : 0,
     score_b: tb ? Number(tb.score) || 0 : 0,
@@ -161,6 +171,8 @@ function decorarJogo(m, p, equipasPorId) {
 
 async function upsertJogo(db, j) {
   if (!j.external_id || !j.start_time) return false;
+  // Slots ainda sem equipas definidas não servem para previsões.
+  if (!j.team_a || !j.team_b) return false;
   await db
     .prepare(
       `INSERT INTO r6_matches

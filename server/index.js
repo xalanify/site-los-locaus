@@ -174,6 +174,19 @@ const apiLimiter = makeRateLimit({ windowMs: 60 * 1000, max: 300 });
 app.use('/api', trackVisitor);
 app.use('/api', apiLimiter);
 
+/* Mercado vivo: um tick leve por minuto, disparado por qualquer pedido
+   à API (funciona também na Vercel, sem cron). O próprio tick verifica
+   a base de dados antes de mexer nos preços. */
+let ultimoTickMercado = 0;
+app.use('/api', (req, res, next) => {
+  const agora = Date.now();
+  if (agora - ultimoTickMercado > 60_000) {
+    ultimoTickMercado = agora;
+    require('./mercado').talvezTick().catch(() => {});
+  }
+  next();
+});
+
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/musica', require('./routes/musica').musicaRouter);
 app.use('/api/admin', adminRouter);

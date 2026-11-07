@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Mouse, Keyboard, Headphones, Monitor, Star } from 'lucide-react'
 import ProfileBanner from './ProfileBanner'
 import PokemonCard from './PokemonCard'
+import OlhosCard from './OlhosCard'
 import { BadgeGem, badgesDe, distincoesOverclock } from './BadgeGem'
 import GameLogo from './GameLogo'
 import { classesNome } from '../data/nomeEfeitos'
@@ -16,6 +17,7 @@ const FOTO_SRC = {
   'foto-nfsu2': '/cartas/nfs2.png',
   'foto-guerra': '/cartas/waw.png',
   'foto-neon': '/camo/arte-neon.jpg',
+  'foto-olhos': '/cartas/olhos.png',
 }
 
 const FOTO_TAG = {
@@ -27,10 +29,14 @@ const FOTO_TAG = {
   'foto-nfsu2': 'Underground 2',
   'foto-guerra': 'COD World at War',
   'foto-neon': 'Neon Flux',
+  'foto-olhos': 'Olhar',
 }
 
 /* Cartas TCG novas (design inspirado nas cartas de Pokémon). */
 const TCG_CARDS = new Set(['foto-nfsu1', 'foto-nfsu2', 'foto-guerra'])
+
+/* Carta original dos olhos (design próprio, sem imitar Pokémon). */
+const OLHOS_CARDS = new Set(['foto-olhos'])
 
 /* ============================================================
    Cartas de perfil — 4 estilos (license, kova, dvd, felony)
@@ -95,6 +101,7 @@ const VARIANT_LABEL = {
   'foto-nfsu2': 'UNDERGROUND 2 CARD',
   'foto-guerra': 'GUERRA CARD',
   'foto-neon': 'NEON FLUX CARD',
+  'foto-olhos': 'OLHAR CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -147,6 +154,7 @@ const VARIANT_ACCENT = {
   'arte-teia': '#cbd5e1',
   'arte-suspenso': '#e5e7eb',
   'arte-prisma': '#e0f2fe',
+  'foto-olhos': '#c084fc',
 }
 
 const ano = (iso) => {
@@ -260,7 +268,7 @@ export default function ProfileCard({
       onPointerCancel={aoSoltar}
       onClick={aoClicarCarta}
       className={`profile-card profile-card--${v} group ${
-        TCG_CARDS.has(v) ? 'profile-card--tcg' : ''
+        TCG_CARDS.has(v) || OLHOS_CARDS.has(v) ? 'profile-card--tcg' : ''
       } ${
         wide
           ? 'profile-card--wide'
@@ -290,7 +298,9 @@ export default function ProfileCard({
       <span className="pc-ripple" aria-hidden="true" />
 
       <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
-        {TCG_CARDS.has(v) ? (
+        {OLHOS_CARDS.has(v) ? (
+          <OlhosCard perfil={perfil} username={username} id={id} />
+        ) : TCG_CARDS.has(v) ? (
           <PokemonCard variant={v} perfil={perfil} username={username} id={id} />
         ) : v.startsWith('foto-') ? (
           <div

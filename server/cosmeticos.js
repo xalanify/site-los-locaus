@@ -164,13 +164,6 @@ const CARTAS_REMOVER = new Set([
    As imagens estão em client/public/cartas/. */
 const CARTAS_FOTO = [
   {
-    id: 'carta-foto-underground',
-    nome: 'Carta Underground',
-    valor: 'foto-nfsu1',
-    custo: 118,
-    cor: '#22d3ee',
-  },
-  {
     id: 'carta-foto-underground2',
     nome: 'Carta Underground 2',
     valor: 'foto-nfsu2',
@@ -183,6 +176,13 @@ const CARTAS_FOTO = [
     valor: 'foto-guerra',
     custo: 126,
     cor: '#d6c98a',
+  },
+  {
+    id: 'carta-foto-olhos',
+    nome: 'Carta Olhar',
+    valor: 'foto-olhos',
+    custo: 130,
+    cor: '#c084fc',
   },
 ];
 
@@ -301,9 +301,9 @@ const escalaPreco = (c) => {
 };
 
 const PRECOS_FOTO = {
-  'carta-foto-underground': 118,
   'carta-foto-underground2': 122,
   'carta-foto-worldatwar': 126,
+  'carta-foto-olhos': 130,
 };
 
 const ITENS = [

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { RotateCw } from 'lucide-react'
+import { RotateCw, Skull } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -56,8 +56,10 @@ export default function PokemonCard({
   username: nomeDado = '',
   id: idDado = null,
   className = '',
+  preview = false,
 }) {
   const info = ARTES[variant] || ARTES['foto-nfsu1']
+  const vintage = info.back === 'waw'
   const username = nomeDado || perfil.username || 'Membro'
   const id = idDado ?? perfil.display_id ?? perfil.id ?? '—'
   const ano = anoDe(perfil.created_at)
@@ -84,6 +86,15 @@ export default function PokemonCard({
     ],
     [id, ano],
   )
+
+  const artPreviewStyle = preview
+    ? {
+        backgroundColor: '#000',
+        backgroundImage: `url(${info.src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : undefined
 
   const mover = (e) => {
     const el = ref.current
@@ -112,7 +123,10 @@ export default function PokemonCard({
   }
 
   return (
-    <div className={`tcg-scene ${className}`} style={{ '--tcg-accent': info.cor }}>
+    <div
+      className={`tcg-scene ${preview ? 'tcg-scene--preview' : ''} ${className}`}
+      style={{ '--tcg-accent': info.cor }}
+    >
       <div
         ref={ref}
         className={`tcg-card ${virada ? 'tcg-card--virada' : ''} ${ativa ? 'tcg-card--ativa' : ''}`}
@@ -124,31 +138,63 @@ export default function PokemonCard({
         onPointerCancel={sair}
       >
         {/* ---------- FRENTE ---------- */}
-        <div className={`tcg-face tcg-front tcg-front--${info.back}`}>
+        <div
+          className={`tcg-face tcg-front tcg-front--${info.back} ${
+            vintage ? 'tcg-front--vintage' : ''
+          }`}
+        >
           <div className="tcg-frame">
-            <header className="tcg-head">
-              <span className="tcg-stage">Membro</span>
-              <span className="tcg-name" title={username}>
-                {username}
-              </span>
-              <span className="tcg-ex">Locaus</span>
-              <span className="tcg-hp">
-                <b>Nº</b>
-                {id}
-              </span>
-            </header>
+            {vintage ? (
+              <>
+                <header className="tcg-head tcg-head--vintage">
+                  <span className="tcg-stage tcg-stage--vintage">Elite</span>
+                  <span className="tcg-name" title={username}>
+                    {username}
+                  </span>
+                  <span className="tcg-hp">
+                    <b>Nº</b>
+                    {id}
+                  </span>
+                  <span className="tcg-type tcg-type--vintage" aria-hidden="true">
+                    <Skull className="tcg-type-icon" />
+                  </span>
+                </header>
+                <div className="tcg-subline">
+                  <span>World at War</span>
+                  <span>Membro Locaus</span>
+                  <span>{ano}</span>
+                </div>
+              </>
+            ) : (
+              <header className="tcg-head">
+                <span className="tcg-stage">Membro</span>
+                <span className="tcg-name" title={username}>
+                  {username}
+                </span>
+                <span className="tcg-ex">Locaus</span>
+                <span className="tcg-hp">
+                  <b>Nº</b>
+                  {id}
+                </span>
+              </header>
+            )}
 
-            <div className="tcg-art">
-              <img
-                src={info.src}
-                alt=""
-                loading="eager"
-                decoding="async"
-                className="tcg-art-img"
-                onError={(e) => {
-                  e.currentTarget.style.opacity = '0'
-                }}
-              />
+            <div
+              className={`tcg-art ${vintage ? 'tcg-art--vintage' : ''}`}
+              style={artPreviewStyle}
+            >
+              {!preview && (
+                <img
+                  src={info.src}
+                  alt=""
+                  loading="eager"
+                  decoding="async"
+                  className="tcg-art-img"
+                  onError={(e) => {
+                    e.currentTarget.style.opacity = '0'
+                  }}
+                />
+              )}
               <span className="tcg-art-vignette" aria-hidden="true" />
               <span className="tcg-watermark" aria-hidden="true">
                 {Array.from({ length: 7 }).map((_, row) => (
@@ -175,85 +221,122 @@ export default function PokemonCard({
               <span className="tcg-holo" aria-hidden="true" />
             </div>
 
-            <div className="tcg-moves">
-              {moves.map((m) => (
-                <div key={m.nome}>
+            {vintage ? (
+              <>
+                <div className="tcg-moves tcg-moves--vintage">
                   <div className="tcg-move">
                     <span className="tcg-pips" aria-hidden="true">
-                      {Array.from({ length: m.pips }).map((_, i) => (
-                        <span key={i} className="tcg-pip">
-                          ★
-                        </span>
-                      ))}
+                      <span className="tcg-pip">★</span>
+                      <span className="tcg-pip">★</span>
                     </span>
-                    <span className="tcg-move-name">{m.nome}</span>
-                    <span className="tcg-move-dmg">{m.valor}</span>
+                    <span className="tcg-move-name">Membro Locaus</span>
+                    <span className="tcg-move-dmg">#{id}</span>
                   </div>
-                  <p className="tcg-move-txt">{m.texto}</p>
+                  <p className="tcg-move-txt">Carta de membro da comunidade Locaus.</p>
                 </div>
-              ))}
-            </div>
 
-            <div className="tcg-strip">
-              <span className="tcg-strip-cell">
-                <span>Fraqueza</span>
-                <b>—</b>
-              </span>
-              <span className="tcg-strip-cell">
-                <span>Recuo</span>
-                <b>★</b>
-              </span>
-            </div>
+                <div className="tcg-strip tcg-strip--vintage">
+                  <span className="tcg-strip-cell">
+                    <span>Fraqueza</span>
+                    <b>—</b>
+                  </span>
+                  <span className="tcg-strip-cell">
+                    <span>Resistência</span>
+                    <b>—</b>
+                  </span>
+                  <span className="tcg-strip-cell">
+                    <span>Recuo</span>
+                    <b>★</b>
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="tcg-moves">
+                  {moves.map((m) => (
+                    <div key={m.nome}>
+                      <div className="tcg-move">
+                        <span className="tcg-pips" aria-hidden="true">
+                          {Array.from({ length: m.pips }).map((_, i) => (
+                            <span key={i} className="tcg-pip">
+                              ★
+                            </span>
+                          ))}
+                        </span>
+                        <span className="tcg-move-name">{m.nome}</span>
+                        <span className="tcg-move-dmg">{m.valor}</span>
+                      </div>
+                      <p className="tcg-move-txt">{m.texto}</p>
+                    </div>
+                  ))}
+                </div>
 
-            <div className="tcg-rule">
-              <span className="tcg-rule-badge">Membro</span>
-              <p>Quando esta carta entra em jogo, o teu nome aparece em todo o site.</p>
-            </div>
+                <div className="tcg-strip">
+                  <span className="tcg-strip-cell">
+                    <span>Fraqueza</span>
+                    <b>—</b>
+                  </span>
+                  <span className="tcg-strip-cell">
+                    <span>Recuo</span>
+                    <b>★</b>
+                  </span>
+                </div>
 
-            <footer className="tcg-foot">
-              <span>Ilust. Locaus</span>
-              <span>{info.serie}</span>
-            </footer>
+                <div className="tcg-rule">
+                  <span className="tcg-rule-badge">Membro</span>
+                  <p>Quando esta carta entra em jogo, o teu nome aparece em todo o site.</p>
+                </div>
+
+                <footer className="tcg-foot">
+                  <span>Ilust. Locaus</span>
+                  <span>{info.serie}</span>
+                </footer>
+              </>
+            )}
           </div>
         </div>
 
         {/* ---------- VERSO ---------- */}
-        <div className={`tcg-face tcg-back tcg-back--${info.back}`}>
-          <span className="tcg-back-glow" aria-hidden="true" />
-          <div className="tcg-back-inner">
-            <span className="tcg-back-top">Locaus · Trading Card</span>
-            <span className="tcg-back-emblem" aria-hidden="true">
-              {info.emblema}
-            </span>
-            <span className="tcg-back-name">{info.titulo}</span>
-            <span className="tcg-back-rule" aria-hidden="true" />
-            <span className="tcg-back-user">
-              {username} · #{id}
-            </span>
-            <span className="tcg-back-foot">{info.serie}</span>
+        {!preview && (
+          <div className={`tcg-face tcg-back tcg-back--${info.back}`}>
+            <span className="tcg-back-glow" aria-hidden="true" />
+            <div className="tcg-back-inner">
+              <span className="tcg-back-top">Locaus · Trading Card</span>
+              <span className="tcg-back-emblem" aria-hidden="true">
+                {info.emblema}
+              </span>
+              <span className="tcg-back-name">{info.titulo}</span>
+              <span className="tcg-back-rule" aria-hidden="true" />
+              <span className="tcg-back-user">
+                {username} · #{id}
+              </span>
+              <span className="tcg-back-foot">{info.serie}</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      <span
-        role="button"
-        tabIndex={0}
-        className="tcg-flip"
-        aria-label={virada ? 'Mostrar a frente da carta' : 'Virar a carta'}
-        title={virada ? 'Mostrar a frente' : 'Virar carta'}
-        onClick={alternar}
-        onPointerDown={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            e.stopPropagation()
-            setVirada((v) => !v)
-          }
-        }}
-      >
-        <RotateCw className="tcg-flip-icon" aria-hidden="true" />
-        <span className="tcg-flip-label">{virada ? 'Frente' : 'Virar'}</span>
-      </span>
+      {!preview && (
+        <span
+          role="button"
+          tabIndex={0}
+          className="tcg-flip"
+          aria-label={virada ? 'Mostrar a frente da carta' : 'Virar a carta'}
+          title={virada ? 'Mostrar a frente' : 'Virar carta'}
+          onClick={alternar}
+          onPointerDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              e.stopPropagation()
+              setVirada((v) => !v)
+            }
+          }}
+        >
+          <RotateCw className="tcg-flip-icon" aria-hidden="true" />
+          <span className="tcg-flip-label">{virada ? 'Frente' : 'Virar'}</span>
+        </span>
+      )}
     </div>
   )
 }

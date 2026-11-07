@@ -17,6 +17,7 @@ import {
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
+import AvisoFotos from './AvisoFotos'
 
 /* ============================================================
    Barra de topo (desktop) no estilo da referência:
@@ -142,6 +143,7 @@ export default function KovaTopbar({ user, isAdmin = false }) {
           </button>
         </div>
       </div>
+      <AvisoFotos />
     </nav>
   )
 }

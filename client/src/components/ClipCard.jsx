@@ -763,7 +763,6 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   }
 
   if (aberto && !semApi && processando !== false) {
-    const pct = dur > 0 ? Math.min(100, (tempo / dur) * 100) : 0
     return (
       <div className="mt-3 overflow-hidden rounded-xl bg-[#0b0b0c]">
         <div
@@ -778,139 +777,8 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
             </span>
           )}
 
-          {mudo && (
-            <span className="pointer-events-none absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-gray-300">
-              <VolumeX className="h-4 w-4" />
-            </span>
-          )}
-
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-20 bg-gradient-to-b from-black/95 to-transparent" />
-
-          {veu !== 'nada' && (
-            <button
-              type="button"
-              onClick={aoClicar}
-              className={
-                'absolute inset-0 z-[5] flex cursor-pointer flex-col justify-between bg-gradient-to-br from-[#1a1a1d] via-[#120d22] to-[#101012] px-5 py-4 text-left transition-opacity duration-700 ' +
-                (veuSai ? 'pointer-events-none opacity-0' : 'opacity-100')
-              }
-              aria-label={veu === 'fim' ? 'Repetir vídeo' : 'Fechar aviso'}
-            >
-              {capa && (
-                <img
-                  src={capa}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover opacity-30"
-                />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                <AvatarImg name={titulo || 'clip'} className="h-8 w-8" />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-black text-white">
-                    {titulo || 'Clip'}
-                  </span>
-                  <span className="block text-[11px] font-semibold text-gray-300">
-                    {veu === 'fim' ? 'Fim do vídeo' : tocando ? 'A reproduzir…' : 'Em pausa'}
-                  </span>
-                </span>
-              </span>
-              <span className="relative z-10 grid place-items-center self-center pb-6">
-                {veu === 'fim' && (
-                  <>
-                    <span className="grid h-16 w-16 place-items-center rounded-full bg-zinc-600 shadow-[0_8px_30px_rgba(255,255,255,0.16)]">
-                      <Play className="ml-1 h-7 w-7 text-white" fill="currentColor" />
-                    </span>
-                    <span className="mt-2 text-xs font-black uppercase tracking-wider text-white">
-                      Ver outra vez
-                    </span>
-                  </>
-                )}
-              </span>
-              <span className="relative z-10 text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                Los Locaus
-              </span>
-            </button>
-          )}
         </div>
 
-        {/* barra do site, por baixo do vídeo: o YouTube fica com a
-            qualidade e as definições dentro do próprio player */}
-        <div className="flex items-center gap-2 border-t border-white/10 bg-[#0d0d0f] px-3 py-2">
-          <button
-            type="button"
-            onClick={alternar}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
-            aria-label={tocando ? 'Pausar' : 'Reproduzir'}
-          >
-            {tocando ? (
-              <Pause className="h-4 w-4" fill="currentColor" />
-            ) : (
-              <Play className="ml-0.5 h-4 w-4" fill="currentColor" />
-            )}
-          </button>
-
-          <span className="shrink-0 text-[11px] font-bold tabular-nums text-gray-300">
-            {mmss(Math.floor(tempo))}
-          </span>
-
-          <div className="relative min-w-0 flex-1">
-            <span className="pointer-events-none absolute left-0 top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-white/20" />
-            <span
-              className="pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-zinc-500"
-              style={{ width: pct + '%' }}
-            />
-            <input
-              type="range"
-              min={0}
-              max={dur > 0 ? dur : 1}
-              step={0.1}
-              value={Math.min(tempo, dur > 0 ? dur : 1)}
-              onChange={(e) => procurar(Number(e.target.value))}
-              aria-label="Barra de progresso"
-              className="relative h-1.5 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-zinc-300 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-300"
-            />
-          </div>
-
-          <span className="shrink-0 text-[11px] font-bold tabular-nums text-gray-500">
-            {mmss(Math.floor(dur || 0))}
-          </span>
-
-          <button
-            type="button"
-            onClick={alternarSom}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
-            aria-label={mudo ? 'Ligar som' : 'Desligar som'}
-          >
-            {mudo || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
-
-          <div className="relative hidden w-20 shrink-0 sm:block">
-            <span className="pointer-events-none absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-white/20" />
-            <span
-              className="pointer-events-none absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-zinc-400"
-              style={{ width: (mudo ? 0 : volume) + '%' }}
-            />
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={mudo ? 0 : volume}
-              onChange={(e) => mexerVolume(Number(e.target.value))}
-              aria-label="Volume"
-              className="relative h-1 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-zinc-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-200"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={alternarEcrã}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-zinc-500"
-            aria-label={cheio ? 'Sair do ecrã inteiro' : 'Ecrã inteiro'}
-          >
-            {cheio ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-          </button>
-        </div>
       </div>
     )
   }

@@ -1,23 +1,18 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
-import { RotateCw, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, Sparkles, X } from 'lucide-react'
 import PokemonCard from './PokemonCard'
+import OlhosCard from './OlhosCard'
 
 /* ============================================================
    NOVIDADES — apenas as três cartas TCG novas.
    Aparece uma vez até "não mostrar novamente".
    ============================================================ */
 
-const CHAVE = 'locaus:novidades:2026-11-07-cartas-tcg'
+const CHAVE = 'locaus:novidades:2026-11-07-cartas-tcg-v2'
 
 const CARTAS = [
-  {
-    valor: 'foto-nfsu1',
-    nome: 'Underground',
-    jogo: 'Need for Speed',
-    nota: 'Velocidade nas ruas, verso azul elétrico.',
-  },
   {
     valor: 'foto-nfsu2',
     nome: 'Underground 2',
@@ -29,6 +24,13 @@ const CARTAS = [
     nome: 'World at War',
     jogo: 'Call of Duty',
     nota: 'Guerra e névoa, verso militar.',
+  },
+  {
+    valor: 'foto-olhos',
+    nome: 'Olhar',
+    jogo: 'Locaus Original',
+    nota: 'Design próprio, sem imitar Pokémon. Olhos com brilho arco-íris.',
+    tipo: 'olhos',
   },
 ]
 
@@ -53,6 +55,22 @@ export default function NovidadesModal({ user }) {
     }
   }, [])
 
+  /* Pré-carrega as artes para o modal não mostrar o quadrado preto
+     enquanto as imagens descodificam. */
+  useEffect(() => {
+    const fontes = ['/cartas/nfs2.png', '/cartas/waw.png', '/cartas/olhos.png']
+    const imagens = fontes.map((src) => {
+      const img = new Image()
+      img.src = src
+      return img
+    })
+    return () => {
+      imagens.forEach((img) => {
+        img.src = ''
+      })
+    }
+  }, [])
+
   const fechar = (definitivo) => {
     if (definitivo) {
       try {
@@ -73,7 +91,7 @@ export default function NovidadesModal({ user }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[115] flex items-center justify-center bg-black/75 p-3 backdrop-blur-md"
+      className="fixed inset-0 z-[115] flex items-center justify-center bg-black/75 p-3"
       onClick={() => fechar(false)}
       role="presentation"
     >
@@ -84,13 +102,21 @@ export default function NovidadesModal({ user }) {
         className="flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#111113]"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="flex items-start gap-2.5 border-b border-amber-400/20 bg-amber-500/[0.08] px-5 py-2.5">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" />
+          <p className="text-[11px] font-semibold leading-relaxed text-amber-100/90">
+            O chat continua a funcionar normalmente. As fotos de perfil é que não estão a aparecer
+            por enquanto por um problema.
+          </p>
+        </div>
+
         <div className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">
           <div>
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#f7a8a8]">
               <Sparkles className="h-3 w-3" /> Novidades · 7 de novembro
             </p>
             <div className="mt-1 font-display text-2xl font-black text-white">
-              Novas cartas TCG
+              Novas cartas
             </div>
             <p className="mt-1 text-[11px] font-semibold text-zinc-400">
               Três cartas novas, com flip 3D e um verso único para cada uma.
@@ -111,12 +137,17 @@ export default function NovidadesModal({ user }) {
             {CARTAS.map((c) => (
               <div key={c.valor} className="w-[214px] shrink-0 snap-center sm:w-[224px]">
                 <div className="relative overflow-hidden rounded-2xl">
-                  <PokemonCard
-                    variant={c.valor}
-                    perfil={user || {}}
-                    username={nome}
-                    id={id}
-                  />
+                  {c.tipo === 'olhos' ? (
+                    <OlhosCard perfil={user || {}} username={nome} id={id} preview />
+                  ) : (
+                    <PokemonCard
+                      variant={c.valor}
+                      perfil={user || {}}
+                      username={nome}
+                      id={id}
+                      preview
+                    />
+                  )}
                   <span className="pointer-events-none absolute left-2 top-2 z-40 rounded-full bg-[#f7a8a8] px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#1a0c0c]">
                     Nova
                   </span>
@@ -131,9 +162,9 @@ export default function NovidadesModal({ user }) {
           </div>
 
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5">
-            <RotateCw className="h-4 w-4 shrink-0 text-[#f7a8a8]" />
+            <Sparkles className="h-4 w-4 shrink-0 text-[#f7a8a8]" />
             <p className="text-[11px] font-semibold text-zinc-300">
-              Toca no botão <b className="text-white">Virar</b> de cada carta para ver o verso.
+              Cada carta tem um verso único. <b className="text-white">Nova</b> no mercado.
             </p>
           </div>
         </div>

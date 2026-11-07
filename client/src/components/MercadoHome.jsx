@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Hammer, Loader2, Lock, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Loader2, Sparkles } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import MoedaLocaus from './MoedaLocaus'
 import ProfileCard from './ProfileCard'
@@ -49,16 +49,26 @@ function MiniGrafico({ serie, cor }) {
   )
 }
 
-export default function MercadoHome({ isAdmin = false }) {
+export default function MercadoHome() {
   const [dados, setDados] = useState(null)
 
   useEffect(() => {
-    if (!isAdmin) return
-    fetch('/api/mercado/home', { headers: authHeaders(), cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setDados(d))
-      .catch(() => {})
-  }, [isAdmin])
+    let vivo = true
+    const carregar = () => {
+      fetch('/api/mercado/home', { headers: authHeaders(), cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (vivo && d && !d.fechado) setDados(d)
+        })
+        .catch(() => {})
+    }
+    carregar()
+    const t = setInterval(carregar, 60000)
+    return () => {
+      vivo = false
+      clearInterval(t)
+    }
+  }, [])
 
   const top = useMemo(() => {
     const lista = (dados && dados.itens) || []
@@ -70,42 +80,6 @@ export default function MercadoHome({ isAdmin = false }) {
 
   const saldo = dados && dados.saldo ? dados.saldo.disponiveis : null
 
-  if (!isAdmin) {
-    return (
-      <section className="relative pt-20 pb-8">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6">
-          <div className="glass relative overflow-hidden rounded-3xl p-5 sm:p-6">
-            <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-            <div className="flex items-start gap-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#f7a8a8]/10 text-[#f7a8a8] ring-1 ring-[#f7a8a8]/20">
-                <Hammer className="h-6 w-6" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-amber-200">
-                  <Lock className="h-3 w-3" /> Loja em manutenção
-                </span>
-                <h2 className="mt-2 font-display text-2xl font-black leading-tight text-white sm:text-3xl">
-                  Estamos a refazer o mercado
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-zinc-400">
-                  As cartas, os preços e as compras automáticas estão a ser melhorados. Os itens
-                  que já tens ficam guardados e podes equipá-los no teu perfil.
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Link to="/cosmeticos" className="ui-btn ui-btn-ghost ui-btn-sm">
-                    Ver detalhes <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                  <Link to="/perfil" className="ui-btn ui-btn-primary ui-btn-sm">
-                    Editar perfil
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   return (
     <section className="relative pt-20 pb-8">
@@ -126,8 +100,7 @@ export default function MercadoHome({ isAdmin = false }) {
                 Os cosméticos mais caros agora
               </h2>
               <p className="mt-1 text-sm text-zinc-400">
-                Prévia só para admin. Cores e cartas com preço a mexer — a loja está fechada aos
-                membros enquanto é refeita.
+                Cores e cartas com preço a mexer. Compra e vende no mercado ao vivo.
               </p>
             </div>
             <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f7a8a8]/10 text-[#f7a8a8] ring-1 ring-[#f7a8a8]/20 sm:grid">
@@ -172,7 +145,7 @@ export default function MercadoHome({ isAdmin = false }) {
                           </span>
                         ) : item.tipo === 'carta' ? (
                           <span className="relative hidden h-11 w-9 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/30 sm:block">
-                            <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.1] -translate-x-1/2 -translate-y-1/2">
+                            <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.082] -translate-x-1/2 -translate-y-1/2">
                               <ProfileCard
                                 perfil={{ username: 'Locaus' }}
                                 variant={item.valor}
