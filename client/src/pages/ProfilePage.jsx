@@ -94,13 +94,8 @@ const CARD_STYLES = [
   { id: 'dev', nome: 'Desenvolvedor', adminOnly: true },
 ]
 
-/* Cartas TCG novas (admin pode equipar para testar; os membros
-   compram-nas quando a loja reabrir). */
-const CARTAS_TCG = [
-  { id: 'foto-nfsu1', nome: 'Underground' },
-  { id: 'foto-nfsu2', nome: 'Underground 2' },
-  { id: 'foto-guerra', nome: 'World at War' },
-]
+/* Cartas especiais que não vêm da loja (ex.: identidade de admin). */
+const CARTAS_ESPECIAIS = new Set(['dev'])
 
 const PROFILE_STYLES = [
   { id: 'padrao', nome: 'Padrão Locaus' },
@@ -173,17 +168,13 @@ export default function ProfilePage({
   const [secaoEdit, setSecaoEdit] = useState('perfil')
   // cosméticos que o membro possui (para as abas Cartas e Cores)
   const [meusCos, setMeusCos] = useState([])
+  const [cosOk, setCosOk] = useState(false)
 
   const cartasDisponiveis = useMemo(() => {
     const compradas = meusCos.filter((x) => x.tipo === 'carta').map((x) => ({ id: x.valor, nome: x.nome }))
     const unicas = new Map([{ id: 'padrao', nome: 'Padrão Locaus' }, ...compradas].map((c) => [c.id, c]))
-    if (isAdmin || me?.is_admin) {
-      CARTAS_TCG.forEach((c) => {
-        if (!unicas.has(c.id)) unicas.set(c.id, c)
-      })
-    }
     return [...unicas.values()]
-  }, [meusCos, isAdmin, me?.is_admin])
+  }, [meusCos])
 
   const coresDisponiveis = useMemo(
     () => meusCos.filter((x) => x.tipo === 'cor').map((x) => ({ id: x.valor, valor: x.valor, nome: x.nome })),
@@ -236,13 +227,28 @@ export default function ProfilePage({
     fetch('/api/cosmeticos/meus', { headers: authHeaders(), cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (vivo && d && Array.isArray(d.itens)) setMeusCos(d.itens)
+        if (vivo && d && Array.isArray(d.itens)) {
+          setMeusCos(d.itens)
+          setCosOk(true)
+        }
       })
       .catch(() => {})
     return () => {
       vivo = false
     }
   }, [])
+
+  /* Se a carta equipada deixou de ser do membro (ex.: vendeu-a),
+     o editor volta à carta padrão em vez de mostrar uma carta que
+     já não possui. */
+  useEffect(() => {
+    if (!cosOk) return
+    const estilo = form.card_style || 'padrao'
+    if (estilo === 'padrao' || CARTAS_ESPECIAIS.has(estilo)) return
+    if (!cartasDisponiveis.some((c) => c.id === estilo)) {
+      setForm((f) => ({ ...f, card_style: 'padrao' }))
+    }
+  }, [cosOk, cartasDisponiveis, form.card_style])
 
   /* Clips/publicações desta conta */
   useEffect(() => {

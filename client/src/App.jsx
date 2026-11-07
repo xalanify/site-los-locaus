@@ -394,7 +394,7 @@ function App() {
                 <Footer />
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
-                <NovidadesModal />
+                <NovidadesModal user={user} />
                 <DiarioModal user={user} />
                 <BonusBugModal user={user} />
 
