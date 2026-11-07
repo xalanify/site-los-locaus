@@ -18,6 +18,7 @@ const CARTAS = [
   { nome: 'Underground', src: '/cartas/nfs1.png' },
   { nome: 'Underground 2', src: '/cartas/nfs2.png' },
   { nome: 'COD World at War', src: '/cartas/waw.png' },
+  { nome: 'Neon Flux', src: '/camo/arte-neon.jpg' },
 ]
 
 export default function NovidadesModal() {

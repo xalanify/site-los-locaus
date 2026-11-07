@@ -157,6 +157,7 @@ const CARTAS_REMOVER = new Set([
   'anjo', 'ouro', 'vela', 'ouro negro', 'suspenso', 'prisma', 'hipnose', 'asfalto',
   'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
   'blood', 'cismon', 'crimson', 'aimer license', 'mercurio', 'eter', 'marmore', 'neon', 'tinta',
+  'arte-neon',
 ]);
 
 /* Cartas novas com foto (as 4 edições passam a cartas normais + 3 fotos). */
@@ -168,6 +169,7 @@ const CARTAS_FOTO = [
   { id: 'carta-foto-nfsu1', nome: 'Carta Underground', valor: 'foto-nfsu1', custo: 68, cor: '#22d3ee' },
   { id: 'carta-foto-nfsu2', nome: 'Carta Underground 2', valor: 'foto-nfsu2', custo: 70, cor: '#f97316' },
   { id: 'carta-foto-guerra', nome: 'Carta COD World at War', valor: 'foto-guerra', custo: 72, cor: '#a1a1aa' },
+  { id: 'carta-foto-neon', nome: 'Carta Neon Flux', valor: 'foto-neon', custo: 74, cor: '#67e8f9' },
 ];
 
 const CARTAS = [
@@ -292,6 +294,7 @@ const PRECOS_FOTO = {
   'carta-foto-guerra': 96,
   'carta-foto-nfsu1': 95,
   'carta-foto-nfsu2': 94,
+  'carta-foto-neon': 93,
 };
 
 const ITENS = [

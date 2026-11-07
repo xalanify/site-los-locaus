@@ -4043,3 +4043,116 @@ body.kova .boot-meio {
     transition: none;
   }
 }
+
+/* Nome, avatar, rato e marca de água só aparecem ao passar o rato / tocar */
+.foto-card .foto-nome,
+.foto-card .foto-marca,
+.foto-card .foto-avatar,
+.foto-card .foto-mouse,
+.foto-card .foto-id {
+  opacity: 0;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.foto-card .foto-nome {
+  transform: translateY(8px);
+}
+.foto-card:hover .foto-nome,
+.foto-card:hover .foto-marca,
+.foto-card:hover .foto-avatar,
+.foto-card:hover .foto-mouse,
+.foto-card:hover .foto-id,
+.foto-card--ativa .foto-nome,
+.foto-card--ativa .foto-marca,
+.foto-card--ativa .foto-avatar,
+.foto-card--ativa .foto-mouse,
+.foto-card--ativa .foto-id {
+  opacity: 1;
+}
+.foto-card:hover .foto-nome,
+.foto-card--ativa .foto-nome {
+  transform: none;
+}
+.foto-id {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 3;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+/* ---------- Cartas com moldura tipo carta rara ---------- */
+.foto-card--pok {
+  background: #0a0a0c;
+}
+.foto-card--pok .foto-img {
+  top: 36px;
+  bottom: 56px;
+  left: 11px;
+  right: 11px;
+  width: auto;
+  height: auto;
+  border-radius: 5px;
+  border: 2px solid #0f1114;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.foto-card--pok::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 36px;
+  z-index: 2;
+  background: linear-gradient(180deg, #fafafa, #d9dade);
+  border-bottom: 2px solid #0f1114;
+}
+.foto-card--pok::after {
+  content: 'LOCAUS';
+  position: absolute;
+  top: 10px;
+  left: 13px;
+  z-index: 3;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #0f1114;
+}
+.foto-card--pok .foto-tag {
+  top: 9px;
+  right: 13px;
+  left: auto;
+  border: 0;
+  background: #0f1114;
+  color: #fafafa;
+}
+.foto-card--pok .foto-id {
+  top: auto;
+  bottom: 40px;
+  right: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.foto-card--pok .foto-sub {
+  display: none;
+}
+.foto-card--pok .foto-nome {
+  left: 13px;
+  right: 13px;
+  bottom: 13px;
+  font-family: 'Archivo', 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+}
+.foto-card--pok .foto-avatar {
+  top: auto;
+  bottom: 44px;
+  right: 13px;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-width: 1.5px;
+}

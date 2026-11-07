@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Mouse, Keyboard, Headphones, Monitor, Star } from 'lucide-react'
 import ProfileBanner from './ProfileBanner'
 import { BadgeGem, badgesDe, distincoesOverclock } from './BadgeGem'
@@ -14,6 +14,7 @@ const FOTO_SRC = {
   'foto-nfsu1': '/cartas/nfs1.png',
   'foto-nfsu2': '/cartas/nfs2.png',
   'foto-guerra': '/cartas/waw.png',
+  'foto-neon': '/camo/arte-neon.jpg',
 }
 
 const FOTO_TAG = {
@@ -24,6 +25,7 @@ const FOTO_TAG = {
   'foto-nfsu1': 'Underground',
   'foto-nfsu2': 'Underground 2',
   'foto-guerra': 'COD World at War',
+  'foto-neon': 'Neon Flux',
 }
 
 /* ============================================================
@@ -88,6 +90,7 @@ const VARIANT_LABEL = {
   'foto-nfsu1': 'UNDERGROUND CARD',
   'foto-nfsu2': 'UNDERGROUND 2 CARD',
   'foto-guerra': 'GUERRA CARD',
+  'foto-neon': 'NEON FLUX CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -157,6 +160,7 @@ export default function ProfileCard({
   className = '',
 }) {
   const v = VARIANT_LABEL[variant] ? variant : 'padrao'
+  const [fotoAtiva, setFotoAtiva] = useState(false)
   const accent = VARIANT_ACCENT[v]
   const wide =
     v === 'license' || v === 'blood' || v === 'crimson' || v === 'sleepin' || v === 'dev'
@@ -282,7 +286,10 @@ export default function ProfileCard({
       <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
         {v.startsWith('foto-') ? (
           <div
-            className={`foto-card foto-card--${v.replace('foto-', '')}`}
+            className={`foto-card foto-card--${v.replace('foto-', '')} ${
+              ['foto-nfsu1', 'foto-nfsu2', 'foto-neon'].includes(v) ? 'foto-card--pok' : ''
+            } ${fotoAtiva ? 'foto-card--ativa' : ''}`}
+            onPointerDown={() => setFotoAtiva((x) => !x)}
             onPointerMove={(e) => {
               const el = e.currentTarget
               const r = el.getBoundingClientRect()
@@ -324,6 +331,7 @@ export default function ProfileCard({
               <span className="foto-mouse">{perfil.mouse || 'Rato Locaus'}</span>
             )}
             <h3 className="foto-nome">{username}</h3>
+            <span className="foto-id">#{id}</span>
             <span className="foto-sub">Membro Locaus · #{id}</span>
             <span className="foto-marca" aria-hidden="true">
               {username}

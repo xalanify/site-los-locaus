@@ -76,7 +76,6 @@ const SECOES_EDIT = [
   { id: 'cores', nome: 'Cores de nome', Icon: Palette },
   { id: 'estiloPerfil', nome: 'Estilo de perfil', Icon: Sparkles },
   { id: 'musica', nome: 'Música', Icon: Music },
-  { id: 'redes', nome: 'Redes & live', Icon: Share2 },
 ]
 
 const CARD_STYLES = [
@@ -605,11 +604,8 @@ export default function ProfilePage({
 
               {/* separadores do editor */}
               <div className="flex flex-wrap gap-1.5 rounded-2xl border border-white/10 bg-black/20 p-1.5 sm:flex-nowrap sm:overflow-x-auto">
-                {SECOES_EDIT.filter(
-                  (s) =>
-                    (s.id !== 'redes' || me?.is_admin) &&
-                    (s.id !== 'estiloPerfil' || me?.is_admin),
-                ).map(({ id, nome, Icon }) => (
+                {SECOES_EDIT.filter((s) => s.id !== 'estiloPerfil' || me?.is_admin).map(
+                  ({ id, nome, Icon }) => (
                   <button
                     key={id}
                     type="button"
@@ -1101,35 +1097,6 @@ export default function ProfilePage({
                     ))}
                   </div>
 
-                  {(isAdmin || me.is_admin) && (
-                    <div className="mt-4">
-                      <label className="block text-xs font-bold text-gray-400">
-                        Inventário CS2 (€)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={form.cs2_inventory_eur}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, cs2_inventory_eur: e.target.value }))
-                        }
-                        className={inputCls}
-                      />
-                      <p className="mt-1 text-[10px] text-gray-500">
-                        O badge de inventário mais caro é atribuído automaticamente a quem tiver o
-                        valor mais alto.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={sincronizarInventario}
-                        disabled={aSyncInv}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[10px] font-bold text-zinc-300 hover:bg-white/10 disabled:opacity-50"
-                      >
-                        <RefreshCcw className={`h-3 w-3 ${aSyncInv ? 'animate-spin' : ''}`} />
-                        {aSyncInv ? 'A atualizar…' : 'Atualizar automaticamente'}
-                      </button>
-                    </div>
                   )}
                 </div>
 
@@ -1259,39 +1226,13 @@ export default function ProfilePage({
                 </div>
               )}
 
-              {/* Redes sociais + live (só admin, para testes) */}
+              {/* Live automática (só admin, para testes) */}
               {me?.is_admin && (
                 <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'redes' ? '' : 'hidden'}`}>
                   <h3 className="mb-1 text-[11px] font-black uppercase tracking-widest text-zinc-300">
-                    Redes sociais
+                    Live automática
                   </h3>
-                  <p className="mb-3 text-[11px] leading-relaxed text-gray-500">
-                    Cola o link ou escreve o @. Os ícones aparecem ao lado do teu nome no perfil.
-                  </p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {REDES_SOCIAIS.map((rede) => (
-                      <label key={rede.id} className="block">
-                        <span className="mb-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
-                          <PlatformIcon platform={rede.id} className="h-3 w-3" />
-                          {rede.nome}
-                        </span>
-                        <input
-                          value={(form.socials && form.socials[rede.id]) || ''}
-                          onChange={(e) =>
-                            setForm((f) => ({
-                              ...f,
-                              socials: { ...(f.socials || {}), [rede.id]: e.target.value },
-                            }))
-                          }
-                          placeholder={rede.placeholder}
-                          maxLength={300}
-                          className={inputCls}
-                        />
-                      </label>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                     <h4 className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-gray-300">
                       <Radio className="h-3.5 w-3.5 text-red-400" /> Live automática
                     </h4>
