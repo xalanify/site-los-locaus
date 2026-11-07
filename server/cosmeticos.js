@@ -160,17 +160,9 @@ const CARTAS_REMOVER = new Set([
   'arte-neon', 'neon flux',
 ]);
 
-/* Cartas novas com foto (as 4 edições passam a cartas normais + 3 fotos). */
-const CARTAS_FOTO = [
-  { id: 'carta-foto-remember', nome: 'Carta Remember', valor: 'foto-remember', custo: 60, cor: '#e25c5c' },
-  { id: 'carta-foto-nightops', nome: 'Carta Night Ops', valor: 'foto-nightops', custo: 62, cor: '#84cc16' },
-  { id: 'carta-foto-stealth', nome: 'Carta Stealth', valor: 'foto-stealth', custo: 64, cor: '#cbd5e1' },
-  { id: 'carta-foto-apex', nome: 'Carta Apex', valor: 'foto-apex', custo: 66, cor: '#ef4444' },
-  { id: 'carta-foto-nfsu1', nome: 'Carta Underground', valor: 'foto-nfsu1', custo: 68, cor: '#22d3ee' },
-  { id: 'carta-foto-nfsu2', nome: 'Carta Underground 2', valor: 'foto-nfsu2', custo: 70, cor: '#f97316' },
-  { id: 'carta-foto-guerra', nome: 'Carta COD World at War', valor: 'foto-guerra', custo: 72, cor: '#a1a1aa' },
-  { id: 'carta-foto-neon', nome: 'Carta Neon Flux', valor: 'foto-neon', custo: 74, cor: '#67e8f9' },
-];
+/* Cartas novas com foto — retiradas a pedido do admin (novembro 2026).
+   Ficam aqui como lista vazia para ser fácil voltar a adicionar. */
+const CARTAS_FOTO = [];
 
 const CARTAS = [
   ...CARTAS_TODAS.filter((c) => !CARTAS_REMOVER.has(normNome(c.nome))),
@@ -286,16 +278,7 @@ const escalaPreco = (c) => {
   return Math.round(45 + t * 45);
 };
 
-const PRECOS_FOTO = {
-  'carta-foto-remember': 100,
-  'carta-foto-apex': 99,
-  'carta-foto-nightops': 98,
-  'carta-foto-stealth': 97,
-  'carta-foto-guerra': 96,
-  'carta-foto-nfsu1': 95,
-  'carta-foto-nfsu2': 94,
-  'carta-foto-neon': 93,
-};
+const PRECOS_FOTO = {};
 
 const ITENS = [
   ...CORES_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
@@ -481,4 +464,50 @@ async function aplicar(uid, itemId) {
   return listar(uid);
 }
 
-module.exports = { listar, comprar, aplicar, saldo, ITENS };
+/* Itens que o membro já comprou (para equipar no editor de perfil,
+   mesmo com a loja fechada). */
+async function meus(uid) {
+  await garantirTabela();
+  const compras = await getDb()
+    .prepare('SELECT item_id FROM public.cosmeticos_compras WHERE user_id = ?')
+    .all(uid);
+  const ids = new Set(compras.map((c) => c.item_id));
+  return {
+    itens: ITENS.filter((x) => ids.has(x.id)).map((x) => ({
+      id: x.id,
+      tipo: x.tipo,
+      nome: x.nome,
+      valor: x.valor,
+      cor: x.cor,
+    })),
+  };
+}
+
+/** O membro possui este cosmético? (usado ao equipar no perfil) */
+async function podeEquipar(uid, tipo, valor) {
+  const alvo = String(valor || '');
+  if (!alvo) return false;
+  const item = ITENS.find((x) => x.tipo === tipo && x.valor === alvo);
+  if (!item) return false;
+  await garantirTabela();
+  const row = await getDb()
+    .prepare('SELECT 1 FROM public.cosmeticos_compras WHERE user_id = ? AND item_id = ?')
+    .get(uid, item.id);
+  return Boolean(row);
+}
+
+/** Existe no catálogo? (admin pode equipar qualquer item) */
+function existeValor(tipo, valor) {
+  return ITENS.some((x) => x.tipo === tipo && x.valor === String(valor || ''));
+}
+
+module.exports = {
+  listar,
+  comprar,
+  aplicar,
+  saldo,
+  meus,
+  podeEquipar,
+  existeValor,
+  ITENS,
+};

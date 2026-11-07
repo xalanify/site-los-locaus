@@ -2,7 +2,7 @@
    Loja de cosméticos — aberta a todos os membros
    ============================================================ */
 const express = require('express');
-const { requireUser } = require('../middleware/auth');
+const { requireUser, requireAdmin } = require('../middleware/auth');
 const cosmeticos = require('../cosmeticos');
 
 const router = express.Router();
@@ -20,7 +20,22 @@ router.get('/saldo', requireUser, async (req, res) => {
   }
 });
 
-router.get('/', requireUser, async (req, res) => {
+/* Itens que o membro possui — para equipar no editor de perfil.
+   Funciona mesmo com a loja fechada ao público. */
+router.get('/meus', requireUser, async (req, res) => {
+  try {
+    const uid = Number(req.auth && req.auth.uid);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(await cosmeticos.meus(uid));
+  } catch (e) {
+    console.error('Erro meus cosméticos:', e.message);
+    res.status(500).json({ error: 'Não foi possível abrir os teus itens.' });
+  }
+});
+
+/* Loja: fechada aos membros enquanto está a ser refeita. */
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const uid = Number(req.auth && req.auth.uid);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -32,7 +47,7 @@ router.get('/', requireUser, async (req, res) => {
   }
 });
 
-router.post('/comprar', requireUser, async (req, res) => {
+router.post('/comprar', requireAdmin, async (req, res) => {
   try {
     const uid = Number(req.auth && req.auth.uid);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });

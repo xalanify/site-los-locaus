@@ -497,15 +497,16 @@ export default function ProfilePage({
         background_id: form.background_id,
         musica_id: form.musica_id,
         dynamic_colors: form.dynamic_colors,
+        // cartas e cores: qualquer membro pode equipar o que comprou
+        name_color: form.name_color,
+        card_style: form.card_style,
         ...(isAdmin || me.is_admin
           ? {
               musica_url: form.musica_url,
               musica_nome: form.musica_nome,
               musica_inicio: Number(form.musica_inicio) || 0,
               musica_fim: Number(form.musica_fim) || 0,
-              name_color: form.name_color,
               name_effect: form.name_effect,
-              card_style: form.card_style,
               profile_style: form.profile_style,
               cs2_inventory_eur: Number(form.cs2_inventory_eur) || 0,
               socials: form.socials,
@@ -1096,8 +1097,6 @@ export default function ProfilePage({
                       </button>
                     ))}
                   </div>
-
-                  )}
                 </div>
 
               <div className={`rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3 ${secaoEdit === 'cores' ? '' : 'hidden'}`}>

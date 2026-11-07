@@ -194,6 +194,9 @@ app.use('/api/infoaovivo', infoaovivoRouter);
 // seria interpretado como um :username.
 app.use('/api/users/specs', specsRouter);
 app.use('/api/users', usersRouter);
+// Imagens do site (avatars, capas) — servidas pela base de dados ou R2
+const { filesRouter } = require('./routes/files');
+app.use('/api/files', filesRouter);
 app.use('/api/live', liveRouter);
 app.use('/api/clips', clipsRouter);
 // Chat geral (polling curto; funciona na Vercel e no telemóvel)

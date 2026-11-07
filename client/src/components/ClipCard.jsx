@@ -121,6 +121,7 @@ const gravarQual = (q) => {
 
 function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAberto] = useState(false)
   const [erroCapa, setErroCapa] = useState(false)
+  const [erroYT, setErroYT] = useState(false)
   const [semApi, setSemApi] = useState(false)
   const [pronto, setPronto] = useState(false)
   const [tocando, setTocando] = useState(false)
@@ -930,9 +931,11 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
   }
 
   /* Capa NOSSA: um frame do próprio vídeo, guardado no site.
-     Se ainda não houver (clip antigo), mostramos um fundo nosso
-     com o ícone do jogo — nunca a capa da plataforma. */
-  const temCapa = !!capa && !erroCapa
+     Se ainda não houver (ou o ficheiro antigo estiver bloqueado),
+     usamos a miniatura pública do YouTube — aparece sempre. */
+  const capaYT = id && !erroYT ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null
+  const capaUsar = !erroCapa && capa ? capa : capaYT
+  const temCapa = !!capaUsar
 
   return (
     <button
@@ -945,10 +948,13 @@ function VideoRemoto({ id, titulo, capa, aoDarPlay }) {  const [aberto, setAbert
     >
       {temCapa ? (
         <img
-          src={capa}
+          src={capaUsar}
           alt=""
           loading="lazy"
-          onError={() => setErroCapa(true)}
+          onError={() => {
+            if (!erroCapa && capa) setErroCapa(true)
+            else setErroYT(true)
+          }}
           className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
       ) : (

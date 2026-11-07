@@ -4,11 +4,15 @@
 const express = require('express');
 const { getDb } = require('../database');
 const { requireUser, requireAdmin } = require('../middleware/auth');
+const store = require('../usersStore');
 const mercado = require('../mercado');
 
 const router = express.Router();
 
 const uidDe = (req) => Number(req.auth && req.auth.uid);
+
+const LOJA_FECHADA =
+  'A loja e o mercado estão a ser refeitos. Voltamos em breve com as cartas e os preços corrigidos.';
 
 /* 1 moeda grátis por dia (uma vez por dia, por membro). */
 router.post('/diario', requireUser, async (req, res) => {
@@ -33,7 +37,7 @@ router.post('/diario', requireUser, async (req, res) => {
 });
 
 /* Edições limitadas (cartas numeradas). */
-router.get('/edicoes', requireUser, async (req, res) => {
+router.get('/edicoes', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -45,7 +49,7 @@ router.get('/edicoes', requireUser, async (req, res) => {
   }
 });
 
-router.post('/edicoes/comprar', requireUser, async (req, res) => {
+router.post('/edicoes/comprar', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -55,7 +59,7 @@ router.post('/edicoes/comprar', requireUser, async (req, res) => {
   }
 });
 
-router.post('/edicoes/vender', requireUser, async (req, res) => {
+router.post('/edicoes/vender', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -86,6 +90,11 @@ router.get('/home', requireUser, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    const conta = await store.findById(uid);
+    if (!conta || !conta.is_admin) {
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ fechado: true, mensagem: LOJA_FECHADA });
+    }
     res.setHeader('Cache-Control', 'private, max-age=10');
     res.json(await mercado.home(uid));
   } catch (e) {
@@ -94,7 +103,7 @@ router.get('/home', requireUser, async (req, res) => {
   }
 });
 
-router.get('/', requireUser, async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -106,7 +115,7 @@ router.get('/', requireUser, async (req, res) => {
   }
 });
 
-router.post('/comprar', requireUser, async (req, res) => {
+router.post('/comprar', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -116,7 +125,7 @@ router.post('/comprar', requireUser, async (req, res) => {
   }
 });
 
-router.post('/vender', requireUser, async (req, res) => {
+router.post('/vender', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -128,7 +137,7 @@ router.post('/vender', requireUser, async (req, res) => {
 
 /* ---------------- Packs ---------------- */
 
-router.get('/packs', requireUser, async (req, res) => {
+router.get('/packs', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -140,7 +149,7 @@ router.get('/packs', requireUser, async (req, res) => {
   }
 });
 
-router.post('/packs/:id/abrir', requireUser, async (req, res) => {
+router.post('/packs/:id/abrir', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -190,7 +199,7 @@ router.post('/packs/limpar', requireAdmin, async (req, res) => {
   }
 });
 
-router.get('/historico', requireUser, async (req, res) => {
+router.get('/historico', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -203,7 +212,7 @@ router.get('/historico', requireUser, async (req, res) => {
   }
 });
 
-router.get('/meus', requireUser, async (req, res) => {
+router.get('/meus', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -215,7 +224,7 @@ router.get('/meus', requireUser, async (req, res) => {
   }
 });
 
-router.post('/anunciar', requireUser, async (req, res) => {
+router.post('/anunciar', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -226,7 +235,7 @@ router.post('/anunciar', requireUser, async (req, res) => {
   }
 });
 
-router.post('/anuncios/:id/cancelar', requireUser, async (req, res) => {
+router.post('/anuncios/:id/cancelar', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
@@ -236,7 +245,7 @@ router.post('/anuncios/:id/cancelar', requireUser, async (req, res) => {
   }
 });
 
-router.post('/anuncios/:id/comprar', requireUser, async (req, res) => {
+router.post('/anuncios/:id/comprar', requireAdmin, async (req, res) => {
   try {
     const uid = uidDe(req);
     if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });

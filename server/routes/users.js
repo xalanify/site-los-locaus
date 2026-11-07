@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { getDb } = require('../database');
 const store = require('../usersStore');
 const storage = require('../storage');
+const cosmeticos = require('../cosmeticos');
 const { validateEmail } = require('../emailValidate');
 const { JWT_SECRET, attachAuth, requireUser, requireAdmin } = require('../middleware/auth');
 const { decorateClips } = require('./clips');
@@ -364,12 +365,10 @@ const publicUser = async (u) => {
   };
 };
 
-/* apaga avatar nosso no Storage (best-effort) */
+/* apaga o avatar antigo (R2, base de dados ou Supabase) — best-effort */
 function removeAvatarFile(url) {
-  if (typeof url !== 'string') return;
-  const m = url.match(/\/avatars\/(avatar-[\w-]+\.(?:jpg|png|webp|gif))$/);
-  if (!m) return;
-  storage.remove(BUCKET, m[1]).catch(() => {});
+  if (typeof url !== 'string' || !url) return;
+  storage.removeUrl(url).catch(() => {});
 }
 
 const ensureProfileRow = (db, uid) =>
@@ -802,73 +801,90 @@ router.put('/me/profile', attachAuth, async (req, res) => {
     if (hasNameColor || hasNameEffect) {
       const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
-      // Cores/efeitos de nome são só para o admin; para os restantes
-      // users os campos são ignorados (sem mostrar erro).
-      if (souAdmin) {
-        if (hasNameColor) {
-          const cor = String(body.name_color || '').trim();
-          if (!CORES_NOME.has(cor)) {
-            return res.status(400).json({ error: 'Cor de nome inválida.' });
-          }
+
+      if (hasNameColor) {
+        const cor = String(body.name_color || '').trim();
+        const pode =
+          souAdmin
+            ? CORES_NOME.has(cor) || cosmeticos.existeValor('cor', cor)
+            : !cor || (await cosmeticos.podeEquipar(uid, 'cor', cor));
+        if (pode) {
           await db
             .prepare(
               'UPDATE user_profiles SET name_color = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
             )
             .run(cor || null, uid);
+        } else if (souAdmin) {
+          return res.status(400).json({ error: 'Cor de nome inválida.' });
         }
-        if (hasNameEffect) {
-          const efeito = String(body.name_effect || '').trim();
-          if (!EFEITOS_NOME.has(efeito)) {
-            return res.status(400).json({ error: 'Efeito de nome inválido.' });
-          }
-          await db
-            .prepare(
-              'UPDATE user_profiles SET name_effect = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-            )
-            .run(efeito || null, uid);
+      }
+
+      // Efeitos de nome continuam exclusivos do admin.
+      if (hasNameEffect && souAdmin) {
+        const efeito = String(body.name_effect || '').trim();
+        if (!EFEITOS_NOME.has(efeito)) {
+          return res.status(400).json({ error: 'Efeito de nome inválido.' });
         }
+        await db
+          .prepare(
+            'UPDATE user_profiles SET name_effect = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+          )
+          .run(efeito || null, uid);
       }
     }
 
     if (hasCardStyle || hasProfileStyle || hasInventory) {
       const conta = await store.findById(uid);
       const souAdmin = Boolean((req.auth && req.auth.admin) || (conta && conta.is_admin));
-      if (!souAdmin) {
-        return res.status(403).json({ error: 'Só o admin pode mudar a carta ou o inventário.' });
-      }
+
+      // Cartas: o admin pode usar qualquer uma; os membros só as compradas.
       if (hasCardStyle) {
         const estilo = String(body.card_style || 'padrao').trim();
-        if (!CARD_STYLES.has(estilo)) {
+        const pode =
+          estilo === 'padrao'
+            ? true
+            : souAdmin
+              ? CARD_STYLES.has(estilo) || cosmeticos.existeValor('carta', estilo)
+              : await cosmeticos.podeEquipar(uid, 'carta', estilo);
+        if (pode) {
+          await db
+            .prepare(
+              'UPDATE user_profiles SET card_style = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(estilo, uid);
+        } else if (souAdmin) {
           return res.status(400).json({ error: 'Carta inválida.' });
         }
-        await db
-          .prepare(
-            'UPDATE user_profiles SET card_style = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(estilo, uid);
       }
-      if (hasProfileStyle) {
-        const estilo = String(body.profile_style || 'padrao').trim();
-        if (!PROFILE_STYLES.has(estilo)) {
-          return res.status(400).json({ error: 'Estilo de perfil inválido.' });
+
+      // Estilo de perfil e inventário CS2 continuam só para o admin.
+      if (hasProfileStyle || hasInventory) {
+        if (!souAdmin) {
+          return res.status(403).json({ error: 'Só o admin pode mudar o estilo ou o inventário.' });
         }
-        await db
-          .prepare(
-            'UPDATE user_profiles SET profile_style = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(estilo, uid);
-      }
-      if (hasInventory) {
-        const valor = Number(body.cs2_inventory_eur);
-        if (!Number.isFinite(valor) || valor < 0) {
-          return res.status(400).json({ error: 'Valor de inventário inválido.' });
+        if (hasProfileStyle) {
+          const estilo = String(body.profile_style || 'padrao').trim();
+          if (!PROFILE_STYLES.has(estilo)) {
+            return res.status(400).json({ error: 'Estilo de perfil inválido.' });
+          }
+          await db
+            .prepare(
+              'UPDATE user_profiles SET profile_style = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(estilo, uid);
         }
-        await db
-          .prepare(
-            'UPDATE user_profiles SET cs2_inventory_eur = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
-          )
-          .run(valor, uid);
-        require('../cs2inventory').syncCs2InventoryBadge({ forcar: true }).catch(() => {});
+        if (hasInventory) {
+          const valor = Number(body.cs2_inventory_eur);
+          if (!Number.isFinite(valor) || valor < 0) {
+            return res.status(400).json({ error: 'Valor de inventário inválido.' });
+          }
+          await db
+            .prepare(
+              'UPDATE user_profiles SET cs2_inventory_eur = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            )
+            .run(valor, uid);
+          require('../cs2inventory').syncCs2InventoryBadge({ forcar: true }).catch(() => {});
+        }
       }
     }
 

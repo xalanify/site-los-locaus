@@ -94,8 +94,22 @@ function ClipPreview({ clip, onOpen }) {
       className="group mt-2 flex w-full max-w-sm items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-black/30 p-2 text-left transition-colors hover:border-zinc-400/40"
     >
       <span className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-zinc-500/20">
-        {clip.thumb_url ? (
-          <img src={clip.thumb_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+        {clip.thumb_url || clip.remoto ? (
+          <img
+            src={
+              clip.thumb_url ||
+              `https://i.ytimg.com/vi/${clip.remoto}/hqdefault.jpg`
+            }
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              if (clip.remoto && !e.currentTarget.dataset.fb) {
+                e.currentTarget.dataset.fb = '1'
+                e.currentTarget.src = `https://i.ytimg.com/vi/${clip.remoto}/hqdefault.jpg`
+              }
+            }}
+          />
         ) : (
           <span className="flex h-full w-full items-center justify-center text-zinc-300">
             <Clapperboard className="h-6 w-6" />
@@ -651,20 +665,34 @@ export default function ChatPage({ user }) {
       })
       const d = await r.json().catch(() => null)
       if (!r.ok) throw new Error((d && d.error) || 'Não deu para preparar a imagem.')
-      await new Promise((resolve, reject) => {
-        const x = new XMLHttpRequest()
-        x.open('PUT', d.uploadUrl)
-        x.setRequestHeader('Content-Type', file.type)
-        x.setRequestHeader('x-upsert', 'false')
-        x.upload.onprogress = (e) => {
-          if (e.lengthComputable) setProgresso(Math.round((e.loaded / e.total) * 100))
-        }
-        x.onload = () => (x.status >= 200 && x.status < 300 ? resolve() : reject(new Error('Subida falhou.')))
-        x.onerror = () => reject(new Error('Sem ligação ao Storage.'))
-        x.send(file)
-      })
+      let urlFinal = d.publicUrl
+      if (d.direto === false) {
+        // sem R2: a imagem vai para o nosso servidor (base de dados)
+        const up = await fetch(d.uploadUrl, {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': file.type },
+          body: file,
+        })
+        const j = await up.json().catch(() => null)
+        if (!up.ok) throw new Error((j && j.error) || 'Subida falhou.')
+        urlFinal = j.publicUrl || j.url
+        setProgresso(100)
+      } else {
+        await new Promise((resolve, reject) => {
+          const x = new XMLHttpRequest()
+          x.open('PUT', d.uploadUrl)
+          x.setRequestHeader('Content-Type', file.type)
+          x.setRequestHeader('x-upsert', 'false')
+          x.upload.onprogress = (e) => {
+            if (e.lengthComputable) setProgresso(Math.round((e.loaded / e.total) * 100))
+          }
+          x.onload = () => (x.status >= 200 && x.status < 300 ? resolve() : reject(new Error('Subida falhou.')))
+          x.onerror = () => reject(new Error('Sem ligação ao Storage.'))
+          x.send(file)
+        })
+      }
       setPendingMedia({
-        url: d.publicUrl,
+        url: urlFinal,
         tipo: file.type === 'image/gif' ? 'gif' : 'image',
         preview: URL.createObjectURL(file),
       })
@@ -1340,8 +1368,21 @@ export default function ChatPage({ user }) {
                       className="overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-zinc-400/50"
                     >
                       <span className="block aspect-video bg-zinc-500/10">
-                        {c.thumb_url ? (
-                          <img src={c.thumb_url} alt="" className="h-full w-full object-cover" />
+                        {c.thumb_url || c.remoto ? (
+                          <img
+                            src={
+                              c.thumb_url ||
+                              `https://i.ytimg.com/vi/${c.remoto}/hqdefault.jpg`
+                            }
+                            alt=""
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              if (c.remoto && !e.currentTarget.dataset.fb) {
+                                e.currentTarget.dataset.fb = '1'
+                                e.currentTarget.src = `https://i.ytimg.com/vi/${c.remoto}/hqdefault.jpg`
+                              }
+                            }}
+                          />
                         ) : (
                           <span className="flex h-full w-full items-center justify-center text-zinc-300">
                             <Clapperboard className="h-5 w-5" />

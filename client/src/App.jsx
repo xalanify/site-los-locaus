@@ -300,7 +300,7 @@ function App() {
                       element={
                         <>
                           {/* Prévia do mercado (substitui o cartão do canal) */}
-                          <MercadoHome />
+                          <MercadoHome isAdmin={isAdmin} />
                           {/* Próximos torneios com contagem ao vivo (R6 e CS2) */}
                           <TorneiosHome />
                         </>

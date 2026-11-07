@@ -596,6 +596,8 @@ async function capaDoYoutube(videoId) {
 async function capaValida(url) {
   try {
     if (!url) return false;
+    // capas novas ficam no próprio site (base de dados/R2)
+    if (String(url).startsWith('/api/files/')) return true;
     const r = await fetch(url, { method: 'HEAD' });
     if (!r.ok) return false;
     const n = Number(r.headers.get('content-length') || 0);

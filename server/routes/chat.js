@@ -802,7 +802,8 @@ router.get('/stickers', requireUser, async (req, res) => {
   }
 });
 
-/* POST /api/chat/upload-url — imagem/GIF direto para o Supabase */
+/* POST /api/chat/upload-url — imagem/GIF: direto para o R2 quando
+   está configurado; sem R2 o browser envia para o próprio servidor. */
 router.post('/upload-url', requireUser, async (req, res) => {
   try {
     const tipo = String((req.body && req.body.type) || '')
@@ -813,13 +814,21 @@ router.post('/upload-url', requireUser, async (req, res) => {
     if (!ext) {
       return res.status(415).json({ error: 'Formato não suportado — usa JPG, PNG, WebP ou GIF.' });
     }
-    if (!storage.isConfigured()) {
-      return res.status(503).json({ error: 'Storage por configurar.' });
-    }
-    await garantirBucket();
     const file = crypto.randomBytes(16).toString('hex') + ext;
+
+    if (!storage.podeUploadDireto()) {
+      return res.json({
+        direto: false,
+        uploadUrl: '/api/chat/upload',
+        publicUrl: null,
+        path: file,
+        maxMB: 4,
+      });
+    }
+
     const uploadUrl = await storage.signedUploadUrl(BUCKET, file);
     res.json({
+      direto: true,
       path: file,
       uploadUrl,
       publicUrl: storage.publicUrl(BUCKET, file),
@@ -830,6 +839,38 @@ router.post('/upload-url', requireUser, async (req, res) => {
     res.status(500).json({ error: 'Não deu para preparar a imagem.' });
   }
 });
+
+/* POST /api/chat/upload — fallback sem R2: guarda a imagem na base
+   de dados e devolve um link do próprio site. */
+router.post(
+  '/upload',
+  express.raw({ type: 'image/*', limit: '4mb' }),
+  requireUser,
+  async (req, res) => {
+    try {
+      const tipo = String((req.headers['content-type'] || '').split(';')[0])
+        .trim()
+        .toLowerCase();
+      const ext = EXT_BY_TYPE[tipo];
+      if (!ext) {
+        return res.status(415).json({ error: 'Formato não suportado — usa JPG, PNG, WebP ou GIF.' });
+      }
+      const bytes = req.body;
+      if (!Buffer.isBuffer(bytes) || !bytes.length) {
+        return res.status(400).json({ error: 'Imagem vazia.' });
+      }
+      if (bytes.length > 4 * 1024 * 1024) {
+        return res.status(413).json({ error: 'A imagem é demasiado grande (máx. 4 MB).' });
+      }
+      const file = crypto.randomBytes(16).toString('hex') + ext;
+      const url = await storage.upload(BUCKET, file, bytes, tipo);
+      res.json({ ok: true, publicUrl: url, url });
+    } catch (error) {
+      console.error('Erro chat upload:', error.message);
+      res.status(500).json({ error: 'Não deu para guardar a imagem.' });
+    }
+  },
+);
 
 /* DELETE /api/chat/:id — apagar a própria mensagem (ou admin) */
 router.delete('/:id', requireUserOrAdmin, async (req, res) => {
