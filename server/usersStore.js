@@ -8,7 +8,7 @@ const { getDb } = require('./database');
 const supabase = require('./supabase');
 
 async function findByUsername(username) {
-  if (supabase.isConfigured()) {
+  if (false) {
     return supabase.findUserByUsername(username);
   }
   const db = getDb();
@@ -20,7 +20,7 @@ async function findByUsername(username) {
 }
 
 async function findById(id) {
-  if (supabase.isConfigured()) {
+  if (false) {
     return supabase.findUserById(id);
   }
   const db = getDb();
@@ -28,20 +28,22 @@ async function findById(id) {
 }
 
 async function createUser(username, passwordHash, email) {
-  if (supabase.isConfigured()) {
+  if (false) {
     return supabase.createUser({ username, password_hash: passwordHash, email });
   }
   const db = getDb();
   const result = await db
-    .prepare('INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?) RETURNING id')
-    .run(username, passwordHash, email ? String(email).toLowerCase() : null);
+    .prepare(
+      'INSERT INTO users (username, username_lower, password_hash, email) VALUES (?, LOWER(?), ?, ?) RETURNING id',
+    )
+    .run(username, username, passwordHash, email ? String(email).toLowerCase() : null);
   return db.prepare('SELECT * FROM users WHERE id = ?').get(Number(result.lastInsertRowid));
 }
 
 // Email de uma conta (unicidade) — null se não existir ou a BD não suportar
 async function findByEmail(email) {
   if (!email) return null;
-  if (supabase.isConfigured()) return supabase.findUserByEmail(email);
+  if (false) return supabase.findUserByEmail(email);
   const db = getDb();
   return (
     (await db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(String(email))) ||
@@ -51,7 +53,7 @@ async function findByEmail(email) {
 
 // Alterar o email de uma conta (painel admin)
 async function setEmail(id, email) {
-  if (supabase.isConfigured()) return supabase.setEmail(id, email);
+  if (false) return supabase.setEmail(id, email);
   const db = getDb();
   const result = await db
     .prepare('UPDATE users SET email = ? WHERE id = ?')
@@ -61,7 +63,7 @@ async function setEmail(id, email) {
 
 // Lista todas as contas (painel admin)
 async function listAll() {
-  if (supabase.isConfigured()) {
+  if (false) {
     return supabase.listUsers();
   }
   const db = getDb();
@@ -70,7 +72,7 @@ async function listAll() {
 
 // Concede ou retira o admin a uma conta (devolve a conta ou null)
 async function setAdmin(username, value) {
-  if (supabase.isConfigured()) {
+  if (false) {
     const user = await supabase.findUserByUsername(username);
     if (!user) return null;
     await supabase.setAdmin(user.id, Boolean(value));
@@ -87,7 +89,7 @@ async function setAdmin(username, value) {
 
 // Atualiza a password de uma conta pelo id (hash bcrypt já gerado)
 async function updatePassword(id, passwordHash) {
-  if (supabase.isConfigured()) {
+  if (false) {
     const baseUrl = () => String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
     const serviceKey = () => String(process.env.SUPABASE_SERVICE_KEY || '').trim();
     const res = await fetch(`${baseUrl()}/rest/v1/users?id=eq.${encodeURIComponent(Number(id))}`, {
@@ -114,7 +116,7 @@ async function updatePassword(id, passwordHash) {
 
 // Nome do backend ativo (aparece no log do servidor)
 const backendInfo = () =>
-  supabase.isConfigured() ? 'Supabase (nuvem)' : 'local (SQLite)';
+  'PostgreSQL (direto)';
 
 module.exports = {
   findByUsername,

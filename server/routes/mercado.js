@@ -65,6 +65,23 @@ router.post('/edicoes/vender', requireUser, async (req, res) => {
   }
 });
 
+/* Bónus de 12 moedas para quem encontrou o bug da cor de nome. */
+const MOTIVO_BUG12 = 'Bónus 12 moedas (bug cor de nome)';
+
+router.get('/bonusbug', requireUser, async (req, res) => {
+  try {
+    const uid = uidDe(req);
+    if (!uid) return res.status(401).json({ error: 'Sessão sem utilizador.' });
+    const row = await getDb()
+      .prepare('SELECT 1 AS ok FROM mercado_ledger WHERE user_id = ? AND motivo = ? LIMIT 1')
+      .get(uid, MOTIVO_BUG12);
+    res.json({ bonus: Boolean(row), valor: 12 });
+  } catch (e) {
+    console.error('Mercado bonusbug:', e.message);
+    res.status(500).json({ error: 'Não foi possível verificar o bónus.' });
+  }
+});
+
 router.get('/home', requireUser, async (req, res) => {
   try {
     const uid = uidDe(req);

@@ -167,7 +167,7 @@ export default function Mercado({ onSaldo }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setMe(d))
       .catch(() => {})
-    const t = setInterval(carregar, 15000)
+    const t = setInterval(carregar, 60000)
     return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

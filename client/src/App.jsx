@@ -12,6 +12,7 @@ import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import NovidadesModal from './components/NovidadesModal'
 import DiarioModal from './components/DiarioModal'
+import BonusBugModal from './components/BonusBugModal'
 import AdminPanel from './components/AdminPanel'
 import AuthModal from './components/AuthModal'
 import AuthScreen from './components/AuthScreen'
@@ -395,6 +396,7 @@ function App() {
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
                 <NovidadesModal />
                 <DiarioModal user={user} />
+                <BonusBugModal user={user} />
 
                 {/* Conta de utilizador: entrar / criar conta (reserva) */}
                 <AuthModal

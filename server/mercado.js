@@ -61,6 +61,24 @@ const arred = (n) => Math.max(0, Math.round(Number(n) || 0));
 const precoCompra = (preco) => Math.min(100, Math.max(1, Math.round(Number(preco) * (1 + SPREAD))));
 const precoVenda = (preco) => Math.max(1, Math.round(Number(preco) * (1 - SPREAD)));
 
+/* Se o item vendido estava equipado, limpa o campo do perfil. */
+async function limparEquipado(db, uid, item) {
+  if (!item) return;
+  const campo =
+    item.tipo === 'cor'
+      ? 'name_color'
+      : item.tipo === 'carta'
+        ? 'card_style'
+        : item.tipo === 'estilo'
+          ? 'profile_style'
+          : null;
+  if (!campo) return;
+  await db
+    .prepare(`UPDATE public.user_profiles SET ${campo} = NULL WHERE user_id = ? AND ${campo} = ?`)
+    .run(uid, item.valor)
+    .catch(() => {});
+}
+
 /* Probabilidades por tipo de pack (ordem: comum, raro, epico, lendario) */
 const PESOS = {
   basico: [70, 22, 7, 1],
@@ -401,6 +419,7 @@ async function simularCompraAnuncios(db) {
       .prepare('DELETE FROM public.cosmeticos_compras WHERE user_id = ? AND item_id = ?')
       .run(a.user_id, a.item_id)
       .catch(() => {});
+    await limparEquipado(db, a.user_id, POR_ID.get(a.item_id));
     await db
       .prepare('INSERT INTO public.mercado_ledger (user_id, valor, motivo) VALUES (?, ?, ?)')
       .run(a.user_id, liquido, `anuncio-bot:${a.id}`)
@@ -456,8 +475,13 @@ async function listar(uid) {
 
   const hist = await db
     .prepare(
-      `SELECT item_id, preco, em FROM public.mercado_historico
-       WHERE em > now() - interval '2 days'
+      `SELECT item_id, preco, em FROM (
+         SELECT item_id, preco, em,
+                ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY em DESC) AS rn
+         FROM public.mercado_historico
+         WHERE em > now() - interval '2 days'
+       ) x
+       WHERE rn <= 12
        ORDER BY em ASC`,
     )
     .all();
@@ -511,7 +535,7 @@ async function listar(uid) {
     const p = mapaPrecos.get(item.id) || { base: item.custo, preco: item.custo };
     const base = Math.round(Number(p.base) || Number(item.custo) || 10);
     const preco = Math.round(Number(p.preco) || 0);
-    const serie = (porItem.get(item.id) || []).slice(-60);
+    const serie = (porItem.get(item.id) || []).slice(-12);
     const primeiro = serie.length ? serie[0].preco : preco;
     const variacao = primeiro ? ((preco - primeiro) / primeiro) * 100 : 0;
     return {
@@ -685,6 +709,7 @@ async function vender(uid, itemId) {
   await db
     .prepare('DELETE FROM public.cosmeticos_compras WHERE user_id = ? AND item_id = ?')
     .run(uid, item.id);
+  await limparEquipado(db, uid, item);
   await db
     .prepare('INSERT INTO public.mercado_ledger (user_id, valor, motivo) VALUES (?, ?, ?)')
     .run(uid, liquido, `venda:${item.id}`);
@@ -803,6 +828,7 @@ async function comprarAnuncio(uid, id) {
   await db
     .prepare('DELETE FROM public.cosmeticos_compras WHERE user_id = ? AND item_id = ?')
     .run(a.user_id, item.id);
+  await limparEquipado(db, a.user_id, item);
   await db
     .prepare('INSERT INTO public.cosmeticos_compras (user_id, item_id, tipo, custo) VALUES (?, ?, ?, 0)')
     .run(uid, item.id, item.tipo);
