@@ -306,11 +306,15 @@ const PRECOS_FOTO = {
   'carta-foto-olhos': 130,
 };
 
+
 const ITENS = [
   ...CORES_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CAMOS_PRECO.map((x) => ({ ...x, tipo: 'cor', campo: 'name_color' })),
   ...CARTAS_PRECO.map((x) => ({ ...x, tipo: 'carta', campo: 'card_style' })),
-].map((x) => ({ ...x, custo: PRECOS_FOTO[x.id] ?? escalaPreco(x.custo) }));
+].map((x) => ({
+  ...x,
+  custo: PRECOS_FOTO[x.id] ?? escalaPreco(x.custo),
+}));
 
 const POR_ID = new Map(ITENS.map((x) => [x.id, x]));
 

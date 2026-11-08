@@ -534,11 +534,13 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
     <section className={embedded ? 'py-2' : 'min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]'}>
       <div className="mx-auto max-w-6xl">
         {/* ---------------- Cabeçalho ---------------- */}
-        <PageHeader
-          title="PCs / Specs"
-          subtitle="As máquinas do grupo com valores lidos no Windows. Clica numa linha para ver tudo."
-          compact={embedded}
-        />
+        {!embedded && (
+          <PageHeader
+            title="PCs / Specs"
+            subtitle="As máquinas do grupo com valores lidos no Windows. Clica numa linha para ver tudo."
+            compact={embedded}
+          />
+        )}
 
         {/* Aviso: PC ainda não ligado — a tabela continua visível */}
         {!embedded && agenteVerificado && !agenteOnline && (

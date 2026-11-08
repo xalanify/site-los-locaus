@@ -413,6 +413,8 @@ export default function Mercado({ onSaldo }) {
 
   return (
     <div>
+      <div className="mercado-grid">
+      <aside className="mercado-lado">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-400/[0.06] px-3 py-1.5 text-xs font-bold text-amber-100">
@@ -495,6 +497,8 @@ export default function Mercado({ onSaldo }) {
           </label>
         </div>
       </div>
+      </aside>
+      <div className="mercado-lista">
 
       <ul className="space-y-1.5">
         {itens.map((item) => {
@@ -626,6 +630,9 @@ export default function Mercado({ onSaldo }) {
           </ul>
         </div>
       )}
+
+      </div>
+      </div>
 
       {/* Detalhe — edição limitada */}
       {detalhe &&

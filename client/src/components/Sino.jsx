@@ -229,7 +229,7 @@ export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
           onClick={() => setAberto((v) => !v)}
           aria-label={nLidas ? `${nLidas} notificações por ler` : 'Notificações'}
           aria-expanded={aberto}
-          className="btn-glass relative flex h-9 w-9 items-center justify-center rounded-full text-gray-300 sm:h-10 sm:w-10"
+          className="btn-glass relative flex h-9 w-9 items-center justify-center rounded-[9px] text-gray-300 lg:h-[34px] lg:w-[34px]"
         >
           {nLidas ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
           {nLidas > 0 && (

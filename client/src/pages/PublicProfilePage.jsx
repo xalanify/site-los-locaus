@@ -248,16 +248,11 @@ export default function PublicProfilePage({
         <AlbumCartas username={p.username} />
 
         {/* ---------------- Feed do membro: clips + mensagens ---------------- */}
-        <div id="publicacoes" className="mb-8">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <h2
-              className="font-display text-2xl font-black uppercase sm:text-3xl"
-              style={{ color: 'var(--perfil-accent, #fff)' }}
-            >
-              {souEu ? 'As minhas publicações' : `Publicações de ${p.username}`}
-            </h2>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-gray-300">
-              {feedMostrado.length}
+        <div id="publicacoes" className="pf-section">
+          <div className="pf-section-head">
+            <h2>{souEu ? 'As minhas publicações' : `Publicações de ${p.username}`}</h2>
+            <span className="pf-section-count">
+              {feedMostrado.length} {feedMostrado.length === 1 ? 'publicação' : 'publicações'}
             </span>
           </div>
 

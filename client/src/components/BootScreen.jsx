@@ -1,84 +1,80 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight } from 'lucide-react'
-import Panorama360 from './Panorama360'
 
 /* ============================================================
-   ENTRADA — panorama 360°
+   SPLASH — preto absoluto, logótipo 3D e barra de vidro
    ------------------------------------------------------------
-   A imagem equirretangular é o fundo. No PC acompanha o rato;
-   no telemóvel usa o giroscópio (com autorização) e o arrasto.
-   Só se entra no site ao clicar em "Entrar" — sem barra nem
-   temporizador automático.
+   Entra sozinho ao fim de ~5 segundos, sem botão.
    ============================================================ */
 
-const PANO_DESKTOP = '/boot/qwantani-4096.jpg'
-const PANO_MOBILE = '/boot/qwantani-2048.jpg'
+const DURACAO = 5000
 
 export default function BootScreen({ visible, onEnter }) {
+  const [progresso, setProgresso] = useState(0)
   const [aEntrar, setAEntrar] = useState(false)
   const entrou = useRef(false)
+  const onEnterRef = useRef(onEnter)
 
   useEffect(() => {
-    if (visible) {
-      setAEntrar(false)
-      entrou.current = false
-    }
-  }, [visible])
-
-  useEffect(() => {
-    if (!visible) return undefined
-    const aoTeclar = (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        entrar()
-      }
-    }
-    window.addEventListener('keydown', aoTeclar)
-    return () => window.removeEventListener('keydown', aoTeclar)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, aEntrar])
+    onEnterRef.current = onEnter
+  }, [onEnter])
 
   const entrar = () => {
     if (entrou.current) return
     entrou.current = true
     setAEntrar(true)
-    // deixa a animação de saída correr antes de montar o site
-    window.setTimeout(() => onEnter && onEnter(), 420)
+    window.setTimeout(() => {
+      if (onEnterRef.current) onEnterRef.current()
+    }, 520)
   }
+
+  useEffect(() => {
+    if (!visible) return undefined
+    entrou.current = false
+    setAEntrar(false)
+    setProgresso(0)
+    const inicio = performance.now()
+    // setInterval (e não requestAnimationFrame) para a barra continuar a
+    // andar mesmo quando o separador fica em segundo plano.
+    const relogio = window.setInterval(() => {
+      const p = Math.min(1, (performance.now() - inicio) / DURACAO)
+      setProgresso(Math.round(p * 100))
+      if (p >= 1) {
+        window.clearInterval(relogio)
+        entrar()
+      }
+    }, 80)
+    return () => window.clearInterval(relogio)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible])
 
   if (!visible) return null
 
   return (
     <div
-      className={`boot-screen ${aEntrar ? 'boot-sair' : ''}`}
+      className={`boot-screen boot-liquid ${aEntrar ? 'boot-sair' : ''}`}
       role="dialog"
-      aria-label="Entrada no site"
+      aria-label="A entrar no site"
     >
-      <Panorama360 desktopSrc={PANO_DESKTOP} mobileSrc={PANO_MOBILE} />
+      <div className="boot-liquid-inner">
+        <div className="boot-logo-wrap">
+          <span className="boot-logo boot-logo--sega">LOCAUS.FUN</span>
+        </div>
 
-      {/* véu para o texto ficar legível sobre o céu */}
-      <div className="boot-veu" aria-hidden="true" />
+        <div
+          className="boot-progress"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progresso}
+        >
+          <span className="boot-progress-bar">
+            <span className="boot-progress-fill" style={{ width: `${progresso}%` }} />
+            <span className="boot-progress-shine" aria-hidden="true" />
+          </span>
+          <span className="boot-progress-pct">{progresso}%</span>
+        </div>
 
-      <div className="boot-conteudo">
-        <main className="boot-meio">
-          <button type="button" onClick={entrar} className="boot-entrar" disabled={aEntrar}>
-            <span>Entrar</span>
-            <ArrowRight className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <span className="boot-beta">em beta</span>
-        </main>
-
-        <footer className="boot-fundo">
-          <span className="boot-dica boot-dica-pc">move o rato para explorar</span>
-          <span className="boot-dica boot-dica-touch">arrasta para explorar</span>
-          <button
-            type="button"
-            className="boot-gyro"
-            onClick={() => window.dispatchEvent(new Event('locaus:pedir-gyro'))}
-          >
-            ativar movimento
-          </button>
-        </footer>
+        <span className="boot-beta">beta</span>
       </div>
     </div>
   )

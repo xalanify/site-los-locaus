@@ -3,14 +3,12 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import Navbar from './components/Navbar'
-import Sidebar from './components/Sidebar'
 import RightColumn from './components/RightColumn'
-import MobileMenu from './components/MobileMenu'
+import Mapa from './components/Mapa'
 import BetaBadge from './components/BetaBadge'
 import MercadoHome from './components/MercadoHome'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
-import NovidadesModal from './components/NovidadesModal'
 import DiarioModal from './components/DiarioModal'
 import BonusBugModal from './components/BonusBugModal'
 import AdminPanel from './components/AdminPanel'
@@ -24,6 +22,7 @@ import MorphPointer from './components/MorphPointer'
 import ClickSplash from './components/ClickSplash'
 import KovaTopbar from './components/KovaTopbar'
 import FundoVivo from './components/FundoVivo'
+import { modeDe } from './data/navegacao'
 import { Toasts, Dialogos } from './components/Feedback'
 import { authHeaders, clearUserSession, setUserSession } from './lib/auth'
 import { fechar as fecharSSE } from './lib/sse'
@@ -72,7 +71,7 @@ function RotaPerfil({
 function App() {
   const [entered, setEntered] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false) // menu lateral (telemóvel)
+  const [mapaAberto, setMapaAberto] = useState(false)
   const [showVideos, setShowVideos] = useState(false) // janela flutuante dos vídeos
   const [user, setUser] = useState(null) // conta de utilizador (obrigatória)
   const [showAuth, setShowAuth] = useState(false)
@@ -84,6 +83,32 @@ function App() {
   const unlocked = true
   const location = useLocation()
   const navigate = useNavigate()
+
+  // O corpo sabe em que modo está (cor de acento por secção).
+  useEffect(() => {
+    document.body.dataset.mode = modeDe(location.pathname).id
+  }, [location.pathname])
+
+  // O Mapa abre com M e fecha com Esc / mudança de página.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setMapaAberto(false)
+        return
+      }
+      const tag = (e.target && e.target.tagName ? e.target.tagName : '').toLowerCase()
+      if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return
+      if (e.key.toLowerCase() === 'm') {
+        e.preventDefault()
+        setMapaAberto((v) => !v)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+  useEffect(() => {
+    setMapaAberto(false)
+  }, [location.pathname])
 
   // Analytics simples: uma visita por página (sem cookies e sem nomes)
   useEffect(() => {
@@ -252,27 +277,20 @@ function App() {
             {authed && !needsRecovery && (
               <>
                 {/* Barra de topo (desktop) — tema experimental */}
-                <KovaTopbar user={user} isAdmin={isAdmin} />
-                {/* Barra de navegação (só no telemóvel) */}
-                <Navbar
-                  isAdmin={isAdmin}
-                  user={user}
-                  menuOpen={menuOpen}
-                  onMenu={() => setMenuOpen((v) => !v)}
-                />
-                {/* Menu lateral estilo X (só no telemóvel) */}
-                <MobileMenu
-                  open={menuOpen}
-                  onClose={() => setMenuOpen(false)}
+                <KovaTopbar user={user} isAdmin={isAdmin} onMapa={() => setMapaAberto(true)} />
+                <Navbar isAdmin={isAdmin} user={user} onMapa={() => setMapaAberto(true)} />
+                <Mapa
+                  open={mapaAberto}
+                  onClose={() => setMapaAberto(false)}
                   user={user}
                   isAdmin={isAdmin}
                   onLogout={handleUserLogout}
                 />
                 {/* Sidebar lateral (só no PC) */}
-                <Sidebar user={user} isAdmin={isAdmin} />
+                {/* Removida: a navegação vive na barra de topo. */}
                 {/* Coluna direita (só em ecrãs largos) */}
                 <RightColumn />
-                <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0 lg:pl-[260px] xl:pl-[280px] xl:pr-[320px]">
+                <main className="lv-main pb-[calc(2rem+env(safe-area-inset-bottom))]">
                   {/* Muro de erros: se uma página rebentar no render, só
                       ela cai — e a key pelo caminho limpa o erro quando
                       se navega para outro sítio */}
@@ -298,15 +316,16 @@ function App() {
                     <Route
                       path="/"
                       element={
-                        <>
-                          {/* Prévia do mercado (substitui o cartão do canal) */}
+                        <div className="home-dash">
+                          <p className="home-beta-note">
+                            <b>BETA</b> O design ainda está a evoluir — pode mudar.
+                          </p>
                           <MercadoHome isAdmin={isAdmin} />
-                          {/* Próximos torneios com contagem ao vivo (R6 e CS2) */}
                           <TorneiosHome />
-                        </>
+                        </div>
                       }
                     />
-                    {/* Contas de jogo — aberto a todos os membros */}
+{/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
@@ -394,7 +413,6 @@ function App() {
                 <Footer />
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
-                <NovidadesModal user={user} />
                 <DiarioModal user={user} />
                 <BonusBugModal user={user} />
 

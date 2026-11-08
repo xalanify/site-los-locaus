@@ -82,8 +82,8 @@ export default function MercadoHome() {
 
 
   return (
-    <section className="relative pt-20 pb-8">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6">
+    <section className="relative pt-20 pb-8 lg:pt-6">
+      <div className="mx-auto max-w-[1240px] px-5">
         <div className="glass relative overflow-hidden rounded-3xl">
           <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
@@ -98,10 +98,7 @@ export default function MercadoHome() {
               </span>
               <h2 className="mt-2 font-display text-2xl font-black leading-tight text-white sm:text-3xl">
                 Os cosméticos mais caros agora
-              </h2>
-              <p className="mt-1 text-sm text-zinc-400">
-                Cores e cartas com preço a mexer. Compra e vende no mercado ao vivo.
-              </p>
+              </h2>
             </div>
             <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f7a8a8]/10 text-[#f7a8a8] ring-1 ring-[#f7a8a8]/20 sm:grid">
               <Sparkles className="h-5 w-5" />
@@ -156,7 +153,13 @@ export default function MercadoHome() {
                           </span>
                         ) : null}
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-bold text-white">
+                          <span
+                            className={`block truncate text-sm font-bold ${
+                              item.tipo === 'cor'
+                                ? classesNome(item.valor) || 'text-white'
+                                : 'text-white'
+                            }`}
+                          >
                             {item.nome}
                           </span>
                           <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
@@ -194,11 +197,8 @@ export default function MercadoHome() {
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-5 py-4 sm:px-6">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-100">
               <MoedaLocaus size={14} />
-              {saldo == null ? '—' : Number(saldo).toLocaleString('pt-PT')} disponíveis
+              {saldo == null ? '-' : Number(saldo).toLocaleString('pt-PT')} disponíveis
             </span>
-            <Link to="/cosmeticos" className="ui-btn ui-btn-primary ui-btn-sm">
-              Ir para o mercado <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
           </div>
         </div>
       </div>

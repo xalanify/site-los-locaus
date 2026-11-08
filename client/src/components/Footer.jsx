@@ -1,9 +1,9 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-800 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-8 lg:pb-8 lg:pl-[276px] xl:pl-[296px] xl:pr-[336px]">
+    <footer className="border-t border-white/[0.06] px-4 pb-8 pt-7">
       <div className="mx-auto max-w-7xl">
         <p className="text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} Ashow e Jazer. Todos os direitos reservados.
+          © {new Date().getFullYear()} Locaus. Todos os direitos reservados.
         </p>
       </div>
     </footer>

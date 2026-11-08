@@ -1,139 +1,56 @@
-import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import {
-  ChevronDown,
-  Home,
-  Clapperboard,
-  MessageCircle,
-  Swords,
-  Users,
-  BarChart3,
-  ShoppingBag,
-  Award,
-  Wrench,
-  CircuitBoard,
-  CreditCard,
-} from 'lucide-react'
+import { LayoutGrid } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
 import AvisoFotos from './AvisoFotos'
+import { MODES, linksDoModo, linkAtivo, modeDe } from '../data/navegacao'
 
 /* ============================================================
-   Barra de topo (desktop) no estilo da referência:
-   marca em serif à esquerda, links com ícone, conta à direita.
+   Barra (PC) — 4 modos + sub-navegação contextual.
+   O Mapa (M) é a única lista completa.
    ============================================================ */
 
-const LINKS = [
-  { nome: 'Home', path: '/', Icon: Home },
-  { nome: 'Clips', path: '/clips', Icon: Clapperboard },
-  { nome: 'Chat', path: '/chat', Icon: MessageCircle },
-  { nome: 'Previsões', path: '/previsoes', Icon: Swords },
-  { nome: 'Membros', path: '/membros', Icon: Users },
-  { nome: 'Cartas', path: '/cartas', Icon: CreditCard },
-  { nome: 'Loja', path: '/cosmeticos', Icon: ShoppingBag },
-]
-
-const MAIS = [
-  { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3 },
-  { nome: 'Distinções', path: '/distincoes', Icon: Award },
-  { nome: 'Ferramentas Windows', path: '/ferramentas', Icon: Wrench },
-]
-
-export default function KovaTopbar({ user, isAdmin = false }) {
+export default function KovaTopbar({ user, isAdmin = false, onMapa }) {
+  const { pathname } = useLocation()
   const navigate = useNavigate()
-  const location = useLocation()
-  const [maisAberto, setMaisAberto] = useState(false)
-  const maisRef = useRef(null)
-
-  // Fecha o "Mais" ao clicar fora ou ao mudar de página
-  useEffect(() => {
-    if (!maisAberto) return undefined
-    const fechar = (e) => {
-      if (maisRef.current && !maisRef.current.contains(e.target)) setMaisAberto(false)
-    }
-    document.addEventListener('pointerdown', fechar)
-    return () => document.removeEventListener('pointerdown', fechar)
-  }, [maisAberto])
-
-  useEffect(() => {
-    setMaisAberto(false)
-  }, [location.pathname])
-
-  const ativo = (path) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+  const mode = modeDe(pathname)
+  const links = linksDoModo(mode, isAdmin)
 
   return (
-    <nav className="kova-topbar hidden lg:flex" aria-label="Navegação principal">
-      <div className="kova-topbar-inner">
-        <Link to="/" className="kova-brand">
+    <header className="lv-bar hidden lg:block">
+      <div className="lv-bar-top">
+        <Link to="/" className="lv-brand" aria-label="Locaus — início">
           locaus<span>.</span>
+          <em>beta</em>
         </Link>
 
-        <div className="kova-links">
-          {LINKS.map((l) => {
-            const Icon = l.Icon
-            return (
-              <Link
-                key={l.path}
-                to={l.path}
-                data-active={ativo(l.path) ? 'true' : 'false'}
-                title={l.nome}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span>{l.nome}</span>
-              </Link>
-            )
-          })}
-
-          <div className="kova-mais" ref={maisRef}>
-            <button
-              type="button"
-              className="kova-mais-btn"
-              onClick={() => setMaisAberto((v) => !v)}
-              aria-expanded={maisAberto}
+        <nav className="mode-nav" aria-label="Modos">
+          {MODES.map((m) => (
+            <Link
+              key={m.id}
+              to={m.path}
+              data-active={m.id === mode.id ? 'true' : 'false'}
+              className="mode-link"
+              style={{ '--mode-accent': m.accent }}
             >
-              Mais
-              <ChevronDown className="h-3.5 w-3.5" />
-            </button>
-            {maisAberto && (
-              <div className="kova-mais-menu">
-                {MAIS.map((l) => {
-                  const Icon = l.Icon
-                  return (
-                    <Link
-                      key={l.path}
-                      to={l.path}
-                      onClick={() => setMaisAberto(false)}
-                      data-active={ativo(l.path) ? 'true' : 'false'}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      <span>{l.nome}</span>
-                    </Link>
-                  )
-                })}
-                {isAdmin && (
-                  <Link
-                    to="/componentes"
-                    onClick={() => setMaisAberto(false)}
-                    data-active={ativo('/componentes') ? 'true' : 'false'}
-                  >
-                    <CircuitBoard className="h-4 w-4 shrink-0" />
-                    <span>Componentes e Periféricos</span>
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+              <m.Icon className="mode-ico" />
+              <span>{m.nome}</span>
+            </Link>
+          ))}
+        </nav>
 
-        <div className="kova-actions">
+        <div className="lv-actions">
+          <button type="button" className="lv-mapa" onClick={onMapa} title="Mapa (M)">
+            <LayoutGrid className="h-4 w-4" />
+            <span>Mapa</span>
+            <kbd>M</kbd>
+          </button>
           <SaldoMoedas user={user} compacto />
           <Sino user={user} />
-
           <button
             type="button"
-            className="kova-user"
+            className="lv-user"
             title={user ? `Conta: ${user.username}` : 'Conta'}
             onClick={() =>
               navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
@@ -143,7 +60,28 @@ export default function KovaTopbar({ user, isAdmin = false }) {
           </button>
         </div>
       </div>
+
+      <div className="lv-subnav" style={{ '--mode-accent': mode.accent }}>
+        <span className="lv-subnav-mode">
+          <mode.Icon className="h-3.5 w-3.5" />
+          {mode.nome}
+        </span>
+        <nav aria-label={`${mode.nome} — páginas`}>
+          {links.map((l) => (
+            <Link
+              key={l.path}
+              to={l.path}
+              data-active={linkAtivo(pathname, l.path) ? 'true' : 'false'}
+              className="lv-sublink"
+            >
+              <l.Icon className="h-3.5 w-3.5" />
+              {l.nome}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
       <AvisoFotos />
-    </nav>
+    </header>
   )
 }

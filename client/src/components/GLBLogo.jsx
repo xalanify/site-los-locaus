@@ -24,7 +24,7 @@ export default function GLBLogo() {
   }, []);
 
   return (
-    <a href="/" className="group flex items-center gap-3 text-xl sm:text-2xl font-black tracking-tight text-white hover:text-zinc-300 transition-colors" title="Ashow e Jazer — Início">
+    <a href="/" className="group flex items-center gap-3 text-xl sm:text-2xl font-black tracking-tight text-white hover:text-zinc-300 transition-colors" title="Locaus — início">
       {/* Logo 3D — imagem do ficheiro 2.glb (renderizado como thumb) */}
       <img
         src="/2.glb"
@@ -36,7 +36,7 @@ export default function GLBLogo() {
           willChange: 'transform',
         }}
       />
-      <span>Ashow e Jazer</span>
+      <span>locaus.</span>
     </a>
   );
 }

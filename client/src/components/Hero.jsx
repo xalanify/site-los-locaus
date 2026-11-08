@@ -48,7 +48,7 @@ export default function Hero({ onVerVideos }) {
           <div className="flex items-center gap-4 p-5 sm:gap-5 sm:p-6">
             <img
               src={foto}
-              alt={channel?.snippet?.title || 'Ashow e Jazer'}
+              alt={channel?.snippet?.title || 'Locaus'}
               onError={(e) => {
                 if (e.currentTarget.dataset.fb) return
                 e.currentTarget.dataset.fb = '1'
@@ -58,7 +58,7 @@ export default function Hero({ onVerVideos }) {
             />
             <div className="min-w-0">
               <h1 className="font-display font-black uppercase leading-tight text-white" style={{ fontSize: 'clamp(1.2rem, 5.6vw, 2.1rem)' }}>
-                {channel?.snippet?.title || 'Ashow e Jazer'}
+                {channel?.snippet?.title || 'Locaus'}
               </h1>
               <a
                 href={channelUrl}

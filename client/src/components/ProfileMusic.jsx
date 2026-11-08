@@ -314,12 +314,12 @@ export default function ProfileMusic({
         </div>
       )}
       {createPortal(
-        <div className="fixed bottom-24 right-3 z-[100] flex items-center gap-2 rounded-2xl border border-white/15 bg-[#0b0b0c]/90 px-2.5 py-2 shadow-2xl shadow-black/50 backdrop-blur-md sm:right-5 lg:bottom-5">
+        <div className="pf-music fixed bottom-24 right-3 z-[100] flex items-center gap-2 rounded-2xl border border-white/15 bg-[#0b0b0c]/90 px-2.5 py-2 shadow-2xl shadow-black/50 backdrop-blur-md sm:right-5 lg:bottom-5">
           <button
             type="button"
             onClick={alternar}
             title={aTocar ? 'Pausar música' : 'Tocar música'}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#1a0f0f] transition-opacity hover:opacity-90"
+            className="pf-music-play grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#1a0f0f] transition-opacity hover:opacity-90"
             style={{ background: 'var(--salmon, #ff9e9e)' }}
           >
             {aTocar ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}

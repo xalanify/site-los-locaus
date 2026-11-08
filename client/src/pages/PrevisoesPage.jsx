@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import {
   Swords,
@@ -528,19 +529,19 @@ function ProximoTorneio() {
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-4 overflow-hidden rounded-3xl border border-amber-400/25 bg-gradient-to-r from-amber-500/15 via-[#161618] to-zinc-600/10 p-4 shadow-xl shadow-amber-950/10 sm:p-5"
+      className="relative mb-4 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b11] p-4 shadow-xl shadow-black/30 sm:p-5"
     >
-      <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-amber-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-violet-600/15 blur-3xl" />
       <div className="relative flex flex-wrap items-center gap-4">
         {t.logo ? (
           <img src={t.logo} alt="" className="h-12 w-12 shrink-0 rounded-xl object-contain" loading="lazy" />
         ) : (
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-500/15 ring-1 ring-amber-400/30">
-            <Trophy className="h-6 w-6 text-amber-300" />
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/5 ring-1 ring-white/10">
+            <Trophy className="h-6 w-6 text-violet-300" />
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-300">
             Próximo torneio{t.regiao ? ` · ${t.regiao}` : ''}
           </p>
           <h3 className="mt-0.5 truncate font-display text-lg font-black text-white">{t.nome}</h3>
@@ -1210,26 +1211,8 @@ function CS2PrevisoesTab({ user }) {
         </section>
       )}
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <label className="flex shrink-0 items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500">
-          <MapPin className="h-3.5 w-3.5 text-zinc-400" /> Região
-        </label>
-        <select
-          value={regiaoCs2}
-          onChange={(e) => setRegiaoCs2(e.target.value)}
-          className="w-full max-w-[240px] rounded-xl border border-white/10 bg-[#121214]/90 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-zinc-400/40"
-        >
-          <option value="Todas" className="bg-[#161618]">Todas as regiões</option>
-          {regioesCs2.map((r) => (
-            <option key={r} value={r} className="bg-[#161618]">
-              {r}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex flex-1 items-center gap-1 rounded-2xl border border-white/10 bg-[#121214]/90 p-1 shadow-inner shadow-black/30">
+      <div className="mb-4 flex items-end gap-3">
+        <div className="ui-tabs flex-1">
           {[
             { id: 'proximos', label: 'Próximos', Icon: Target, count: proximos.length },
             { id: 'resultados', label: 'Resultados', Icon: Trophy, count: resultados.length },
@@ -1238,16 +1221,13 @@ function CS2PrevisoesTab({ user }) {
               key={t.id}
               type="button"
               onClick={() => setAbaCs2(t.id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-black transition-all sm:text-sm ${
-                abaCs2 === t.id
-                  ? 'bg-[#ff9e9e] text-[#1a0f0f] shadow-lg shadow-[#ff9e9e]/20'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
+              data-active={abaCs2 === t.id}
+              className="ui-tab"
             >
-              <t.Icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t.label}</span>
+              <t.Icon className="h-3.5 w-3.5" />
+              {t.label}
               {t.count ? (
-                <span className={`rounded-full px-1.5 text-[9px] tabular-nums ${abaCs2 === t.id ? 'bg-white/25' : 'bg-white/10'}`}>
+                <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[8px] font-medium tracking-normal text-zinc-500">
                   {t.count}
                 </span>
               ) : null}
@@ -1257,9 +1237,9 @@ function CS2PrevisoesTab({ user }) {
         <button
           onClick={() => carregar()}
           title="Atualizar resultados"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#121214]/90 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="ui-btn ui-btn-icon ui-btn-sm mb-1"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-3.5 w-3.5" />
         </button>
       </div>
 
@@ -1580,7 +1560,7 @@ export default function PrevisoesPage({ user }) {
         <button
           type="button"
           onClick={() => setClassificacaoAberta(true)}
-          className="ui-btn ui-btn-ghost"
+          className="ui-btn ui-btn-sm"
         >
           <Medal className="h-4 w-4" /> Classificações
         </button>
@@ -1965,22 +1945,33 @@ export default function PrevisoesPage({ user }) {
       )}
 
       {/* janela flutuante de resultados */}
-      {modalResultados && resultadosNovos.length > 0 && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-zinc-400/25 bg-[#141416] shadow-2xl shadow-black/60">
-            <div className="relative overflow-hidden bg-gradient-to-br from-zinc-600/30 to-zinc-600/10 px-5 pb-4 pt-5 text-center">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-zinc-500/20 blur-2xl" />
-              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-amber-300 ring-1 ring-white/20">
-                <Trophy className="h-7 w-7" />
-              </span>
-              <h2 className="mt-3 font-display text-xl font-black text-white">
-                {resultadosNovos.every((r) => r.correct) ? 'Em grande!' : 'Resultados das tuas previsões'}
-              </h2>
-              <p className="mt-1 text-xs font-semibold text-gray-300">
-                {resultadosNovos.filter((r) => r.correct).length} de {resultadosNovos.length} certas.
-              </p>
+      {modalResultados && resultadosNovos.length > 0 &&
+        createPortal(
+        <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto bg-black/80 p-3 sm:items-center">
+          <div className="my-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b10] shadow-2xl shadow-black/60">
+            <div className="flex shrink-0 items-center gap-2 border-b border-white/10 bg-[#0e0e14] px-3 py-3">
+              <span className="h-8 w-8 shrink-0" aria-hidden="true" />
+              <div className="min-w-0 flex-1 text-center">
+                <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-amber-300 ring-1 ring-white/15">
+                  <Trophy className="h-5 w-5" />
+                </span>
+                <h2 className="mt-2 font-display text-lg font-semibold text-white">
+                  {resultadosNovos.every((r) => r.correct) ? 'Em grande!' : 'Resultados das tuas previsões'}
+                </h2>
+                <p className="mt-1 text-[11px] font-semibold text-gray-400">
+                  {resultadosNovos.filter((r) => r.correct).length} de {resultadosNovos.length} certas.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={fecharResultados}
+                aria-label="Fechar"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 text-zinc-400 transition hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <div className="max-h-[65dvh] space-y-2 overflow-y-auto p-4">
+            <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3 sm:p-4">
               {resultadosNovos.map((r) => (
                 <div
                   key={r.match_id}
@@ -2008,13 +1999,13 @@ export default function PrevisoesPage({ user }) {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 border-t border-white/10 p-3">
+            <div className="flex shrink-0 gap-2 border-t border-white/10 bg-[#0b0b10] p-3">
               <button
                 onClick={() => {
                   setTab('resultados')
                   fecharResultados()
                 }}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-black text-gray-200 hover:bg-white/10"
+                className="ui-btn flex-1"
               >
                 Ver histórico <ArrowRight className="h-3.5 w-3.5" />
               </button>
@@ -2026,7 +2017,8 @@ export default function PrevisoesPage({ user }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
       </div>
     </PageShell>

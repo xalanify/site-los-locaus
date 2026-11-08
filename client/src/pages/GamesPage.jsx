@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import PageHeader from '../components/PageHeader'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -3424,7 +3425,7 @@ export default function GamesPage() {
   }, [tab])
 
   return (
-    <section className="relative min-h-screen px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))] sm:px-6">
+    <section className="relative min-h-screen pb-[calc(2rem+env(safe-area-inset-bottom))]">
       {/* fundo com a imagem do jogo: FIXA no ecrã inteiro (passa por
           baixo da sidebar e da coluna direita, translúcidas), escurecido
           para as estatísticas ficarem bem visíveis */}
@@ -3452,19 +3453,12 @@ export default function GamesPage() {
         </div>
       )}
 
-      <div className="relative z-10 mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center sm:mb-10"
-        >
-          <h1
-            className="mb-3 font-black gradient-text"
-            style={{ fontSize: 'clamp(1.8rem, 6vw, 2.8rem)' }}
-          >
-            Estatísticas
-          </h1>
-        </motion.div>
+      <div className="relative z-10 mx-auto max-w-[1240px] px-5">
+        <PageHeader
+          title="Estatísticas"
+          eyebrow="Jogos"
+          subtitle="Consulta as estatísticas por jogo — CS2, Rainbow Six, Fortnite e Battlefield — e compara com o resto da comunidade."
+        />
 
         {tab === null ? (
           <GameChooser onPick={setTab} />

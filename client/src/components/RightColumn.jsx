@@ -180,7 +180,7 @@ export default function RightColumn() {
           )}
         </Cartao>
 
-        <p className="px-1 pt-1 text-[11px] text-gray-600">Ashow e Jazer · site da comunidade</p>
+        <p className="px-1 pt-1 text-[11px] text-gray-600">Locaus — a comunidade</p>
       </div>
     </aside>
   )

@@ -1118,8 +1118,8 @@ export default function ProfilePage({
                   </div>
                 </div>
 
-              <div className={`rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3 ${secaoEdit === 'cores' ? '' : 'hidden'}`}>
-                  <p className="text-xs font-black uppercase tracking-wider text-amber-300">
+              <div className={`rounded-xl border border-white/10 bg-white/[0.02] p-3 ${secaoEdit === 'cores' ? '' : 'hidden'}`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300">
                     Cor do nome
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">
@@ -1194,8 +1194,8 @@ export default function ProfilePage({
               )}
 
               {(isAdmin || me.is_admin) && (
-                <div className={`rounded-xl border border-amber-400/20 bg-amber-500/[0.04] p-3 ${secaoEdit === 'estilo' ? '' : 'hidden'}`}>
-                  <p className="text-xs font-black uppercase tracking-wider text-amber-300">
+                <div className={`rounded-xl border border-white/10 bg-white/[0.02] p-3 ${secaoEdit === 'estilo' ? '' : 'hidden'}`}>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-300">
                     Efeitos de nome (admin)
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">

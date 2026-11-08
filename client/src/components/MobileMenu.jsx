@@ -11,6 +11,9 @@ import {
   MessageCircle,
   Swords,
   CreditCard,
+  Wrench,
+  Cpu,
+  CircuitBoard,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
@@ -33,14 +36,14 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
 
   const secoes = [
     {
-      titulo: 'You',
-      itens: [{ name: 'Conta', icon: User, path: perfilPath }],
+      titulo: 'Conta',
+      itens: [{ name: 'O meu perfil', icon: User, path: perfilPath }],
     },
     {
-      titulo: 'Browse',
+      titulo: 'Explorar',
       itens: [
         { name: 'Página inicial', icon: Home, path: '/' },
-        { name: 'Clips e Publicações', icon: Clapperboard, path: '/clips' },
+        { name: 'Clips e publicações', icon: Clapperboard, path: '/clips' },
         {
           name: 'Chat geral',
           icon: MessageCircle,
@@ -51,12 +54,22 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
         { name: 'Cartas', icon: CreditCard, path: '/cartas' },
         { name: 'Estatísticas', icon: Gamepad2, path: '/jogos' },
         { name: 'Distinções', icon: Trophy, path: '/distincoes' },
-        { name: 'Loja', icon: Sparkles, path: '/cosmeticos' },
+        { name: 'Mercado', icon: Sparkles, path: '/cosmeticos' },
       ],
     },
     {
-      titulo: 'Compete',
+      titulo: 'Competir',
       itens: [{ name: 'Previsões', icon: Swords, path: '/previsoes' }],
+    },
+    {
+      titulo: 'Ferramentas',
+      itens: [
+        { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
+        { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
+        ...(isAdmin
+          ? [{ name: 'Componentes e periféricos', icon: CircuitBoard, path: '/componentes' }]
+          : []),
+      ],
     },
   ]
 
@@ -121,7 +134,7 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
               </button>
             </div>
 
-            <p className="kova-menu-rodape">Ashow e Jazer · site da comunidade</p>
+            <p className="kova-menu-rodape">Locaus — a comunidade</p>
           </div>
         </motion.div>
       )}

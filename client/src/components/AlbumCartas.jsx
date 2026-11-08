@@ -30,22 +30,20 @@ export default function AlbumCartas({ username }) {
   const slots = Math.min(restantes, 8)
 
   return (
-    <section className="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
-      <div className="flex flex-wrap items-end justify-between gap-2">
+    <section className="pf-section pf-album overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
+      <div className="pf-section-head">
         <div>
-          <h2 className="font-display text-lg font-black text-white sm:text-xl">Álbum de cartas</h2>
-          <p className="text-[11px] font-semibold text-zinc-500">
+          <h2>Álbum de cartas</h2>
+          <p className="pf-section-count mt-1 block">
             {n === 0 ? 'Ainda sem cartas' : `${n} de ${total} cartas`}
           </p>
         </div>
-        <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-300">
-          {pct}%
-        </span>
+        <span className="pf-section-count">{pct}%</span>
       </div>
 
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full rounded-full bg-[#f7a8a8] transition-[width] duration-500"
+          className="h-full rounded-full bg-[#a78bfa] transition-[width] duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>

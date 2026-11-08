@@ -35,6 +35,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import PageShell from '../components/PageShell'
+import PageHeader from '../components/PageHeader'
 import BuildLabPage from './BuildLabPage'
 import { authHeaders } from '../lib/auth'
 
@@ -149,7 +150,7 @@ export default function ComponentesPage({ user }) {
   const [dados, setDados] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
-  const [tipo, setTipo] = useState('componente')
+  const [tipo, setTipo] = useState('periferico')
   const [categoria, setCategoria] = useState('todas')
   const [q, setQ] = useState('')
   const [qAtiva, setQAtiva] = useState('')
@@ -449,56 +450,12 @@ export default function ComponentesPage({ user }) {
 
   return (
     <PageShell>
-      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <h1 className="font-display text-2xl font-black text-white sm:text-3xl">
-            Componentes e Periféricos
-          </h1>
-          <span className="rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-300 ring-1 ring-white/15">
-            Admin · em testes
-          </span>
-        </div>
-        <p className="max-w-3xl text-[13px] leading-relaxed text-gray-400">
-          Pesquisa qualquer produto nas lojas — GlobalData, PCComponentes, MaxGaming e LDLC — ou
-          vê os destaques com comparação de preços. A loja mais barata fica sempre destacada.
-        </p>
-        <button
-          type="button"
-          onClick={() => setBottleneckAberto(true)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-zinc-400/25 bg-zinc-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-zinc-200 transition-colors hover:bg-zinc-500/20"
-        >
-          <Gauge className="h-3.5 w-3.5" /> Calculadora de bottleneck
-        </button>
-        <button
-          type="button"
-          onClick={() => setBuildLabAberto(true)}
-          className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-xl border border-sky-400/25 bg-sky-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-sky-200 transition-colors hover:bg-sky-500/20"
-        >
-          <Gauge className="h-3.5 w-3.5" /> Laboratório de builds
-        </button>
-      </motion.div>
-
-      {/* Tipo */}
-      <div className="mb-4 inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
-        {[
-          { id: 'componente', nome: 'Componentes', Icone: Cpu },
-          { id: 'periferico', nome: 'Periféricos', Icone: Mouse },
-        ].map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => trocarTipo(t.id)}
-            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-colors ${
-              tipo === t.id
-                ? 'bg-[#ff9e9e] text-[#1a0f0f] shadow-sm'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <t.Icone className="h-4 w-4" />
-            {t.nome}
-          </button>
-        ))}
-      </div>
+      <PageHeader
+        title="Periféricos"
+        eyebrow="Admin"
+        badge="Em testes"
+        subtitle="Os periféricos do grupo: pesquisa, compara preços e vê o que cada membro usa. Página exclusiva do admin."
+      />
 
       {/* Pesquisa */}
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -960,40 +917,6 @@ export default function ComponentesPage({ user }) {
           />
         )}
       </AnimatePresence>
-
-      <AnimatePresence>
-        {bottleneckAberto && <BottleneckModal onFechar={() => setBottleneckAberto(false)} />}
-      </AnimatePresence>
-
-      {buildLabAberto && (
-        <div
-          className="fixed inset-0 z-[125] overflow-y-auto bg-black/85 p-3 backdrop-blur-sm"
-          onClick={() => setBuildLabAberto(false)}
-        >
-          <div
-            className="mx-auto my-3 w-full max-w-6xl rounded-3xl border border-white/10 bg-[#101012] p-4 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-black text-white">
-                <Gauge className="h-4 w-4 text-sky-300" /> Laboratório de builds
-                <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/30">
-                  Admin
-                </span>
-              </h2>
-              <button
-                type="button"
-                onClick={() => setBuildLabAberto(false)}
-                className="rounded-lg bg-white/10 p-1.5 text-gray-300 hover:bg-white/20 hover:text-white"
-                aria-label="Fechar"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <BuildLabPage embedded />
-          </div>
-        </div>
-      )}
 
       <AnimatePresence>
         {aviso && (

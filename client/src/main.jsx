@@ -5,10 +5,13 @@ import App from './App'
 import { LiveProvider } from './lib/live'
 import './index.css'
 import './kova.css'
+import './noir.css'
 import { registarSW } from './lib/pwa'
+import { instalarLiquid } from './lib/liquid'
 
 // Tema experimental (localhost) — tira a classe para voltar ao anterior.
 document.body.classList.add('kova')
+instalarLiquid()
 
 // PWA: regista o service worker (cache do site + notificações push)
 registarSW()

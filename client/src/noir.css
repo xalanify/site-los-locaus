@@ -1,0 +1,3145 @@
+/* ============================================================
+   LOCAUS — sistema visual (tema único, sólido, rápido)
+   ------------------------------------------------------------
+   Preto profundo, superfícies opacas, linhas de 1px, tipografia
+   apertada e um único acento violeta. Zero vidro, zero blur.
+   Navegação em cima, com os nomes das coisas.
+   ============================================================ */
+
+:root {
+  --nv-bg: #050507;
+  --nv-bg-2: #08080c;
+  --nv-panel: #0b0b10;
+  --nv-panel-2: #0f0f15;
+  --nv-panel-3: #13131a;
+  --nv-line: rgba(255, 255, 255, 0.07);
+  --nv-line-2: rgba(255, 255, 255, 0.13);
+  --nv-text: #f4f4f6;
+  --nv-muted: #9a9aa6;
+  --nv-dim: #6a6a76;
+  --nv-faint: #3a3a44;
+  --nv-accent: #8b5cf6;
+  --nv-accent-2: #a78bfa;
+  --nv-accent-3: #6d28d9;
+  --nv-ok: #34d399;
+  --nv-bad: #f87171;
+  --nv-display: 'Space Grotesk', 'Inter Tight', system-ui, sans-serif;
+  --nv-body: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --nv-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --nv-r: 10px;
+  --nv-r-lg: 14px;
+  --nv-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --nv-bar: 64px;
+  --nv-aviso: 26px;
+  --nv-header: 90px;
+}
+
+/* ---------- base ---------- */
+body.kova {
+  background: var(--nv-bg);
+  color: var(--nv-text);
+  font-family: var(--nv-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  padding-bottom: 0 !important;
+  overflow-x: hidden;
+}
+
+body.kova ::selection {
+  background: rgba(139, 92, 246, 0.32);
+  color: #fff;
+}
+
+body.kova ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body.kova ::-webkit-scrollbar-track {
+  background: #070709;
+}
+body.kova ::-webkit-scrollbar-thumb {
+  background: #23232c;
+  border: 3px solid #070709;
+  border-radius: 999px;
+}
+body.kova ::-webkit-scrollbar-thumb:hover {
+  background: #33333f;
+}
+
+/* ---------- tipografia ---------- */
+body.kova h1,
+body.kova h2,
+body.kova h3,
+body.kova h4,
+body.kova h5,
+body.kova .font-display {
+  font-family: var(--nv-display) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  text-transform: none !important;
+  color: var(--nv-text);
+}
+
+body.kova p,
+body.kova span,
+body.kova a,
+body.kova button,
+body.kova input,
+body.kova textarea,
+body.kova select,
+body.kova label,
+body.kova li {
+  font-family: var(--nv-body);
+}
+
+body.kova .font-black,
+body.kova .font-bold {
+  font-weight: 600 !important;
+}
+
+body.kova .font-mono,
+body.kova kbd {
+  font-family: var(--nv-mono) !important;
+}
+
+body.kova .gradient-text {
+  background: linear-gradient(100deg, #ffffff 0%, var(--nv-accent-2) 55%, var(--nv-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+body.kova .nv-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--nv-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+
+/* ============================================================
+   FUNDO — dois brilhos muito contidos + grelha fina
+   ============================================================ */
+body.kova .fundo-vivo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #050507 !important;
+}
+body.kova .fundo-vivo span {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  filter: none !important;
+  opacity: 0.4 !important;
+  will-change: transform;
+}
+body.kova .fundo-vivo span:nth-child(1) {
+  width: 70vw;
+  height: 70vw;
+  left: -24vw;
+  top: -34vh;
+  background: radial-gradient(circle, rgba(88, 28, 170, 0.5) 0%, rgba(88, 28, 170, 0) 62%) !important;
+}
+body.kova .fundo-vivo span:nth-child(2) {
+  width: 58vw;
+  height: 58vw;
+  right: -20vw;
+  top: -10vh;
+  background: radial-gradient(circle, rgba(37, 60, 150, 0.34) 0%, rgba(37, 60, 150, 0) 64%) !important;
+}
+body.kova .fundo-vivo span:nth-child(3) {
+  width: 62vw;
+  height: 62vw;
+  left: 20vw;
+  top: 44vh;
+  background: radial-gradient(circle, rgba(10, 110, 100, 0.16) 0%, rgba(10, 110, 100, 0) 64%) !important;
+}
+body.kova .fundo-vivo span:nth-child(4) {
+  width: 42vw;
+  height: 42vw;
+  right: 4vw;
+  bottom: 2vh;
+  background: radial-gradient(circle, rgba(140, 40, 200, 0.16) 0%, rgba(140, 40, 200, 0) 66%) !important;
+}
+body.kova .fundo-vivo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.5;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(80% 70% at 50% 30%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(80% 70% at 50% 30%, #000 0%, transparent 78%);
+}
+body.kova .fundo-vivo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(90% 72% at 50% 18%, rgba(5, 5, 7, 0) 0%, rgba(5, 5, 7, 0.55) 58%, rgba(5, 5, 7, 0.97) 100%),
+    linear-gradient(180deg, rgba(5, 5, 7, 0.55) 0%, rgba(5, 5, 7, 0) 16%) !important;
+}
+
+/* ============================================================
+   ESTRUTURA
+   ============================================================ */
+body.kova main.lv-main {
+  padding: calc(var(--nv-header) + 22px) 0 46px !important;
+}
+body.kova .page-shell {
+  padding: 6px 0 48px !important;
+}
+body.kova .page-container {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+body.kova .page-head {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--nv-line);
+  margin-bottom: 24px;
+}
+body.kova .page-head .mb-6 {
+  margin-bottom: 0 !important;
+}
+body.kova .page-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+  font-family: var(--nv-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .page-eyebrow::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--nv-accent-2);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+}
+body.kova .page-eyebrow span {
+  color: var(--nv-faint);
+}
+
+body.kova .page-title {
+  font-family: var(--nv-display) !important;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 600 !important;
+  line-height: 1.02;
+  letter-spacing: -0.05em !important;
+  color: #fff;
+}
+body.kova .page-title--compact {
+  font-size: clamp(1.2rem, 2.1vw, 1.5rem);
+}
+body.kova .page-subtitle {
+  margin-top: 7px;
+  max-width: 42rem;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--nv-muted) !important;
+}
+body.kova .page-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nv-muted);
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   NAVEGAÇÃO — topo, nomes, sem vidro
+   ============================================================ */
+.lv-bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  background: #07070b;
+  border-bottom: 1px solid var(--nv-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+}
+.lv-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(139, 92, 246, 0.55) 22%,
+    rgba(56, 189, 248, 0.32) 52%,
+    rgba(139, 92, 246, 0.4) 74%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+.lv-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  width: 100%;
+  max-width: 1240px;
+  height: var(--nv-bar);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* marca */
+body.kova .lv-brand,
+.lv-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  font-family: var(--nv-display) !important;
+  font-size: 1.28rem;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  letter-spacing: -0.06em !important;
+  color: #fff !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  filter: none !important;
+  animation: none !important;
+  white-space: nowrap;
+}
+body.kova .lv-brand span,
+.lv-brand span {
+  color: var(--nv-accent-2) !important;
+  -webkit-text-fill-color: var(--nv-accent-2) !important;
+}
+body.kova .lv-brand em,
+.lv-brand em {
+  margin-left: 7px;
+  padding: 2px 4px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 4px;
+  font-family: var(--nv-mono);
+  font-size: 7.5px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+  transform: translateY(-1px);
+}
+
+/* links */
+.lv-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+body.kova .lv-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--nv-muted);
+  font-family: var(--nv-body);
+  font-size: 12.5px;
+  font-weight: 540;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.16s var(--nv-ease), background 0.16s var(--nv-ease);
+}
+body.kova .lv-nav-i {
+  font-family: var(--nv-mono);
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--nv-faint);
+  transition: color 0.16s var(--nv-ease);
+}
+body.kova .lv-nav-ico {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  opacity: 0.72;
+  transition: opacity 0.16s var(--nv-ease), color 0.16s var(--nv-ease);
+}
+body.kova .lv-nav-link:hover .lv-nav-ico,
+body.kova .lv-nav-link[data-active='true'] .lv-nav-ico {
+  opacity: 1;
+}
+body.kova .lv-nav-link[data-active='true'] .lv-nav-ico {
+  color: var(--nv-accent-2);
+}
+body.kova .lv-nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.045);
+}
+body.kova .lv-nav-link[data-active='true'] {
+  color: #fff;
+}
+body.kova .lv-nav-link[data-active='true'] .lv-nav-i {
+  color: var(--nv-accent-2);
+}
+body.kova .lv-nav-link[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 3px;
+  height: 1px;
+  background: var(--nv-accent-2);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.9);
+}
+.lv-mais {
+  position: relative;
+}
+body.kova .lv-mais-btn {
+  gap: 4px;
+}
+.lv-mais-menu {
+  position: absolute;
+  top: calc(100% + 41px);
+  left: 50%;
+  right: auto;
+  z-index: 70;
+  min-width: 216px;
+  padding: 5px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 10px;
+  background: #0b0b10;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  transform: translateX(-50%);
+  animation: lvPop 0.16s var(--nv-ease);
+}
+.lv-mais-menu a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--nv-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: color 0.14s var(--nv-ease), background 0.14s var(--nv-ease);
+}
+.lv-mais-menu a svg {
+  color: var(--nv-dim);
+}
+.lv-mais-menu a:hover,
+.lv-mais-menu a[data-active='true'] {
+  background: rgba(255, 255, 255, 0.055);
+  color: #fff;
+}
+.lv-mais-menu a:hover svg,
+.lv-mais-menu a[data-active='true'] svg {
+  color: var(--nv-accent-2);
+}
+@keyframes lvPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* ações à direita */
+.lv-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+body.kova .lv-user {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+  overflow: hidden;
+  transition: border-color 0.16s var(--nv-ease), background 0.16s var(--nv-ease);
+}
+body.kova .lv-user:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.07);
+}
+body.kova .lv-user img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+/* ============================================================
+   AVISO FIXO — linha fina por baixo da navegação
+   ============================================================ */
+body.kova .aviso-fotos {
+  position: static !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: var(--nv-aviso) !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(245, 158, 11, 0.12) !important;
+  border-radius: 0 !important;
+  background: #080706 !important;
+  color: #a98a63 !important;
+  font-family: var(--nv-mono);
+  font-size: 9px !important;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+body.kova .aviso-fotos-icon {
+  width: 10px;
+  height: 10px;
+  color: #b98a4b;
+}
+body.kova .aviso-fotos-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   NAVEGAÇÃO — TELEMÓVEL
+   ============================================================ */
+.lv-mbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  background: #07070b;
+  border-bottom: 1px solid var(--nv-line);
+}
+.lv-mbar-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 14px;
+}
+.lv-mbar-top .lv-brand {
+  margin-right: auto;
+  font-size: 1.2rem;
+}
+body.kova .lv-mbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+body.kova .lv-mbar-actions > * {
+  flex-shrink: 0;
+}
+body.kova .lv-mbar-user,
+body.kova .lv-mbar-menu,
+body.kova .lv-mbar-actions .liquid-searchicon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--nv-muted);
+  transition: background 0.16s var(--nv-ease), border-color 0.16s var(--nv-ease);
+}
+body.kova .lv-mbar-user img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+body.kova .lv-mbar-links {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  height: 42px;
+  padding: 0 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 94%, transparent 100%);
+}
+body.kova .lv-mbar-links::-webkit-scrollbar {
+  display: none;
+}
+body.kova .lv-mlink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--nv-dim);
+  font-size: 12px;
+  font-weight: 540;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: color 0.16s var(--nv-ease);
+}
+body.kova .lv-mlink-ico {
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
+}
+body.kova .lv-mlink[data-active='true'] .lv-mlink-ico {
+  opacity: 1;
+  color: var(--nv-accent-2);
+}
+body.kova .lv-mlink[data-active='true'] {
+  color: #fff;
+}
+body.kova .lv-mlink[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.5px;
+  background: var(--nv-accent-2);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+}
+body.kova .lv-mlink,
+body.kova .lv-mbar-user,
+body.kova .lv-mbar-menu,
+body.kova .auth-tab {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   SUPERFÍCIES — opacas, sem vidro
+   ============================================================ */
+body.kova .glass,
+body.kova .ui-card,
+body.kova .right-card,
+body.kova .mercado-destaque,
+body.kova .liquid-panel {
+  border: 1px solid var(--nv-line) !important;
+  border-radius: var(--nv-r-lg) !important;
+  background: var(--nv-panel) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 18px 44px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: border-color 0.18s var(--nv-ease), background 0.18s var(--nv-ease);
+}
+body.kova .glass:hover,
+body.kova .ui-card:hover,
+body.kova .mercado-destaque:hover {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: #0e0e14 !important;
+}
+
+/* sem vidro em lado nenhum: os painéis são opacos */
+body.kova [class*='backdrop-blur'] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* chips / etiquetas */
+body.kova .ui-chip,
+body.kova .glass-chip:not(input) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: auto;
+  padding: 4px 8px !important;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  box-shadow: none !important;
+  color: var(--nv-muted) !important;
+  font-family: var(--nv-mono) !important;
+  font-size: 9px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  backdrop-filter: none !important;
+}
+
+/* campos — incluindo pesquisas com .glass-chip */
+body.kova input[type='text'],
+body.kova input[type='search'],
+body.kova input[type='email'],
+body.kova input[type='password'],
+body.kova input[type='number'],
+body.kova input[type='url'],
+body.kova input.glass-chip,
+body.kova textarea,
+body.kova select {
+  border: 1px solid var(--nv-line-2) !important;
+  border-radius: 9px !important;
+  background: #0b0b10 !important;
+  color: var(--nv-text) !important;
+  font-family: var(--nv-body) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.16s var(--nv-ease), background 0.16s var(--nv-ease),
+    box-shadow 0.16s var(--nv-ease);
+}
+body.kova input.glass-chip {
+  padding: 10px 36px 10px 38px !important;
+}
+body.kova input::placeholder,
+body.kova textarea::placeholder {
+  color: var(--nv-faint) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+body.kova input:focus,
+body.kova textarea:focus,
+body.kova select:focus {
+  outline: none !important;
+  border-color: var(--nv-accent-2) !important;
+  background: #0d0d13 !important;
+  box-shadow: 0 0 0 3px var(--nv-accent-soft) !important;
+}
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+body.kova .ui-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 36px;
+  padding: 0 15px;
+  border: 1px solid var(--nv-line-2) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--nv-text) !important;
+  font-family: var(--nv-body) !important;
+  font-size: 12.5px !important;
+  font-weight: 540 !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden;
+  transition: background 0.16s var(--nv-ease), border-color 0.16s var(--nv-ease),
+    transform 0.12s var(--nv-ease), color 0.16s var(--nv-ease);
+}
+body.kova .ui-btn::after {
+  display: none !important;
+}
+body.kova .ui-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: none;
+}
+body.kova .ui-btn:active {
+  transform: scale(0.98);
+}
+body.kova .ui-btn:disabled {
+  opacity: 0.4;
+}
+body.kova .ui-btn-sm {
+  height: 29px !important;
+  padding: 0 10px !important;
+  border-radius: 7px !important;
+  font-size: 11px !important;
+}
+body.kova .ui-btn-lg {
+  height: 42px !important;
+  padding: 0 18px !important;
+  border-radius: 9px !important;
+  font-size: 13.5px !important;
+}
+body.kova .ui-btn-icon {
+  width: 36px;
+  padding: 0 !important;
+}
+body.kova .ui-btn-primary {
+  background: #ffffff !important;
+  border-color: transparent !important;
+  color: #08080c !important;
+  font-weight: 600 !important;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.07) !important;
+}
+body.kova .ui-btn-primary:hover {
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: 0 8px 28px rgba(255, 255, 255, 0.14) !important;
+}
+body.kova .ui-btn-ghost {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--nv-muted) !important;
+}
+body.kova .ui-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #fff !important;
+}
+body.kova .ui-btn-danger {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.24) !important;
+  color: #fca5a5 !important;
+}
+body.kova .ui-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.18) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+body.kova .btn-glass {
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: var(--nv-muted) !important;
+  backdrop-filter: none !important;
+}
+body.kova .btn-glass:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #fff !important;
+}
+
+/* ============================================================
+   ABAS — linha fina, mono
+   ============================================================ */
+body.kova .ui-tabs,
+body.kova .tabbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--nv-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+body.kova .ui-tab,
+body.kova .tab-item {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: auto !important;
+  padding: 10px 0 !important;
+  margin-bottom: -1px;
+  border: 0 !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--nv-dim) !important;
+  font-family: var(--nv-mono) !important;
+  font-size: 9.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  overflow: hidden;
+  transition: color 0.16s var(--nv-ease), border-color 0.16s var(--nv-ease);
+}
+body.kova .ui-tab:hover,
+body.kova .tab-item:hover {
+  background: none !important;
+  color: var(--nv-text) !important;
+}
+body.kova .ui-tab[data-active='true'],
+body.kova .tab-item[data-active='true'] {
+  background: none !important;
+  color: #fff !important;
+  border-bottom-color: var(--nv-accent-2) !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   PESQUISA / PALETA DE COMANDOS
+   ============================================================ */
+body.kova .liquid-searchbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  width: 210px;
+  padding: 0 9px;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 8px;
+  background: #0b0b10 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: var(--nv-dim);
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  transition: border-color 0.16s var(--nv-ease), background 0.16s var(--nv-ease);
+}
+body.kova .liquid-searchbar:hover {
+  border-color: var(--nv-line-2) !important;
+  background: #0e0e14 !important;
+  color: var(--nv-text);
+}
+body.kova .liquid-searchbar span {
+  flex: 1;
+}
+body.kova .liquid-searchbar kbd,
+body.kova .liquid-cmd kbd {
+  min-width: 24px;
+  height: 17px;
+  border: 1px solid var(--nv-line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--nv-faint);
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 500;
+}
+body.kova .liquid-searchicon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--nv-muted);
+}
+body.kova .liquid-cmd-overlay {
+  background: rgba(3, 3, 5, 0.72);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding-top: 12vh;
+}
+body.kova .liquid-cmd {
+  width: min(560px, calc(100vw - 24px));
+  border: 1px solid var(--nv-line-2);
+  border-radius: 12px;
+  background: #0b0b10;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+  backdrop-filter: none !important;
+}
+body.kova .liquid-cmd-head {
+  gap: 10px;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--nv-line);
+}
+body.kova .liquid-cmd-head input {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+body.kova .liquid-cmd-list {
+  padding: 5px;
+}
+body.kova .liquid-cmd-item {
+  gap: 11px;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--nv-muted);
+}
+body.kova .liquid-cmd-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--nv-line);
+  color: #fff;
+}
+body.kova .liquid-cmd-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--nv-line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nv-accent-2);
+}
+body.kova .liquid-cmd-nome {
+  font-size: 12.5px;
+  font-weight: 540;
+}
+body.kova .liquid-cmd-path {
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  color: var(--nv-faint);
+}
+body.kova .liquid-cmd-foot {
+  padding: 8px 14px;
+  border-top: 1px solid var(--nv-line);
+  color: var(--nv-faint);
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+}
+body.kova .liquid-cmd-foot b {
+  color: var(--nv-muted);
+}
+
+/* moedas no topo */
+body.kova .kova-moedas {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #e9e9ee;
+  font-family: var(--nv-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: background 0.16s var(--nv-ease), border-color 0.16s var(--nv-ease);
+}
+body.kova .kova-moedas:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================================
+   HOME — mercado e torneios
+   ============================================================ */
+body.kova main > div > section:first-child {
+  padding-top: 24px;
+}
+body.kova .mercado-linha {
+  position: relative;
+  border-color: transparent;
+  background: transparent;
+  overflow: hidden;
+}
+body.kova .mercado-linha .truncate {
+  display: block !important;
+}
+body.kova .mercado-linha:hover {
+  background: rgba(255, 255, 255, 0.028);
+}
+body.kova [class*='bg-[#121214]'],
+body.kova [class*='bg-[#101012]'],
+body.kova [class*='bg-[#111113]'],
+body.kova [class*='bg-[#0f0f11]'] {
+  background-color: var(--nv-panel) !important;
+}
+body.kova [class*='bg-[#0a0a0b]'] {
+  background-color: var(--nv-bg-2) !important;
+}
+body.kova [class*='border-white/10'] {
+  border-color: var(--nv-line) !important;
+}
+body.kova [class*='border-white/5'] {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+body.kova [class*='divide-white'] > * {
+  border-color: var(--nv-line) !important;
+}
+body.kova .rounded-3xl {
+  border-radius: var(--nv-r-lg) !important;
+}
+body.kova .rounded-2xl {
+  border-radius: var(--nv-r) !important;
+}
+
+/* ============================================================
+   PERFIL
+   ============================================================ */
+body.kova.profile-bg {
+  background: var(--nv-bg) !important;
+}
+body.kova.profile-bg .perfil-fundo {
+  opacity: 0.14 !important;
+  filter: saturate(0.55) brightness(0.65) !important;
+}
+
+body.kova .pf-hero {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+  border: 1px solid var(--nv-line);
+  border-radius: 16px;
+  background: var(--nv-panel);
+}
+body.kova .pf-cover {
+  position: relative;
+  height: 176px;
+  overflow: hidden;
+}
+body.kova .pf-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 7, 0.08) 0%,
+    rgba(5, 5, 7, 0.5) 62%,
+    var(--nv-panel) 100%
+  );
+}
+body.kova .pf-cover-name {
+  position: absolute;
+  right: 20px;
+  bottom: 4px;
+  z-index: 1;
+  font-family: var(--nv-display);
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+  user-select: none;
+}
+body.kova .pf-main {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px;
+  padding: 0 22px 20px;
+  margin-top: -46px;
+}
+body.kova .pf-avatar-wrap {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 20px;
+  background: var(--nv-panel);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 16px 36px rgba(0, 0, 0, 0.5);
+}
+body.kova .pf-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  display: block;
+}
+body.kova .pf-avatar-edit {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 8px;
+  background: #101017;
+  color: var(--nv-muted);
+  transition: background 0.16s var(--nv-ease), color 0.16s var(--nv-ease);
+}
+body.kova .pf-avatar-edit:hover {
+  background: #1a1a24;
+  color: #fff;
+}
+body.kova .pf-identity {
+  min-width: 0;
+  padding-bottom: 3px;
+}
+body.kova .pf-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .pf-eyebrow .pf-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--nv-faint);
+}
+body.kova .pf-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+body.kova .pf-name {
+  font-family: var(--nv-display) !important;
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-weight: 600 !important;
+  letter-spacing: -0.05em !important;
+  line-height: 1.04;
+  color: #fff !important;
+}
+body.kova .pf-bio {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--nv-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.kova .pf-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 7px;
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .pf-badges span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+body.kova .pf-dot-cor {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+body.kova .pf-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 11px;
+}
+body.kova .pf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+body.kova .pf-stats {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--nv-line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+body.kova .pf-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 14px;
+}
+body.kova .pf-stat + .pf-stat {
+  border-left: 1px solid var(--nv-line);
+}
+body.kova .pf-stat b {
+  font-family: var(--nv-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #fff;
+}
+body.kova .pf-stat span {
+  font-family: var(--nv-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+
+body.kova .pf-games {
+  margin-bottom: 18px;
+}
+body.kova .pf-games .pf-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+body.kova .pf-games .pf-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--nv-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  transition: border-color 0.16s var(--nv-ease), background 0.16s var(--nv-ease),
+    transform 0.16s var(--nv-ease);
+}
+body.kova .pf-games .pf-tile:hover {
+  border-color: var(--nv-line-2);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+body.kova .pf-games .pf-tile img {
+  position: relative;
+  z-index: 1;
+  max-width: 27px;
+  max-height: 27px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.78;
+  transition: opacity 0.16s var(--nv-ease);
+}
+body.kova .pf-games .pf-tile:hover img {
+  opacity: 1;
+}
+body.kova .pf-games .pf-tile-abbr {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: var(--nv-faint);
+}
+
+/* periférico */
+body.kova .pf-mouse {
+  margin-bottom: 26px;
+}
+body.kova .pf-mouse .pf-mouse-card {
+  display: grid;
+  grid-template-columns: 1fr 148px;
+  gap: 16px;
+  align-items: center;
+  max-width: 540px;
+  margin-top: 10px;
+  padding: 13px;
+  border: 1px solid var(--nv-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+}
+body.kova .pf-mouse .pf-mouse-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .pf-mouse .pf-mouse-nome {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #fff;
+}
+body.kova .pf-mouse .pf-mouse-img {
+  display: grid;
+  place-items: center;
+  height: 94px;
+  border-radius: 9px;
+  border: 1px solid var(--nv-line);
+  background: #0a0a0f;
+  overflow: hidden;
+}
+body.kova .pf-mouse .pf-mouse-img img {
+  max-height: 82px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* secções */
+/* cabeçalhos das secções do perfil — vencer a serifa antiga */
+body.kova .profile-style .page-container h2,
+body.kova .profile-style .page-container h3,
+body.kova .pf-section h2,
+body.kova .pf-album h2,
+body.kova .pf-section-head h2 {
+  font-family: var(--nv-display) !important;
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  text-transform: none !important;
+  color: #fff !important;
+}
+
+body.kova .pf-section {
+  margin-bottom: 26px;
+}
+body.kova .pf-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--nv-line);
+  margin-bottom: 14px;
+}
+body.kova .pf-section-head h2,
+body.kova .pf-album h2 {
+  font-family: var(--nv-display) !important;
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  text-transform: none !important;
+  color: #fff !important;
+}
+body.kova .pf-section-count {
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: var(--nv-dim);
+}
+
+/* dock do perfil — discreto, no fim */
+body.kova .perfil-dock {
+  position: static !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: auto;
+  max-width: 300px;
+  margin: 0 0 24px;
+  padding: 4px;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  box-shadow: none !important;
+}
+body.kova .perfil-dock button {
+  flex-direction: row !important;
+  gap: 8px;
+  border-radius: 7px !important;
+  padding: 7px 11px;
+  color: var(--nv-muted);
+  font-family: var(--nv-body);
+  font-size: 11px;
+  font-weight: 500;
+}
+body.kova .perfil-dock button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+body.kova .perfil-dock button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* leitor de música */
+body.kova .pf-music {
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 10px !important;
+  background: #0b0b10 !important;
+  padding: 7px 9px !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.kova .pf-music-play {
+  background: #fff !important;
+  color: #08080c !important;
+  border-radius: 8px !important;
+}
+body.kova .pf-music p {
+  font-family: var(--nv-mono) !important;
+  font-size: 8px !important;
+  letter-spacing: 0.12em !important;
+  color: var(--nv-dim) !important;
+}
+
+/* ============================================================
+   CHAT
+   ============================================================ */
+body.kova .liquid-chat {
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 14px !important;
+  background: var(--nv-panel) !important;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.kova .liquid-chat > div:first-child {
+  border-color: var(--nv-line) !important;
+  background: transparent !important;
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+body.kova .auth-screen {
+  background: var(--nv-bg);
+}
+body.kova .auth-fundo {
+  background:
+    radial-gradient(720px 520px at 16% 8%, rgba(91, 33, 182, 0.42), transparent 64%),
+    radial-gradient(680px 480px at 84% 2%, rgba(30, 64, 175, 0.26), transparent 62%),
+    radial-gradient(820px 620px at 50% 104%, rgba(13, 148, 136, 0.14), transparent 66%),
+    #050507 !important;
+  filter: none !important;
+  opacity: 1;
+}
+body.kova .auth-veu {
+  background: radial-gradient(
+    74% 64% at 50% 40%,
+    rgba(5, 5, 7, 0) 0%,
+    rgba(5, 5, 7, 0.5) 60%,
+    rgba(5, 5, 7, 0.94) 100%
+  ) !important;
+}
+body.kova .auth-card {
+  border: 1px solid var(--nv-line-2) !important;
+  border-radius: 14px !important;
+  background: #0a0a0f !important;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.kova .auth-card input {
+  border-radius: 8px !important;
+}
+body.kova .auth-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--nv-line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.025);
+}
+body.kova .auth-tab {
+  flex: 1 1 0%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 33px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nv-muted);
+  font-family: var(--nv-body);
+  font-size: 12.5px;
+  font-weight: 540;
+  transition: background 0.16s var(--nv-ease), color 0.16s var(--nv-ease);
+}
+body.kova .auth-tab:hover {
+  color: #fff;
+}
+body.kova .auth-tab[data-active='true'] {
+  background: #fff;
+  color: #08080c;
+}
+body.kova .auth-brand {
+  font-family: var(--nv-display) !important;
+  font-size: 2.5rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.06em !important;
+  line-height: 1;
+  text-transform: none !important;
+  color: #fff !important;
+  text-shadow: none !important;
+}
+body.kova .auth-brand span {
+  color: var(--nv-accent-2);
+}
+body.kova .auth-brand-sub {
+  margin-top: 6px;
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+/* ============================================================
+   SPLASH — cromo estilo SEGA
+   ============================================================ */
+body.kova .boot-screen.boot-liquid {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(58% 50% at 50% 44%, rgba(40, 64, 190, 0.18), transparent 64%),
+    radial-gradient(48% 42% at 50% 98%, rgba(109, 40, 217, 0.16), transparent 70%),
+    #040406 !important;
+}
+body.kova .boot-liquid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(60% 55% at 50% 46%, #000, transparent 80%);
+  -webkit-mask-image: radial-gradient(60% 55% at 50% 46%, #000, transparent 80%);
+}
+body.kova .boot-liquid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    70% 60% at 50% 45%,
+    transparent 0%,
+    rgba(4, 4, 6, 0.45) 62%,
+    rgba(4, 4, 6, 0.92) 100%
+  );
+}
+body.kova .boot-liquid-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  width: min(560px, 100%);
+  animation: bootIn 0.8s var(--nv-ease) both;
+}
+body.kova .boot-logo-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 4px 0 12px;
+}
+body.kova .boot-logo-wrap::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 64%;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 255, 0.55), transparent);
+  opacity: 0.8;
+}
+body.kova .boot-logo.boot-logo--sega {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'Archivo', var(--nv-display) !important;
+  font-weight: 900 !important;
+  font-style: italic !important;
+  font-stretch: 125%;
+  font-variation-settings: 'wdth' 125, 'wght' 900;
+  font-size: clamp(2.5rem, 10vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  transform: skewX(-7deg);
+  padding: 0 0.08em 0.05em 0;
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e7efff 14%,
+    #9db9ff 28%,
+    #2f52ff 40%,
+    #16247d 48%,
+    #ffffff 55%,
+    #cfe0ff 66%,
+    #5277ff 78%,
+    #dfeeff 88%,
+    #ffffff 100%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0.01em 0 #ffffff) drop-shadow(0 0.025em 0 #dfe9ff)
+    drop-shadow(0 0.04em 0 #93b4ff) drop-shadow(0 0.055em 0 #3d63ff)
+    drop-shadow(0 0.07em 0 #1b2b96) drop-shadow(0 0.09em 0.02em rgba(0, 0, 0, 0.85))
+    drop-shadow(0 0 0.32em rgba(80, 125, 255, 0.42));
+  animation: bootChrome 7s linear infinite;
+}
+body.kova .boot-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(400px, 78vw);
+}
+body.kova .boot-progress-bar {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 3px;
+  border: 0 !important;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  overflow: hidden;
+}
+body.kova .boot-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2f52ff, #8b5cf6 56%, #ffffff) !important;
+  box-shadow: 0 0 18px rgba(90, 120, 255, 0.55) !important;
+  transition: width 0.16s linear;
+}
+body.kova .boot-progress-shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 26%;
+  left: -30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: bootShine 1.9s ease-in-out infinite;
+}
+body.kova .boot-progress-pct {
+  font-family: var(--nv-mono) !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.24em;
+  color: var(--nv-muted) !important;
+}
+body.kova .boot-beta {
+  margin-top: 2px;
+  padding: 4px 8px !important;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  font-family: var(--nv-mono) !important;
+  font-size: 8px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--nv-dim) !important;
+  animation: bootIn 0.8s 0.3s var(--nv-ease) both;
+}
+@keyframes bootIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes bootChrome {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 220% 50%;
+  }
+}
+@keyframes bootShine {
+  0% {
+    left: -30%;
+  }
+  100% {
+    left: 110%;
+  }
+}
+
+/* ============================================================
+   ÁGUA — brilho que segue o rato e onda ao tocar
+   ============================================================ */
+body.kova .ui-btn::before,
+body.kova .lv-nav-link::before,
+body.kova .lv-mlink::before,
+body.kova .ui-tab::before,
+body.kova .liquid-cmd-item::before,
+body.kova .liquid-searchbar::before,
+body.kova .liquid-searchicon::before,
+body.kova .mercado-linha::before,
+body.kova .lv-user::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle 130px at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.1),
+    rgba(167, 139, 250, 0.06) 45%,
+    transparent 72%
+  );
+  transition: opacity 0.2s var(--nv-ease);
+}
+@media (hover: hover) {
+  body.kova .ui-btn:hover::before,
+  body.kova .lv-nav-link:hover::before,
+  body.kova .lv-mlink:hover::before,
+  body.kova .ui-tab:hover::before,
+  body.kova .liquid-cmd-item:hover::before,
+  body.kova .liquid-searchbar:hover::before,
+  body.kova .liquid-searchicon:hover::before,
+  body.kova .mercado-linha:hover::before,
+  body.kova .lv-user:hover::before {
+    opacity: 1;
+  }
+}
+body.kova .liquid-ripple {
+  position: absolute;
+  z-index: 1;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.32),
+    rgba(167, 139, 250, 0.16) 44%,
+    transparent 70%
+  );
+  animation: lvRipple 0.66s var(--nv-ease) forwards;
+}
+@keyframes lvRipple {
+  from {
+    opacity: 0.85;
+    transform: scale(0.25);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================
+   ACENTO ANTIGO -> VIOLETA
+   ============================================================ */
+body.kova {
+  --k-accent: #a78bfa;
+  --k-accent-2: #c4b5fd;
+  --salmon: #a78bfa;
+  --salmon-strong: #8b5cf6;
+}
+body.kova [class*='text-[#f7a8a8]'],
+body.kova [class*='text-[#ff9e9e]'],
+body.kova [class*='text-[#ff8a8a]'] {
+  color: var(--nv-accent-2) !important;
+}
+body.kova [class*='bg-[#f7a8a8]'],
+body.kova [class*='bg-[#ff9e9e]'],
+body.kova [class*='bg-[#ff8a8a]'] {
+  background-color: rgba(167, 139, 250, 0.12) !important;
+}
+body.kova [class*='border-[#f7a8a8]'],
+body.kova [class*='border-[#ff9e9e]'],
+body.kova [class*='border-[#ff8a8a]'] {
+  border-color: rgba(167, 139, 250, 0.28) !important;
+}
+body.kova [class*='ring-[#f7a8a8]'],
+body.kova [class*='ring-[#ff9e9e]'],
+body.kova [class*='ring-[#ff8a8a]'] {
+  --tw-ring-color: rgba(167, 139, 250, 0.28) !important;
+}
+
+/* grelha de cinzas coerente (a kova.css pintava zinc-300/400 de acento) */
+body.kova .text-zinc-200,
+body.kova .text-gray-200 {
+  color: #e4e4ea !important;
+}
+body.kova .text-zinc-300,
+body.kova .text-gray-300 {
+  color: #cfcfd8 !important;
+}
+body.kova .text-zinc-400,
+body.kova .text-gray-400 {
+  color: var(--nv-muted) !important;
+}
+body.kova .text-zinc-500,
+body.kova .text-gray-500 {
+  color: var(--nv-dim) !important;
+}
+body.kova .text-zinc-600,
+body.kova .text-gray-600 {
+  color: var(--nv-faint) !important;
+}
+body.kova #topbar {
+  background: #07070b !important;
+}
+
+/* ============================================================
+   TELEMÓVEL
+   ============================================================ */
+@media (max-width: 1023px) {
+  body.kova main.lv-main {
+    padding-top: calc(56px + 40px + var(--nv-aviso) + 14px) !important;
+    padding-bottom: calc(2.2rem + env(safe-area-inset-bottom)) !important;
+  }
+  body.kova .page-shell {
+    padding: 2px 0 40px !important;
+  }
+  body.kova .page-container {
+    padding-inline: 14px;
+  }
+  body.kova:not(.profile-bg) main > div > section:first-child:not(.chat-fixo) {
+    padding-top: 0 !important;
+  }
+  body.kova .page-title {
+    font-size: clamp(1.55rem, 7vw, 1.95rem);
+  }
+  body.kova .page-subtitle {
+    font-size: 13px;
+  }
+  body.kova .page-head {
+    padding-bottom: 13px;
+    margin-bottom: 18px;
+  }
+  body.kova .pf-main {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+    padding: 0 14px 16px;
+    margin-top: -40px;
+  }
+  body.kova .pf-side {
+    grid-column: 1 / -1;
+    align-items: stretch;
+    gap: 10px;
+  }
+  body.kova .pf-actions {
+    justify-content: flex-start;
+  }
+  body.kova .pf-stats {
+    width: 100%;
+  }
+  body.kova .pf-stat {
+    flex: 1;
+    align-items: center;
+    padding: 8px 6px;
+  }
+  body.kova .pf-cover {
+    height: 140px;
+  }
+  body.kova .pf-cover-name {
+    font-size: 2.5rem;
+    right: 12px;
+  }
+  body.kova .pf-avatar-wrap {
+    width: 76px;
+    height: 76px;
+    border-radius: 17px;
+  }
+  body.kova .pf-avatar {
+    border-radius: 17px;
+  }
+  body.kova .pf-name {
+    font-size: 1.4rem !important;
+  }
+  body.kova .pf-mouse .pf-mouse-card {
+    grid-template-columns: 1fr 116px;
+  }
+  body.kova .pf-games .pf-tile {
+    width: 46px;
+    height: 46px;
+  }
+  body.kova .pf-music {
+    right: 10px !important;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+    left: auto !important;
+  }
+  body.kova .aviso-fotos {
+    font-size: 8.5px !important;
+    letter-spacing: 0.02em;
+  }
+
+  /* chat fixo: conta com a barra de topo nova (2 linhas + aviso) */
+  body.kova .chat-fixo {
+    padding: calc(56px + 40px + var(--nv-aviso) + 10px) 14px
+      calc(0.75rem + env(safe-area-inset-bottom)) !important;
+  }
+  body.kova .chat-fixo .page-container {
+    padding-inline: 0;
+  }
+
+  /* menu do telemóvel */
+  body.kova .kova-menu {
+    padding-top: calc(56px + 40px + var(--nv-aviso) + 10px);
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    background: #050507;
+    z-index: 59;
+  }
+  body.kova .kova-menu-inner {
+    padding: 2px 12px 0;
+  }
+  body.kova .kova-menu-secao {
+    margin: 16px 6px 6px;
+    font-family: var(--nv-mono);
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--nv-dim);
+  }
+  body.kova .kova-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 8px;
+    border-radius: 8px;
+    color: var(--nv-muted);
+    font-family: var(--nv-body);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s var(--nv-ease), color 0.15s var(--nv-ease);
+  }
+  body.kova .kova-menu-item:hover,
+  body.kova .kova-menu-item[data-active='true'] {
+    background: rgba(255, 255, 255, 0.055);
+    color: #fff;
+  }
+  body.kova .kova-menu-icone {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--nv-line);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--nv-muted);
+  }
+  body.kova .kova-menu-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--nv-accent);
+    color: #fff;
+    font-family: var(--nv-mono);
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+  }
+  body.kova .kova-menu-rodape {
+    margin: 18px 0 0;
+    font-family: var(--nv-mono);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--nv-faint);
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  body.kova .aviso-fotos {
+    font-size: 8px !important;
+  }
+  body.kova .lv-mbar-links {
+    gap: 15px;
+  }
+}
+
+/* desktop mais estreito: sem os índices */
+@media (min-width: 1024px) and (max-width: 1220px) {
+  body.kova .lv-nav-i {
+    display: none;
+  }
+  body.kova .lv-nav-link {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  body.kova .lv-bar-inner {
+    gap: 16px;
+    padding: 0 20px;
+  }
+  body.kova .liquid-searchbar {
+    width: 160px;
+  }
+}
+
+/* ============================================================
+   PERFORMANCE / ACESSIBILIDADE
+   ============================================================ */
+body.kova img {
+  -webkit-user-drag: none;
+}
+body.kova * {
+  scrollbar-color: #23232c #070709;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.kova *,
+  body.kova *::before,
+  body.kova *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================
+   HOME — entrada editorial + dashboard
+   ============================================================ */
+body.kova .home-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: end;
+  gap: 42px;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 10px 20px 34px;
+  border-bottom: 1px solid var(--nv-line);
+}
+body.kova .home-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--nv-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .home-kicker span {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--nv-accent-2);
+  box-shadow: 0 0 10px var(--nv-accent);
+}
+body.kova .home-intro h1 {
+  margin-top: 16px;
+  font-family: var(--nv-display) !important;
+  font-size: clamp(2.4rem, 5.8vw, 4.6rem);
+  font-weight: 600 !important;
+  line-height: 0.92;
+  letter-spacing: -0.06em !important;
+  color: #fff;
+}
+body.kova .home-intro h1 em {
+  font-style: normal;
+  color: var(--nv-accent-2);
+}
+body.kova .home-lead {
+  margin-top: 16px;
+  max-width: 34rem;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--nv-muted);
+}
+body.kova .home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+body.kova .home-intro-side {
+  display: grid;
+  gap: 8px;
+}
+body.kova .home-quick {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 14px;
+  border: 1px solid var(--nv-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  transition: border-color 0.18s var(--nv-ease), background 0.18s var(--nv-ease),
+    transform 0.18s var(--nv-ease);
+}
+body.kova .home-quick:hover {
+  border-color: var(--nv-line-2);
+  background: rgba(255, 255, 255, 0.045);
+  transform: translateX(2px);
+}
+body.kova .home-quick-i {
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  color: var(--nv-faint);
+}
+body.kova .home-quick-ico {
+  width: 15px;
+  height: 15px;
+  color: var(--nv-accent-2);
+}
+body.kova .home-quick-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+body.kova .home-quick-txt strong {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+}
+body.kova .home-quick-txt span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: var(--nv-dim);
+}
+body.kova .home-quick-arrow {
+  width: 13px;
+  height: 13px;
+  color: var(--nv-faint);
+}
+body.kova .home-quick:hover .home-quick-arrow {
+  color: #fff;
+}
+body.kova .home-dash {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 26px 20px 0;
+}
+body.kova .home-dash > section {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+body.kova .home-dash > section > div {
+  width: auto !important;
+  max-width: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+@media (min-width: 1280px) {
+  body.kova .home-dash {
+    display: grid;
+    grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  body.kova .home-dash .home-torneios-grid {
+    grid-template-columns: 1fr !important;
+  }
+  body.kova .home-dash .home-torneios {
+    position: sticky;
+    top: calc(var(--nv-header) + 18px);
+  }
+}
+@media (max-width: 1023px) {
+  body.kova .home-intro {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 4px 14px 24px;
+  }
+  body.kova .home-intro h1 {
+    font-size: clamp(2.3rem, 10vw, 3.2rem);
+  }
+  body.kova .home-lead {
+    font-size: 13.5px;
+  }
+  body.kova .home-dash {
+    padding: 18px 14px 0;
+  }
+  body.kova .home-intro-side {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    overflow: visible;
+  }
+  body.kova .home-quick {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px;
+  }
+  body.kova .home-quick-i,
+  body.kova .home-quick-arrow {
+    display: none;
+  }
+  body.kova .home-quick-txt span {
+    display: none;
+  }
+  body.kova .home-quick-txt strong {
+    font-size: 11.5px;
+  }
+  body.kova .home-quick-ico {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* mercado: resumo à esquerda, lista à direita */
+@media (min-width: 1024px) {
+  body.kova .mercado-grid {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  body.kova .mercado-lado {
+    position: sticky;
+    top: calc(var(--nv-header) + 18px);
+    min-width: 0;
+  }
+  body.kova .mercado-lista {
+    min-width: 0;
+  }
+  body.kova .mercado-lado .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  body.kova .mercado-lado .toolbar .ui-tabs {
+    width: 100%;
+    max-width: none;
+    flex-wrap: nowrap;
+    gap: 18px;
+  }
+  body.kova .mercado-lado .toolbar .ui-tab {
+    padding: 8px 0 !important;
+  }
+  body.kova .mercado-lado .select-regiao {
+    width: 100%;
+  }
+  body.kova .mercado-lado .select-regiao select {
+    flex: 1;
+    max-width: none;
+  }
+}
+
+/* membros: diretório horizontal em ecrãs largos */
+@media (min-width: 1280px) {
+  body.kova .membros-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  body.kova .membros-grid > li > .glass {
+    display: grid;
+    grid-template-columns: 172px minmax(0, 1fr);
+    min-height: 192px;
+  }
+  body.kova .membros-grid > li > .glass > span:first-child {
+    height: 100% !important;
+    min-height: 192px;
+  }
+  body.kova .membros-grid > li > .glass > span:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 16px;
+  }
+  body.kova .membros-grid > li > .glass > span:nth-child(2) > span:first-child {
+    margin-top: 0 !important;
+  }
+}
+
+/* espaço entre mercado e torneios quando estão empilhados */
+body.kova .home-dash > .home-torneios {
+  margin-top: 22px !important;
+}
+@media (min-width: 1280px) {
+  body.kova .home-dash > .home-torneios {
+    margin-top: 0 !important;
+  }
+}
+
+/* ============================================================
+   NOVA SHELL — 4 modos, sub-navegação contextual e Mapa
+   ============================================================ */
+body.kova {
+  --nv-header: 128px;
+}
+
+/* ---------- barra superior (PC) ---------- */
+body.kova .lv-bar-top {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  max-width: 1240px;
+  height: 64px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+body.kova .mode-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+body.kova .mode-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 11px;
+  border-radius: 8px;
+  color: var(--nv-muted);
+  font-size: 12.5px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: color 0.16s var(--nv-ease), background 0.16s var(--nv-ease);
+}
+body.kova .mode-ico {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+  transition: color 0.16s var(--nv-ease), opacity 0.16s var(--nv-ease);
+}
+body.kova .mode-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.045);
+}
+body.kova .mode-link[data-active='true'] {
+  color: #fff;
+}
+body.kova .mode-link[data-active='true'] .mode-ico {
+  color: var(--mode-accent, var(--nv-accent-2));
+  opacity: 1;
+}
+body.kova .mode-link[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 2px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: var(--mode-accent, var(--nv-accent-2));
+  box-shadow: 0 0 8px var(--mode-accent, var(--nv-accent));
+}
+body.kova .lv-mapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--nv-muted);
+  font-size: 12px;
+  font-weight: 550;
+  transition: background 0.16s var(--nv-ease), border-color 0.16s var(--nv-ease),
+    color 0.16s var(--nv-ease);
+}
+body.kova .lv-mapa:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+body.kova .lv-mapa kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 17px;
+  padding: 0 3px;
+  border: 1px solid var(--nv-line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--nv-faint);
+  font-family: var(--nv-mono);
+  font-size: 8px;
+}
+
+/* ---------- sub-navegação contextual (PC) ---------- */
+body.kova .lv-subnav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1240px;
+  height: 38px;
+  margin: 0 auto;
+  padding: 0 20px;
+  border-top: 1px solid var(--nv-line);
+}
+body.kova .lv-subnav-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mode-accent, var(--nv-accent-2));
+}
+body.kova .lv-subnav-mode svg {
+  color: var(--mode-accent, var(--nv-accent-2));
+}
+body.kova .lv-subnav nav {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  min-width: 0;
+  height: 38px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+body.kova .lv-subnav nav::-webkit-scrollbar {
+  display: none;
+}
+body.kova .lv-sublink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 9px;
+  color: var(--nv-dim);
+  font-size: 11.5px;
+  font-weight: 540;
+  white-space: nowrap;
+  transition: color 0.16s var(--nv-ease);
+}
+body.kova .lv-sublink svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
+  transition: color 0.16s var(--nv-ease), opacity 0.16s var(--nv-ease);
+}
+body.kova .lv-sublink:hover {
+  color: #fff;
+}
+body.kova .lv-sublink[data-active='true'] {
+  color: #fff;
+}
+body.kova .lv-sublink[data-active='true'] svg {
+  color: var(--mode-accent, var(--nv-accent-2));
+  opacity: 1;
+}
+body.kova .lv-sublink[data-active='true']::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 0;
+  height: 1.5px;
+  border-radius: 999px;
+  background: var(--mode-accent, var(--nv-accent-2));
+  box-shadow: 0 0 8px var(--mode-accent, var(--nv-accent));
+}
+
+/* ---------- barra superior (telemóvel) ---------- */
+body.kova .lv-mbar-subnav {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  overflow: hidden;
+}
+body.kova .lv-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: center;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--mode-accent, var(--nv-accent-2));
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mode-accent, var(--nv-accent-2));
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+body.kova .lv-mbar-subnav .lv-mbar-links {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 15px;
+  height: 40px;
+  padding: 0;
+  border-top: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, #000 0%, #000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 92%, transparent 100%);
+}
+body.kova .lv-mbar-subnav .lv-mbar-links::-webkit-scrollbar {
+  display: none;
+}
+body.kova .lv-mbar-subnav .lv-mlink {
+  font-size: 11.5px;
+}
+
+/* ---------- acento por modo ---------- */
+body.kova[data-mode='jogar'] {
+  --nv-accent: #22d3ee;
+  --nv-accent-2: #67e8f9;
+  --nv-accent-soft: rgba(34, 211, 238, 0.14);
+  --k-accent: #67e8f9;
+  --k-accent-2: #a5f3fc;
+  --salmon: #67e8f9;
+  --salmon-strong: #22d3ee;
+}
+body.kova[data-mode='mercado'] {
+  --nv-accent: #f59e0b;
+  --nv-accent-2: #fbbf24;
+  --nv-accent-soft: rgba(245, 158, 11, 0.14);
+  --k-accent: #fbbf24;
+  --k-accent-2: #fde68a;
+  --salmon: #fbbf24;
+  --salmon-strong: #f59e0b;
+}
+body.kova[data-mode='sistema'] {
+  --nv-accent: #60a5fa;
+  --nv-accent-2: #93c5fd;
+  --nv-accent-soft: rgba(96, 165, 250, 0.14);
+  --k-accent: #93c5fd;
+  --k-accent-2: #bfdbfe;
+  --salmon: #93c5fd;
+  --salmon-strong: #60a5fa;
+}
+
+/* ============================================================
+   MAPA
+   ============================================================ */
+.mapa {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  background: #050507;
+  color: var(--nv-text);
+  -webkit-overflow-scrolling: touch;
+  animation: mapaIn 0.2s var(--nv-ease) both;
+}
+.mapa::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(70% 70% at 50% 30%, #000, transparent 85%);
+  -webkit-mask-image: radial-gradient(70% 70% at 50% 30%, #000, transparent 85%);
+}
+.mapa-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 26px 20px 34px;
+}
+.mapa-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--nv-line);
+}
+.mapa-top .lv-brand {
+  font-size: 1.25rem;
+}
+.mapa-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 9px;
+  background: #0b0b10;
+  color: var(--nv-dim);
+}
+.mapa-search input {
+  flex: 1;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+}
+.mapa-search input:focus {
+  box-shadow: none !important;
+}
+.mapa-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--nv-muted);
+  transition: background 0.16s var(--nv-ease), color 0.16s var(--nv-ease);
+}
+.mapa-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.mapa-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 26px;
+  padding: 30px 0 34px;
+}
+.mapa-col {
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--nv-line);
+}
+.mapa-col.is-current {
+  border-top-color: var(--mode-accent);
+}
+.mapa-col-head {
+  position: relative;
+}
+.mapa-col-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--mode-accent);
+}
+.mapa-col h2 {
+  margin-top: 12px;
+  font-family: var(--nv-display) !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.04em !important;
+  color: #fff;
+}
+.mapa-col-head p {
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--nv-dim);
+}
+.mapa-col ul {
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+}
+.mapa-col li a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--nv-muted);
+  transition: background 0.16s var(--nv-ease), border-color 0.16s var(--nv-ease),
+    color 0.16s var(--nv-ease);
+}
+.mapa-col li a:hover,
+.mapa-col li a[data-active='true'] {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--nv-line);
+  color: #fff;
+}
+.mapa-link-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--mode-accent);
+}
+.mapa-link-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.mapa-link-txt strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+.mapa-link-txt em {
+  font-size: 10px;
+  font-style: normal;
+  color: var(--nv-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mapa-link-arrow {
+  flex-shrink: 0;
+  color: var(--nv-faint);
+}
+.mapa-col li a:hover .mapa-link-arrow {
+  color: #fff;
+}
+.mapa-vazio {
+  padding: 30px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--nv-dim);
+}
+.mapa-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--nv-line);
+}
+.mapa-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+  color: var(--nv-faint);
+}
+.mapa-hint kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 17px;
+  padding: 0 3px;
+  border: 1px solid var(--nv-line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--nv-dim);
+  font-size: 8px;
+}
+.mapa-conta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mapa-conta button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--nv-line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nv-muted);
+  font-size: 11px;
+  font-weight: 550;
+}
+.mapa-conta button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+@keyframes mapaIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   HOME — índice dos módulos (substitui atalhos duplicados)
+   ============================================================ */
+body.kova .home-intro {
+  display: block;
+  padding: 10px 20px 34px;
+}
+body.kova .home-intro-main {
+  max-width: 820px;
+}
+body.kova .home-intro-index {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 24px;
+  margin-top: 30px;
+  padding-top: 16px;
+  border-top: 1px solid var(--nv-line);
+}
+body.kova .home-index-label {
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+body.kova .home-index-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--nv-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .home-index-item svg {
+  width: 13px;
+  height: 13px;
+  color: var(--nv-accent-2);
+}
+
+@media (max-width: 1023px) {
+  body.kova .home-intro {
+    padding: 4px 14px 24px;
+  }
+  body.kova .home-intro-index {
+    gap: 8px 16px;
+    margin-top: 22px;
+  }
+  body.kova .home-intro-main {
+    max-width: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.kova .lv-mapa span,
+  body.kova .lv-mapa kbd {
+    display: none;
+  }
+  body.kova .lv-mapa {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+  body.kova .mode-link {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  body.kova .mode-link[data-active='true']::after {
+    left: 8px;
+    right: 8px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .mapa-shell {
+    padding: 18px 14px 26px;
+  }
+  .mapa-top {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 14px;
+  }
+  .mapa-top .lv-brand {
+    margin-right: auto;
+  }
+  .mapa-search {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .mapa-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+    padding: 22px 0 26px;
+  }
+  .mapa-foot {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 620px) {
+  .mapa-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .mapa-col {
+    padding-top: 10px;
+  }
+  .mapa-col ul {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 620px) {
+  body.kova .home-intro-index {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 14px;
+  }
+  body.kova .home-index-label {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1023px) {
+  body.kova .lv-mbar-subnav {
+    gap: 8px;
+    padding: 0 10px;
+  }
+  body.kova .lv-mbar-subnav .lv-mbar-links {
+    gap: 12px;
+  }
+  body.kova .lv-mbar-subnav .lv-mlink {
+    font-size: 11px;
+  }
+  body.kova .lv-mode-chip {
+    padding: 0 7px;
+    font-size: 10px;
+  }
+  body.kova .lv-mode-chip svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* ============================================================
+   NOTA BETA DA HOME + POLIMENTO FINAL
+   ============================================================ */
+body.kova .home-beta-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+body.kova .home-beta-note b {
+  color: var(--nv-accent-2);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+@media (min-width: 1280px) {
+  body.kova .home-beta-note {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+}
+
+/* toques de acento do modo em sítios-chave */
+body.kova .glass:hover,
+body.kova .ui-card:hover,
+body.kova .mercado-destaque:hover {
+  border-color: color-mix(in srgb, var(--nv-accent) 28%, rgba(255, 255, 255, 0.12)) !important;
+}
+body.kova .ui-btn:hover {
+  border-color: color-mix(in srgb, var(--nv-accent) 30%, rgba(255, 255, 255, 0.18)) !important;
+}
+body.kova .ui-btn-primary:hover {
+  box-shadow:
+    0 10px 34px rgba(255, 255, 255, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--nv-accent) 42%, transparent) !important;
+}
+body.kova .mercado-linha:hover {
+  border-color: color-mix(in srgb, var(--nv-accent) 20%, var(--nv-line)) !important;
+}
+body.kova .mercado-linha:hover .mercado-seta {
+  color: var(--nv-accent-2);
+}
+body.kova .membros-grid > li > .glass {
+  transition:
+    border-color 0.2s var(--nv-ease),
+    background 0.2s var(--nv-ease),
+    transform 0.2s var(--nv-ease);
+}
+body.kova .membros-grid > li > .glass:hover {
+  transform: translateY(-1px);
+}
+body.kova .mapa-col li a:hover,
+body.kova .mapa-col li a[data-active='true'] {
+  border-color: color-mix(in srgb, var(--mode-accent) 26%, var(--nv-line));
+}
+body.kova .mapa-col li a:hover .mapa-link-icon,
+body.kova .mapa-col li a[data-active='true'] .mapa-link-icon {
+  background: color-mix(in srgb, var(--mode-accent) 12%, rgba(255, 255, 255, 0.03));
+}
+body.kova .lv-map-button:hover,
+body.kova .lv-mapa:hover {
+  border-color: color-mix(in srgb, var(--nv-accent) 34%, var(--nv-line-2));
+}
+
+@media (max-width: 1023px) {
+  body.kova .lv-mode-chip {
+    gap: 4px;
+    padding: 0 5px;
+    font-size: 9px;
+  }
+  body.kova .lv-mode-chip svg {
+    width: 11px;
+    height: 11px;
+  }
+  body.kova .lv-mbar-subnav {
+    gap: 6px;
+    padding: 0 8px;
+  }
+  body.kova .lv-mbar-subnav .lv-mbar-links {
+    gap: 10px;
+  }
+  body.kova .lv-mbar-subnav .lv-mlink {
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 1023px) {
+  body.kova .lv-mode-chip {
+    width: 32px;
+    min-width: 32px;
+    padding: 0;
+    justify-content: center;
+    gap: 2px;
+  }
+  body.kova .lv-mode-chip span {
+    display: none;
+  }
+  body.kova .lv-mode-chip svg:last-child {
+    width: 9px;
+    height: 9px;
+  }
+}

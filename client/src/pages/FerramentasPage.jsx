@@ -176,9 +176,6 @@ export default function FerramentasPage({ isAdmin = false }) {
   const [avisoSite] = useState('O .exe foi retirado do fluxo. Usa o site com login. Comandos Windows (revo/wmic) precisam de PC local.')
   const [searchParams] = useSearchParams()
   const [abaFerr, setAbaFerr] = useState('ferramentas')
-  const [ecraLargo, setEcraLargo] = useState(() =>
-    typeof window === 'undefined' ? true : window.innerWidth >= 1024,
-  )
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
   const [cat, setCat] = useState('Programas')
@@ -382,20 +379,10 @@ export default function FerramentasPage({ isAdmin = false }) {
 
   /* O separador PCs / Specs só existe em ecrãs largos. No telemóvel
      fica sempre na aba das ferramentas. */
-  useEffect(() => {
-    const aoRedimensionar = () => {
-      const largo = window.innerWidth >= 1024
-      setEcraLargo(largo)
-      if (!largo) setAbaFerr('ferramentas')
-    }
-    window.addEventListener('resize', aoRedimensionar)
-    return () => window.removeEventListener('resize', aoRedimensionar)
-  }, [])
-
   /* /pcs -> /ferramentas?aba=pcs (só no PC). */
   useEffect(() => {
-    if (searchParams.get('aba') === 'pcs' && ecraLargo) setAbaFerr('pcs')
-  }, [searchParams, ecraLargo])
+    if (searchParams.get('aba') === 'pcs') setAbaFerr('pcs')
+  }, [searchParams])
 
   /* ---------- PC remoto (agente via .bat) ---------- */
   const pedirTrabalho = async (payload) => {
@@ -638,8 +625,10 @@ export default function FerramentasPage({ isAdmin = false }) {
 
   const cats = useMemo(() => {
     const usadas = new Set(ferramentas.map((f) => f.cat))
-    return CATS.filter((c) => usadas.has(c))
-  }, [ferramentas])
+    return CATS.filter(
+      (c) => usadas.has(c) && (c !== 'Otimizador by Xalana' || isAdmin),
+    )
+  }, [ferramentas, isAdmin])
 
   /* Se a categoria atual não estiver disponível (ex.: Otimizações
      escondidas para não-admin), salta para a primeira que exista. */
@@ -853,46 +842,6 @@ export default function FerramentasPage({ isAdmin = false }) {
   const podeExecutar = Boolean(podeLocal || agente.online)
   const appVerificada = Boolean(dados)
 
-  /* A app LOCAUS-PC é obrigatória para entrar nas ferramentas. */
-  if (appVerificada && !podeExecutar) {
-    return (
-      <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
-        <div className="mx-auto max-w-md">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-2xl p-6 text-center ring-1 ring-white/10"
-          >
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
-              <Lock className="h-7 w-7 text-zinc-400" />
-            </span>
-            <h1 className="mt-4 font-display text-xl font-black uppercase text-white">
-              Ferramentas Windows
-            </h1>
-            <p className="mt-2 text-[13px] leading-relaxed text-gray-400">
-              Para usares as ferramentas, o teu Windows tem de estar ligado ao site.
-              Descarrega o <b className="text-white">LOCAUS-PC.bat</b>, abre-o e deixa a
-              janela aberta — o site deteta a ligação e desbloqueia esta página.
-            </p>
-            <button
-              type="button"
-              onClick={ligarPc}
-              disabled={aLigarPc}
-              className="ui-btn ui-btn-primary ui-btn-lg mt-5 w-full"
-            >
-              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              {aLigarPc ? 'A preparar…' : 'Descarregar LOCAUS-PC.bat'}
-            </button>
-            <p className="mt-3 text-[11px] leading-relaxed text-gray-500">
-              A ligação é só tua: liga o teu Windows à tua conta do site. Sem abrires o
-              ficheiro, ninguém (nem tu) consegue usar as ferramentas.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-    )
-  }
-
   return (
     <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
       <div className="mx-auto max-w-6xl">
@@ -904,7 +853,7 @@ export default function FerramentasPage({ isAdmin = false }) {
         />
 
         {/* Separadores (o de PCs / Specs só existe no PC) */}
-        <div className="ui-tabs mb-4 hidden lg:flex">
+        <div className="ui-tabs mb-4">
           {[
             { id: 'ferramentas', nome: 'Ferramentas', Icon: Wrench },
             { id: 'pcs', nome: 'PCs / Specs', Icon: Cpu },
@@ -961,7 +910,7 @@ export default function FerramentasPage({ isAdmin = false }) {
               type="button"
               onClick={ligarPc}
               disabled={aLigarPc}
-              className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-black text-black transition-colors hover:bg-emerald-400 disabled:opacity-60"
+              className="ui-btn ui-btn-primary w-full shrink-0 sm:w-auto"
             >
               {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {aLigarPc ? 'A preparar…' : 'Ligar este PC'}
@@ -996,7 +945,7 @@ export default function FerramentasPage({ isAdmin = false }) {
           </label>
         </div>
 
-        {abaFerr === 'ferramentas' || !ecraLargo ? (
+        {abaFerr === 'ferramentas' ? (
           <>
         {/* ---------------- Pesquisa ---------------- */}
         <div className="mb-4">

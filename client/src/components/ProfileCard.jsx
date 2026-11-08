@@ -38,6 +38,7 @@ const TCG_CARDS = new Set(['foto-nfsu1', 'foto-nfsu2', 'foto-guerra'])
 /* Carta original dos olhos (design próprio, sem imitar Pokémon). */
 const OLHOS_CARDS = new Set(['foto-olhos'])
 
+
 /* ============================================================
    Cartas de perfil — 4 estilos (license, kova, dvd, felony)
    + o estilo padrão. Usadas nos membros, loja e editor.

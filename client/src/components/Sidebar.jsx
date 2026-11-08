@@ -1,6 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
-  Youtube,
   Clapperboard,
   History,
   Home,
@@ -16,8 +15,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
-import Sino from './Sino'
-import SaldoMoedas from './SaldoMoedas'
+import AvatarImg from './AvatarImg'
 
 /* ============================================================
    Barra de navegação lateral (PC) — fixa à esquerda, com a
@@ -102,13 +100,8 @@ export default function Sidebar({ user = null, isAdmin = false }) {
     <aside className="painel-fixo fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col justify-between border-r border-white/10 px-3 py-5 lg:flex xl:w-[280px]">
       {/* Marca + navegação (rola se o ecrã for baixo) */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <Link to="/" className="mb-6 flex min-w-0 items-center gap-2.5 px-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-500/15 ring-1 ring-zinc-500/30">
-            <Youtube className="h-5 w-5 text-zinc-400" />
-          </span>
-          <span className="brand-serif gradient-text min-w-0 truncate font-display text-lg font-black tracking-wide">
-            Ashow e Jazer
-          </span>
+        <Link to="/" className="rail-logo" aria-label="Locaus">
+          <span className="rail-logo-letter">L</span>
         </Link>
 
         {/* Navegação */}
@@ -119,6 +112,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
               <button
                 key={link.name}
                 onClick={link.action}
+                title={link.name}
                 className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
                   link.active
                     ? 'nav-ativo text-[#ff9e9e]'
@@ -128,12 +122,12 @@ export default function Sidebar({ user = null, isAdmin = false }) {
                 <Icon className={`h-5 w-5 shrink-0 ${link.active ? 'nav-ativo-icon' : ''}`} />
                 <span className="text-[15px] font-medium">{link.name}</span>
                 {link.naoLidas > 0 && (
-                  <span className="ml-auto grid min-w-[20px] place-items-center rounded-full bg-zinc-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(255,255,255,0.16)]">
+                  <span className="rail-badge ml-auto grid min-w-[20px] place-items-center rounded-full bg-zinc-500 px-1.5 py-0.5 text-[10px] font-black text-white shadow-[0_0_12px_rgba(255,255,255,0.16)]">
                     {link.naoLidas > 99 ? '99+' : link.naoLidas}
                   </span>
                 )}
                 {link.badge && (
-                  <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-200 ring-1 ring-white/15">
+                  <span className="rail-pill ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-zinc-200 ring-1 ring-white/15">
                     {link.badge}
                   </span>
                 )}
@@ -145,24 +139,23 @@ export default function Sidebar({ user = null, isAdmin = false }) {
 
       {/* Conta em baixo */}
       <div className="shrink-0 space-y-2 pt-6">
-        <SaldoMoedas user={user} />
-        <Sino user={user} posicao="lateral" variant="card" />
         <button
           onClick={() =>
             navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
           }
-          className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
+          title={user?.username || 'Conta'}
+          className={`rail-account flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
             isProfile
               ? 'nav-ativo text-[#ff9e9e]'
               : 'text-gray-400 hover:bg-white/5 hover:text-white'
           }`}
         >
           <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-white/10">
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <User className="h-5 w-5 text-gray-400" />
-            )}
+            <AvatarImg
+              src={user?.avatar_url}
+              name={user?.username || 'AJ'}
+              className="h-full w-full"
+            />
           </span>
           <span className="min-w-0 flex-1">
             <span className={`block truncate text-sm font-bold ${isProfile ? 'text-[#ff9e9e]' : 'text-white'}`}>

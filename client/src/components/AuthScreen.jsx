@@ -172,10 +172,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
   const inputCls =
     'w-full rounded-xl bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:bg-white/15 focus:ring-2 focus:ring-zinc-500/40'
 
-  const tabCls = (on) =>
-    `flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-bold transition-colors ${
-      on ? 'bg-zinc-500 text-white shadow-[0_0_20px_rgba(255,255,255,0.14)]' : 'text-gray-400 hover:text-white'
-    }`
+  const tabCls = () => 'auth-tab'
 
   const isForgot = mode === 'forgot'
   const isReset = mode === 'reset'
@@ -206,12 +203,10 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
           <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-500/20 ring-1 ring-zinc-400/40 shadow-[0_0_34px_rgba(255,255,255,0.1)]">
             <ShieldCheck className="h-7 w-7 text-zinc-200" />
           </span>
-          <h1 className="font-display text-3xl font-black uppercase tracking-wide text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.65)]">
-            Ashow <span className="italic text-zinc-300">e</span> Jazer
+          <h1 className="auth-brand">
+            locaus<span>.</span>
           </h1>
-          <p className="mt-1 font-display text-sm font-black tracking-[0.28em] text-white/70">
-            locaus.fun
-          </p>
+          <p className="auth-brand-sub">Clips · previsões · comunidade</p>
           <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.3em] text-white/45">
             {subtitle}
           </p>
@@ -357,13 +352,19 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
           ) : (
             <>
               {/* Entrar / Criar conta */}
-              <div className="mb-5 flex rounded-full bg-white/10 p-1">
-                <button type="button" onClick={() => switchMode('login')} className={tabCls(mode === 'login')}>
+              <div className="auth-tabs mb-5">
+                <button
+                  type="button"
+                  onClick={() => switchMode('login')}
+                  data-active={mode === 'login'}
+                  className={tabCls(mode === 'login')}
+                >
                   <LogIn className="h-4 w-4" /> Entrar
                 </button>
                 <button
                   type="button"
                   onClick={() => switchMode('register')}
+                  data-active={mode === 'register'}
                   className={tabCls(mode === 'register')}
                 >
                   <UserPlus className="h-4 w-4" /> Criar conta

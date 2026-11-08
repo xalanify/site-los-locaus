@@ -10,18 +10,29 @@ export default function PageHeader({
   title,
   subtitle,
   badge,
+  eyebrow,
   children,
   className = '',
   compact = false,
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`mb-6 ${className}`}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className={`page-head ${className}`}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
+          <p className="page-eyebrow">
+            Locaus
+            {eyebrow && (
+              <>
+                <span>/</span>
+                {eyebrow}
+              </>
+            )}
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className={`page-title ${compact ? 'page-title--compact' : ''}`}>{title}</h1>
             {badge && <span className="page-badge">{badge}</span>}

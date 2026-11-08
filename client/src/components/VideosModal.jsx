@@ -105,7 +105,7 @@ export default function VideosModal({ open, onClose }) {
                 Vídeos do canal
               </h2>
               <p className="text-[11px] font-semibold text-gray-500">
-                Ashow e Jazer · YouTube
+                Locaus — YouTube
               </p>
             </div>
             <button

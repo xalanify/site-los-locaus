@@ -228,207 +228,149 @@ export default function ProfileHero({
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
+      <motion.article
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className={`profile-hero glass relative mb-5 overflow-hidden rounded-3xl border ${classesCard(perfil.name_effect)}`}
-        style={{
-          borderColor: `${corBorda}55`,
-          boxShadow: `0 0 44px ${corBorda}18, inset 0 0 0 1px ${corBorda}14`,
-        }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className={`pf-hero ${classesCard(perfil.name_effect)}`}
       >
-        {/* Banner */}
-        <div className="relative h-40 overflow-hidden sm:h-56">
-          <ProfileBanner bannerId={perfil.banner_id} overlay="from-black/5 via-black/15 to-black/70" />
-          <span className="pointer-events-none absolute right-4 top-3 select-none font-display text-5xl font-black uppercase leading-none text-white/[0.07] sm:text-7xl">
+        <div className="pf-cover">
+          <ProfileBanner bannerId={perfil.banner_id} overlay="from-black/20 via-black/45 to-black/85" />
+          <span className="pf-cover-name" aria-hidden="true">
             {perfil.username}
           </span>
-          <span className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#121214] to-transparent" />
         </div>
 
-        {/* Corpo */}
-        <div className="relative px-4 pb-4 sm:px-6 sm:pb-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex min-w-0 items-end gap-3 sm:gap-4">
-              <div className="relative -mt-10 shrink-0 sm:-mt-12">
-                <img
-                  src={avatarSrc}
-                  alt={perfil.username}
-                  className="h-20 w-20 rounded-full object-cover ring-4 ring-[#121214] sm:h-24 sm:w-24"
-                  style={{ boxShadow: `0 0 0 1px ${corBorda}aa, 0 0 28px ${corBorda}55` }}
-                  onError={(e) => {
-                    if (e.currentTarget.dataset.fb) return
-                    e.currentTarget.dataset.fb = '1'
-                    e.currentTarget.src = svgAvatar(perfil.username, '#a1a1aa')
-                  }}
-                />
-                {isOwn && onEdit && (
-                  <button
-                    type="button"
-                    onClick={onEdit}
-                    title="Editar foto e perfil"
-                    className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full bg-[#0a0a0b]/90 text-zinc-300 ring-1 ring-white/25 transition-colors hover:bg-white/15 hover:text-white"
-                  >
-                    <Camera className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
+        <div className="pf-main">
+          <div className="pf-avatar-wrap">
+            <img
+              src={avatarSrc}
+              alt={perfil.username}
+              className="pf-avatar"
+              onError={(e) => {
+                if (e.currentTarget.dataset.fb) return
+                e.currentTarget.dataset.fb = '1'
+                e.currentTarget.src = svgAvatar(perfil.username, '#a1a1aa')
+              }}
+            />
+            {isOwn && onEdit && (
+              <button
+                type="button"
+                onClick={onEdit}
+                title="Editar foto e perfil"
+                className="pf-avatar-edit"
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
 
-              <div className="min-w-0 pb-1">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span
-                    className={`truncate font-display text-2xl font-black sm:text-3xl ${
-                      nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : 'text-white')
-                    }`}
-                  >
-                    {perfil.username}
-                  </span>
-                  {minhas.slice(0, 4).map((b) => (
-                    <BadgeGem key={b.id} badge={b} size={18} />
-                  ))}
-                </div>
-                <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-zinc-500">
-                  <span>@{perfil.username}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{criado}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>Membro #{memberId}</span>
-                </p>
-                <p className="mt-1.5 truncate text-sm text-zinc-400">{bio}</p>
-                {minhas.length > 0 && (
-                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-                    {minhas.map((b) => (
-                      <span key={b.id} className="inline-flex items-center gap-1.5">
-                        <span
-                          className="h-1.5 w-1.5 shrink-0 rounded-full"
-                          style={{ background: b.color }}
-                        />
-                        {b.label}
-                      </span>
-                    ))}
-                  </p>
-                )}
-              </div>
+          <div className="pf-identity">
+            <div className="pf-eyebrow">
+              <span>Membro #{memberId}</span>
+              <span className="pf-dot" />
+              <span>{criado}</span>
             </div>
 
-            {/* Ações + estatísticas */}
-            <div className="flex flex-col gap-3 lg:items-end">
-              <div className="flex flex-wrap items-center gap-2">
-                <SocialLinks socials={perfil.socials} />
-                <LiveBadge username={perfil.username} />
-                {isOwn ? (
-                  <button type="button" onClick={onEdit} className="ui-btn ui-btn-primary ui-btn-sm">
-                    <Pencil className="h-3.5 w-3.5" /> Editar perfil
-                  </button>
-                ) : (
-                  <button type="button" onClick={onPrimary} className="ui-btn ui-btn-primary ui-btn-sm">
-                    <MessageSquare className="h-3.5 w-3.5" /> {primaryLabel}
-                  </button>
-                )}
-              </div>
+            <div className="pf-name-row">
+              <h1
+                className={`pf-name ${
+                  nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : '')
+                }`}
+              >
+                {perfil.username}
+              </h1>
+              {minhas.slice(0, 4).map((b) => (
+                <BadgeGem key={b.id} badge={b} size={16} />
+              ))}
+            </div>
 
-              <div className="flex items-center gap-6 lg:justify-end">
-                <div className="text-right">
-                  <span className="block font-display text-lg font-black leading-none text-white">
-                    {num(clips.length)}
+            <p className="pf-bio">{bio}</p>
+
+            {minhas.length > 0 && (
+              <div className="pf-badges">
+                {minhas.map((b) => (
+                  <span key={b.id}>
+                    <span className="pf-dot-cor" style={{ background: b.color }} />
+                    {b.label}
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-                    Clips
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="block font-display text-lg font-black leading-none text-white">
-                    {num(views)}
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-                    Views
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="block font-display text-lg font-black leading-none text-white">
-                    #{memberId}
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-                    Membro
-                  </span>
-                </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="pf-side">
+            <div className="pf-actions">
+              <SocialLinks socials={perfil.socials} />
+              <LiveBadge username={perfil.username} />
+              {isOwn ? (
+                <button type="button" onClick={onEdit} className="ui-btn ui-btn-primary ui-btn-sm">
+                  <Pencil className="h-3.5 w-3.5" /> Editar
+                </button>
+              ) : (
+                <button type="button" onClick={onPrimary} className="ui-btn ui-btn-primary ui-btn-sm">
+                  <MessageSquare className="h-3.5 w-3.5" /> {primaryLabel}
+                </button>
+              )}
+            </div>
+
+            <div className="pf-stats">
+              <div className="pf-stat">
+                <b>{num(clips.length)}</b>
+                <span>Clips</span>
+              </div>
+              <div className="pf-stat">
+                <b>{num(views)}</b>
+                <span>Views</span>
+              </div>
+              <div className="pf-stat">
+                <b>#{memberId}</b>
+                <span>Membro</span>
               </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </motion.article>
 
-      {/* Jogos */}
       {jogos.length > 0 && (
-        <div className="profile-games mb-5">
-          <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500">
-            Jogos · {jogos.length}
-          </p>
-          <div className="mt-2 flex flex-wrap justify-center gap-2">
-            {jogos.map((g) => {
-              const logoLargo = ['cod', 'cs2'].includes(g)
-              return (
-                <div key={g} className="flex w-[104px] flex-col items-center gap-1">
-                  <span
-                    title={gameLabel(g) || g}
-                    className={`relative grid place-items-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] ${
-                      logoLargo ? 'h-14 w-24' : 'h-16 w-16'
-                    }`}
-                  >
-                    {GAME_LOGO[g] ? (
-                      <img
-                        src={`${GAME_LOGO[g]}?v=3`}
-                        alt=""
-                        loading="lazy"
-                        className={`object-contain brightness-0 invert ${
-                          logoLargo ? 'h-9 w-20' : 'h-11 w-11'
-                        }`}
-                      />
-                    ) : (
-                      <span className="text-[11px] font-black text-zinc-300">{abrevJogo(g)}</span>
-                    )}
-                  </span>
-                </div>
-              )
-            })}
+        <section className="pf-games">
+          <p className="nv-label">Jogos · {jogos.length}</p>
+          <div className="pf-tiles">
+            {jogos.map((g) => (
+              <div key={g} className="pf-tile" title={gameLabel(g) || g}>
+                <span className="pf-tile-abbr">{abrevJogo(g)}</span>
+                {GAME_LOGO[g] && (
+                  <img
+                    src={`${GAME_LOGO[g]}?v=3`}
+                    alt=""
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )}
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Periférico — só o rato, num cartão quadrado */}
       {gear.length > 0 && (
-        <div className="profile-mouse mb-8">
-          <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500">
-            Periférico ativo
-          </p>
-          <div className="mx-auto mt-2.5 w-full max-w-[250px]">
-            {gear.map((g) => {
-              const Icon = g.Icon
-              const semBase = g.semBase
-              return (
-                <div key={g.key} className="glass aspect-square rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-2 text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+        <section className="pf-mouse">
+          <p className="nv-label">Periférico ativo</p>
+          {gear.map((g) => {
+            const Icon = g.Icon
+            const semBase = g.semBase
+            return (
+              <div key={g.key} className="pf-mouse-card">
+                <div className="min-w-0">
+                  <div className="pf-mouse-meta">
                     <span className="inline-flex items-center gap-1.5">
                       <Icon className="h-3.5 w-3.5" /> {g.tipo}
                     </span>
                     <span className="truncate">{g.detalhe}</span>
                   </div>
-                  <div className="relative mt-3 flex h-[120px] items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.18),rgba(255,255,255,0.06)_55%,rgba(255,255,255,0.02))] ring-1 ring-white/10">
-                    <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.22),transparent_65%)]" />
-                    {g.img ? (
-                      <img
-                        src={g.img}
-                        alt=""
-                        loading="lazy"
-                        className="relative z-10 max-h-full max-w-full object-contain brightness-125 contrast-110 drop-shadow-[0_10px_22px_rgba(255,255,255,0.16)]"
-                        style={semBase ? { clipPath: 'inset(0 0 18% 0)' } : undefined}
-                      />
-                    ) : (
-                      <Icon className="h-12 w-12 text-zinc-500" />
-                    )}
-                  </div>
-                  <p className="mt-2 flex items-center gap-1.5 text-[13px] leading-tight text-white">
+                  <p className="pf-mouse-nome">
                     {g.logo && (
                       <img
                         src={g.logo}
@@ -440,14 +382,27 @@ export default function ProfileHero({
                         className="h-4 w-4 shrink-0 rounded-sm object-contain"
                       />
                     )}
-                    {g.marca && <span className="shrink-0 font-black">{g.marca}</span>}
-                    <span className="truncate font-semibold text-zinc-300">{g.modelo}</span>
+                    {g.marca && <span className="shrink-0 font-semibold text-white">{g.marca}</span>}
+                    <span className="truncate text-zinc-400">{g.modelo}</span>
                   </p>
                 </div>
-              )
-            })}
-          </div>
-        </div>
+                <div className="pf-mouse-img">
+                  {g.img ? (
+                    <img
+                      src={g.img}
+                      alt=""
+                      loading="lazy"
+                      className="max-h-full max-w-full object-contain"
+                      style={semBase ? { clipPath: 'inset(0 0 18% 0)' } : undefined}
+                    />
+                  ) : (
+                    <Icon className="h-10 w-10 text-zinc-500" />
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </section>
       )}
     </>
   )

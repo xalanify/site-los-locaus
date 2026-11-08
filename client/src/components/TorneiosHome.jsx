@@ -17,16 +17,16 @@ const JOGOS = {
     Icon: Shield,
     cor: 'orange',
     chip: 'bg-orange-500/15 text-orange-300 ring-orange-400/30',
-    grad: 'from-orange-500/20 via-transparent to-amber-500/10',
-    anel: 'ring-orange-400/30',
+    grad: 'from-violet-600/12 via-transparent to-transparent',
+    anel: 'ring-white/15',
   },
   cs2: {
     nome: 'CS2',
     Icon: Crosshair,
     cor: 'yellow',
     chip: 'bg-yellow-500/15 text-yellow-300 ring-yellow-400/30',
-    grad: 'from-yellow-500/20 via-transparent to-amber-500/10',
-    anel: 'ring-yellow-400/30',
+    grad: 'from-sky-600/10 via-transparent to-transparent',
+    anel: 'ring-white/15',
   },
 }
 
@@ -332,7 +332,7 @@ export default function TorneiosHome() {
 
   if (!carregado) {
     return (
-      <section className="mx-auto mb-8 w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+      <section className="home-torneios mx-auto mb-8 w-full max-w-[1240px] px-5">
         <div className="mb-4">
           <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
             <Radio className="h-3 w-3" /> em tempo real
@@ -345,7 +345,7 @@ export default function TorneiosHome() {
             A carregar os próximos torneios…
           </p>
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="home-torneios-grid grid gap-4 lg:grid-cols-2">
           {[0, 1].map((i) => (
             <div key={i} className="glass h-56 animate-pulse rounded-3xl" />
           ))}
@@ -356,7 +356,7 @@ export default function TorneiosHome() {
 
   if (!infoR6 && !infoCs2) {
     return (
-      <section className="mx-auto mb-8 w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+      <section className="home-torneios mx-auto mb-8 w-full max-w-[1240px] px-5">
         <div className="mb-4">
           <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
             <Radio className="h-3 w-3" /> em tempo real
@@ -375,7 +375,7 @@ export default function TorneiosHome() {
   }
 
   return (
-    <section className="mx-auto mb-8 w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+    <section className="home-torneios mx-auto mb-8 w-full max-w-[1240px] px-5">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <span className="ui-chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/25">
@@ -383,17 +383,11 @@ export default function TorneiosHome() {
           </span>
           <h2 className="mt-2 font-display text-xl font-black uppercase tracking-wide text-white sm:text-2xl">
             Próximos torneios
-          </h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Contagem ao vivo para Rainbow Six e CS2 — atualiza sozinha.
-          </p>
+          </h2>
         </div>
-        <Link to="/previsoes" className="ui-btn ui-btn-ghost ui-btn-sm">
-          <Target className="h-3.5 w-3.5" /> Ver previsões
-        </Link>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="home-torneios-grid grid gap-4 lg:grid-cols-2">
         <CartaoJogo id="r6" info={infoR6} />
         <CartaoJogo id="cs2" info={infoCs2} />
       </div>

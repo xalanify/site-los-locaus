@@ -1,95 +1,73 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Home, Clapperboard, MessageCircle, Trophy, User } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
 import AvisoFotos from './AvisoFotos'
+import { linksDoModo, linkAtivo, modeDe } from '../data/navegacao'
 
 /* ============================================================
-   Telemóvel — barra de topo compacta (marca + sino + conta +
-   menu) e pílula flutuante em baixo.
+   Barra (telemóvel) — modo atual + sub-navegação contextual.
+   O chip do modo abre o Mapa.
    ============================================================ */
-export default function Navbar({ isAdmin = false, user = null, onMenu, menuOpen = false }) {
+
+export default function Navbar({ user = null, isAdmin = false, onMapa }) {
   const navigate = useNavigate()
-  const location = useLocation()
-
-  const isHome = location.pathname === '/'
-  const isProfile = location.pathname.startsWith('/perfil')
-  const isClips = location.pathname === '/clips'
-  const isChat = location.pathname === '/chat'
-  const isPrevisoes = location.pathname === '/previsoes'
-
-  const links = [
-    { name: 'Home', icon: Home, action: () => navigate('/'), active: isHome },
-    { name: 'Clips', icon: Clapperboard, action: () => navigate('/clips'), active: isClips },
-    { name: 'Chat', icon: MessageCircle, action: () => navigate('/chat'), active: isChat },
-    { name: 'Previsões', icon: Trophy, action: () => navigate('/previsoes'), active: isPrevisoes },
-    {
-      name: 'Conta',
-      icon: User,
-      action: () =>
-        navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil'),
-      active: isProfile,
-    },
-  ]
+  const { pathname } = useLocation()
+  const mode = modeDe(pathname)
+  const links = linksDoModo(mode, isAdmin)
 
   return (
-    <>
-      {/* ---------------- Barra de topo ---------------- */}
-      <nav id="topbar" className="kova-mobilebar lg:hidden" aria-label="Barra de topo">
-        <div className="kova-mobilebar-inner">
-          <Link to="/" className="kova-brand">
-            locaus<span>.</span>
-          </Link>
+    <nav id="topbar" className="lv-mbar lg:hidden" aria-label="Barra de topo">
+      <div className="lv-mbar-top">
+        <Link to="/" className="lv-brand" aria-label="Locaus — início">
+          locaus<span>.</span>
+        </Link>
 
-          <div className="kova-mobilebar-acoes">
-            <SaldoMoedas user={user} compacto />
-            <Sino user={user} />
-            <button
-              type="button"
-              onClick={() =>
-                navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
-              }
-              aria-label="Conta"
-              className="kova-mobilebar-user"
-            >
-              <AvatarImg src={user?.avatar_url} name={user?.username || 'AJ'} className="h-7 w-7" />
-            </button>
-            <button
-              type="button"
-              onClick={onMenu}
-              aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </button>
-          </div>
+        <div className="lv-mbar-actions">
+          <SaldoMoedas user={user} compacto />
+          <Sino user={user} />
+          <button
+            type="button"
+            onClick={() =>
+              navigate(user?.username ? `/perfil/${encodeURIComponent(user.username)}` : '/perfil')
+            }
+            aria-label="Conta"
+            className="lv-mbar-user"
+          >
+            <AvatarImg src={user?.avatar_url} name={user?.username || 'AJ'} className="h-7 w-7" />
+          </button>
         </div>
-        <AvisoFotos />
-      </nav>
+      </div>
 
-      {/* ---------------- Pílula em baixo ---------------- */}
-      <nav className="kova-bottomnav lg:hidden" aria-label="Navegação principal">
-        <div className="kova-bottomnav-inner">
-          {links.map((l) => {
-            const Icon = l.icon
-            return (
-              <button
-                key={l.name}
-                type="button"
-                onClick={l.action}
-                data-active={l.active ? 'true' : 'false'}
-                className="kova-bottomnav-item"
-                aria-label={l.name}
-                aria-current={l.active ? 'page' : undefined}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span>{l.name}</span>
-              </button>
-            )
-          })}
-        </div>
-      </nav>
-    </>
+      <div className="lv-mbar-subnav" style={{ '--mode-accent': mode.accent }}>
+        <button
+          type="button"
+          className="lv-mode-chip"
+          onClick={onMapa}
+          aria-label="Abrir mapa do site"
+        >
+          <mode.Icon className="h-3.5 w-3.5" />
+          <span>{mode.nome}</span>
+          <ChevronDown className="h-3 w-3" />
+        </button>
+
+        <nav className="lv-mbar-links" aria-label={`${mode.nome} — páginas`}>
+          {links.map((l) => (
+            <Link
+              key={l.path}
+              to={l.path}
+              data-active={linkAtivo(pathname, l.path) ? 'true' : 'false'}
+              className="lv-mlink"
+            >
+              <l.Icon className="lv-mlink-ico" />
+              {l.nome}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      <AvisoFotos />
+    </nav>
   )
 }
