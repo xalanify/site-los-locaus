@@ -1905,7 +1905,7 @@ body.kova #topbar {
    ============================================================ */
 @media (max-width: 1023px) {
   body.kova main.lv-main {
-    padding-top: calc(56px + 40px + var(--nv-aviso) + 14px) !important;
+    padding-top: calc(56px + var(--nv-aviso) + 14px) !important;
     padding-bottom: calc(2.2rem + env(safe-area-inset-bottom)) !important;
   }
   body.kova .page-shell {
@@ -1986,7 +1986,7 @@ body.kova #topbar {
 
   /* chat fixo: conta com a barra de topo nova (2 linhas + aviso) */
   body.kova .chat-fixo {
-    padding: calc(56px + 40px + var(--nv-aviso) + 10px) 14px
+    padding: calc(56px + var(--nv-aviso) + 10px) 14px
       calc(0.75rem + env(safe-area-inset-bottom)) !important;
   }
   body.kova .chat-fixo .page-container {
@@ -1995,7 +1995,7 @@ body.kova #topbar {
 
   /* menu do telemóvel */
   body.kova .kova-menu {
-    padding-top: calc(56px + 40px + var(--nv-aviso) + 10px);
+    padding-top: calc(56px + var(--nv-aviso) + 10px);
     padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
     background: #050507;
     z-index: 59;
@@ -2342,29 +2342,10 @@ body.kova .home-dash > section > div {
   }
 }
 
-/* membros: diretório horizontal em ecrãs largos */
+/* membros: grelha de 4, banner horizontal no topo */
 @media (min-width: 1280px) {
   body.kova .membros-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-  }
-  body.kova .membros-grid > li > .glass {
-    display: grid;
-    grid-template-columns: 172px minmax(0, 1fr);
-    min-height: 192px;
-  }
-  body.kova .membros-grid > li > .glass > span:first-child {
-    height: 100% !important;
-    min-height: 192px;
-  }
-  body.kova .membros-grid > li > .glass > span:nth-child(2) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 14px 16px;
-  }
-  body.kova .membros-grid > li > .glass > span:nth-child(2) > span:first-child {
-    margin-top: 0 !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 }
 
@@ -2382,7 +2363,7 @@ body.kova .home-dash > .home-torneios {
    NOVA SHELL — 4 modos, sub-navegação contextual e Mapa
    ============================================================ */
 body.kova {
-  --nv-header: 128px;
+  --nv-header: 90px;
 }
 
 /* ---------- barra superior (PC) ---------- */
@@ -3142,4 +3123,130 @@ body.kova .lv-mapa:hover {
     width: 9px;
     height: 9px;
   }
+}
+
+/* ============================================================
+   MENUS DOS MODOS (PC) + BOTÃO MENU (telemóvel)
+   ============================================================ */
+body.kova .mode-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+body.kova .mode-chev {
+  width: 10px;
+  height: 10px;
+  opacity: 0.42;
+  transition: transform 0.16s var(--nv-ease), opacity 0.16s var(--nv-ease);
+}
+body.kova .mode-item:hover .mode-chev,
+body.kova .mode-item:focus-within .mode-chev {
+  opacity: 0.9;
+  transform: rotate(180deg);
+}
+body.kova .mode-menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 40px);
+  z-index: 80;
+  min-width: 218px;
+  padding: 5px;
+  border: 1px solid var(--nv-line-2);
+  border-radius: 10px;
+  background: #0b0b10;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: modePop 0.16s var(--nv-ease);
+}
+body.kova .mode-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  color: var(--nv-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 0.14s var(--nv-ease), color 0.14s var(--nv-ease);
+}
+body.kova .mode-menu-item:hover,
+body.kova .mode-menu-item[data-active='true'] {
+  background: rgba(255, 255, 255, 0.055);
+  color: #fff;
+}
+body.kova .mode-menu-ico {
+  width: 14px;
+  height: 14px;
+  color: var(--mode-accent, var(--nv-accent-2));
+  opacity: 0.82;
+}
+@keyframes modePop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  body.kova .lv-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 32px;
+    padding: 0 9px;
+    border: 1px solid var(--mode-accent, var(--nv-accent-2));
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--mode-accent, var(--nv-accent-2));
+    font-size: 10.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  body.kova .lv-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+  body.kova .lv-mbar-actions {
+    gap: 6px;
+  }
+}
+
+/* título e rodapé do menu */
+.mapa-title {
+  margin-left: 7px;
+  font-family: var(--nv-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+.mapa-top .mapa-close {
+  margin-left: auto;
+}
+.mapa-foot-note {
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nv-faint);
+}
+
+@media (max-width: 1023px) {
+  body.kova .lv-menu-btn {
+    height: 36px;
+  }
+}
+
+/* ponte invisível entre o modo e a lista (hover confortável) */
+body.kova .mode-menu::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -40px;
+  height: 40px;
 }

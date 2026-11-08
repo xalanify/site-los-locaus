@@ -71,7 +71,7 @@ function RotaPerfil({
 function App() {
   const [entered, setEntered] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const [mapaAberto, setMapaAberto] = useState(false)
+  const [menuAberto, setMenuAberto] = useState(false)
   const [showVideos, setShowVideos] = useState(false) // janela flutuante dos vídeos
   const [user, setUser] = useState(null) // conta de utilizador (obrigatória)
   const [showAuth, setShowAuth] = useState(false)
@@ -89,25 +89,16 @@ function App() {
     document.body.dataset.mode = modeDe(location.pathname).id
   }, [location.pathname])
 
-  // O Mapa abre com M e fecha com Esc / mudança de página.
+  // O menu fecha com Esc.
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') {
-        setMapaAberto(false)
-        return
-      }
-      const tag = (e.target && e.target.tagName ? e.target.tagName : '').toLowerCase()
-      if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return
-      if (e.key.toLowerCase() === 'm') {
-        e.preventDefault()
-        setMapaAberto((v) => !v)
-      }
+      if (e.key === 'Escape') setMenuAberto(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
   useEffect(() => {
-    setMapaAberto(false)
+    setMenuAberto(false)
   }, [location.pathname])
 
   // Analytics simples: uma visita por página (sem cookies e sem nomes)
@@ -277,11 +268,11 @@ function App() {
             {authed && !needsRecovery && (
               <>
                 {/* Barra de topo (desktop) — tema experimental */}
-                <KovaTopbar user={user} isAdmin={isAdmin} onMapa={() => setMapaAberto(true)} />
-                <Navbar isAdmin={isAdmin} user={user} onMapa={() => setMapaAberto(true)} />
+                <KovaTopbar user={user} isAdmin={isAdmin} />
+                <Navbar user={user} onMenu={() => setMenuAberto(true)} />
                 <Mapa
-                  open={mapaAberto}
-                  onClose={() => setMapaAberto(false)}
+                  open={menuAberto}
+                  onClose={() => setMenuAberto(false)}
                   user={user}
                   isAdmin={isAdmin}
                   onLogout={handleUserLogout}
