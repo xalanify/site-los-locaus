@@ -34,9 +34,9 @@ export const BADGES = [  {
     id: 'previsao1',
     label: '1.º CLASSIFICAÇÃO PREVISÕES',
     desc: 'Líder da classificação total das previsões',
-    color: '#000000',
-    light: '#2A2A33',
-    dark: '#000000',
+    color: '#2E1065',
+    light: '#7C3AED',
+    dark: '#0B0418',
     glow: '#8B5CF6',
     labelColor: '#F3F4F6',
     anim: 'shine',
@@ -229,30 +229,28 @@ function StarBadge({ badge, size, anim, corLight, cor, corDark, olhoFill, olhoGl
           )}
         </defs>
 
-        {/* corpo da estrela: traço redondo + gradiente para o ar 3D */}
+        {/* base sólida: garante que a estrela aparece sempre, mesmo
+            em browsers que não resolvem o gradiente */}
         <path
           d={estrela}
-          fill={`url(#${fillId})`}
-          stroke={cor || badge.color}
-          strokeWidth="8"
+          fill={cor || badge.color}
+          stroke={corLight || badge.color}
+          strokeWidth="6"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        {/* brilho de cima / sombra em baixo, recortados pela própria estrela */}
+        {/* gradiente 3D por cima da base */}
+        <path
+          d={estrela}
+          fill={`url(#${fillId})`}
+          stroke="none"
+        />
+        {/* brilho de cima / sombra em baixo */}
         <path
           d={estrela}
           fill={`url(#${shineId})`}
           stroke="none"
           opacity="0.9"
-        />
-        {/* reflexo suave no canto superior esquerdo */}
-        <path
-          d="M32 29 Q41 20 55 18"
-          fill="none"
-          stroke="#ffffff"
-          strokeOpacity="0.4"
-          strokeWidth="4.5"
-          strokeLinecap="round"
         />
         {/* olhos redondos/ovais, como na imagem */}
         <g filter={olhoGlow ? `url(#${filterId})` : undefined}>
@@ -298,9 +296,9 @@ export function BadgeGem({ badge, size = 56 }) {
   const streak = arte === 'streak'
 
   // Paleta da gema: top1 é preta com olhos laranja; as outras usam a cor da distinção
-  const gemLight = cs2 ? '#4B5563' : obsidian ? '#2A2A33' : top1 ? '#3A3A44' : badge.light
-  const gemColor = cs2 ? '#111827' : obsidian ? '#0B0B10' : top1 ? '#111116' : badge.color
-  const gemDark = cs2 ? '#000000' : obsidian ? '#000000' : top1 ? '#000000' : badge.dark
+  const gemLight = cs2 ? '#4B5563' : obsidian ? '#7C3AED' : top1 ? '#3A3A44' : badge.light
+  const gemColor = cs2 ? '#111827' : obsidian ? '#2E1065' : top1 ? '#111116' : badge.color
+  const gemDark = cs2 ? '#000000' : obsidian ? '#0B0418' : top1 ? '#000000' : badge.dark
   const olhoFill = obsidian
     ? '#D8B4FE'
     : fortnite

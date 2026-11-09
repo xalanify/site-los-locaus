@@ -75,7 +75,7 @@ export default function MercadoHome() {
     return [...lista]
       .filter((x) => !x.emBreve)
       .sort((a, b) => b.preco_compra - a.preco_compra)
-      .slice(0, 5)
+      .slice(0, 8)
   }, [dados])
 
   const saldo = dados && dados.saldo ? dados.saldo.disponiveis : null
@@ -159,6 +159,11 @@ export default function MercadoHome() {
                                 ? classesNome(item.valor) || 'text-white'
                                 : 'text-white'
                             }`}
+                            style={
+                              item.tipo === 'cor'
+                                ? { WebkitTextStroke: '0.45px rgba(255, 255, 255, 0.62)' }
+                                : undefined
+                            }
                           >
                             {item.nome}
                           </span>

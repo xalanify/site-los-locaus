@@ -1387,7 +1387,7 @@ async function venderEdicao(uid, copiaId) {
   return { ok: true, recebido, ...(await cosmeticos.saldo(uid)) };
 }
 
-/* Prévia rápida para a home: os 5 mais caros, com 24 pontos. */
+/* Prévia rápida para a home: os 8 mais caros, com 24 pontos. */
 async function home(uid) {
   await semear();
   await talvezTick();
@@ -1407,7 +1407,7 @@ async function home(uid) {
       return { ...x, base, preco };
     })
     .sort((a, b) => b.preco - a.preco)
-    .slice(0, 5);
+    .slice(0, 8);
 
   for (const it of lista) {
     const serie = await db
