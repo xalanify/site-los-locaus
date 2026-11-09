@@ -229,12 +229,13 @@ router.get(
          FROM user_specs s
          JOIN users u ON u.id = s.user_id
          LEFT JOIN user_profiles p ON p.user_id = s.user_id
-         WHERE u.password_hash NOT LIKE '!%'
+         WHERE s.user_id = ?
+           AND u.password_hash NOT LIKE '!%'
            /* contas de teste nossas: não são máquinas do grupo */
            AND lower(u.username) <> 'teste'
          ORDER BY u.username`,
       )
-      .all();
+      .all(Number(req.auth.uid));
     res.json({
       specs: rows.map((r) => {
         const spec = pick(r);

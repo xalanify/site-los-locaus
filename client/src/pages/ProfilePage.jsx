@@ -33,6 +33,7 @@ import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileHero from '../components/ProfileHero'
 import ProfileCard from '../components/ProfileCard'
+import CartaDoPerfil from '../components/CartaDoPerfil'
 import ProfileStylePreview from '../components/ProfileStylePreview'
 import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
@@ -1376,6 +1377,8 @@ export default function ProfilePage({
           isOwn
           onEdit={abrirEditar}
         />
+
+        <CartaDoPerfil perfil={me} jogos={jogosPerfil} />
 
         {modalEdicao}
 

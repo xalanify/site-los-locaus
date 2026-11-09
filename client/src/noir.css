@@ -3250,3 +3250,168 @@ body.kova .mode-menu::before {
   top: -40px;
   height: 40px;
 }
+
+/* ============================================================
+   CARTA FLUTUANTE DO PERFIL
+   ============================================================ */
+.carta-flutuante {
+  position: fixed;
+  left: 14px;
+  bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  z-index: 56;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(10, 10, 14, 0.94);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+.carta-flutuante:hover {
+  background: rgba(24, 24, 30, 0.98);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+.carta-flutuante svg {
+  color: #c4b5fd;
+}
+@media (min-width: 1024px) {
+  .carta-flutuante {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+}
+
+.carta-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.84);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: cartaFade 0.16s ease-out;
+}
+.carta-modal-box {
+  position: relative;
+  width: 100%;
+  max-width: min(440px, 94vw);
+  max-height: 92dvh;
+  overflow-y: auto;
+  border-radius: 18px;
+  animation: cartaEntra 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.carta-modal-box::-webkit-scrollbar {
+  width: 0;
+}
+.carta-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  transition: background 0.16s ease;
+}
+.carta-modal-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+@keyframes cartaFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes cartaEntra {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 430px) {
+  .carta-flutuante {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 10.5px;
+  }
+}
+
+/* ============================================================
+   NOMES ANIMADOS — continuam a mexer mesmo com movimento
+   reduzido no sistema (a cor é a identidade do membro).
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  body.kova .nome-cor-gold,
+  body.kova .nome-cor-diamond,
+  body.kova .nome-cor-damascus,
+  body.kova .nome-cor-interstellar,
+  body.kova .nome-cor-darkmatter,
+  body.kova .nome-cor-chrome,
+  body.kova .nome-cor-platinum,
+  body.kova .nome-cor-obsidian,
+  body.kova .nome-cor-rainbow {
+    animation-duration: 5s !important;
+    animation-iteration-count: infinite !important;
+  }
+  body.kova .nome-efeito-shimmer {
+    animation-duration: 2.4s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* ============================================================
+   TELEMÓVEL PEQUENO (iPhone SE 2020 / 320-380 px)
+   Barra de topo sólida, sem blur, e botões mais compactos.
+   ============================================================ */
+@media (max-width: 430px) {
+  body.kova #topbar,
+  body.kova .lv-mbar {
+    background: #07070b !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+  }
+  body.kova .lv-mbar-top {
+    gap: 8px;
+    padding: 0 12px;
+  }
+}
+@media (max-width: 380px) {
+  body.kova .lv-mbar-top {
+    gap: 5px;
+    padding: 0 9px;
+    height: 54px;
+  }
+  body.kova .lv-mbar-top .lv-brand {
+    font-size: 1.02rem;
+  }
+  body.kova .lv-mbar-actions {
+    gap: 4px;
+  }
+  body.kova .lv-menu-btn {
+    height: 32px;
+    padding: 0 7px;
+    font-size: 9.5px;
+    gap: 4px;
+  }
+  body.kova .lv-menu-btn svg:last-child {
+    display: none;
+  }
+  body.kova .lv-mbar-user,
+  body.kova .lv-mbar-actions .sino,
+  body.kova .lv-mbar-actions .kova-moedas {
+    height: 32px;
+  }
+}

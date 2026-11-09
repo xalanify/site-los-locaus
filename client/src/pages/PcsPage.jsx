@@ -537,7 +537,7 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
         {!embedded && (
           <PageHeader
             title="PCs / Specs"
-            subtitle="As máquinas do grupo com valores lidos no Windows. Clica numa linha para ver tudo."
+            subtitle="O teu PC, com valores lidos no Windows. Clica numa linha para ver tudo."
             compact={embedded}
           />
         )}
@@ -555,8 +555,8 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-black text-amber-100">PC ainda não ligado</p>
               <p className="mt-0.5 text-[12px] leading-relaxed text-amber-100/70">
-                Podes ver as máquinas do grupo. Para leres as tuas specs, liga o Windows ao site
-                com o <b className="text-white">LOCAUS-PC.bat</b>.
+                Para leres as tuas specs, liga o Windows ao site com o{' '}
+                <b className="text-white">LOCAUS-PC.bat</b>.
               </p>
             </div>
             <button
@@ -575,19 +575,15 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
         <div className="glass mb-6 overflow-hidden rounded-2xl">
           <div className="flex flex-col items-start gap-1 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="ui-section-title font-display">
-              Máquinas do grupo
+              O meu PC
             </h2>
             <span className="text-[11px] font-bold text-gray-400">
-              {lista.length} registos · clique numa linha
+              {lista.length === 1 ? '1 registo' : `${lista.length} registos`}
             </span>
           </div>
           <p className="px-4 pt-2 text-[10px] text-gray-500 sm:hidden">
             Desliza a tabela para o lado para ver RAM e placa gráfica →
           </p>
-          <div className="mx-4 mt-3 rounded-xl border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-200">
-            Esta tabela não tem ordem nem pontuação de melhor ou pior. Mostra apenas as máquinas
-            do grupo.
-          </div>
 
           {!carregado ? (
             <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
@@ -595,7 +591,7 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
             </div>
           ) : lista.length === 0 ? (
             <div className="py-10 text-center text-sm text-gray-400">
-              Ainda sem specs — cada membro envia as do seu PC ao entrar no site.
+              Ainda sem specs tuas. Liga este PC ao site com o LOCAUS-PC.bat para as ler.
             </div>
           ) : (
             <div className="overflow-x-auto">

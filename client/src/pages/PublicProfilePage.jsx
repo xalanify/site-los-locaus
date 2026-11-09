@@ -24,6 +24,7 @@ import ProfileHero from '../components/ProfileHero'
 import AlbumCartas from '../components/AlbumCartas'
 import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
+import CartaDoPerfil from '../components/CartaDoPerfil'
 import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
@@ -360,6 +361,7 @@ export default function PublicProfilePage({
           musicaInicio={p.musica_inicio}
           musicaFim={p.musica_fim}
         />
+        <CartaDoPerfil perfil={p} jogos={jogosPerfil} />
     </PageShell>
   )
 }

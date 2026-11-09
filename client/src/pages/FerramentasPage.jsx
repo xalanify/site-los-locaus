@@ -842,6 +842,61 @@ export default function FerramentasPage({ isAdmin = false }) {
   const podeExecutar = Boolean(podeLocal || agente.online)
   const appVerificada = Boolean(dados)
 
+  /* Portão: sem o LOCAUS-PC ligado não se entra nas Ferramentas nem em PCs/Specs.
+     A página abre sozinha assim que o agente aparecer (polling de 2 s). */
+  if (!podeExecutar) {
+    return (
+      <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
+        <div className="mx-auto max-w-6xl">
+          <PageHeader
+            title="Ferramentas Windows"
+            badge="Novo"
+            subtitle="Escolhe, clica e vê o resultado aqui mesmo — sem instalar nada."
+          />
+
+          <div className="glass mx-auto mt-4 max-w-2xl rounded-2xl border border-white/10 p-6 text-center sm:p-8">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/15 ring-1 ring-amber-300/30">
+              <Lock className="h-6 w-6 text-amber-300" />
+            </span>
+            <h2 className="mt-4 font-display text-2xl font-black text-white">
+              Ferramentas bloqueadas
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-400">
+              Para abrir esta página, liga este PC ao site com o{' '}
+              <b className="text-white">LOCAUS-PC.bat</b>. Enquanto não estiver ligado, as
+              ferramentas e as specs ficam escondidas.
+            </p>
+
+            {!appVerificada && (
+              <p className="mt-3 flex items-center justify-center gap-2 text-[11px] text-gray-500">
+                <RefreshCcw className="h-3.5 w-3.5 animate-spin" /> A verificar a ligação…
+              </p>
+            )}
+
+            {aviso && (
+              <p className="mt-4 rounded-xl bg-red-500/15 px-4 py-3 text-left text-[13px] font-bold text-red-400">
+                {aviso}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={ligarPc}
+              disabled={aLigarPc}
+              className="ui-btn ui-btn-primary mx-auto mt-5"
+            >
+              {aLigarPc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {aLigarPc ? 'A preparar…' : 'Ligar este PC'}
+            </button>
+            <p className="mt-3 text-[11px] text-gray-500">
+              Já ligaste? Esta página abre sozinha assim que o PC aparecer.
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="min-h-screen px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.75rem+env(safe-area-inset-top))] sm:px-6 sm:pt-[calc(7.5rem+env(safe-area-inset-top))] lg:pt-[calc(3.5rem+env(safe-area-inset-top))]">
       <div className="mx-auto max-w-6xl">
