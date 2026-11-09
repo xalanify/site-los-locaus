@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Loader2, X, Award, Sparkles, CreditCard } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
+import MoedaLocaus from '../components/MoedaLocaus'
 import { badgeDe, BadgeGem, distincoesOverclock, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { vistoPorUltimo } from '../lib/tempo'
@@ -176,6 +177,16 @@ export default function MembrosPage({ onProfile }) {
                       )}
                       <span className="truncate">{gear || 'Membro Locaus'}</span>
                     </span>
+
+                    {Number(m.inventario_valor || 0) > 0 && (
+                      <span
+                        className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-200/75"
+                        title="Valor atual das cartas e cores de nome que tem"
+                      >
+                        <MoedaLocaus size={11} />
+                        Valor de inventário: {Number(m.inventario_valor || 0).toLocaleString('pt-PT')}
+                      </span>
+                    )}
 
                     <span className="mt-3 flex items-center justify-between gap-2 border-t border-white/[0.06] pt-2.5">
                       <span className="flex items-center gap-3 text-[11px] font-semibold text-zinc-500">

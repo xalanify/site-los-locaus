@@ -27,6 +27,14 @@ function statusNum(s) {
   return 1;
 }
 
+const normalizarEquipa = (v) =>
+  String(v || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
 function vencedor(d) {
   const a = Number(d.team1_id);
   const b = Number(d.team2_id);
@@ -176,18 +184,29 @@ async function sincronizar({ forcar = false } = {}) {
           );
       }
 
-      // resolve as previsões dos jogos que já terminaram
-      await db
+      // resolve as previsões dos jogos que já terminaram, pela equipa
+      // escolhida (não pelo lado 'a'/'b', que pode mudar de ordem)
+      const pendentes = await db
         .prepare(
-          `UPDATE cs2_predictions p
-              SET correct = (m.winner = p.pick)
-             FROM cs2_matches m
-            WHERE p.match_id = m.id
-              AND m.status = 3
+          `SELECT p.match_id, p.user_id, p.pick, p.pick_team,
+                  m.team_a, m.team_b, m.winner
+             FROM cs2_predictions p
+             JOIN cs2_matches m ON m.id = p.match_id
+            WHERE m.status = 3
               AND m.winner IS NOT NULL
               AND p.correct IS NULL`,
         )
-        .run();
+        .all();
+      for (const p of pendentes) {
+        const winnerName = p.winner === 'a' ? p.team_a : p.team_b;
+        const acertou =
+          p.pick_team && winnerName
+            ? normalizarEquipa(p.pick_team) === normalizarEquipa(winnerName)
+            : p.pick === p.winner;
+        await db
+          .prepare('UPDATE cs2_predictions SET correct = ? WHERE match_id = ? AND user_id = ?')
+          .run(acertou, p.match_id, p.user_id);
+      }
 
       const dados = { ok: true, atualizadoEm: new Date().toISOString() };
       cache = { t: Date.now(), dados };

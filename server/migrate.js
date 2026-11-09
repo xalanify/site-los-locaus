@@ -206,6 +206,8 @@ const PASSOS = [
      primary key (match_id, user_id)
    )`,
   'ALTER TABLE public.r6_predictions ADD COLUMN IF NOT EXISTS stake integer NOT NULL DEFAULT 0',
+  'ALTER TABLE public.r6_predictions ADD COLUMN IF NOT EXISTS pick_team_id bigint',
+  'ALTER TABLE public.r6_predictions ADD COLUMN IF NOT EXISTS pick_team text',
   'CREATE INDEX IF NOT EXISTS r6_predictions_user_idx ON public.r6_predictions (user_id, created_at DESC)',
   // CS2 — jogos e previsões (fonte bo3.gg)
   `CREATE TABLE IF NOT EXISTS public.cs2_matches (
@@ -242,6 +244,7 @@ const PASSOS = [
      primary key (match_id, user_id)
    )`,
   'ALTER TABLE public.cs2_predictions ADD COLUMN IF NOT EXISTS stake integer NOT NULL DEFAULT 0',
+  'ALTER TABLE public.cs2_predictions ADD COLUMN IF NOT EXISTS pick_team text',
   'CREATE INDEX IF NOT EXISTS cs2_predictions_user_idx ON public.cs2_predictions (user_id)',
   `CREATE TABLE IF NOT EXISTS public.r6_sync (
      id         integer primary key,

@@ -20,6 +20,7 @@ export const BADGES = [  {
     light: '#FFB3BD',
     dark: '#B0001B',
     anim: 'pulse',
+    icone: '/distincoes/diamond-dev.png',
   },
   {
     id: 'top1',
@@ -29,6 +30,7 @@ export const BADGES = [  {
     light: '#FFC084',
     dark: '#7A2A08',
     anim: 'shine',
+    icone: '/distincoes/diamond-top1.png',
   },
   {
     id: 'previsao1',
@@ -41,6 +43,7 @@ export const BADGES = [  {
     labelColor: '#F3F4F6',
     anim: 'shine',
     arte: 'obsidian',
+    icone: '/distincoes/diamond-previsao.png',
   },
   {
     id: 'fortnite-rank1',
@@ -53,6 +56,7 @@ export const BADGES = [  {
     labelColor: '#C084FC',
     anim: 'float',
     arte: 'fortnite',
+    icone: '/distincoes/diamond-fortnite.png',
   },
   {
     id: 'cs2-inventory',
@@ -63,7 +67,9 @@ export const BADGES = [  {
     dark: '#7A4D00',
     glow: '#F5C542',
     anim: 'shine',
-    icon: 'euro',
+    icone: '/distincoes/gold-face.png',
+    iconeFit: 'cover',
+    iconePos: 'center 32%',
   },
 ]
 
@@ -87,6 +93,7 @@ export function badgeDe(id) {
     labelColor: '#FCA5A5',
     anim: 'pulse',
     arte: 'streak',
+    icone: '/distincoes/diamond-streak.png',
     nivel,
   }
 }
@@ -274,6 +281,31 @@ function StarBadge({ badge, size, anim, corLight, cor, corDark, olhoFill, olhoGl
   )
 }
 
+/* Ícone real das distinções normais (diamante) e do inventário CS2
+   (cara dourada). A imagem é usada tal como foi enviada, só com o
+   fundo removido; a cor do diamante muda por distinção. */
+function IconeArte({ badge, size, anim, glow }) {
+  return (
+    <div
+      className={`relative shrink-0 ${anim}`}
+      style={{
+        width: size,
+        height: size,
+        filter: `drop-shadow(0 0 ${Math.max(4, size * 0.14)}px ${hexToRgba(glow, 0.5)})`,
+      }}
+      title={badge.desc}
+    >
+      <img
+        src={badge.icone}
+        alt=""
+        draggable={false}
+        className={`h-full w-full ${badge.iconeFit === 'cover' ? 'object-cover' : 'object-contain'}`}
+        style={badge.iconePos ? { objectPosition: badge.iconePos } : undefined}
+      />
+    </div>
+  )
+}
+
 /* A cara de diabo (joia facetada + chifres + olhos) — fica só para
    as distinções de overclock, que mantêm o ícone antigo. */
 export function BadgeGem({ badge, size = 56 }) {
@@ -305,6 +337,10 @@ export function BadgeGem({ badge, size = 56 }) {
           : '#08080e'
   const olhoGlow = obsidian ? '#A855F7' : fortnite ? '#C084FC' : top1 ? '#FF6B00' : streak ? '#FF0000' : null
   const glow = badge.glow || badge.color
+
+  if (badge.icone) {
+    return <IconeArte badge={badge} size={size} anim={anim} glow={glow} />
+  }
 
   if (badge.icon === 'euro') {
     return (

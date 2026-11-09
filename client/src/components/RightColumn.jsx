@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Megaphone, Users, ChevronRight } from 'lucide-react'
 import AvatarImg from './AvatarImg'
+import BannerMedia from './BannerMedia'
 import LiveBadge from './LiveBadge'
 import { authHeaders } from '../lib/auth'
 import { badgeDe, BadgeGem, distincoesOverclock } from './BadgeGem'
@@ -134,15 +135,15 @@ export default function RightColumn() {
                       className={`relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-1 py-1.5 pl-2.5 text-left transition-colors hover:bg-white/5 ${classesCard(m.name_effect)}`}
                     >
                       <span
-                        className="absolute inset-y-0 left-0 w-1.5 rounded-l-xl bg-cover bg-center"
-                        style={{
-                          backgroundImage: bannerDe(m.banner_id).ficheiro
-                            ? `url("${bannerDe(m.banner_id).ficheiro}")`
-                            : undefined,
-                          backgroundColor: bannerDe(m.banner_id).cor || '#8b5cf6',
-                        }}
+                        className="absolute inset-y-0 left-0 w-1.5 overflow-hidden rounded-l-xl"
+                        style={{ backgroundColor: bannerDe(m.banner_id).cor || '#8b5cf6' }}
                         aria-hidden="true"
-                      />
+                      >
+                        <BannerMedia
+                          banner={bannerDe(m.banner_id)}
+                          className="h-full w-full object-cover"
+                        />
+                      </span>
                       <span className="relative shrink-0">
                         <AvatarImg
                           src={m.avatar_url}

@@ -71,13 +71,44 @@ function mapas(v) {
   return [];
 }
 
+const normalizarEquipa = (v) =>
+  String(v || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
+/* O lado 'a'/'b' guardado no voto pode ficar desatualizado se a fonte
+   trocar as equipas de lado. O voto guarda também a equipa escolhida;
+   é essa equipa que decide o lado atual. */
+function ladoDoVoto(v, m) {
+  const escolhidoId = Number(v && v.pick_team_id) || null;
+  const idA = Number(m.team_a_id) || null;
+  const idB = Number(m.team_b_id) || null;
+  if (escolhidoId && idA && escolhidoId === idA) return 'a';
+  if (escolhidoId && idB && escolhidoId === idB) return 'b';
+
+  const escolhido = normalizarEquipa(v && v.pick_team);
+  if (escolhido) {
+    if (escolhido === normalizarEquipa(m.team_a)) return 'a';
+    if (escolhido === normalizarEquipa(m.team_b)) return 'b';
+  }
+  return v && v.pick === 'b' ? 'b' : 'a';
+}
+
+function equipaDoLado(m, lado) {
+  return lado === 'a' ? m.team_a : m.team_b;
+}
+
 function decorar(m, votos, uid) {
   const agora = Date.now();
   const inicio = new Date(m.start_time).getTime();
   const status = Number(m.status) || 1;
-  const a = votos.filter((v) => v.pick === 'a');
-  const b = votos.filter((v) => v.pick === 'b');
+  const a = votos.filter((v) => ladoDoVoto(v, m) === 'a');
+  const b = votos.filter((v) => ladoDoVoto(v, m) === 'b');
   const meu = uid ? votos.find((v) => Number(v.user_id) === uid) || null : null;
+  const meuLado = meu ? ladoDoVoto(meu, m) : null;
   const equipasConhecidas = Boolean(m.team_a && m.team_b);
   return {
     id: Number(m.id),
@@ -100,7 +131,8 @@ function decorar(m, votos, uid) {
     team_b: { id: m.team_b_id ? Number(m.team_b_id) : null, name: m.team_b || '', logo: m.team_b_logo || null },
     can_vote: status === 1 && equipasConhecidas && agora < inicio,
     locked: status !== 1 || agora >= inicio,
-    pick: meu ? meu.pick : null,
+    pick: meuLado,
+    pick_team: meuLado ? equipaDoLado(m, meuLado) : null,
     correct: meu && meu.correct !== null ? Boolean(meu.correct) : null,
     stake: meu ? Number(meu.stake) || 0 : 0,
     counts: { a: a.length, b: b.length, total: votos.length },
@@ -127,7 +159,8 @@ async function votosDosJogos(db, ids) {
   if (!ids.length) return porJogo;
   const rows = await db
     .prepare(
-      `SELECT p.match_id, p.user_id, p.pick, p.correct, p.stake, u.username, up.avatar_url
+      `SELECT p.match_id, p.user_id, p.pick, p.pick_team_id, p.pick_team, p.correct, p.stake,
+              u.username, up.avatar_url
        FROM r6_predictions p
        JOIN users u ON u.id = p.user_id
        LEFT JOIN user_profiles up ON up.user_id = p.user_id
@@ -250,24 +283,33 @@ router.post('/:id/voto', requireUser, async (req, res) => {
         .json({ error: `Só tens ${maxStake} moeda(s) Locaus para apostar neste jogo.` });
     }
 
+    const pickTeamId = pick === 'a' ? Number(m.team_a_id) || null : Number(m.team_b_id) || null;
+    const pickTeam = pick === 'a' ? m.team_a : m.team_b;
+
     await db
       .prepare(
-        `INSERT INTO r6_predictions (match_id, user_id, pick, stake, updated_at)
-         VALUES (?, ?, ?, ?, now())
-         ON CONFLICT (match_id, user_id) DO UPDATE SET pick = EXCLUDED.pick, stake = EXCLUDED.stake, updated_at = now()`,
+        `INSERT INTO r6_predictions (match_id, user_id, pick, pick_team_id, pick_team, stake, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, now())
+         ON CONFLICT (match_id, user_id) DO UPDATE SET
+           pick = EXCLUDED.pick,
+           pick_team_id = EXCLUDED.pick_team_id,
+           pick_team = EXCLUDED.pick_team,
+           stake = EXCLUDED.stake,
+           updated_at = now()`,
       )
-      .run(id, uid, pick, stake);
+      .run(id, uid, pick, pickTeamId, pickTeam, stake);
 
     const rows = await db
       .prepare(
-        `SELECT p.user_id, p.pick, p.correct, p.stake, u.username, up.avatar_url
+        `SELECT p.user_id, p.pick, p.pick_team_id, p.pick_team, p.correct, p.stake,
+                u.username, up.avatar_url
          FROM r6_predictions p JOIN users u ON u.id = p.user_id
          LEFT JOIN user_profiles up ON up.user_id = p.user_id
          WHERE p.match_id = ? ORDER BY u.username ASC`,
       )
       .all(id);
-    const a = rows.filter((v) => v.pick === 'a').length;
-    const b = rows.filter((v) => v.pick === 'b').length;
+    const a = rows.filter((v) => ladoDoVoto(v, m) === 'a').length;
+    const b = rows.filter((v) => ladoDoVoto(v, m) === 'b').length;
     res.json({ ok: true, pick, stake, counts: { a, b, total: rows.length } });
   } catch (error) {
     console.error('Erro previsão voto:', error.message);
@@ -321,7 +363,8 @@ router.get('/resultados-novos', requireUser, async (req, res) => {
     const uid = req.auth.uid;
     const r6 = await db
       .prepare(
-        `SELECT p.match_id, p.pick, p.correct, m.team_a, m.team_b, m.score_a, m.score_b,
+        `SELECT p.match_id, p.pick, p.pick_team_id, p.pick_team, p.correct,
+                m.team_a_id, m.team_b_id, m.team_a, m.team_b, m.score_a, m.score_b,
                 m.start_time, m.competition_name AS competition
          FROM r6_predictions p
          JOIN r6_matches m ON m.id = p.match_id
@@ -331,7 +374,7 @@ router.get('/resultados-novos', requireUser, async (req, res) => {
       .all(uid);
     const cs2 = await db
       .prepare(
-        `SELECT p.match_id, p.pick, p.correct, m.team_a, m.team_b, m.score_a, m.score_b,
+        `SELECT p.match_id, p.pick, p.pick_team, p.correct, m.team_a, m.team_b, m.score_a, m.score_b,
                 m.start_time, m.competition
          FROM cs2_predictions p
          JOIN cs2_matches m ON m.id = p.match_id
@@ -350,6 +393,7 @@ router.get('/resultados-novos', requireUser, async (req, res) => {
         match_id: Number(r.match_id),
         jogo: r.jogo,
         pick: r.pick,
+        pick_team: r.pick_team || (r.pick === 'a' ? r.team_a : r.team_b) || '',
         correct: Boolean(r.correct),
         team_a: r.team_a || '',
         team_b: r.team_b || '',
@@ -408,9 +452,10 @@ function decorarCs2(m, votos, uid) {
   const agora = Date.now();
   const inicio = new Date(m.start_time).getTime();
   const status = Number(m.status) || 1;
-  const a = votos.filter((v) => v.pick === 'a');
-  const b = votos.filter((v) => v.pick === 'b');
+  const a = votos.filter((v) => ladoDoVoto(v, m) === 'a');
+  const b = votos.filter((v) => ladoDoVoto(v, m) === 'b');
   const meu = uid ? votos.find((v) => Number(v.user_id) === uid) || null : null;
+  const meuLado = meu ? ladoDoVoto(meu, m) : null;
   return {
     id: Number(m.id),
     external_id: Number(m.external_id) || null,
@@ -429,7 +474,8 @@ function decorarCs2(m, votos, uid) {
     team_b: { name: m.team_b || '', logo: m.team_b_logo || null },
     can_vote: status === 1 && m.team_a && m.team_b && agora < inicio,
     locked: status !== 1 || agora >= inicio,
-    pick: meu ? meu.pick : null,
+    pick: meuLado,
+    pick_team: meuLado ? equipaDoLado(m, meuLado) : null,
     correct: meu && meu.correct !== null ? Boolean(meu.correct) : null,
     stake: meu ? Number(meu.stake) || 0 : 0,
     counts: { a: a.length, b: b.length, total: votos.length },
@@ -455,7 +501,8 @@ async function votosCs2(db, ids) {
   if (!ids.length) return porJogo;
   const rows = await db
     .prepare(
-      `SELECT p.match_id, p.user_id, p.pick, p.correct, p.stake, u.username, up.avatar_url
+      `SELECT p.match_id, p.user_id, p.pick, p.pick_team, p.correct, p.stake,
+              u.username, up.avatar_url
          FROM cs2_predictions p
          JOIN users u ON u.id = p.user_id
          LEFT JOIN user_profiles up ON up.user_id = p.user_id
@@ -547,16 +594,22 @@ router.post('/cs2/:id/voto', requireUser, async (req, res) => {
         .status(400)
         .json({ error: `Só tens ${maxStake} moeda(s) Locaus para apostar neste jogo.` });
     }
+    const pickTeam = pick === 'a' ? m.team_a : m.team_b;
+
     await db
       .prepare(
-        `INSERT INTO cs2_predictions (match_id, user_id, pick, stake, updated_at)
-         VALUES (?, ?, ?, ?, now())
-         ON CONFLICT (match_id, user_id) DO UPDATE SET pick = EXCLUDED.pick, stake = EXCLUDED.stake, updated_at = now()`,
+        `INSERT INTO cs2_predictions (match_id, user_id, pick, pick_team, stake, updated_at)
+         VALUES (?, ?, ?, ?, ?, now())
+         ON CONFLICT (match_id, user_id) DO UPDATE SET
+           pick = EXCLUDED.pick,
+           pick_team = EXCLUDED.pick_team,
+           stake = EXCLUDED.stake,
+           updated_at = now()`,
       )
-      .run(id, uid, pick, stake);
+      .run(id, uid, pick, pickTeam, stake);
     const rows = await db
       .prepare(
-        `SELECT p.user_id, p.pick, p.correct, p.stake, u.username, up.avatar_url
+        `SELECT p.user_id, p.pick, p.pick_team, p.correct, p.stake, u.username, up.avatar_url
            FROM cs2_predictions p JOIN users u ON u.id = p.user_id
            LEFT JOIN user_profiles up ON up.user_id = p.user_id
           WHERE p.match_id = ? ORDER BY u.username ASC`,
@@ -567,8 +620,8 @@ router.post('/cs2/:id/voto', requireUser, async (req, res) => {
       pick,
       stake,
       counts: {
-        a: rows.filter((v) => v.pick === 'a').length,
-        b: rows.filter((v) => v.pick === 'b').length,
+        a: rows.filter((v) => ladoDoVoto(v, m) === 'a').length,
+        b: rows.filter((v) => ladoDoVoto(v, m) === 'b').length,
         total: rows.length,
       },
     });

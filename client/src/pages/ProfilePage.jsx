@@ -33,6 +33,7 @@ import { svgAvatar } from '../lib/avatar'
 import PageShell from '../components/PageShell'
 import ProfileHero from '../components/ProfileHero'
 import ProfileCard from '../components/ProfileCard'
+import BannerMedia from '../components/BannerMedia'
 import CartaDoPerfil from '../components/CartaDoPerfil'
 import ProfileStylePreview from '../components/ProfileStylePreview'
 import FeedToolbar from '../components/FeedToolbar'
@@ -895,10 +896,8 @@ export default function ProfilePage({
                         }`}
                       >
                         {b.ficheiro ? (
-                          <img
-                            src={b.ficheiro}
-                            alt=""
-                            loading="lazy"
+                          <BannerMedia
+                            banner={b}
                             className="block h-16 w-full rounded-md object-cover sm:h-20"
                           />
                         ) : (
@@ -1337,12 +1336,25 @@ export default function ProfilePage({
           >
             <X className="h-5 w-5" />
           </button>
-          <img
-            src={previewTema}
-            alt=""
-            className="max-h-[72vh] max-w-[min(960px,94vw)] rounded-2xl border border-white/15 object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {/\.(mp4|webm)(\?|$)/i.test(previewTema) ? (
+            <video
+              src={previewTema}
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              className="max-h-[72vh] max-w-[min(960px,94vw)] rounded-2xl border border-white/15 object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              src={previewTema}
+              alt=""
+              className="max-h-[72vh] max-w-[min(960px,94vw)] rounded-2xl border border-white/15 object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
         </div>,
         document.body,
       )

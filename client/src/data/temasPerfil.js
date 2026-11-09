@@ -23,6 +23,9 @@ const CORES_BANNER = [
   '#2dd4bf',
 ]
 
+export const BANNERS_REMOVIDOS = new Set(['g15', 'g10', 'g09', 'g02'])
+export const FUNDOS_REMOVIDOS = new Set(['f10', 'f11', 'f12', 'f03'])
+
 export const BANNERS = [
   { id: '', nome: 'Padrão', ficheiro: '', cor: '#8b5cf6' },
   ...Array.from({ length: 15 }, (_, i) => {
@@ -33,7 +36,7 @@ export const BANNERS = [
       ficheiro: `/perfil/cardbanner/${n}.webp?v=2`,
       cor: CORES_BANNER[i % CORES_BANNER.length] || '#a855f7',
     }
-  }).filter((b) => b.id !== 'g07' && b.id !== 'g12'),
+  }).filter((b) => b.id !== 'g07' && b.id !== 'g12' && !BANNERS_REMOVIDOS.has(b.id)),
   {
     id: 'g18',
     nome: 'War 01',
@@ -81,6 +84,26 @@ export const BANNERS = [
     nome: 'Olho vermelho',
     ficheiro: '/perfil/cardbanner/27.webp?v=2',
     cor: '#ef4444',
+  },
+  {
+    id: 'g28',
+    nome: 'Olhos Vermelhos',
+    ficheiro: '/perfil/cardbanner/28.gif',
+    cor: '#ef4444',
+  },
+  {
+    id: 'g29',
+    nome: 'BMW',
+    ficheiro: '/perfil/cardbanner/29.mp4',
+    poster: '/perfil/cardbanner/29.jpg',
+    cor: '#64748b',
+  },
+  {
+    id: 'g30',
+    nome: 'Night Drive',
+    ficheiro: '/perfil/cardbanner/30.mp4',
+    poster: '/perfil/cardbanner/30.jpg',
+    cor: '#a855f7',
   },
 ]
 
@@ -197,7 +220,7 @@ export const FUNDOS = [
     rgb: '203 213 225',
     imagem: '/perfil/fundos/15.jpg',
   },
-]
+].filter((f) => !FUNDOS_REMOVIDOS.has(f.id))
 
 export const CORES_ACENTO = [
   { id: 'auto', nome: 'Automática', cor: '' },

@@ -187,6 +187,49 @@ async function upsertJogo(db, j) {
   if (!j.external_id || !j.start_time) return false;
   // Slots ainda sem equipas definidas não servem para previsões.
   if (!j.team_a || !j.team_b) return false;
+
+  // Se a fonte trocar as equipas de lado, os votos antigos (sem equipa
+  // guardada) têm de trocar de lado com elas. Os votos novos guardam a
+  // equipa e já não dependem desta ordem.
+  const antigo = await db
+    .prepare('SELECT id, team_a_id, team_b_id, winner FROM r6_matches WHERE external_id = ?')
+    .get(j.external_id);
+  const trocou =
+    antigo &&
+    antigo.team_a_id &&
+    antigo.team_b_id &&
+    j.team_a_id &&
+    j.team_b_id &&
+    Number(antigo.team_a_id) === Number(j.team_b_id) &&
+    Number(antigo.team_b_id) === Number(j.team_a_id);
+
+  if (trocou) {
+    if (!j.winner && antigo.winner) {
+      j.winner = antigo.winner === 'a' ? 'b' : antigo.winner === 'b' ? 'a' : null;
+    }
+    await db
+      .prepare(
+        `UPDATE r6_predictions
+            SET pick = CASE WHEN pick = 'a' THEN 'b' ELSE 'a' END,
+                updated_at = now()
+          WHERE match_id = ?
+            AND pick_team_id IS NULL
+            AND pick_team IS NULL`,
+      )
+      .run(antigo.id);
+    if (j.status === 3 && j.winner) {
+      await db
+        .prepare(
+          `UPDATE r6_predictions
+              SET correct = (pick = ?), updated_at = now()
+            WHERE match_id = ?
+              AND pick_team_id IS NULL
+              AND pick_team IS NULL`,
+        )
+        .run(j.winner, antigo.id);
+    }
+  }
+
   await db
     .prepare(
       `INSERT INTO r6_matches
@@ -244,18 +287,39 @@ async function upsertJogo(db, j) {
   return true;
 }
 
+const normalizarEquipa = (v) =>
+  String(v || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
 async function resolverPrevisoes(db) {
   const acabados = await db
-    .prepare("SELECT id, team_a, team_b, team_a_logo, team_b_logo, winner FROM r6_matches WHERE status = 3 AND winner IS NOT NULL")
+    .prepare(
+      "SELECT id, team_a_id, team_b_id, team_a, team_b, team_a_logo, team_b_logo, winner FROM r6_matches WHERE status = 3 AND winner IS NOT NULL",
+    )
     .all();
   let resolvidas = 0;
   for (const m of acabados) {
     const pendentes = await db
-      .prepare('SELECT user_id, pick FROM r6_predictions WHERE match_id = ? AND correct IS NULL')
+      .prepare(
+        'SELECT user_id, pick, pick_team_id, pick_team FROM r6_predictions WHERE match_id = ? AND correct IS NULL',
+      )
       .all(m.id);
     if (!pendentes.length) continue;
+    const winnerId = m.winner === 'a' ? Number(m.team_a_id) : Number(m.team_b_id);
+    const winnerName = m.winner === 'a' ? m.team_a : m.team_b;
     for (const p of pendentes) {
-      const acertou = p.pick === m.winner;
+      let acertou;
+      if (p.pick_team_id && winnerId) {
+        acertou = Number(p.pick_team_id) === winnerId;
+      } else if (p.pick_team && winnerName) {
+        acertou = normalizarEquipa(p.pick_team) === normalizarEquipa(winnerName);
+      } else {
+        acertou = p.pick === m.winner;
+      }
       await db
         .prepare('UPDATE r6_predictions SET correct = ?, updated_at = now() WHERE match_id = ? AND user_id = ?')
         .run(acertou, m.id, p.user_id);

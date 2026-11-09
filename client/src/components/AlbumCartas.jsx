@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Lock } from 'lucide-react'
 import ProfileCard from './ProfileCard'
+import MoedaLocaus from './MoedaLocaus'
 
 /* ============================================================
    ÁLBUM DE CARTAS — visível no perfil de qualquer membro.
    ============================================================ */
 
-export default function AlbumCartas({ username }) {
+export default function AlbumCartas({ username, inventario = 0 }) {
   const [dados, setDados] = useState(null)
 
   useEffect(() => {
@@ -38,7 +39,16 @@ export default function AlbumCartas({ username }) {
             {n === 0 ? 'Ainda sem cartas' : `${n} de ${total} cartas`}
           </p>
         </div>
-        <span className="pf-section-count">{pct}%</span>
+        <span className="flex items-center gap-2">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/20 bg-amber-400/[0.06] px-2.5 py-1 text-[10px] font-bold text-amber-200"
+            title="Valor atual das cartas e cores de nome que tem"
+          >
+            <MoedaLocaus size={12} />
+            Valor de inventário: {Number(inventario || 0).toLocaleString('pt-PT')}
+          </span>
+          <span className="pf-section-count">{pct}%</span>
+        </span>
       </div>
 
       <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">

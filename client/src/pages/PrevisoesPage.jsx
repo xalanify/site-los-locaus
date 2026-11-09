@@ -1990,7 +1990,7 @@ export default function PrevisoesPage({ user }) {
                       <span className="mr-1 rounded bg-white/10 px-1 py-0.5 text-[8px] font-black uppercase text-zinc-300">
                         {r.jogo === 'cs2' ? 'CS2' : 'R6'}
                       </span>
-                      {r.competition} · escolheste {r.pick === 'a' ? r.team_a : r.team_b}
+                      {r.competition} · escolheste {r.pick_team || (r.pick === 'a' ? r.team_a : r.team_b)}
                     </p>
                   </div>
                   <span className={`text-[10px] font-black ${r.correct ? 'text-emerald-300' : 'text-red-300'}`}>

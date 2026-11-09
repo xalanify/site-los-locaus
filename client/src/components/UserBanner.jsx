@@ -1,3 +1,4 @@
+import BannerMedia from './BannerMedia'
 import { bannerDe } from '../data/temasPerfil'
 
 /* Faixa animada (GIF) do tema do perfil — usada em cartões pequenos
@@ -17,12 +18,9 @@ export default function UserBanner({ bannerId, className = 'h-2 w-full' }) {
     )
   }
   return (
-    <img
-      src={b.ficheiro}
-      alt=""
-      loading="lazy"
+    <BannerMedia
+      banner={b}
       className={`${className} object-cover`}
-      aria-hidden="true"
     />
   )
 }

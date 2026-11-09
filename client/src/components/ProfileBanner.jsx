@@ -1,3 +1,4 @@
+import BannerMedia from './BannerMedia'
 import { bannerDe } from '../data/temasPerfil'
 
 /* Fundo animado (GIF) do cartão de perfil. Fica sempre atrás do
@@ -7,10 +8,8 @@ export default function ProfileBanner({ bannerId, overlay = 'from-black/80 via-b
   return (
     <span className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       {b.ficheiro ? (
-        <img
-          src={b.ficheiro}
-          alt=""
-          loading="lazy"
+        <BannerMedia
+          banner={b}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (

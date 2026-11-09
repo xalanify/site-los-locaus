@@ -3467,14 +3467,7 @@ body.kova .olhos-front {
 }
 body.kova .olhos-card:hover .olhos-front,
 body.kova .olhos-card--ativa .olhos-front {
-  background: conic-gradient(
-    from 200deg,
-    #ff1f3d,
-    #7c3aed,
-    #ff1f3d,
-    #7c3aed,
-    #ff1f3d
-  ) !important;
+  background: #000 !important;
 }
 body.kova .olhos-card .tcg-holo {
   background:

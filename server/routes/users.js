@@ -129,6 +129,7 @@ const profileOf = async (userId) => {
          FROM user_profiles WHERE user_id = ?`,
       )
       .get(userId);
+    const inventario = await cosmeticos.valorInventario(userId).catch(() => 0);
     return {
       avatar_url: (row && row.avatar_url) || null,
       game_nick: (row && row.game_nick) || null,
@@ -150,6 +151,7 @@ const profileOf = async (userId) => {
       card_style: (row && row.card_style) || 'padrao',
       profile_style: (row && row.profile_style) || 'padrao',
       cs2_inventory_eur: row && row.cs2_inventory_eur != null ? Number(row.cs2_inventory_eur) : 0,
+      inventario_valor: inventario,
       presence_override: (row && row.presence_override) || null,
       socials: parseSocials(row && row.socials),
       live_auto: row && row.live_auto != null ? Boolean(row.live_auto) : true,
@@ -186,6 +188,7 @@ const profileOf = async (userId) => {
       card_style: 'padrao',
       profile_style: 'padrao',
       cs2_inventory_eur: 0,
+      inventario_valor: 0,
       presence_override: null,
       socials: {},
       live_auto: true,
@@ -1237,6 +1240,19 @@ router.get('/list', attachAuth, async (req, res) => {
     const dists = await Promise.all(rows.map((r) => distincoesOverclock(r.id)));
     const ranks = await Promise.all(rows.map((r) => gameRanksOf(r.id)));
     const games = await Promise.all(rows.map((r) => gameAccountsOf(r.id)));
+    const valoresInv = await db
+      .prepare(
+        `SELECT cc.user_id, COALESCE(SUM(COALESCE(mp.preco, cc.custo, 0)), 0)::int AS valor
+           FROM public.cosmeticos_compras cc
+           LEFT JOIN public.mercado_precos mp ON mp.item_id = cc.item_id
+          WHERE cc.tipo IN ('carta', 'cor')
+          GROUP BY cc.user_id`,
+      )
+      .all()
+      .catch(() => []);
+    const inventarioPorUser = new Map(
+      valoresInv.map((v) => [Number(v.user_id), Number(v.valor) || 0]),
+    );
     res.json({
       users: rows.map((r, i) => ({
         id: Number(r.id),
@@ -1261,6 +1277,7 @@ router.get('/list', attachAuth, async (req, res) => {
         card_style: r.card_style || 'padrao',
         profile_style: r.profile_style || 'padrao',
         cs2_inventory_eur: r.cs2_inventory_eur != null ? Number(r.cs2_inventory_eur) : 0,
+        inventario_valor: inventarioPorUser.get(Number(r.id)) || 0,
         socials: parseSocials(r.socials),
         live_auto: r.live_auto != null ? Boolean(r.live_auto) : true,
         live:

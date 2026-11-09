@@ -685,8 +685,8 @@ Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' -ErrorAction SilentlyCon
   },
   {
     id: 'sys-autoruns',
-    cat: 'Sistema',
-    nome: 'Ver o que arranca com o PC',
+    cat: 'Arranque e drivers',
+    nome: 'Startup manager — ver o que arranca',
     desc: 'Lista tipo Autoruns: entradas de registo, pastas de arranque, tarefas e serviços automáticos. Só lê.',
     perigo: 'baixo',
     tempo: 120000,
@@ -713,6 +713,101 @@ Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskPath -no
 Write-Output '== Servicos automaticos =='
 Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.StartType -eq 'Automatic' } | ForEach-Object {
   Write-Output ('  ' + $_.DisplayName + ' [' + $_.Status + ']')
+}`,
+  },
+  {
+    id: 'drv-lista',
+    cat: 'Arranque e drivers',
+    nome: 'Ver drivers instalados',
+    desc: 'Lista os drivers do Windows com versão, data, fabricante e assinatura. Só lê; não altera nada.',
+    perigo: 'baixo',
+    tempo: 120000,
+    cmd: `$drivers = Get-CimInstance Win32_PnPSignedDriver -ErrorAction SilentlyContinue | Where-Object { $_.DeviceName } | Sort-Object DeviceName
+Write-Output ('Drivers encontrados: ' + @($drivers).Count)
+Write-Output ''
+foreach ($d in $drivers) {
+  $data = ''
+  try { if ($d.DriverDate) { $data = ([datetime]$d.DriverDate).ToString('yyyy-MM-dd') } } catch {}
+  Write-Output ('  ' + $d.DeviceName + ' | versao ' + $d.DriverVersion + ' | ' + $data + ' | ' + $d.Manufacturer + ' | assinado: ' + $d.IsSigned)
+}
+Write-Output ''
+Write-Output '== Dispositivos com problema =='
+$erros = @(Get-PnpDevice -Status Error -ErrorAction SilentlyContinue)
+if (-not $erros.Count) { Write-Output '  (nenhum)' }
+foreach ($e in $erros) { Write-Output ('  ' + $e.FriendlyName + ' [' + $e.Class + '] - ' + $e.Status) }`,
+  },
+  {
+    id: 'arranque-desativar',
+    cat: 'Arranque e drivers',
+    nome: 'Desativar entrada de arranque',
+    desc: 'Escreve o nome de uma aplicação que arranca com o Windows (ex.: Steam, Discord, OneDrive) e desativa-a. Cria um backup .reg antes de mexer.',
+    perigo: 'medio',
+    tempo: 120000,
+    texto: true,
+    placeholder: 'ex.: Steam',
+    cmd: `$nome = '{{TEXTO}}'
+$nome = $nome.Trim()
+$feito = $false
+$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$bk = Join-Path ([Environment]::GetFolderPath('Desktop')) ('locaus-arranque-backup-' + $stamp)
+$chaves = @(
+  'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',
+  'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce',
+  'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run',
+  'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce',
+  'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'
+)
+try {
+  New-Item -ItemType Directory -Force -Path $bk | Out-Null
+  $i = 0
+  foreach ($k in $chaves) {
+    $i++
+    reg export $k (Join-Path $bk ('chave-' + $i + '.reg')) /y 2>$null | Out-Null
+  }
+  Write-Output ('Backup do arranque: ' + $bk)
+} catch {}
+foreach ($chave in $chaves) {
+  try {
+    $item = Get-Item -LiteralPath $chave -ErrorAction Stop
+    foreach ($n in @($item.GetValueNames())) {
+      if ($n -and ($n -ieq $nome -or $n -like ('*' + $nome + '*'))) {
+        $valor = $item.GetValue($n)
+        Remove-ItemProperty -Path $chave -Name $n -Force -ErrorAction SilentlyContinue
+        Write-Output ('  [ok] desativado no registo: ' + $n + ' (' + $chave + ')')
+        $feito = $true
+      }
+    }
+  } catch {}
+}
+$pastas = @(
+  (Join-Path $env:APPDATA 'Microsoft\\Windows\\Start Menu\\Programs\\StartUp'),
+  (Join-Path $env:ProgramData 'Microsoft\\Windows\\Start Menu\\Programs\\StartUp')
+)
+foreach ($pasta in $pastas) {
+  try {
+    Get-ChildItem -LiteralPath $pasta -File -ErrorAction Stop | Where-Object {
+      $_.BaseName -ieq $nome -or $_.Name -like ('*' + $nome + '*')
+    } | ForEach-Object {
+      Rename-Item -LiteralPath $_.FullName -NewName ($_.Name + '.locaus-disabled') -Force
+      Write-Output ('  [ok] desativado na pasta de arranque: ' + $_.Name)
+      $feito = $true
+    }
+  } catch {}
+}
+try {
+  Get-ScheduledTask -ErrorAction Stop | Where-Object {
+    $_.TaskPath -notlike '\\Microsoft\\*' -and ($_.TaskName -ieq $nome -or $_.TaskName -like ('*' + $nome + '*'))
+  } | ForEach-Object {
+    Disable-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -ErrorAction SilentlyContinue | Out-Null
+    Write-Output ('  [ok] tarefa desativada: ' + $_.TaskPath + $_.TaskName)
+    $feito = $true
+  }
+} catch {}
+if (-not $feito) {
+  Write-Output ('  [!] Nao encontrei nenhuma entrada com o nome "' + $nome + '".')
+  Write-Output '      Corre primeiro "Startup manager - ver o que arranca" e copia o nome exato.'
+} else {
+  Write-Output 'Concluido. Reinicia o Windows para garantir que a entrada ja nao arranca.'
 }`,
   },
   {
@@ -2521,6 +2616,12 @@ Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
     }
     partes.push(XALANA_FOOTER);
     cmd = partes.join('\n');
+  } else if (f.texto) {
+    const v = String(arg || '').trim();
+    if (!v || v.length > 120 || /[\r\n]/.test(v)) {
+      return { ok: false, erro: 'Escreve o nome da aplicação (até 120 caracteres).' };
+    }
+    cmd = cmd.replaceAll('{{TEXTO}}', v.replace(/'/g, "''"));
   } else if (f.livre) {
     const v = String(arg || '').trim();
     if (!/^[A-Za-z0-9][A-Za-z0-9._\-]{0,60}$/.test(v)) {
@@ -2556,7 +2657,7 @@ Write-Output '--- NIVEL 3: debloat e servicos pesados ---'`);
     comando: CABECALHO + cmd,
     tempo: f.tempo || 180000,
     normal: f.normal,
-    arg: f.livre || f.disco ? String(arg || '').trim() : null,
+    arg: f.livre || f.disco || f.texto ? String(arg || '').trim() : null,
     soAdmin: Boolean(f.soAdmin),
     cat: f.cat,
     perigo: f.perigo,

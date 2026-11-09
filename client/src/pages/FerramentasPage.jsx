@@ -110,13 +110,14 @@ const ICON_MAP = {
    logs aparecem a andar aqui em baixo.
    ============================================================ */
 
-const CATS = ['Otimizador by Xalana', 'Programas', 'Limpeza']
+const CATS = ['Otimizador by Xalana', 'Programas', 'Limpeza', 'Arranque e drivers']
 
 /* icone pequeno ao lado do nome de cada categoria */
 const CAT_ICONES = {
   'Otimizador by Xalana': Gauge,
   Programas: Package,
   Limpeza: Eraser,
+  'Arranque e drivers': Cpu,
 }
 
 /* ações individuais do Otimizador by Xalana (mesmo mapa do servidor) */
@@ -182,6 +183,7 @@ export default function FerramentasPage({ isAdmin = false }) {
   const [subCat, setSubCat] = useState('Todas')
   const [busca, setBusca] = useState('')
   const [idLivre, setIdLivre] = useState('')
+  const [textoArg, setTextoArg] = useState('')
   // discos fixos do PC (seletor da ferramenta de vírus)
   const [discos, setDiscos] = useState([])
   const [discoSel, setDiscoSel] = useState('')
@@ -682,7 +684,14 @@ export default function FerramentasPage({ isAdmin = false }) {
     } else if (id.startsWith('xalana-') && Array.isArray(acoes) && acoes.length) guardarAplicadas(acoes)
     setAviso(null)
     const alvo = ferramentas.find((f) => f.id === id)
-    const arg = argOverride !== undefined ? argOverride : alvo?.disco ? discoSel : idLivre
+    const arg =
+      argOverride !== undefined
+        ? argOverride
+        : alvo?.disco
+          ? discoSel
+          : alvo?.texto
+            ? textoArg
+            : idLivre
     if (dados?.podeLocal === false) {
       if (!agente.online) {
         setAviso('Liga o teu PC primeiro (botão "Ligar este PC").')
@@ -724,7 +733,14 @@ export default function FerramentasPage({ isAdmin = false }) {
      e cola no PC — cria a sessão, corre a ferramenta e devolve os logs. */
   const copiarComando = async (id, argOverride, acoes) => {
     const alvo = ferramentas.find((f) => f.id === id)
-    const arg = argOverride !== undefined ? argOverride : alvo?.disco ? discoSel : idLivre
+    const arg =
+      argOverride !== undefined
+        ? argOverride
+        : alvo?.disco
+          ? discoSel
+          : alvo?.texto
+            ? textoArg
+            : idLivre
     setAviso(null)
     try {
       const qs = new URLSearchParams({ id })
@@ -1562,6 +1578,24 @@ export default function FerramentasPage({ isAdmin = false }) {
                         className="ui-btn ui-btn-primary ui-btn-sm"
                       >
                         <Search className="h-3.5 w-3.5" /> Scan
+                      </button>
+                    </div>
+                  ) : f.texto ? (
+                    <div className="flex gap-2">
+                      <input
+                        value={textoArg}
+                        onChange={(e) => setTextoArg(e.target.value)}
+                        placeholder={f.placeholder || 'Nome da aplicação'}
+                        maxLength={120}
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12px] text-white placeholder:text-gray-600 focus:border-zinc-500/50 focus:outline-none"
+                        disabled={ocupado}
+                      />
+                      <button
+                        onClick={() => executar(f.id)}
+                        disabled={ocupado || !textoArg.trim()}
+                        className="ui-btn ui-btn-primary ui-btn-sm"
+                      >
+                        <Eraser className="h-3.5 w-3.5" /> Desativar
                       </button>
                     </div>
                   ) : f.livre ? (

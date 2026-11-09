@@ -386,6 +386,33 @@ async function gastosDe(uid) {
   return Number(row && row.gastos) || 0;
 }
 
+/* Valor atual do inventário: cartas + cores de nome que o membro
+   tem neste momento. Se vender um item, a linha sai de
+   cosmeticos_compras e o valor deixa de contar. */
+async function valorInventario(uid) {
+  try {
+    const db = getDb();
+    const rows = await db
+      .prepare(
+        `SELECT cc.item_id, cc.custo, mp.preco
+           FROM public.cosmeticos_compras cc
+           LEFT JOIN public.mercado_precos mp ON mp.item_id = cc.item_id
+          WHERE cc.user_id = ?
+            AND cc.tipo IN ('carta', 'cor')`,
+      )
+      .all(uid);
+    return Math.round(
+      rows.reduce((soma, r) => {
+        const item = POR_ID.get(r.item_id);
+        const valor = Number(r.preco) || Number(r.custo) || Number(item && item.custo) || 0;
+        return soma + valor;
+      }, 0),
+    );
+  } catch {
+    return 0;
+  }
+}
+
 /* Créditos do mercado (vendas). Positivo = entrou dinheiro,
    negativo = gasto numa compra do mercado. */
 async function creditosDe(uid) {
@@ -546,5 +573,6 @@ module.exports = {
   meus,
   podeEquipar,
   existeValor,
+  valorInventario,
   ITENS,
 };

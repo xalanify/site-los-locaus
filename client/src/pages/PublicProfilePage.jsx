@@ -246,7 +246,7 @@ export default function PublicProfilePage({
           primaryLabel="Ver publicações"
         />
 
-        <AlbumCartas username={p.username} />
+        <AlbumCartas username={p.username} inventario={p.inventario_valor || 0} />
 
         {/* ---------------- Feed do membro: clips + mensagens ---------------- */}
         <div id="publicacoes" className="pf-section">

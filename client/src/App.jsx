@@ -9,6 +9,7 @@ import BetaBadge from './components/BetaBadge'
 import MercadoHome from './components/MercadoHome'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
+import AvisosIniciais from './components/AvisosIniciais'
 import DiarioModal from './components/DiarioModal'
 import BonusBugModal from './components/BonusBugModal'
 import AdminPanel from './components/AdminPanel'
@@ -404,6 +405,7 @@ function App() {
                 <Footer />
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
+                <AvisosIniciais user={user} />
                 <DiarioModal user={user} />
                 <BonusBugModal user={user} />
 
