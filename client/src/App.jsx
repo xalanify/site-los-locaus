@@ -7,6 +7,7 @@ import RightColumn from './components/RightColumn'
 import Mapa from './components/Mapa'
 import BetaBadge from './components/BetaBadge'
 import MercadoHome from './components/MercadoHome'
+import NovidadesHome from './components/NovidadesHome'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import DiarioModal from './components/DiarioModal'
@@ -311,7 +312,10 @@ function App() {
                           <p className="home-beta-note">
                             <b>BETA</b> O design ainda está a evoluir — pode mudar.
                           </p>
-                          <MercadoHome isAdmin={isAdmin} />
+                          <div className="home-left">
+                            <MercadoHome isAdmin={isAdmin} />
+                            <NovidadesHome />
+                          </div>
                           <TorneiosHome />
                         </div>
                       }

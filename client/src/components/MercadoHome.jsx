@@ -75,7 +75,7 @@ export default function MercadoHome() {
     return [...lista]
       .filter((x) => !x.emBreve)
       .sort((a, b) => b.preco_compra - a.preco_compra)
-      .slice(0, 3)
+      .slice(0, 5)
   }, [dados])
 
   const saldo = dados && dados.saldo ? dados.saldo.disponiveis : null

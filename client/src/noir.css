@@ -3256,7 +3256,7 @@ body.kova .mode-menu::before {
    ============================================================ */
 .carta-flutuante {
   position: fixed;
-  left: 14px;
+  left: 50%;
   bottom: calc(5.25rem + env(safe-area-inset-bottom));
   z-index: 56;
   display: inline-flex;
@@ -3272,19 +3272,20 @@ body.kova .mode-menu::before {
   font-weight: 600;
   letter-spacing: 0.01em;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
   transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
 }
 .carta-flutuante:hover {
   background: rgba(24, 24, 30, 0.98);
   border-color: rgba(255, 255, 255, 0.28);
-  transform: translateY(-1px);
+  transform: translateX(-50%) translateY(-1px);
 }
 .carta-flutuante svg {
   color: #c4b5fd;
 }
 @media (min-width: 1024px) {
   .carta-flutuante {
-    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    bottom: calc(5.25rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -3295,7 +3296,8 @@ body.kova .mode-menu::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 12px;
+  overflow: hidden;
   background: rgba(0, 0, 0, 0.84);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -3303,15 +3305,28 @@ body.kova .mode-menu::before {
 }
 .carta-modal-box {
   position: relative;
-  width: 100%;
-  max-width: min(440px, 94vw);
-  max-height: 92dvh;
+  width: min(430px, calc(100vw - 24px));
+  max-width: 100%;
+  max-height: calc(100dvh - 24px);
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   border-radius: 18px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   animation: cartaEntra 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.carta-modal-box > * {
+  max-width: 100% !important;
+}
+.carta-modal-box .profile-card {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 .carta-modal-box::-webkit-scrollbar {
   width: 0;
+  height: 0;
+  display: none;
 }
 .carta-modal-close {
   position: absolute;
@@ -3413,5 +3428,148 @@ body.kova .mode-menu::before {
   body.kova .lv-mbar-actions .sino,
   body.kova .lv-mbar-actions .kova-moedas {
     height: 32px;
+  }
+}
+
+/* ============================================================
+   HOME — coluna esquerda (mercado + novidades) alinhada com os
+   torneios; sem vazio por baixo do mercado.
+   ============================================================ */
+body.kova .home-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+body.kova .home-left > section {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+body.kova .home-left > section > div {
+  width: auto !important;
+  max-width: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+@media (min-width: 1280px) {
+  body.kova .home-left {
+    align-self: stretch;
+    height: 100%;
+  }
+  body.kova .home-novidades {
+    flex: 1 1 auto;
+  }
+}
+
+/* cartão de novidades */
+body.kova .home-novidades {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 148px;
+  padding: 18px 20px;
+  border: 1px solid var(--nv-line);
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 130% at 100% 0%, rgba(139, 92, 246, 0.13), transparent 58%),
+    rgba(255, 255, 255, 0.018);
+  text-decoration: none;
+  transition: border-color 0.18s var(--nv-ease), background 0.18s var(--nv-ease);
+}
+body.kova .home-novidades:hover {
+  border-color: var(--nv-line-2);
+  background:
+    radial-gradient(120% 130% at 100% 0%, rgba(139, 92, 246, 0.2), transparent 58%),
+    rgba(255, 255, 255, 0.035);
+}
+body.kova .home-novidades-txt {
+  min-width: 0;
+}
+body.kova .home-novidades-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c4b5fd;
+}
+body.kova .home-novidades-txt h2 {
+  margin-top: 7px;
+  font-family: var(--nv-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: #fff;
+}
+body.kova .home-novidades-txt p {
+  margin-top: 4px;
+  max-width: 32ch;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--nv-muted);
+}
+body.kova .home-novidades-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #c4b5fd;
+}
+body.kova .home-novidades-stars {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-shrink: 0;
+}
+body.kova .home-novidades-star {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+body.kova .home-novidades-star em {
+  font-family: var(--nv-mono);
+  font-size: 6.5px;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  color: var(--nv-dim);
+}
+@media (max-width: 639px) {
+  body.kova .home-novidades {
+    gap: 12px;
+    padding: 15px 16px;
+  }
+  body.kova .home-novidades-txt h2 {
+    font-size: 1rem;
+  }
+  body.kova .home-novidades-txt p {
+    font-size: 11px;
+  }
+  body.kova .home-novidades-stars {
+    gap: 6px;
+  }
+}
+
+/* alturas iguais: a coluna dos torneios acompanha a da esquerda */
+@media (min-width: 1280px) {
+  body.kova .home-dash > .home-torneios {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-bottom: 0 !important;
+  }
+  body.kova .home-dash > .home-torneios .home-torneios-grid {
+    flex: 1 1 auto;
+  }
+  body.kova .home-dash > .home-torneios .home-torneios-grid > * {
+    height: 100%;
   }
 }

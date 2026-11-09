@@ -17,8 +17,8 @@ export const BADGES = [  {
     label: 'DEV',
     desc: 'Desenvolvedor do site',
     color: '#FF1F3D',
-    light: '#FF8A9C',
-    dark: '#6E0014',
+    light: '#FFB3BD',
+    dark: '#B0001B',
     anim: 'pulse',
   },
   {
@@ -184,7 +184,105 @@ export function hexToRgba(hex, alpha = 1) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-/* A cara de diabo em si (joia facetada + chifres + olhos irados) */
+/* Estrela 3D das distinções — sem fundo, só a estrela.
+   A cor muda por distinção e os olhos também (ex.: TOP 1 = estrela
+   preta com olhos laranja; DEV = estrela vermelha com olhos pretos). */
+function StarBadge({ badge, size, anim, corLight, cor, corDark, olhoFill, olhoGlow, glow }) {
+  const sid = String(badge.id || 'star').replace(/[^a-zA-Z0-9_-]/g, '')
+  const fillId = `star-fill-${sid}`
+  const shineId = `star-shine-${sid}`
+  const filterId = `star-eyes-${sid}`
+  const estrela =
+    'M50 9 L61.2 36.2 L91.8 37.6 L68.2 56.6 L77.2 87.8 L50 71.4 L22.8 87.8 L31.8 56.6 L8.2 37.6 L38.8 36.2 Z'
+
+  return (
+    <div
+      className={`relative shrink-0 ${anim}`}
+      style={{
+        width: size,
+        height: size,
+        filter: `drop-shadow(0 0 ${Math.max(6, size * 0.16)}px ${hexToRgba(glow, 0.55)})`,
+      }}
+      title={badge.desc}
+    >
+      <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible">
+        <defs>
+          <radialGradient id={fillId} cx="32%" cy="20%" r="88%">
+            <stop offset="0%" stopColor={corLight || badge.light || badge.color} />
+            <stop offset="58%" stopColor={cor || badge.color} />
+            <stop offset="100%" stopColor={corDark || badge.dark || '#050505'} />
+          </radialGradient>
+          <linearGradient id={shineId} x1="0" y1="0" x2="0.25" y2="1">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+            <stop offset="42%" stopColor="#ffffff" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.26" />
+          </linearGradient>
+          {olhoGlow && (
+            <filter id={filterId} x="-90%" y="-90%" width="280%" height="280%">
+              <feGaussianBlur stdDeviation="2.2" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          )}
+        </defs>
+
+        {/* corpo da estrela: traço redondo + gradiente para o ar 3D */}
+        <path
+          d={estrela}
+          fill={`url(#${fillId})`}
+          stroke={cor || badge.color}
+          strokeWidth="8"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        {/* brilho de cima / sombra em baixo, recortados pela própria estrela */}
+        <path
+          d={estrela}
+          fill={`url(#${shineId})`}
+          stroke="none"
+          opacity="0.9"
+        />
+        {/* reflexo suave no canto superior esquerdo */}
+        <path
+          d="M32 29 Q41 20 55 18"
+          fill="none"
+          stroke="#ffffff"
+          strokeOpacity="0.4"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+        />
+        {/* olhos redondos/ovais, como na imagem */}
+        <g filter={olhoGlow ? `url(#${filterId})` : undefined}>
+          <ellipse
+            cx="40.5"
+            cy="53"
+            rx="3.3"
+            ry="7.2"
+            fill={olhoFill}
+            transform="rotate(-4 40.5 53)"
+          />
+          <ellipse
+            cx="59.5"
+            cy="53"
+            rx="3.3"
+            ry="7.2"
+            fill={olhoFill}
+            transform="rotate(4 59.5 53)"
+          />
+        </g>
+        {/* ponto de luz nos olhos */}
+        <ellipse cx="39.4" cy="49.8" rx="0.9" ry="2.3" fill="#ffffff" opacity="0.8" />
+        <ellipse cx="58.4" cy="49.8" rx="0.9" ry="2.3" fill="#ffffff" opacity="0.8" />
+      </svg>
+    </div>
+  )
+}
+
+/* A cara de diabo (joia facetada + chifres + olhos) — fica só para
+   as distinções de overclock, que mantêm o ícone antigo. */
 export function BadgeGem({ badge, size = 56 }) {
   const dev = badge.id === 'dev'
   const top1 = badge.id === 'top1'
@@ -264,6 +362,24 @@ export function BadgeGem({ badge, size = 56 }) {
           </text>
         </svg>
       </div>
+    )
+  }
+
+  /* Overclock mantém a joia com o ícone de CPU/RAM. Todas as outras
+     distinções passam a usar a estrela, sem fundo. */
+  if (!ic) {
+    return (
+      <StarBadge
+        badge={badge}
+        size={size}
+        anim={anim}
+        corLight={gemLight}
+        cor={gemColor}
+        corDark={gemDark}
+        olhoFill={olhoFill}
+        olhoGlow={olhoGlow}
+        glow={glow}
+      />
     )
   }
 
