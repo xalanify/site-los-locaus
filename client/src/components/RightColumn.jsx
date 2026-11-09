@@ -4,7 +4,7 @@ import { Megaphone, Users, ChevronRight } from 'lucide-react'
 import AvatarImg from './AvatarImg'
 import LiveBadge from './LiveBadge'
 import { authHeaders } from '../lib/auth'
-import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
+import { badgeDe, BadgeGem, distincoesOverclock } from './BadgeGem'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 import { bannerDe } from '../data/temasPerfil'
 import { anunciosVisiveis } from '../lib/anuncios'
@@ -157,8 +157,7 @@ export default function RightColumn() {
                       </span>
                       <span
                         className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
-                          classesNome(m.name_color, m.name_effect) ||
-                          (temPrevisao1(m.badges) ? nomeDouradoClass : 'text-gray-200')
+                          classesNome(m.name_color, m.name_effect) || 'text-gray-200'
                         }`}
                       >
                         {m.display_name || m.username}

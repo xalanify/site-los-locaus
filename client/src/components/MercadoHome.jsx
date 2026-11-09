@@ -113,7 +113,7 @@ export default function MercadoHome() {
             ) : top.length === 0 ? (
               <p className="py-10 text-center text-sm text-zinc-500">Ainda sem itens no mercado.</p>
             ) : (
-              <ul className="divide-y divide-white/[0.06]">
+              <ul className="mercado-home-lista divide-y divide-white/[0.06]">
                 {top.map((item, i) => {
                   const sobe = item.variacao >= 0
                   return (
@@ -153,18 +153,7 @@ export default function MercadoHome() {
                           </span>
                         ) : null}
                         <span className="min-w-0 flex-1">
-                          <span
-                            className={`block truncate text-sm font-bold ${
-                              item.tipo === 'cor'
-                                ? classesNome(item.valor) || 'text-white'
-                                : 'text-white'
-                            }`}
-                            style={
-                              item.tipo === 'cor'
-                                ? { WebkitTextStroke: '0.45px rgba(255, 255, 255, 0.62)' }
-                                : undefined
-                            }
-                          >
+                          <span className="block truncate text-sm font-bold text-white">
                             {item.nome}
                           </span>
                           <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">

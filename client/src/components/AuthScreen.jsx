@@ -7,6 +7,8 @@ import {
   ShieldCheck,
   MailCheck,
   KeyRound,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 
 /* ============================================================
@@ -27,6 +29,9 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [verPass, setVerPass] = useState(false)
+  const [verReset, setVerReset] = useState(false)
+  const [verConfirm, setVerConfirm] = useState(false)
 
   // Estado do pedido de recuperação
   const [sentInfo, setSentInfo] = useState(null) // { ok: true }
@@ -306,24 +311,44 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                 className={`${inputCls} ${forceReset ? 'opacity-70' : ''}`}
               />
 
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nova palavra-passe (mín. 6)"
-                maxLength={100}
-                autoComplete="new-password"
-                className={inputCls}
-              />
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder="Repete a nova palavra-passe"
-                maxLength={100}
-                autoComplete="new-password"
-                className={inputCls}
-              />
+              <div className="relative">
+                <input
+                  type={verReset ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Nova palavra-passe (mín. 6)"
+                  maxLength={100}
+                  autoComplete="new-password"
+                  className={`${inputCls} pr-11`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setVerReset((v) => !v)}
+                  className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-gray-400 transition-colors hover:text-white"
+                  aria-label={verReset ? 'Esconder palavra-passe' : 'Mostrar palavra-passe'}
+                >
+                  {verReset ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={verConfirm ? 'text' : 'password'}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  placeholder="Repete a nova palavra-passe"
+                  maxLength={100}
+                  autoComplete="new-password"
+                  className={`${inputCls} pr-11`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setVerConfirm((v) => !v)}
+                  className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-gray-400 transition-colors hover:text-white"
+                  aria-label={verConfirm ? 'Esconder palavra-passe' : 'Mostrar palavra-passe'}
+                >
+                  {verConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
 
               {error && (
                 <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">
@@ -393,15 +418,25 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
                   />
                 )}
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Palavra-passe (mín. 6)"
-                  maxLength={100}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  className={inputCls}
-                />
+                <div className="relative">
+                  <input
+                    type={verPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Palavra-passe (mín. 6)"
+                    maxLength={100}
+                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                    className={`${inputCls} pr-11`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setVerPass((v) => !v)}
+                    className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-gray-400 transition-colors hover:text-white"
+                    aria-label={verPass ? 'Esconder palavra-passe' : 'Mostrar palavra-passe'}
+                  >
+                    {verPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
 
                 {/* Link "Esqueci a pass" — só aparece se o nome existir */}
                 {mode === 'login' && showExists && (

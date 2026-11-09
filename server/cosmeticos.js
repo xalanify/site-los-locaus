@@ -73,6 +73,13 @@ const CORES_REMOVER = new Set([
   'cristal', 'hex metal', 'mercurio', 'anjo', 'ouro', 'teia', 'ouro negro',
   'roxo camuflado', 'galaxia', 'prisma', 'rubra', 'filigrana', 'topografico',
   'vela', 'neon camuflado', 'green tiger camuflado', 'desert camuflado',
+  /* retiradas a pedido */
+  'asfalto', 'suspenso', 'damascus camuflado', 'hipnose', 'nebulosa',
+  'platinum camuflado', 'inverno', 'estrela', 'chrome camuflado', 'tempestade',
+  'malaquite', 'interstellar camuflado', 'brasas', 'cromo liquido',
+  'vermelho camuflado', 'chrome', 'azul camuflado', 'zebra camuflado',
+  'platinum', 'red tiger camuflado', 'hex camuflado', 'digital camuflado',
+  'urban camuflado', 'woodland camuflado',
 ]);
 
 const CORES = CORES_TODAS.filter((c) => !CORES_REMOVER.has(normNome(c.nome)));

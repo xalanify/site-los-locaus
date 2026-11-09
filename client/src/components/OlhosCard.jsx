@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { RotateCw } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -29,7 +28,6 @@ export default function OlhosCard({
   const avatar = perfil.avatar_url || svgAvatar(username, '#a1a1aa')
 
   const ref = useRef(null)
-  const [virada, setVirada] = useState(false)
   const [ativa, setAtiva] = useState(false)
 
   const artPreviewStyle = preview
@@ -61,12 +59,6 @@ export default function OlhosCard({
     setAtiva(false)
   }
 
-  const alternar = (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setVirada((v) => !v)
-  }
-
   return (
     <div
       className={`olhos-scene ${preview ? 'olhos-scene--preview' : ''} ${className}`}
@@ -74,9 +66,7 @@ export default function OlhosCard({
     >
       <div
         ref={ref}
-        className={`olhos-card ${virada ? 'olhos-card--virada' : ''} ${
-          ativa ? 'olhos-card--ativa' : ''
-        }`}
+        className={`olhos-card ${ativa ? 'olhos-card--ativa' : ''}`}
         onPointerMove={mover}
         onPointerDown={(e) => {
           if (e.pointerType !== 'mouse') setAtiva((v) => !v)
@@ -143,45 +133,7 @@ export default function OlhosCard({
           </div>
         </div>
 
-        {/* ---------- VERSO ---------- */}
-        {!preview && (
-          <div className="olhos-face olhos-back">
-            <img src="/cartas/olhos.png" alt="" className="olhos-back-img" />
-            <span className="olhos-back-glow" aria-hidden="true" />
-            <div className="olhos-back-inner">
-              <span className="olhos-back-top">Locaus · Olhar</span>
-              <span className="olhos-back-eye" aria-hidden="true">
-                <span />
-              </span>
-              <span className="olhos-back-name">{username}</span>
-              <span className="olhos-back-id">#{id} · {ano}</span>
-              <span className="olhos-back-foot">LOC · 004/004</span>
-            </div>
-          </div>
-        )}
       </div>
-
-      {!preview && (
-        <span
-          role="button"
-          tabIndex={0}
-          className="tcg-flip"
-          aria-label={virada ? 'Mostrar a frente da carta' : 'Virar a carta'}
-          title={virada ? 'Mostrar a frente' : 'Virar carta'}
-          onClick={alternar}
-          onPointerDown={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              e.stopPropagation()
-              setVirada((v) => !v)
-            }
-          }}
-        >
-          <RotateCw className="tcg-flip-icon" aria-hidden="true" />
-          <span className="tcg-flip-label">{virada ? 'Frente' : 'Virar'}</span>
-        </span>
-      )}
     </div>
   )
 }

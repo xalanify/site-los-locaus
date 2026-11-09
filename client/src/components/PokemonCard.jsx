@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { RotateCw, Skull } from 'lucide-react'
+import { Skull } from 'lucide-react'
 import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
@@ -66,7 +66,6 @@ export default function PokemonCard({
   const avatar = perfil.avatar_url || svgAvatar(username, '#a1a1aa')
 
   const ref = useRef(null)
-  const [virada, setVirada] = useState(false)
   const [ativa, setAtiva] = useState(false)
 
   const moves = useMemo(
@@ -116,12 +115,6 @@ export default function PokemonCard({
     setAtiva(false)
   }
 
-  const alternar = (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setVirada((v) => !v)
-  }
-
   return (
     <div
       className={`tcg-scene ${preview ? 'tcg-scene--preview' : ''} ${className}`}
@@ -129,7 +122,7 @@ export default function PokemonCard({
     >
       <div
         ref={ref}
-        className={`tcg-card ${virada ? 'tcg-card--virada' : ''} ${ativa ? 'tcg-card--ativa' : ''}`}
+        className={`tcg-card ${ativa ? 'tcg-card--ativa' : ''}`}
         onPointerMove={mover}
         onPointerDown={(e) => {
           if (e.pointerType !== 'mouse') setAtiva((v) => !v)
@@ -296,47 +289,7 @@ export default function PokemonCard({
           </div>
         </div>
 
-        {/* ---------- VERSO ---------- */}
-        {!preview && (
-          <div className={`tcg-face tcg-back tcg-back--${info.back}`}>
-            <span className="tcg-back-glow" aria-hidden="true" />
-            <div className="tcg-back-inner">
-              <span className="tcg-back-top">Locaus · Trading Card</span>
-              <span className="tcg-back-emblem" aria-hidden="true">
-                {info.emblema}
-              </span>
-              <span className="tcg-back-name">{info.titulo}</span>
-              <span className="tcg-back-rule" aria-hidden="true" />
-              <span className="tcg-back-user">
-                {username} · #{id}
-              </span>
-              <span className="tcg-back-foot">{info.serie}</span>
-            </div>
-          </div>
-        )}
       </div>
-
-      {!preview && (
-        <span
-          role="button"
-          tabIndex={0}
-          className="tcg-flip"
-          aria-label={virada ? 'Mostrar a frente da carta' : 'Virar a carta'}
-          title={virada ? 'Mostrar a frente' : 'Virar carta'}
-          onClick={alternar}
-          onPointerDown={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              e.stopPropagation()
-              setVirada((v) => !v)
-            }
-          }}
-        >
-          <RotateCw className="tcg-flip-icon" aria-hidden="true" />
-          <span className="tcg-flip-label">{virada ? 'Frente' : 'Virar'}</span>
-        </span>
-      )}
     </div>
   )
 }

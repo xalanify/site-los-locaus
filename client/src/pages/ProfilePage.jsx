@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import PlatformIcon from '../components/PlatformIcon'
 import AdminMusica from '../components/AdminMusica'
-import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
+import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, hexToRgba } from '../components/BadgeGem'
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import { searchMice } from '../data/mice'

@@ -3446,3 +3446,48 @@ body.kova .mode-menu::before {
     height: 100%;
   }
 }
+
+/* home: no telemóvel mostra só 3 cosméticos; em tablet 5 */
+@media (max-width: 767px) {
+  body.kova .mercado-home-lista > li:nth-child(n + 4) {
+    display: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  body.kova .mercado-home-lista > li:nth-child(n + 6) {
+    display: none;
+  }
+}
+
+/* ============================================================
+   CARTA OLHAR — borda preta; ao passar o rato só vermelho/roxo
+   ============================================================ */
+body.kova .olhos-front {
+  background: #000 !important;
+}
+body.kova .olhos-card:hover .olhos-front,
+body.kova .olhos-card--ativa .olhos-front {
+  background: conic-gradient(
+    from 200deg,
+    #ff1f3d,
+    #7c3aed,
+    #ff1f3d,
+    #7c3aed,
+    #ff1f3d
+  ) !important;
+}
+body.kova .olhos-card .tcg-holo {
+  background:
+    radial-gradient(
+      circle 24cqw at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 31, 61, 0.3),
+      transparent 70%
+    ),
+    linear-gradient(
+      115deg,
+      transparent 20%,
+      rgba(255, 31, 61, 0.2) 38%,
+      rgba(124, 58, 237, 0.24) 55%,
+      transparent 80%
+    ) !important;
+}

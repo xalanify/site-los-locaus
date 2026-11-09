@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Loader2, X, Award, Sparkles, CreditCard } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
-import { badgeDe, BadgeGem, distincoesOverclock, nomeDouradoClass, temPrevisao1, hexToRgba } from '../components/BadgeGem'
+import { badgeDe, BadgeGem, distincoesOverclock, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
@@ -150,8 +150,7 @@ export default function MembrosPage({ onProfile }) {
                         <span className="flex min-w-0 items-center gap-1">
                           <span
                             className={`truncate text-[15px] font-bold ${
-                              classesNome(m.name_color, m.name_effect) ||
-                              (temPrevisao1(m.badges) ? nomeDouradoClass : 'text-white')
+                              classesNome(m.name_color, m.name_effect) || 'text-white'
                             }`}
                           >
                             {m.username}

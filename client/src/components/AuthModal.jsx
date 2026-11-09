@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, LogIn, UserPlus, Loader2, User } from 'lucide-react'
+import { X, LogIn, UserPlus, Loader2, User, Eye, EyeOff } from 'lucide-react'
 
 /* Entrar ou criar conta de utilizador (para clips) */
 export default function AuthModal({ isOpen, onClose, onAuthed }) {
@@ -8,6 +8,7 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [verPass, setVerPass] = useState(false)
 
   if (!isOpen) return null
 
@@ -97,15 +98,25 @@ export default function AuthModal({ isOpen, onClose, onAuthed }) {
             autoComplete="username"
             className={inputCls}
           />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Palavra-passe (mín. 6)"
-            maxLength={100}
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            className={inputCls}
-          />
+          <div className="relative">
+            <input
+              type={verPass ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Palavra-passe (mín. 6)"
+              maxLength={100}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              className={`${inputCls} pr-11`}
+            />
+            <button
+              type="button"
+              onClick={() => setVerPass((v) => !v)}
+              className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-gray-400 transition-colors hover:text-white"
+              aria-label={verPass ? 'Esconder palavra-passe' : 'Mostrar palavra-passe'}
+            >
+              {verPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
 
           {error && (
             <p className="rounded-lg bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-400">

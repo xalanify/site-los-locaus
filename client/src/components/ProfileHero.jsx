@@ -9,7 +9,7 @@ import {
 import ProfileBanner from './ProfileBanner'
 import LiveBadge from './LiveBadge'
 import SocialLinks from './SocialLinks'
-import { BadgeGem, nomeDouradoClass, temPrevisao1 } from './BadgeGem'
+import { BadgeGem } from './BadgeGem'
 import { gameLabel } from '../data/clipGames'
 import { svgAvatar } from '../lib/avatar'
 import { authHeaders } from '../lib/auth'
@@ -273,11 +273,7 @@ export default function ProfileHero({
             </div>
 
             <div className="pf-name-row">
-              <h1
-                className={`pf-name ${
-                  nomeCls || (temPrevisao1(badges) ? nomeDouradoClass : '')
-                }`}
-              >
+              <h1 className={`pf-name ${nomeCls}`}>
                 {perfil.username}
               </h1>
               {minhas.slice(0, 4).map((b) => (
