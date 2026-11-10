@@ -3484,3 +3484,124 @@ body.kova .olhos-card .tcg-holo {
       transparent 80%
     ) !important;
 }
+
+/* ============================================================
+   NAVBAR LIMPA — sem linhas, avatar circular e menus juntos
+   ============================================================ */
+body.kova .lv-bar,
+body.kova .lv-mbar {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+body.kova .lv-bar::after {
+  display: none !important;
+}
+body.kova .aviso-fotos {
+  border-top: 0 !important;
+}
+body.kova .mode-link[data-active='true']::after,
+body.kova .lv-mlink[data-active='true']::after {
+  display: none !important;
+}
+
+/* a lista abre imediatamente abaixo da opção, por cima do aviso */
+body.kova .mode-menu {
+  top: calc(100% + 6px) !important;
+}
+body.kova .mode-menu::before {
+  top: -6px !important;
+  height: 6px !important;
+}
+
+/* avatar do PC: só o círculo, sem caixa */
+body.kova .lv-user {
+  width: 34px !important;
+  height: 34px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body.kova .lv-user:hover {
+  background: transparent !important;
+  border: 0 !important;
+  opacity: 0.9;
+}
+body.kova .lv-user img {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+}
+
+/* avatar do perfil: só o círculo, sem moldura quadrada */
+body.kova .pf-avatar-wrap {
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body.kova .pf-avatar {
+  border-radius: 50% !important;
+}
+
+/* Admin / Sair centrados */
+body.kova .perfil-dock {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  justify-content: center;
+}
+
+/* barra do telemóvel: mesma altura e o mesmo desenho */
+@media (max-width: 1023px) {
+  body.kova .lv-mbar-actions {
+    gap: 6px;
+  }
+  body.kova .lv-mbar-actions .kova-moedas {
+    height: 36px !important;
+    padding: 0 9px !important;
+    border: 1px solid var(--nv-line-2) !important;
+    border-radius: 9px !important;
+    background: rgba(255, 255, 255, 0.035) !important;
+  }
+  body.kova .lv-mbar-actions .btn-glass {
+    width: 36px !important;
+    height: 36px !important;
+    border: 1px solid var(--nv-line-2) !important;
+    border-radius: 9px !important;
+    background: rgba(255, 255, 255, 0.035) !important;
+  }
+  body.kova .lv-mbar-user {
+    width: 36px !important;
+    height: 36px !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+  body.kova .lv-mbar-user img {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+  }
+  body.kova .lv-menu-btn {
+    height: 36px !important;
+    border-radius: 9px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  body.kova .lv-mbar-actions .kova-moedas,
+  body.kova .lv-mbar-actions .btn-glass,
+  body.kova .lv-mbar-user,
+  body.kova .lv-menu-btn {
+    height: 34px !important;
+  }
+  body.kova .lv-mbar-actions .btn-glass,
+  body.kova .lv-mbar-user {
+    width: 34px !important;
+  }
+  body.kova .lv-mbar-user img {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}
