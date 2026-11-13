@@ -3,7 +3,6 @@ import { ChevronDown, Menu } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
-import AvisoFotos from './AvisoFotos'
 import { modeDe } from '../data/navegacao'
 
 /* ============================================================
@@ -49,8 +48,6 @@ export default function Navbar({ user = null, onMenu }) {
           </button>
         </div>
       </div>
-
-      <AvisoFotos />
     </nav>
   )
 }

@@ -133,7 +133,7 @@ export default function MercadoHome() {
                           }}
                         />
                         {item.tipo === 'cor' ? (
-                          <span className="hidden h-10 w-[74px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] px-1 sm:flex">
+                          <span className="flex h-9 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] px-1 sm:h-10 sm:w-[74px]">
                             <span
                               className={`truncate text-[10px] font-black ${classesNome(item.valor)}`}
                             >
@@ -141,7 +141,7 @@ export default function MercadoHome() {
                             </span>
                           </span>
                         ) : item.tipo === 'carta' ? (
-                          <span className="relative hidden h-11 w-9 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/30 sm:block">
+                          <span className="relative block h-10 w-7 shrink-0 overflow-hidden rounded-md border border-white/10 bg-black/30 sm:h-11 sm:w-9">
                             <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.082] -translate-x-1/2 -translate-y-1/2">
                               <ProfileCard
                                 perfil={{ username: 'Locaus' }}
@@ -166,7 +166,7 @@ export default function MercadoHome() {
                             cor={sobe ? '#34d399' : '#f87171'}
                           />
                         </span>
-                        <span className="w-[96px] shrink-0 text-right">
+                        <span className="w-[84px] shrink-0 text-right sm:w-[96px]">
                           <span className="flex items-center justify-end gap-1 font-display text-sm font-black tabular-nums text-white">
                             {fmt(item.preco_compra)}
                             <MoedaLocaus size={12} />

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, X, Image as ImageIcon, Pencil } from 'lucide-react'
+import { Sparkles, X, Image as ImageIcon, Pencil, CheckCircle2 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import BannerMedia from './BannerMedia'
 import { BANNERS, BANNERS_REMOVIDOS, FUNDOS_REMOVIDOS } from '../data/temasPerfil'
 import { BADGES, badgeDe, BadgeGem } from './BadgeGem'
 
-const CHAVE = 'locaus:novidades:2026-11-09-banners-diamante-v1'
+const CHAVE = 'locaus:novidades:2026-11-13-fotos-online-v1'
 
 const NOMES_BANNER = {
   g02: 'Banner 02',
@@ -150,10 +150,10 @@ export default function AvisosIniciais({ user }) {
                   <Sparkles className="h-3 w-3" /> Novidades
                 </p>
                 <h2 className="mt-1 font-display text-2xl font-black text-white">
-                  Novos banners e novas distinções
+                  Novidades
                 </h2>
                 <p className="mt-1 text-[12px] text-zinc-400">
-                  Três banners novos e um novo visual para as insígnias do site.
+                  As fotos já estão a funcionar, com banners e ícones novos.
                 </p>
               </div>
               <button
@@ -167,6 +167,18 @@ export default function AvisosIniciais({ user }) {
             </header>
 
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
+              <div className="flex items-start gap-3 rounded-xl border border-[#ff9e9e]/25 bg-[#ff9e9e]/[0.08] px-4 py-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#ff9e9e]" />
+                <div>
+                  <p className="text-[13px] font-black text-white">
+                    As fotos de perfil já estão a funcionar
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-[#ffd2d2]/75">
+                    Já podes ver e atualizar a tua foto normalmente.
+                  </p>
+                </div>
+              </div>
+
               <section>
                 <h3 className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">
                   <ImageIcon className="h-3 w-3" /> Novos banners

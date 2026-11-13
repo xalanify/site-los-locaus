@@ -11,7 +11,7 @@
      de 32 bytes; na base só fica o hash SHA-256;
    - o servidor monta o comando a partir do catálogo fechado —
      o browser nunca envia PowerShell livre;
-   - a sessão expira ao fim de 12 h (renovada a cada heartbeat) e pode ser desligada no site sem apagar o token.
+   - a sessão é duradoura (10 anos, renovada a cada heartbeat) e pode ser desligada no site sem apagar o token.
    ============================================================ */
 const crypto = require('crypto');
 const fs = require('fs');
@@ -19,7 +19,7 @@ const path = require('path');
 const { getDb } = require('./database');
 const ferramentas = require('./ferramentas');
 
-const SESSAO_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias (renovado a cada heartbeat)
+const SESSAO_MS = 10 * 365 * 24 * 60 * 60 * 1000; // 10 anos (renovado a cada heartbeat)
 const ONLINE_MS = 12 * 1000; // agente conta como ligado se falou nos últimos 12 s
 
 const hashToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
@@ -80,14 +80,9 @@ async function garantirTabelas() {
 async function criarSessao(userId, { nome, versao, plataforma } = {}) {
   if (!(await garantirTabelas())) throw new Error('Base de dados indisponível.');
   const db = getDb();
-  // uma sessão ativa por utilizador: a anterior deixa de receber trabalhos
-  // e o agente antigo recebe ordem para sair
-  await db
-    .prepare(
-      'UPDATE public.agente_sessoes SET encerrar = true, expira_em = now() WHERE user_id = ? AND expira_em > now()',
-    )
-    .run(userId);
-
+  // As sessões antigas continuam válidas: um .bat já instalado não deixa
+  // de funcionar só porque o user descarregou outro. O trabalho vai para
+  // a sessão que falou mais recentemente com o site.
   const token = crypto.randomBytes(32).toString('hex');
   const expira = new Date(Date.now() + SESSAO_MS);
   const r = await db
@@ -135,7 +130,11 @@ async function estado(userId) {
   if (!(await garantirTabelas())) return { ok: false, online: false, erro: 'Base de dados indisponível.' };
   const db = getDb();
   const s = await db
-    .prepare('SELECT * FROM public.agente_sessoes WHERE user_id = ? AND expira_em > now() ORDER BY id DESC LIMIT 1')
+    .prepare(
+      `SELECT * FROM public.agente_sessoes
+        WHERE user_id = ? AND expira_em > now()
+        ORDER BY visto_em DESC NULLS LAST, id DESC LIMIT 1`,
+    )
     .get(userId);
   if (!s) return { ok: true, online: false, sessao: null };
   const visto = s.visto_em ? new Date(s.visto_em).getTime() : 0;
@@ -257,7 +256,11 @@ async function criarJob(userId, payload, soAdmin) {
   if (!(await garantirTabelas())) return { ok: false, erro: 'Base de dados indisponível.' };
   const db = getDb();
   const s = await db
-    .prepare('SELECT * FROM public.agente_sessoes WHERE user_id = ? AND expira_em > now() ORDER BY id DESC LIMIT 1')
+    .prepare(
+      `SELECT * FROM public.agente_sessoes
+        WHERE user_id = ? AND expira_em > now()
+        ORDER BY visto_em DESC NULLS LAST, id DESC LIMIT 1`,
+    )
     .get(userId);
   if (!s) return { ok: false, erro: 'O PC ainda não está ligado. Descarrega e abre o LOCAUS-PC.bat.' };
   const visto = s.visto_em ? new Date(s.visto_em).getTime() : 0;

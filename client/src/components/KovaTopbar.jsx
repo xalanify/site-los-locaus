@@ -4,7 +4,6 @@ import { ChevronDown } from 'lucide-react'
 import Sino from './Sino'
 import SaldoMoedas from './SaldoMoedas'
 import AvatarImg from './AvatarImg'
-import AvisoFotos from './AvisoFotos'
 import { MODES, linksDoModo, linkAtivo, modeDe } from '../data/navegacao'
 
 /* ============================================================
@@ -104,8 +103,6 @@ export default function KovaTopbar({ user, isAdmin = false }) {
           </button>
         </div>
       </div>
-
-      <AvisoFotos />
     </header>
   )
 }

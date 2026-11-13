@@ -36,6 +36,7 @@ export default function Mapa({ open, onClose, user, isAdmin = false, onLogout })
         <header className="mapa-top">
           <Link to="/" className="lv-brand" onClick={onClose}>
             locaus<span>.</span>
+            <em>beta</em>
           </Link>
           <span className="mapa-title">Menu</span>
           <button type="button" onClick={onClose} className="mapa-close" aria-label="Fechar menu">
