@@ -1,3 +1,4 @@
+import { desafioAtivo } from '../lib/desafioSabino'
 import {
   Home,
   Clapperboard,
@@ -8,6 +9,7 @@ import {
   Award,
   ShoppingBag,
   CreditCard,
+  Newspaper,
   Wrench,
   Cpu,
   CircuitBoard,
@@ -47,6 +49,7 @@ export const MODES = [
       { nome: 'Previsões', path: '/previsoes', Icon: Swords, desc: 'Vota e sobe na tabela.' },
       { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3, desc: 'Números por jogo.' },
       { nome: 'Distinções', path: '/distincoes', Icon: Award, desc: 'As insígnias da casa.' },
+      { nome: 'Notícias', path: '/noticias', Icon: Newspaper, desc: 'Novidades dos jogos e da comunidade.', soSabino: true },
     ],
   },
   {
@@ -82,7 +85,13 @@ export const MODES = [
 
 export const modeDe = (pathname = '/') => {
   const p = String(pathname || '/')
-  if (p.startsWith('/previsoes') || p.startsWith('/jogos') || p.startsWith('/distincoes') || p.startsWith('/atualizacoes')) {
+  if (
+    p.startsWith('/previsoes') ||
+    p.startsWith('/jogos') ||
+    p.startsWith('/distincoes') ||
+    p.startsWith('/atualizacoes') ||
+    p.startsWith('/noticias')
+  ) {
     return MODES[1]
   }
   if (p.startsWith('/cosmeticos')) return MODES[2]
@@ -91,7 +100,9 @@ export const modeDe = (pathname = '/') => {
 }
 
 export const linksDoModo = (mode, isAdmin = false) =>
-  (mode?.links || []).filter((l) => !l.admin || isAdmin)
+  (mode?.links || []).filter(
+    (l) => (!l.admin || isAdmin) && (!l.soSabino || desafioAtivo()),
+  )
 
 export const linkAtivo = (pathname, path) =>
   path === '/' ? pathname === '/' : pathname.startsWith(path)

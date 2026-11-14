@@ -3,6 +3,12 @@ import { motion } from 'framer-motion'
 import { Search, Loader2, X, Award, Sparkles, CreditCard } from 'lucide-react'
 import AvatarImg from '../components/AvatarImg'
 import MoedaLocaus from '../components/MoedaLocaus'
+import {
+  marcarBug,
+  marcarFinalGanho,
+  nomeDesafio,
+  useDesafioSabino,
+} from '../lib/desafioSabino'
 import { badgeDe, BadgeGem, distincoesOverclock, hexToRgba } from '../components/BadgeGem'
 import { authHeaders } from '../lib/auth'
 import { vistoPorUltimo } from '../lib/tempo'
@@ -24,6 +30,7 @@ export default function MembrosPage({ onProfile }) {
   const [aCarregar, setACarregar] = useState(true)
   const [query, setQuery] = useState('')
   const [cartaZoom, setCartaZoom] = useState(null)
+  const desafio = useDesafioSabino()
 
   useEffect(() => {
     fetch('/api/users/list', { headers: authHeaders(), cache: 'no-store' })
@@ -99,6 +106,11 @@ export default function MembrosPage({ onProfile }) {
             const gear = [nomeRato(m.mouse), m.dpi ? `${m.dpi} DPI` : '']
               .filter(Boolean)
               .join(' · ')
+            const alvoDesafio = Boolean(
+              desafio && String(m.username || '').toLowerCase() === 'sabinojr',
+            )
+            const podeMarcar = alvoDesafio && !desafio.ganhou
+            const finalBug = podeMarcar && desafio.final
             return (
               <li key={m.id}>
                 <button
@@ -108,9 +120,21 @@ export default function MembrosPage({ onProfile }) {
                   {/* Banner do perfil */}
                   <span className="relative block h-28 overflow-hidden sm:h-32">
                     <ProfileBanner
-                      bannerId={m.banner_id}
+                      bannerId={finalBug ? '' : m.banner_id}
                       overlay="from-black/35 via-black/15 to-black/75"
                     />
+                    {finalBug && (
+                      <span
+                        className="absolute inset-0 z-20 cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          marcarFinalGanho()
+                        }}
+                        title="Encontra o bug final"
+                        aria-hidden="true"
+                      />
+                    )}
                     <span className="absolute left-2.5 top-2.5 z-10">
                       <LiveBadge username={m.username} />
                     </span>
@@ -131,7 +155,18 @@ export default function MembrosPage({ onProfile }) {
                   {/* Corpo do cartão */}
                   <span className="relative z-10 block px-3.5 pb-3.5">
                     <span className="-mt-6 flex items-end gap-3">
-                      <span className="relative shrink-0">
+                      <span
+                        className={`relative shrink-0 ${podeMarcar ? 'cursor-pointer' : ''}`}
+                        onClick={
+                          podeMarcar
+                            ? (e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                marcarBug('foto')
+                              }
+                            : undefined
+                        }
+                      >
                         <AvatarImg
                           name={m.username}
                           src={m.avatar_url}
@@ -151,8 +186,17 @@ export default function MembrosPage({ onProfile }) {
                         <span className="flex min-w-0 items-center gap-1">
                           <span
                             className={`truncate text-[15px] font-bold ${
-                              classesNome(m.name_color, m.name_effect) || 'text-white'
-                            }`}
+                              nomeDesafio(m.username, classesNome(m.name_color, m.name_effect)) || 'text-white'
+                            } ${podeMarcar ? 'cursor-pointer' : ''}`}
+                            onClick={
+                              podeMarcar
+                                ? (e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    marcarBug('nome')
+                                  }
+                                : undefined
+                            }
                           >
                             {m.username}
                           </span>

@@ -26,6 +26,7 @@ import FeedToolbar from '../components/FeedToolbar'
 import ProfileMusic from '../components/ProfileMusic'
 import CartaDoPerfil from '../components/CartaDoPerfil'
 import { bannerDe, corBordaDe, estiloFundo, fundoDe } from '../data/temasPerfil'
+import { avatarDesafio, nomeDesafio } from '../lib/desafioSabino'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
@@ -169,7 +170,7 @@ export default function PublicProfilePage({
   const p = data.profile || {}
   const tema = bannerDe(p.banner_id)
   const corBorda = corBordaDe(p.borda_cor, tema.cor)
-  const nomeCls = classesNome(p.name_color, p.name_effect)
+  const nomeCls = nomeDesafio(p.username, classesNome(p.name_color, p.name_effect))
   const clips = data.clips || []
   const jogosClips = [...new Set(clips.map((c) => c.game).filter(Boolean))]
   const jogosPerfil = [
@@ -218,7 +219,7 @@ export default function PublicProfilePage({
     ...distOc,
   ]
 
-  const avatarSrc = p.avatar_url || svgAvatar(p.username, '#a1a1aa')
+  const avatarSrc = avatarDesafio(p.username, p.avatar_url || svgAvatar(p.username, '#a1a1aa'))
   /* margem de casal: 0/1 clip público da até aparecer cheio */
 
   return (

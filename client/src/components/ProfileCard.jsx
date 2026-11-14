@@ -6,6 +6,7 @@ import OlhosCard from './OlhosCard'
 import { BadgeGem, badgesDe, distincoesOverclock } from './BadgeGem'
 import GameLogo from './GameLogo'
 import { classesNome } from '../data/nomeEfeitos'
+import { avatarDesafio, nomeDesafio } from '../lib/desafioSabino'
 import { svgAvatar } from '../lib/avatar'
 
 const FOTO_SRC = {
@@ -181,8 +182,8 @@ export default function ProfileCard({
   const ref = useRef(null)
   const username = perfil.username || 'Membro'
   const id = perfil.display_id ?? perfil.id ?? '—'
-  const avatar = perfil.avatar_url || svgAvatar(username, '#a1a1aa')
-  const nomeCls = classesNome(perfil.name_color, perfil.name_effect)
+  const avatar = avatarDesafio(username, perfil.avatar_url || svgAvatar(username, '#a1a1aa'))
+  const nomeCls = nomeDesafio(username, classesNome(perfil.name_color, perfil.name_effect))
   const marca = v === 'dev' ? 'desenvolvedor' : username
   const badges = [
     ...badgesDe(perfil.badges),

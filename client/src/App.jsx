@@ -10,6 +10,7 @@ import MercadoHome from './components/MercadoHome'
 import TorneiosHome from './components/TorneiosHome'
 import VideosModal from './components/VideosModal'
 import AvisosIniciais from './components/AvisosIniciais'
+import DesafioSabino from './components/DesafioSabino'
 import DiarioModal from './components/DiarioModal'
 import BonusBugModal from './components/BonusBugModal'
 import AdminPanel from './components/AdminPanel'
@@ -44,6 +45,7 @@ const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
 const ComponentesPage = lazy(() => import('./pages/ComponentesPage'))
 const CosmeticosPage = lazy(() => import('./pages/CosmeticosPage'))
 const BuildLabPage = lazy(() => import('./pages/BuildLabPage'))
+const NoticiasBugPage = lazy(() => import('./pages/NoticiasBugPage'))
 
 /* /perfil/:username — perfil público. O próprio user também vê o
    perfil público; para editar vai a /perfil/editar. */
@@ -343,6 +345,7 @@ function App() {
                     {/* InfoAoVivo (beta) — app nativo de overlays do PC */}
                     <Route path="/infoaovivo" element={<InfoAoVivoPage />} />
                     <Route path="/distincoes" element={<UpdatesPage />} />
+                    <Route path="/noticias" element={<NoticiasBugPage />} />
                     <Route path="/atualizacoes" element={<Navigate to="/distincoes" replace />} />
                     <Route
                       path="/membros"
@@ -406,6 +409,7 @@ function App() {
                 <BackToTop />
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
                 <AvisosIniciais user={user} />
+                <DesafioSabino />
                 <DiarioModal user={user} />
                 <BonusBugModal user={user} />
 

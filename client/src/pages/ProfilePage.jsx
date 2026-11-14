@@ -25,6 +25,7 @@ import {
 import PlatformIcon from '../components/PlatformIcon'
 import AdminMusica from '../components/AdminMusica'
 import { BadgeGem, badgesDe, devLabelClass, distincoesOverclock, hexToRgba } from '../components/BadgeGem'
+import { avatarDesafio, nomeDesafio } from '../lib/desafioSabino'
 import ClipCard from '../components/ClipCard'
 import UserPostCard from '../components/UserPostCard'
 import { searchMice } from '../data/mice'
@@ -326,7 +327,7 @@ export default function ProfilePage({
     ...distOc,
   ]
 
-  const avatarSrc = me.avatar_url || svgAvatar(me.username, '#a1a1aa')
+  const avatarSrc = avatarDesafio(me.username, me.avatar_url || svgAvatar(me.username, '#a1a1aa'))
 
   const abrirEditar = () => {
     // game_nick mantém-se guardado (liga o TOP 1 KILL ao CS2) — invisível no perfil
@@ -570,7 +571,7 @@ export default function ProfilePage({
   const mostrarFotoAtual = me.avatar_url && !removeAvatar && !avatarFile
   const tema = bannerDe(me.banner_id)
   const corBorda = corBordaDe(edit ? form.borda_cor : me.borda_cor, tema.cor)
-  const nomeCls = classesNome(me.name_color, me.name_effect)
+  const nomeCls = nomeDesafio(me.username, classesNome(me.name_color, me.name_effect))
   const jogosClips = [...new Set(myClips.map((c) => c.game).filter(Boolean))]
   const jogosPerfil = [
     ...new Set([

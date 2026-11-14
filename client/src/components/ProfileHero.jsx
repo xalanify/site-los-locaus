@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import ProfileBanner from './ProfileBanner'
 import LiveBadge from './LiveBadge'
+import { marcarBug, marcarFinalGanho, useDesafioSabino } from '../lib/desafioSabino'
 import SocialLinks from './SocialLinks'
 import { BadgeGem } from './BadgeGem'
 import { gameLabel } from '../data/clipGames'
@@ -117,6 +118,17 @@ export default function ProfileHero({
   const [fotoMouse, setFotoMouse] = useState(null)
   const [fotoSemBase, setFotoSemBase] = useState(false)
   const [fotoClara, setFotoClara] = useState(false)
+  const desafio = useDesafioSabino()
+  const alvoDesafio = Boolean(
+    desafio && String(perfil?.username || '').toLowerCase() === 'sabinojr',
+  )
+  const podeMarcar = alvoDesafio && !desafio.ganhou
+  const finalBug = podeMarcar && desafio.final
+  const marcar = (id) => (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    marcarBug(id)
+  }
 
   useEffect(() => {
     if (!perfil.mouse) {
@@ -234,8 +246,22 @@ export default function ProfileHero({
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className={`pf-hero ${classesCard(perfil.name_effect)}`}
       >
-        <div className="pf-cover">
-          <ProfileBanner bannerId={perfil.banner_id} overlay="from-black/20 via-black/45 to-black/85" />
+        <div
+          className={`pf-cover ${finalBug ? 'cursor-pointer' : ''}`}
+          onClick={
+            finalBug
+              ? (e) => {
+                  e.preventDefault()
+                  marcarFinalGanho()
+                }
+              : undefined
+          }
+          title={finalBug ? 'Encontra o bug final' : undefined}
+        >
+          <ProfileBanner
+            bannerId={finalBug ? '' : perfil.banner_id}
+            overlay="from-black/20 via-black/45 to-black/85"
+          />
           <span className="pf-cover-name" aria-hidden="true">
             {perfil.username}
           </span>
@@ -246,7 +272,8 @@ export default function ProfileHero({
             <img
               src={avatarSrc}
               alt={perfil.username}
-              className="pf-avatar"
+              className={`pf-avatar ${podeMarcar ? 'cursor-pointer' : ''}`}
+              onClick={podeMarcar ? marcar('foto') : undefined}
               onError={(e) => {
                 if (e.currentTarget.dataset.fb) return
                 e.currentTarget.dataset.fb = '1'
@@ -273,7 +300,10 @@ export default function ProfileHero({
             </div>
 
             <div className="pf-name-row">
-              <h1 className={`pf-name ${nomeCls}`}>
+              <h1
+                className={`pf-name ${nomeCls} ${podeMarcar ? 'cursor-pointer' : ''}`}
+                onClick={podeMarcar ? marcar('nome') : undefined}
+              >
                 {perfil.username}
               </h1>
               {minhas.slice(0, 4).map((b) => (

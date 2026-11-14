@@ -7,6 +7,7 @@ import LiveBadge from './LiveBadge'
 import { authHeaders } from '../lib/auth'
 import { badgeDe, BadgeGem, distincoesOverclock } from './BadgeGem'
 import { classesCard, classesNome } from '../data/nomeEfeitos'
+import { nomeDesafio } from '../lib/desafioSabino'
 import { bannerDe } from '../data/temasPerfil'
 import { anunciosVisiveis } from '../lib/anuncios'
 
@@ -158,7 +159,7 @@ export default function RightColumn() {
                       </span>
                       <span
                         className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
-                          classesNome(m.name_color, m.name_effect) || 'text-gray-200'
+                          nomeDesafio(m.username, classesNome(m.name_color, m.name_effect)) || 'text-gray-200'
                         }`}
                       >
                         {m.display_name || m.username}
