@@ -51,7 +51,7 @@ export const RANK_CORES = {
   emerald: '#34d399',
   diamond: '#60a5fa',
   champion: '#f472b6',
-  bf: '#ff9e9e',
+  bf: '#ff2e5b',
 }
 
 export function RankIcon({ tier, className = 'h-3.5 w-3.5' }) {

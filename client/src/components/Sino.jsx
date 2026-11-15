@@ -11,8 +11,8 @@ import Estado from './Estado'
 const TIPOS = {
   comment: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
   reply: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
-  chat_reply: { Icon: MessageSquare, cor: 'text-[#f7a8a8]', fundo: 'bg-[#f7a8a8]/15' },
-  clip: { Icon: Clapperboard, cor: 'text-[#f7a8a8]', fundo: 'bg-[#f7a8a8]/15' },
+  chat_reply: { Icon: MessageSquare, cor: 'text-[#ff7a94]', fundo: 'bg-[#ff7a94]/15' },
+  clip: { Icon: Clapperboard, cor: 'text-[#ff7a94]', fundo: 'bg-[#ff7a94]/15' },
   torneio: { Icon: Trophy, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },
   like: { Icon: Heart, cor: 'text-rose-300', fundo: 'bg-rose-400/15' },
   save: { Icon: Sparkles, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },

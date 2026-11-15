@@ -206,6 +206,42 @@ export default function ProfilePage({
   const minhaLive = me?.username ? liveByUser[String(me.username).toLowerCase()] : null
   const fileRef = useRef(null)
 
+  /* Mudar o próprio nome (com confirmação da palavra-passe) */
+  const [nomeNovo, setNomeNovo] = useState('')
+  const [passNome, setPassNome] = useState('')
+  const [nomeBusy, setNomeBusy] = useState(false)
+  const [nomeMsg, setNomeMsg] = useState('')
+  const mudarNome = async () => {
+    if (nomeBusy) return
+    setNomeMsg('')
+    if (!nomeNovo.trim()) return setNomeMsg('Escreve o novo nome.')
+    if (!passNome) return setNomeMsg('Escreve a tua palavra-passe.')
+    setNomeBusy(true)
+    try {
+      const r = await fetch('/api/users/me/username', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ username: nomeNovo.trim(), password: passNome }),
+      })
+      const d = await r.json().catch(() => null)
+      if (!r.ok) throw new Error((d && d.error) || 'Não foi possível mudar o nome.')
+      if (d && d.token) localStorage.setItem('userToken', d.token)
+      if (d && d.user) {
+        localStorage.setItem('user', JSON.stringify(d.user))
+        setMe(d.user)
+        if (onUserUpdate) onUserUpdate(d.user)
+      }
+      setNomeNovo('')
+      setPassNome('')
+      setNomeMsg('Nome alterado. Já estás a usar o novo nome.')
+      setErr('')
+    } catch (e) {
+      setNomeMsg(e.message || 'Não foi possível mudar o nome.')
+    } finally {
+      setNomeBusy(false)
+    }
+  }
+
   /* Sempre que o perfil abre: dados frescos (distinções atribuídas
      no painel, foto) sem precisar de recarregar a página. */
   useEffect(() => {
@@ -644,6 +680,46 @@ export default function ProfilePage({
                   </button>
                 ))}
               </div>
+
+              {/* Nome de utilizador */}
+              <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'perfil' ? '' : 'hidden'}`}>
+                <h3 className="mb-1 text-[11px] font-black uppercase tracking-widest text-zinc-300">
+                  Nome de utilizador
+                </h3>
+                <p className="mb-3 text-[11px] text-gray-500">
+                  Podes mudar o teu nome quando quiseres. Só precisas da palavra-passe.
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    value={nomeNovo}
+                    onChange={(e) => setNomeNovo(e.target.value)}
+                    placeholder={me.username || 'Novo nome'}
+                    maxLength={20}
+                    className={`${inputCls} sm:flex-1`}
+                  />
+                  <input
+                    type="password"
+                    value={passNome}
+                    onChange={(e) => setPassNome(e.target.value)}
+                    placeholder="Palavra-passe"
+                    maxLength={100}
+                    className={`${inputCls} sm:w-52`}
+                  />
+                  <button
+                    type="button"
+                    onClick={mudarNome}
+                    disabled={nomeBusy}
+                    className="ui-btn ui-btn-primary ui-btn-sm justify-center whitespace-nowrap disabled:opacity-60"
+                  >
+                    {nomeBusy ? 'A mudar…' : 'Mudar nome'}
+                  </button>
+                </div>
+                {nomeMsg && (
+                  <p className={`mt-2 text-[11px] ${nomeMsg.startsWith('Nome alterado') ? 'text-emerald-400' : 'text-[#ff7a94]'}`}>
+                    {nomeMsg}
+                  </p>
+                )}
+              </section>
 
               {/* Foto de perfil */}
               <section className={`rounded-2xl border border-white/10 bg-black/20 p-4 ${secaoEdit === 'perfil' ? '' : 'hidden'}`}>
@@ -1086,8 +1162,8 @@ export default function ProfilePage({
               </div>
               </section>
 
-              <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
-                  <p className="text-xs font-black uppercase tracking-wider text-[#ff9e9e]">
+              <div className={`rounded-xl border border-[#c50337]/20 bg-[#c50337]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#ff2e5b]">
                     Carta do perfil
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">
@@ -1101,7 +1177,7 @@ export default function ProfilePage({
                         onClick={() => setForm((f) => ({ ...f, card_style: c.id }))}
                         className={`rounded-xl border p-1.5 text-left transition-colors ${
                           form.card_style === c.id
-                            ? 'border-[#ff9e9e]/60 bg-[#ff9e9e]/5'
+                            ? 'border-[#c50337]/60 bg-[#c50337]/5'
                             : 'border-white/10 bg-black/20 hover:border-white/25'
                         }`}
                       >
@@ -1165,8 +1241,8 @@ export default function ProfilePage({
                 </div>
 
               {(isAdmin || me.is_admin) && (
-                <div className={`rounded-xl border border-[#ff9e9e]/20 bg-[#ff9e9e]/[0.03] p-3 ${secaoEdit === 'estiloPerfil' ? '' : 'hidden'}`}>
-                  <p className="text-xs font-black uppercase tracking-wider text-[#ff9e9e]">
+                <div className={`rounded-xl border border-[#c50337]/20 bg-[#c50337]/[0.03] p-3 ${secaoEdit === 'estiloPerfil' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#ff2e5b]">
                     Estilo de perfil (admin)
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">
@@ -1180,7 +1256,7 @@ export default function ProfilePage({
                         onClick={() => setForm((f) => ({ ...f, profile_style: s.id }))}
                         className={`rounded-xl border p-1.5 text-left transition-colors ${
                           form.profile_style === s.id
-                            ? 'border-[#ff9e9e]/60 bg-[#ff9e9e]/5'
+                            ? 'border-[#c50337]/60 bg-[#c50337]/5'
                             : 'border-white/10 bg-black/20 hover:border-white/25'
                         }`}
                       >

@@ -89,10 +89,10 @@ export default function MercadoHome() {
 
           <div className="flex items-start justify-between gap-3 p-5 sm:p-6">
             <div className="min-w-0">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f7a8a8]/30 bg-[#f7a8a8]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#f7a8a8]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ff7a94]/30 bg-[#ff7a94]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#ff7a94]">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f7a8a8] opacity-70" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#f7a8a8]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff7a94] opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ff7a94]" />
                 </span>
                 Mercado ao vivo
               </span>
@@ -100,7 +100,7 @@ export default function MercadoHome() {
                 Os cosméticos mais caros agora
               </h2>
             </div>
-            <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f7a8a8]/10 text-[#f7a8a8] ring-1 ring-[#f7a8a8]/20 sm:grid">
+            <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#ff7a94]/10 text-[#ff7a94] ring-1 ring-[#ff7a94]/20 sm:grid">
               <Sparkles className="h-5 w-5" />
             </span>
           </div>

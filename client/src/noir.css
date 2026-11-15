@@ -7,20 +7,20 @@
    ============================================================ */
 
 :root {
-  --nv-bg: #050507;
-  --nv-bg-2: #08080c;
-  --nv-panel: #0b0b10;
-  --nv-panel-2: #0f0f15;
-  --nv-panel-3: #13131a;
+  --nv-bg: #02060e;
+  --nv-bg-2: #04080f;
+  --nv-panel: #070c16;
+  --nv-panel-2: #0b1120;
+  --nv-panel-3: #101828;
   --nv-line: rgba(255, 255, 255, 0.07);
   --nv-line-2: rgba(255, 255, 255, 0.13);
-  --nv-text: #f4f4f6;
-  --nv-muted: #9a9aa6;
-  --nv-dim: #6a6a76;
-  --nv-faint: #3a3a44;
-  --nv-accent: #8b5cf6;
-  --nv-accent-2: #a78bfa;
-  --nv-accent-3: #6d28d9;
+  --nv-text: #f4f6fa;
+  --nv-muted: #9aa3b5;
+  --nv-dim: #6a7285;
+  --nv-faint: #3a4152;
+  --nv-accent: #ff2e5b;
+  --nv-accent-2: #ff7a94;
+  --nv-accent-3: #c50337;
   --nv-ok: #34d399;
   --nv-bad: #f87171;
   --nv-display: 'Space Grotesk', 'Inter Tight', system-ui, sans-serif;
@@ -134,7 +134,7 @@ body.kova .fundo-vivo {
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(900px 650px at 0% -8%, rgba(255, 158, 158, 0.36), transparent 58%),
+    radial-gradient(900px 650px at 0% -8%, rgba(197, 3, 55, 0.36), transparent 58%),
     radial-gradient(850px 650px at 100% -2%, rgba(139, 92, 246, 0.25), transparent 62%),
     linear-gradient(165deg, #2a1722 0%, #120b16 36%, #08060c 70%, #150a10 100%) !important;
 }
@@ -151,7 +151,7 @@ body.kova .fundo-vivo span:nth-child(1) {
   height: 70vw;
   left: -24vw;
   top: -34vh;
-  background: radial-gradient(circle, rgba(255, 158, 158, 0.38) 0%, rgba(255, 158, 158, 0) 62%) !important;
+  background: radial-gradient(circle, rgba(197, 3, 55, 0.38) 0%, rgba(197, 3, 55, 0) 62%) !important;
 }
 body.kova .fundo-vivo span:nth-child(2) {
   width: 58vw;
@@ -172,7 +172,7 @@ body.kova .fundo-vivo span:nth-child(4) {
   height: 42vw;
   right: 4vw;
   bottom: 2vh;
-  background: radial-gradient(circle, rgba(255, 158, 158, 0.2) 0%, rgba(255, 158, 158, 0) 66%) !important;
+  background: radial-gradient(circle, rgba(197, 3, 55, 0.2) 0%, rgba(197, 3, 55, 0) 66%) !important;
 }
 body.kova .fundo-vivo::before {
   content: '';
@@ -806,16 +806,20 @@ body.kova .ui-btn-icon {
   padding: 0 !important;
 }
 body.kova .ui-btn-primary {
-  background: #ffffff !important;
-  border-color: transparent !important;
-  color: #08080c !important;
-  font-weight: 600 !important;
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.07) !important;
+  background: linear-gradient(180deg, #ff3d63 0%, #c50337 58%, #95022a 100%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 10px 26px rgba(197, 3, 55, 0.42) !important;
 }
 body.kova .ui-btn-primary:hover {
-  background: #fff !important;
-  color: #000 !important;
-  box-shadow: 0 8px 28px rgba(255, 255, 255, 0.14) !important;
+  background: linear-gradient(180deg, #ff5575 0%, #d90440 58%, #a8022f 100%) !important;
+  color: #fff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 14px 32px rgba(197, 3, 55, 0.55) !important;
 }
 body.kova .ui-btn-ghost {
   background: transparent !important;
@@ -1857,23 +1861,23 @@ body.kova {
   --salmon: #a78bfa;
   --salmon-strong: #8b5cf6;
 }
-body.kova [class*='text-[#f7a8a8]'],
-body.kova [class*='text-[#ff9e9e]'],
+body.kova [class*='text-[#ff7a94]'],
+body.kova [class*='text-[#ff2e5b]'],
 body.kova [class*='text-[#ff8a8a]'] {
   color: var(--nv-accent-2) !important;
 }
-body.kova [class*='bg-[#f7a8a8]'],
-body.kova [class*='bg-[#ff9e9e]'],
+body.kova [class*='bg-[#ff7a94]'],
+body.kova [class*='bg-[#ff2e5b]'],
 body.kova [class*='bg-[#ff8a8a]'] {
   background-color: rgba(167, 139, 250, 0.12) !important;
 }
-body.kova [class*='border-[#f7a8a8]'],
-body.kova [class*='border-[#ff9e9e]'],
+body.kova [class*='border-[#ff7a94]'],
+body.kova [class*='border-[#ff2e5b]'],
 body.kova [class*='border-[#ff8a8a]'] {
   border-color: rgba(167, 139, 250, 0.28) !important;
 }
-body.kova [class*='ring-[#f7a8a8]'],
-body.kova [class*='ring-[#ff9e9e]'],
+body.kova [class*='ring-[#ff7a94]'],
+body.kova [class*='ring-[#ff2e5b]'],
 body.kova [class*='ring-[#ff8a8a]'] {
   --tw-ring-color: rgba(167, 139, 250, 0.28) !important;
 }
@@ -3058,7 +3062,7 @@ body.kova .ui-btn:hover {
 }
 body.kova .ui-btn-primary:hover {
   box-shadow:
-    0 10px 34px rgba(255, 255, 255, 0.14),
+    0 14px 32px rgba(197, 3, 55, 0.55),
     0 0 0 1px color-mix(in srgb, var(--nv-accent) 42%, transparent) !important;
 }
 body.kova .mercado-linha:hover {
@@ -3614,25 +3618,25 @@ body.kova .perfil-dock {
    ============================================================ */
 body.kova,
 body.kova[data-mode] {
-  --nv-accent: #ff9e9e;
-  --nv-accent-2: #f7a8a8;
-  --nv-accent-3: #e87979;
-  --nv-accent-soft: rgba(255, 158, 158, 0.14);
-  --k-accent: #ff9e9e;
-  --k-accent-2: #f7a8a8;
-  --salmon: #ff9e9e;
-  --salmon-strong: #f7a8a8;
+  --nv-accent: #ff2e5b;
+  --nv-accent-2: #ff7a94;
+  --nv-accent-3: #c50337;
+  --nv-accent-soft: rgba(197, 3, 55, 0.16);
+  --k-accent: #ff2e5b;
+  --k-accent-2: #ff7a94;
+  --salmon: #ff2e5b;
+  --salmon-strong: #ff7a94;
 }
-body.kova [class*='bg-[#f7a8a8]'],
-body.kova [class*='bg-[#ff9e9e]'],
+body.kova [class*='bg-[#ff7a94]'],
+body.kova [class*='bg-[#ff2e5b]'],
 body.kova [class*='bg-[#ff8a8a]'] {
-  background-color: rgba(255, 158, 158, 0.12) !important;
+  background-color: rgba(197, 3, 55, 0.14) !important;
 }
 body.kova {
   background:
-    radial-gradient(1000px 700px at 8% -12%, rgba(255, 158, 158, 0.13), transparent 62%),
-    radial-gradient(900px 650px at 96% -5%, rgba(139, 92, 246, 0.09), transparent 62%),
-    linear-gradient(180deg, #0b080b 0%, #060507 52%, #0b0709 100%);
+    radial-gradient(1000px 700px at 8% -12%, rgba(197, 3, 55, 0.28), transparent 62%),
+    radial-gradient(900px 650px at 96% -5%, rgba(60, 120, 255, 0.08), transparent 62%),
+    linear-gradient(180deg, #02060e 0%, #03070f 52%, #04060d 100%);
   background-attachment: fixed;
 }
 body.kova main.lv-main {
@@ -3668,7 +3672,7 @@ body.kova .auth-screen {
 /* topbar: todos os ícones no mesmo salmão */
 body.kova .lv-actions svg,
 body.kova .lv-mbar-actions svg {
-  color: #ff9e9e !important;
+  color: #ff2e5b !important;
 }
 
 /* menu móvel: sem linhas entre secções */
@@ -3685,7 +3689,7 @@ body.kova .lv-mbar-actions svg {
 /* fundo com mais cor */
 body.kova {
   background:
-    radial-gradient(1200px 800px at 4% -8%, rgba(255, 158, 158, 0.2), transparent 62%),
+    radial-gradient(1200px 800px at 4% -8%, rgba(197, 3, 55, 0.2), transparent 62%),
     radial-gradient(1000px 760px at 100% 2%, rgba(139, 92, 246, 0.14), transparent 65%),
     linear-gradient(180deg, #0e090d 0%, #07060a 52%, #0e080b 100%);
   background-attachment: fixed;
@@ -3694,20 +3698,20 @@ body.kova {
 /* fundo final: gradiente quente + violeta, sem ficar preto chapado */
 body.kova {
   background:
-    radial-gradient(1100px 760px at 0% -6%, rgba(255, 158, 158, 0.26), transparent 60%),
+    radial-gradient(1100px 760px at 0% -6%, rgba(197, 3, 55, 0.26), transparent 60%),
     radial-gradient(950px 720px at 100% 4%, rgba(139, 92, 246, 0.17), transparent 62%),
     radial-gradient(900px 620px at 50% 108%, rgba(255, 120, 120, 0.09), transparent 62%),
     linear-gradient(180deg, #120c11 0%, #08070b 52%, #10090d 100%);
   background-attachment: fixed;
 }
 body.kova .carta-flutuante svg {
-  color: #ff9e9e !important;
+  color: #ff2e5b !important;
 }
 
 /* gradiente final mais visível */
 body.kova {
   background:
-    radial-gradient(850px 620px at 0% -4%, rgba(255, 158, 158, 0.32), transparent 58%),
+    radial-gradient(850px 620px at 0% -4%, rgba(197, 3, 55, 0.32), transparent 58%),
     radial-gradient(820px 640px at 100% 0%, rgba(139, 92, 246, 0.23), transparent 62%),
     radial-gradient(800px 560px at 50% 108%, rgba(255, 120, 120, 0.1), transparent 62%),
     linear-gradient(160deg, #1b1018 0%, #0b0810 48%, #08060a 100%);
@@ -3717,7 +3721,7 @@ body.kova {
 /* fundo com cor assumida — marfim escuro/salmão suave */
 body.kova {
   background:
-    radial-gradient(900px 650px at 0% -8%, rgba(255, 158, 158, 0.36), transparent 58%),
+    radial-gradient(900px 650px at 0% -8%, rgba(197, 3, 55, 0.36), transparent 58%),
     radial-gradient(850px 650px at 100% -2%, rgba(139, 92, 246, 0.25), transparent 62%),
     radial-gradient(850px 600px at 50% 110%, rgba(255, 120, 120, 0.12), transparent 62%),
     linear-gradient(165deg, #2a1722 0%, #120b16 36%, #08060c 70%, #150a10 100%);
@@ -3734,7 +3738,7 @@ body.kova {
   align-items: center;
   gap: 7px;
   padding: 8px 11px;
-  border: 1px solid rgba(255, 158, 158, 0.3);
+  border: 1px solid rgba(197, 3, 55, 0.3);
   border-radius: 999px;
   background: rgba(15, 10, 14, 0.94);
   color: #ffd2d2;
@@ -3745,7 +3749,7 @@ body.kova {
   pointer-events: none;
 }
 .desafio-aviso svg {
-  color: #ff9e9e;
+  color: #ff2e5b;
 }
 .desafio-aviso b {
   color: #fff;
@@ -3818,4 +3822,335 @@ body.kova {
 .desafio-win button:hover {
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
+}
+
+/* ============================================================
+   CRIMSON NOIR — camada final de UI (PC + PWA)
+   Carmim profundo (#C50337) sobre azul-noite (#02060E),
+   cromado nos detalhes e vidro fumado nos cartões.
+   ============================================================ */
+
+::selection {
+  background: rgba(197, 3, 55, 0.55);
+  color: #fff;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: #04070f;
+}
+*::-webkit-scrollbar-thumb {
+  border: 2px solid #04070f;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff2e5b, #7d0226);
+}
+
+/* ---------- vidro fumado ---------- */
+.glass {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012) 46%),
+    rgba(8, 12, 22, 0.82);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+.glass:hover {
+  border-color: rgba(255, 46, 91, 0.32);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.55),
+    0 0 28px rgba(197, 3, 55, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.glass-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- botões: pílulas com brilho cromado ---------- */
+.ui-btn {
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+.ui-btn:hover {
+  border-radius: 999px;
+  transform: translateY(-1px);
+}
+.ui-btn:active {
+  border-radius: 999px;
+  transform: translateY(0) scale(0.98);
+}
+.ui-btn-sm {
+  border-radius: 999px;
+}
+.ui-btn-lg {
+  border-radius: 999px;
+}
+.ui-btn-primary {
+  background: linear-gradient(180deg, #ff3d63 0%, #c50337 58%, #96022a 100%);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 10px 24px rgba(197, 3, 55, 0.38);
+}
+.ui-btn-primary:hover {
+  filter: brightness(1.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 14px 30px rgba(197, 3, 55, 0.5);
+}
+.ui-btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8ebf3;
+}
+.ui-btn-ghost:hover {
+  background: rgba(255, 46, 91, 0.12);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 46, 91, 0.34);
+}
+.ui-btn-danger {
+  background: rgba(197, 3, 55, 0.16);
+  color: #ff9db0;
+  box-shadow: inset 0 0 0 1px rgba(255, 46, 91, 0.28);
+}
+.ui-btn-danger:hover {
+  background: rgba(197, 3, 55, 0.26);
+  color: #ffd0d9;
+}
+
+/* ---------- campos ---------- */
+input,
+textarea,
+select {
+  caret-color: var(--crimson-hi);
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(197, 3, 55, 0.55);
+}
+:focus-visible {
+  outline-color: rgba(255, 46, 91, 0.8);
+}
+
+/* ---------- barra de topo ---------- */
+body.kova #topbar {
+  background: linear-gradient(180deg, rgba(2, 6, 14, 0.96), rgba(2, 6, 14, 0.72));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+.mode-link[data-active='true'] {
+  color: #fff;
+}
+.mode-menu {
+  background: rgba(5, 9, 18, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.68),
+    0 0 0 1px rgba(197, 3, 55, 0.14);
+}
+.mode-menu-item:hover {
+  background: rgba(197, 3, 55, 0.16);
+  color: #fff;
+}
+
+/* ---------- barra inferior do telemóvel ---------- */
+.kova-bottomnav-inner {
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(5, 9, 18, 0.92);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 46, 91, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.kova-bottomnav-item {
+  border-radius: 999px;
+}
+.kova-bottomnav-item[data-active='true'] {
+  background: linear-gradient(180deg, rgba(255, 46, 91, 0.92), rgba(197, 3, 55, 0.92));
+  color: #fff;
+  box-shadow:
+    0 8px 18px rgba(197, 3, 55, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* ---------- títulos com um toque cromado ---------- */
+body.kova .page-title,
+body.kova .page-header h1 {
+  background: linear-gradient(92deg, #ffffff 0%, #ffe1e7 38%, #ff8fa6 72%, #ff2e5b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- moeda ---------- */
+.moeda-locaus {
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+a:hover .moeda-locaus,
+button:hover .moeda-locaus {
+  transform: rotate(-6deg) scale(1.06);
+  filter: drop-shadow(0 0 6px rgba(249, 210, 106, 0.55));
+}
+
+/* ============================================================
+   TELEMÓVEL — estética de vidro flutuante (foto do iPhone)
+   Só no tema escuro, que é o padrão.
+   ============================================================ */
+@media (max-width: 1023px) {
+  body.kova #topbar {
+    inset: 8px 8px auto 8px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(12, 18, 30, 0.84), rgba(5, 9, 16, 0.72));
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  body.kova .page-shell {
+    padding-top: calc(5.4rem + env(safe-area-inset-top));
+  }
+  body.kova .glass {
+    border-radius: 24px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.012) 46%),
+      rgba(8, 13, 24, 0.72);
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 20px 44px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  body.kova .ui-btn {
+    min-height: 42px;
+  }
+  body.kova .lv-mbar-top {
+    height: 60px;
+    padding: 0 12px;
+  }
+  body.kova .lv-menu-btn {
+    border-radius: 999px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 46, 91, 0.4);
+    background: rgba(197, 3, 55, 0.12);
+    color: #fff;
+  }
+  body.kova .lv-mbar-user {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border-color: rgba(255, 255, 255, 0.16);
+    overflow: hidden;
+  }
+  body.kova .lv-mbar-user img {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+  }
+  body.kova .page-header h1,
+  body.kova .page-title {
+    font-size: clamp(1.9rem, 9vw, 2.6rem);
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+  }
+  /* números com ar de mostrador */
+  body.kova .mercado-lista .font-mono,
+  body.kova .mercado-top .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* ============================================================
+   MENU DO TELEMÓVEL — abertura suave, barra igual à do topo
+   ============================================================ */
+@media (max-width: 1023px) {
+  .mapa {
+    animation: mapaFade 0.24s ease-out both;
+  }
+  .mapa-shell {
+    padding: 8px 8px calc(28px + env(safe-area-inset-bottom)) !important;
+  }
+  .mapa-top {
+    height: 60px;
+    padding: 0 12px !important;
+    margin: 0 0 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(12, 18, 30, 0.88), rgba(5, 9, 16, 0.76)) !important;
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+  }
+  .mapa-top .lv-brand {
+    font-size: 1.2rem !important;
+    letter-spacing: -0.04em;
+  }
+  .mapa-top .lv-brand em {
+    display: none;
+  }
+  .mapa-title {
+    margin-left: 2px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .mapa-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+  }
+  .mapa-grid {
+    animation: mapaSubir 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.04s;
+  }
+  .mapa-foot {
+    animation: mapaSubir 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.12s;
+  }
+  .mapa-col {
+    animation: mapaSubir 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .mapa-col:nth-child(1) { animation-delay: 0.05s; }
+  .mapa-col:nth-child(2) { animation-delay: 0.1s; }
+  .mapa-col:nth-child(3) { animation-delay: 0.15s; }
+  .mapa-col:nth-child(4) { animation-delay: 0.2s; }
+}
+
+@keyframes mapaFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mapaSubir {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mapa,
+  .mapa-grid,
+  .mapa-foot,
+  .mapa-col {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+/* fundo do menu do telemóvel (igual ao resto do site) */
+@media (max-width: 1023px) {
+  .mapa {
+    background:
+      radial-gradient(60rem 34rem at 50% -12rem, rgba(197, 3, 55, 0.26), transparent 70%),
+      radial-gradient(40rem 24rem at 90% 0%, rgba(60, 120, 255, 0.08), transparent 72%),
+      #03060e !important;
+  }
 }

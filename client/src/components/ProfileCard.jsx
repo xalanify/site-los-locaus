@@ -278,7 +278,7 @@ export default function ProfileCard({
             ? 'profile-card--violet aspect-[3/4]'
             : v === 'river'
               ? 'aspect-[4/5]'
-              : 'min-h-[440px]'
+                : 'min-h-[440px]'
       } ${className}`}
       style={{ '--pc-accent': accent }}
     >

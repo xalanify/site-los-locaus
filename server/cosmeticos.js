@@ -80,6 +80,8 @@ const CORES_REMOVER = new Set([
   'vermelho camuflado', 'chrome', 'azul camuflado', 'zebra camuflado',
   'platinum', 'red tiger camuflado', 'hex camuflado', 'digital camuflado',
   'urban camuflado', 'woodland camuflado',
+  /* retiradas a pedido (nomes) */
+  'obsidian camuflado', 'marmore', 'dragao',
 ]);
 
 const CORES = CORES_TODAS.filter((c) => !CORES_REMOVER.has(normNome(c.nome)));
@@ -165,6 +167,8 @@ const CARTAS_REMOVER = new Set([
   'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
   'blood', 'cismon', 'crimson', 'aimer license', 'mercurio', 'eter', 'marmore', 'neon', 'tinta',
   'arte-neon', 'neon flux', 'operador', 'teia',
+  /* carta retirada a pedido */
+  'filigrana',
 ]);
 
 /* Cartas novas com foto — design TCG inspirado nas cartas de Pokémon.

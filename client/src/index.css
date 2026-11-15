@@ -51,14 +51,24 @@ button {
 
   /* Superf�cies � cinzento neutro, com cart�es um pouco mais claros
      e um fio de luz branco na borda (estilo liquid glass). */
-  --aj-bg: #0a0a0b;
-  --aj-card: #121214;
-  --aj-card-hi: #1a1a1d;
-  --aj-line: rgba(255, 255, 255, 0.09);
+  --aj-bg: #02060e;
+  --aj-card: #080c16;
+  --aj-card-hi: #101625;
+  --aj-line: rgba(255, 255, 255, 0.08);
 
   /* Acento salm�o da refer�ncia */
-  --salmon: #ff9e9e;
-  --salmon-strong: #ff8a8a;
+  --salmon: #ff2e5b;
+  --salmon-strong: #ff5c7d;
+
+  /* Crimson Noir — o sistema de cor do site */
+  --noir: #02060e;
+  --noir-2: #050912;
+  --noir-3: #0a101d;
+  --crimson: #c50337;
+  --crimson-hi: #ff2e5b;
+  --crimson-soft: rgba(197, 3, 55, 0.32);
+  --chrome: #dbe3ee;
+  --chrome-dim: #9aa6b8;
 }
 
 * {
@@ -71,11 +81,10 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: var(--aj-bg);
   /* brilho branco muito discreto no topo � profundidade sem cor */
-  background-image: radial-gradient(
-    70rem 34rem at 50% -12rem,
-    rgba(255, 255, 255, 0.055),
-    transparent 72%
-  );
+  background-image:
+    radial-gradient(60rem 30rem at 50% -14rem, rgba(197, 3, 55, 0.3), transparent 70%),
+    radial-gradient(42rem 26rem at 88% 4rem, rgba(60, 120, 255, 0.1), transparent 72%),
+    radial-gradient(50rem 30rem at 4% 12rem, rgba(197, 3, 55, 0.12), transparent 75%);
   background-repeat: no-repeat;
   background-attachment: fixed;
   color: white;
@@ -1243,7 +1252,7 @@ button[class~='bg-zinc-500']:active {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  background: #ff9e9e;
+  background: #c50337;
   color: #1a0f0f;
   padding: 0.25rem 0.6rem;
   font-size: 9px;
@@ -1283,9 +1292,9 @@ button[class~='bg-zinc-500']:active {
   color: #ffffff;
 }
 .ui-tab[data-active='true'] {
-  background: #ff9e9e;
+  background: #c50337;
   color: #1a0f0f;
-  box-shadow: 0 8px 20px rgba(255, 158, 158, 0.28);
+  box-shadow: 0 8px 20px rgba(197, 3, 55, 0.28);
 }
 .ui-tab svg {
   flex-shrink: 0;
@@ -3192,7 +3201,7 @@ body[data-ps] .painel-fixo svg {
 }
 body[data-ps] .painel-fixo .nav-ativo,
 body[data-ps] .painel-fixo .nav-ativo svg,
-body[data-ps] .painel-fixo .text-\[\#ff9e9e\] {
+body[data-ps] .painel-fixo .text-\[\#ff2e5b\] {
   color: var(--ps-accent) !important;
 }
 body[data-ps] .painel-fixo .bg-white\/10 {
@@ -3214,8 +3223,8 @@ body[data-ps] #topbar svg {
 body[data-ps] #bottomnav svg {
   color: var(--ps-muted);
 }
-body[data-ps] #bottomnav .text-\[\#ff9e9e\],
-body[data-ps] #bottomnav .text-\[\#ff9e9e\] svg {
+body[data-ps] #bottomnav .text-\[\#ff2e5b\],
+body[data-ps] #bottomnav .text-\[\#ff2e5b\] svg {
   color: var(--ps-accent) !important;
 }
 body[data-ps] #mobilemenu {
@@ -3233,8 +3242,8 @@ body[data-ps] #mobilemenu .text-white {
 body[data-ps] #mobilemenu svg {
   color: var(--ps-muted);
 }
-body[data-ps] #mobilemenu .text-\[\#ff9e9e\],
-body[data-ps] #mobilemenu .text-\[\#ff9e9e\] svg {
+body[data-ps] #mobilemenu .text-\[\#ff2e5b\],
+body[data-ps] #mobilemenu .text-\[\#ff2e5b\] svg {
   color: var(--ps-accent) !important;
 }
 
@@ -3291,7 +3300,7 @@ body[data-ps] #mobilemenu .text-\[\#ff9e9e\] svg {
   text-transform: uppercase;
 }
 .perfil-dock button.dock-destaque {
-  color: var(--ps-accent, #ff9e9e);
+  color: var(--ps-accent, #ff2e5b);
 }
 body.perfil-ativo .navbar-pill {
   display: none;
@@ -3342,7 +3351,7 @@ body.perfil-ativo .page-shell {
   border: 1px solid var(--ps-line, rgba(255, 255, 255, 0.15));
   border-radius: 20px;
   background:
-    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--ps-accent, #ff9e9e) 18%, transparent), transparent 55%),
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--ps-accent, #ff2e5b) 18%, transparent), transparent 55%),
     var(--ps-surface, #121214);
   color: var(--ps-ink, #fff);
   padding: 1.1rem;

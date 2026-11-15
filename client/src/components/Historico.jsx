@@ -251,7 +251,7 @@ export default function Historico() {
                 key={a.id}
                 className="flex items-center gap-2 rounded-xl border border-white/[0.05] bg-[#101012]/70 px-3 py-2 text-[11px]"
               >
-                <Tag className="h-3.5 w-3.5 shrink-0 text-[#f7a8a8]" />
+                <Tag className="h-3.5 w-3.5 shrink-0 text-[#ff7a94]" />
                 <span className="min-w-0 flex-1 truncate font-bold text-white">{a.nome}</span>
                 <span className="shrink-0 text-zinc-500">@{a.username}</span>
                 <span className="w-20 shrink-0 text-right font-black tabular-nums text-white">

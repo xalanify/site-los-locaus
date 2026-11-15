@@ -122,7 +122,7 @@ export default function AdminPacks() {
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
         <h3 className="flex items-center gap-2 text-sm font-black text-white">
-          <Gift className="h-4 w-4 text-[#f7a8a8]" /> Dar Locaus Packs
+          <Gift className="h-4 w-4 text-[#ff7a94]" /> Dar Locaus Packs
         </h3>
         <p className="mt-1 text-xs text-zinc-500">
           O membro recebe os packs e abre-os na loja (aba <b>Packs</b>). A raridade sai na hora de
@@ -171,7 +171,7 @@ export default function AdminPacks() {
               onClick={() => setTipo(t.id)}
               className={`rounded-xl border px-3 py-2 text-left transition-colors ${
                 tipo === t.id
-                  ? 'border-[#f7a8a8]/50 bg-[#f7a8a8]/10'
+                  ? 'border-[#ff7a94]/50 bg-[#ff7a94]/10'
                   : 'border-white/10 bg-white/[0.02] hover:border-white/20'
               }`}
             >

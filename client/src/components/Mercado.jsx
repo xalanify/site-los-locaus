@@ -543,7 +543,7 @@ export default function Mercado({ onSaldo }) {
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                     {item.tipo === 'edicao' ? (
                       <>
-                        <span className="text-[#f7a8a8]">limitado</span> ·{' '}
+                        <span className="text-[#ff7a94]">limitado</span> ·{' '}
                         {item.disponiveis} de {item.total}
                       </>
                     ) : (
@@ -797,7 +797,7 @@ export default function Mercado({ onSaldo }) {
                   {detalhe.anuncios.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-[#f7a8a8]/25 bg-[#f7a8a8]/[0.06] px-3 py-2"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-[#ff7a94]/25 bg-[#ff7a94]/[0.06] px-3 py-2"
                     >
                       <span className="min-w-0 truncate text-[11px] font-semibold text-zinc-300">
                         À venda por <b className="text-white">{fmt(a.preco)}</b> · @{a.username}
@@ -811,7 +811,7 @@ export default function Mercado({ onSaldo }) {
                           type="button"
                           onClick={() => comprarAnuncio(a)}
                           disabled={busy === detalhe.id}
-                          className="shrink-0 rounded-lg bg-[#f7a8a8] px-2.5 py-1 text-[10px] font-black text-[#0a0a0b]"
+                          className="shrink-0 rounded-lg bg-[#ff7a94] px-2.5 py-1 text-[10px] font-black text-[#0a0a0b]"
                         >
                           Comprar
                         </button>

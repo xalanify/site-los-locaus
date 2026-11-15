@@ -469,7 +469,7 @@ export default function ComponentesPage({ user }) {
                 ? 'Pesquisar componente (ex.: RTX 5070, Ryzen, SSD…)'
                 : 'Pesquisar periférico (ex.: WLmouse, teclado, mousepad…)'
             }
-            className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-[#ff9e9e]/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-9 pr-9 text-sm text-white placeholder:text-gray-600 focus:border-[#c50337]/50 focus:outline-none"
           />
           {q ? (
             <button
@@ -488,7 +488,7 @@ export default function ComponentesPage({ user }) {
         <select
           value={ordenar}
           onChange={(e) => setOrdenar(e.target.value)}
-          className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-gray-300 focus:border-[#ff9e9e]/50 focus:outline-none"
+          className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-gray-300 focus:border-[#c50337]/50 focus:outline-none"
         >
           <option value="relevancia">Relevância</option>
           <option value="preco-asc">Preço ↑</option>
@@ -546,7 +546,7 @@ export default function ComponentesPage({ user }) {
                 onClick={() => setCategoria('todas')}
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-[11px] font-bold transition-colors ${
                   categoria === 'todas'
-                    ? 'bg-white/[0.08] text-[#ff9e9e]'
+                    ? 'bg-white/[0.08] text-[#ff2e5b]'
                     : 'bg-white/[0.04] text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
@@ -559,7 +559,7 @@ export default function ComponentesPage({ user }) {
                   onClick={() => setCategoria(c.id)}
                   className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-left text-[11px] font-bold transition-colors ${
                     categoria === c.id
-                      ? 'bg-white/[0.08] text-[#ff9e9e]'
+                      ? 'bg-white/[0.08] text-[#ff2e5b]'
                       : 'bg-white/[0.04] text-gray-400 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -589,7 +589,7 @@ export default function ComponentesPage({ user }) {
                       onClick={() => setRamTipo(r.id)}
                       className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                         ramTipo === r.id
-                          ? 'bg-[#ff9e9e] text-[#1a0f0f]'
+                          ? 'bg-[#c50337] text-white'
                           : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                       }`}
                     >
@@ -616,7 +616,7 @@ export default function ComponentesPage({ user }) {
                   onClick={() => setStockFiltro(s.id)}
                   className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                     stockFiltro === s.id
-                      ? 'bg-[#ff9e9e] text-[#1a0f0f]'
+                      ? 'bg-[#c50337] text-white'
                       : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -647,7 +647,7 @@ export default function ComponentesPage({ user }) {
                     onClick={() => setMarcasAtivas([])}
                     className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                       !marcasAtivas.length
-                        ? 'bg-[#ff9e9e] text-[#1a0f0f]'
+                        ? 'bg-[#c50337] text-white'
                         : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -664,7 +664,7 @@ export default function ComponentesPage({ user }) {
                       }
                       className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                         marcasAtivas.includes(m)
-                          ? 'bg-[#ff9e9e] text-[#1a0f0f]'
+                          ? 'bg-[#c50337] text-white'
                           : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                       }`}
                     >
@@ -684,7 +684,7 @@ export default function ComponentesPage({ user }) {
                 onClick={() => setLojasAtivas([])}
                 className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                   !lojasAtivas.length
-                    ? 'bg-[#ff9e9e] text-[#1a0f0f]'
+                    ? 'bg-[#c50337] text-white'
                     : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
@@ -699,7 +699,7 @@ export default function ComponentesPage({ user }) {
                     onClick={() => alternarLoja(l.id)}
                     className={`flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wide ${
                       ativa
-                        ? 'bg-[#ff9e9e] text-[#1a0f0f]'
+                        ? 'bg-[#c50337] text-white'
                         : 'bg-white/[0.06] text-gray-400 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -812,7 +812,7 @@ export default function ComponentesPage({ user }) {
             <section className="mb-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="ui-section-title">
-                  <Store className="h-4 w-4 text-[#ff9e9e]" />
+                  <Store className="h-4 w-4 text-[#ff2e5b]" />
                   Mais vendidos nas lojas
                   <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
                     {vendidosFiltrados.length}
@@ -951,11 +951,11 @@ function CartaoLoja({ r, maisBarato }) {
         />
         <span className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-12 bg-gradient-to-b from-black/75 to-transparent" />
         <span className="absolute inset-x-0 top-0 z-10 flex h-8 items-center gap-1.5 border-b border-white/5 bg-[#141416]/95 px-2.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#ff9e9e]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#c50337]" />
           {r.categoriaLoja || r.categoria || 'Produto'}
         </span>
         {maisBarato && (
-          <span className="absolute right-2 top-2 rounded-full bg-[#ff9e9e] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-[#1a0f0f]">
+          <span className="absolute right-2 top-2 rounded-full bg-[#c50337] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-white">
             mais barato
           </span>
         )}
@@ -995,7 +995,7 @@ function CartaoLoja({ r, maisBarato }) {
             href={r.url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] font-black text-[#ff9e9e] hover:bg-white/10 hover:text-[#ffc0c0]"
+            className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] font-black text-[#ff2e5b] hover:bg-white/10 hover:text-[#ffc0c0]"
           >
             abrir <ExternalLink className="h-3 w-3" />
           </a>
@@ -1035,7 +1035,7 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
         )}
         <span className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-12 bg-gradient-to-b from-black/75 to-transparent" />
         <span className="absolute inset-x-0 top-0 z-10 flex h-8 items-center gap-1.5 border-b border-white/5 bg-[#141416]/95 px-2.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#ff9e9e]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#c50337]" />
           {CAT_NOMES[produto.categoria] || produto.categoria}
         </span>
         {Number(produto.desconto) > 0 && (
@@ -1122,7 +1122,7 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
                 <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400">
                   Mais barato · {maisBarato.nome}
                 </span>
-                <span className="flex items-center gap-1 rounded-full bg-[#ff9e9e]/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#ff9e9e]">
+                <span className="flex items-center gap-1 rounded-full bg-[#c50337]/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-[#ff2e5b]">
                   <Sparkles className="h-2.5 w-2.5" /> melhor
                 </span>
               </div>
@@ -1133,7 +1133,7 @@ function CartaoProduto({ produto, lojas, alerta, aAtualizar, onAtualizar, onEdit
                     href={maisBarato.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 text-[10px] font-black text-[#ff9e9e] hover:text-[#ffc0c0]"
+                    className="flex items-center gap-1 text-[10px] font-black text-[#ff2e5b] hover:text-[#ffc0c0]"
                   >
                     abrir <ExternalLink className="h-3 w-3" />
                   </a>

@@ -9,7 +9,7 @@ import { authHeaders } from '../lib/auth'
 
 const fmt = (n) => Number(n || 0).toLocaleString('pt-PT')
 
-function Barra({ valor, max, cor = '#f7a8a8' }) {
+function Barra({ valor, max, cor = '#ff7a94' }) {
   const pct = max ? Math.round((valor / max) * 100) : 0
   return (
     <span className="block h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -65,7 +65,7 @@ export default function AnalyticsPainel() {
     <div>
       <div className="mb-4 grid gap-2 sm:grid-cols-3">
         {[
-          { Icon: Eye, label: 'Visitas (14 dias)', valor: fmt(dados.totais?.views), cor: '#f7a8a8' },
+          { Icon: Eye, label: 'Visitas (14 dias)', valor: fmt(dados.totais?.views), cor: '#ff7a94' },
           { Icon: Users, label: 'Membros ativos', valor: fmt(dados.totais?.membros), cor: '#60a5fa' },
           { Icon: Smartphone, label: 'Visitas anónimas', valor: fmt(dados.totais?.anonimas), cor: '#a78bfa' },
         ].map((k) => (
@@ -86,14 +86,14 @@ export default function AnalyticsPainel() {
 
       <section className="mb-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-black text-white">
-          <BarChart3 className="h-4 w-4 text-[#f7a8a8]" /> Visitas por dia
+          <BarChart3 className="h-4 w-4 text-[#ff7a94]" /> Visitas por dia
         </h2>
         <div className="flex h-28 items-end gap-1.5">
           {(dados.dias || []).map((d) => (
             <div key={d.dia} className="flex min-w-0 flex-1 flex-col items-center gap-1">
               <span className="text-[9px] font-bold text-zinc-500">{d.n}</span>
               <span
-                className="w-full rounded-t bg-[#f7a8a8]/80"
+                className="w-full rounded-t bg-[#ff7a94]/80"
                 style={{ height: `${Math.max(4, (d.n / maxDia) * 72)}px` }}
                 title={`${d.dia}: ${d.n}`}
               />
@@ -105,7 +105,7 @@ export default function AnalyticsPainel() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {[
-          { titulo: 'Páginas mais usadas', lista: mais, cor: '#f7a8a8' },
+          { titulo: 'Páginas mais usadas', lista: mais, cor: '#ff7a94' },
           { titulo: 'Páginas menos usadas', lista: menos, cor: '#60a5fa' },
         ].map((bloco) => (
           <section key={bloco.titulo} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">

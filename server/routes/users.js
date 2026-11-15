@@ -477,6 +477,52 @@ router.delete('/me/teste', requireUser, async (req, res) => {
   }
 });
 
+// Mudar o próprio nome de utilizador (basta confirmar a palavra-passe)
+router.post('/me/username', requireUser, async (req, res) => {
+  try {
+    const uid = Number(req.auth.uid);
+    const novo = String(req.body.username || '').trim().replace(/\s+/g, ' ');
+    const pass = String(req.body.password || '');
+    if (!USER_RE.test(novo)) {
+      return res
+        .status(400)
+        .json({ error: 'O nome tem de ter 3 a 20 caracteres (letras, números, ponto, traço ou espaço).' });
+    }
+    if (RESERVED.has(novo.toLowerCase())) {
+      return res.status(400).json({ error: 'Esse nome não está disponível.' });
+    }
+    if (!pass) return res.status(400).json({ error: 'Escreve a tua palavra-passe para confirmar.' });
+
+    const db = getDb();
+    const u = await db
+      .prepare('SELECT * FROM users WHERE id = ?')
+      .get(uid);
+    if (!u) return res.status(404).json({ error: 'Conta não encontrada.' });
+    if (!bcrypt.compareSync(pass, u.password_hash)) {
+      return res.status(401).json({ error: 'Palavra-passe incorreta.' });
+    }
+
+    if (String(u.username) === novo) {
+      return res.json({ token: signUser(u), user: await publicUser(u) });
+    }
+
+    const existe = await db
+      .prepare('SELECT 1 AS ok FROM users WHERE lower(username) = lower(?) AND id <> ? LIMIT 1')
+      .get(novo, uid);
+    if (existe) return res.status(409).json({ error: 'Esse nome já está a ser usado.' });
+
+    await db.prepare('UPDATE users SET username = ? WHERE id = ?').run(novo, uid);
+    const atual = await db.prepare('SELECT * FROM users WHERE id = ?').get(uid);
+    res.json({ token: signUser(atual), user: await publicUser(atual) });
+  } catch (e) {
+    if (/duplicate|unique|23505/i.test(e.message || '')) {
+      return res.status(409).json({ error: 'Esse nome já está a ser usado.' });
+    }
+    console.error('Erro mudar nome:', e.message);
+    res.status(500).json({ error: 'Não foi possível mudar o nome.' });
+  }
+});
+
 // Entrar
 router.post('/login', async (req, res) => {
   try {

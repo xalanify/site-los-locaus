@@ -112,7 +112,7 @@ export default function NovidadesModal({ user }) {
 
         <div className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">
           <div>
-            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#f7a8a8]">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#ff7a94]">
               <Sparkles className="h-3 w-3" /> Novidades · 7 de novembro
             </p>
             <div className="mt-1 font-display text-2xl font-black text-white">
@@ -148,7 +148,7 @@ export default function NovidadesModal({ user }) {
                       preview
                     />
                   )}
-                  <span className="pointer-events-none absolute left-2 top-2 z-40 rounded-full bg-[#f7a8a8] px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#1a0c0c]">
+                  <span className="pointer-events-none absolute left-2 top-2 z-40 rounded-full bg-[#ff7a94] px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#1a0c0c]">
                     Nova
                   </span>
                 </div>
@@ -162,7 +162,7 @@ export default function NovidadesModal({ user }) {
           </div>
 
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5">
-            <Sparkles className="h-4 w-4 shrink-0 text-[#f7a8a8]" />
+            <Sparkles className="h-4 w-4 shrink-0 text-[#ff7a94]" />
             <p className="text-[11px] font-semibold text-zinc-300">
               Cada carta tem um verso único.{' '}
               <b className="text-white">Já disponíveis no mercado.</b>

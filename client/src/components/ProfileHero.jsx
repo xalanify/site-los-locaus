@@ -79,7 +79,7 @@ const RANK_CORES = {
   emerald: '#34d399',
   diamond: '#60a5fa',
   champion: '#f472b6',
-  bf: '#ff9e9e',
+  bf: '#ff2e5b',
 }
 
 function RankIcon({ tier }) {

@@ -167,8 +167,8 @@ export default function AvisosIniciais({ user }) {
             </header>
 
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
-              <div className="flex items-start gap-3 rounded-xl border border-[#ff9e9e]/25 bg-[#ff9e9e]/[0.08] px-4 py-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#ff9e9e]" />
+              <div className="flex items-start gap-3 rounded-xl border border-[#c50337]/25 bg-[#c50337]/[0.08] px-4 py-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#ff2e5b]" />
                 <div>
                   <p className="text-[13px] font-black text-white">
                     As fotos de perfil já estão a funcionar
