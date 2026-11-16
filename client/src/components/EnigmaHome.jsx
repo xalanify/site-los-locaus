@@ -55,7 +55,7 @@ export default function EnigmaHome() {
                 </span>
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Seis etapas escondidas no site. O primeiro a terminar leva <b>30 moedas</b>.
+                Seis etapas escondidas no site. O 1.º leva <b>40 moedas</b>, o 2.º <b>30</b>.
               </p>
             </>
           ) : (
