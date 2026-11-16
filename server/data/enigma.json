@@ -1,0 +1,30 @@
+{
+  "slugs": {
+    "1": "01dd59bfde3c",
+    "2": "ed286488b812",
+    "3": "aae8d241a338",
+    "4": "75458748fbcb",
+    "5": "850c972e3360",
+    "6": "2d10ad45a129",
+    "7": "3739a42c165e"
+  },
+  "jogadores": {
+    "u:1": {
+      "uid": 1,
+      "nome": "xalana",
+      "admin": true,
+      "iniciouEm": 1794865089809,
+      "etapa": 1,
+      "terminou": false,
+      "terminouEm": null,
+      "tempoMs": null,
+      "moedas": 0,
+      "pago": false
+    }
+  },
+  "ordemFim": [],
+  "codigo1": "1645",
+  "codigo4": "285",
+  "codigo5": "5891",
+  "chave6": "3536"
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>enigma 1 semana · etapa 5</title>
+<link rel="stylesheet" href="/e/assets/estilo.css">
+</head>
+<body>
+<header><span class="marca">locaus.fun</span><span>etapa 5 &nbsp;/&nbsp; 6</span></header>
+<main>
+  <h1>O 404</h1>
+  <p class="sub">há uma página que não existe</p>
+
+  <div class="cena"><div class="roda" data-roda></div></div>
+
+  <section class="folha">
+    <p>O que procuras está numa página que <b>não existe</b>. Vai lá &mdash;
+       a casa responde na mesma.</p>
+    <p style="margin-top:16px">
+      <a class="baixar" href="/e/esta-pagina-nao-existe">abrir o arquivo</a>
+    </p>
+    <div class="nota">em dúvida? escreve <code>ajuda</code> na consola (F12).</div>
+  </section>
+
+  <div class="saida" id="saida"></div>
+</main>
+<footer><span>etapa 5</span><span>locaus.fun</span></footer>
+<div class="toast" id="toast"></div>
+
+<script src="/e/assets/enigma.js"></script>
+<script>
+  progresso(5);
+
+    registarAjuda(function () {
+    console.log("%cAJUDA :: etapa 5", "color:#e63946;font-weight:bold");
+    console.log("  ha uma pagina que nao existe.");
+    console.log("  o erro tambem fala.");
+  });
+</script>
+</body>
+</html>

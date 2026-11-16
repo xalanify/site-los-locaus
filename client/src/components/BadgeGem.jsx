@@ -77,6 +77,27 @@ export const BADGES = [  {
 export function badgeDe(id) {
   const fixa = BADGES.find((b) => b.id === id)
   if (fixa) return fixa
+  /* Distinção secreta do Enigma: enigma-1, enigma-2, ... */
+  const en = /^enigma-(\d+)$/.exec(String(id || ''))
+  if (en) {
+    const n = Math.max(1, Number(en[1]) || 1)
+    const palavras = ['um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez']
+    const quantos = n <= 10 ? palavras[n - 1] : String(n)
+    return {
+      id,
+      label: `VENCEDOR DE ${quantos.toUpperCase()} ENIGMA${n > 1 ? 'S' : ''}`,
+      desc: `Ganhou ${n} enigma${n > 1 ? 's' : ''} do site`,
+      color: '#F472B6',
+      light: '#FBCFE8',
+      dark: '#9D174D',
+      glow: '#FF2D87',
+      labelColor: '#F9A8D4',
+      anim: 'shine',
+      icone: '/distincoes/diamond-top1.png',
+      iconeFilter: 'hue-rotate(305deg) saturate(1.55) brightness(1.08)',
+      arte: 'enigma',
+    }
+  }
   const m = /^streak-(\d+)$/.exec(String(id || ''))
   if (!m) return null
   const nivel = Math.max(5, Number(m[1]) || 5)
@@ -300,7 +321,10 @@ function IconeArte({ badge, size, anim, glow }) {
         alt=""
         draggable={false}
         className={`h-full w-full ${badge.iconeFit === 'cover' ? 'object-cover' : 'object-contain'}`}
-        style={badge.iconePos ? { objectPosition: badge.iconePos } : undefined}
+        style={{
+          ...(badge.iconePos ? { objectPosition: badge.iconePos } : {}),
+          ...(badge.iconeFilter ? { filter: badge.iconeFilter } : {}),
+        }}
       />
     </div>
   )

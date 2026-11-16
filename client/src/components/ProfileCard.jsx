@@ -3,6 +3,7 @@ import { Mouse, Keyboard, Headphones, Monitor, Star } from 'lucide-react'
 import ProfileBanner from './ProfileBanner'
 import PokemonCard from './PokemonCard'
 import OlhosCard from './OlhosCard'
+import CartaEnigma from './CartaEnigma'
 import { BadgeGem, badgesDe, distincoesOverclock } from './BadgeGem'
 import GameLogo from './GameLogo'
 import { classesNome } from '../data/nomeEfeitos'
@@ -104,6 +105,7 @@ const VARIANT_LABEL = {
   'foto-guerra': 'GUERRA CARD',
   'foto-neon': 'NEON FLUX CARD',
   'foto-olhos': 'OLHAR CARD',
+  cromada: 'CARTA DO ENIGMA',
 }
 
 const VARIANT_ACCENT = {
@@ -157,6 +159,7 @@ const VARIANT_ACCENT = {
   'arte-suspenso': '#e5e7eb',
   'arte-prisma': '#e0f2fe',
   'foto-olhos': '#c084fc',
+  cromada: '#dbe3ee',
 }
 
 const ano = (iso) => {
@@ -299,9 +302,11 @@ export default function ProfileCard({
       <span className="pc-glow" aria-hidden="true" />
       <span className="pc-ripple" aria-hidden="true" />
 
-      <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
+      <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v === 'cromada' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
         {OLHOS_CARDS.has(v) ? (
           <OlhosCard perfil={perfil} username={username} id={id} />
+        ) : v === 'cromada' ? (
+          <CartaEnigma nome={username} />
         ) : TCG_CARDS.has(v) ? (
           <PokemonCard variant={v} perfil={perfil} username={username} id={id} />
         ) : v.startsWith('foto-') ? (

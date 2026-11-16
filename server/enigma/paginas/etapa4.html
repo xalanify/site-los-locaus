@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>enigma 1 semana · etapa 4</title>
+<link rel="stylesheet" href="/e/assets/estilo.css">
+</head>
+<body>
+<header><span class="marca">locaus.fun</span><span>etapa 4 &nbsp;/&nbsp; 6</span></header>
+<main>
+  <h1>O COOKIE</h1>
+  <p class="sub">a casa deixou-te uma coisa guardada</p>
+
+  <div class="cena"><div class="roda" data-roda></div></div>
+
+  <section class="folha">
+    <p>Quando entraste nesta página, a casa guardou uma coisa no teu navegador.
+       Não se vê na página &mdash; vive na <b>memória do browser</b>.</p>
+    <p>O valor está em <b>base64</b>. Descodifica-o: o resultado é a chave.</p>
+    <div class="nota">em dúvida? escreve <code>ajuda</code> na consola (F12).</div>
+  </section>
+
+  <div class="linha">
+    <input class="campo" id="valor" autocomplete="off" spellcheck="false">
+    <button class="botao brasa" id="ok">confirmar</button>
+  </div>
+
+  <div class="saida" id="saida"></div>
+  <div class="chapa" id="chapa"></div>
+</main>
+<footer><span>etapa 4</span><span>locaus.fun</span></footer>
+<div class="toast" id="toast"></div>
+
+<script src="/e/assets/enigma.js"></script>
+<script>
+  progresso(4);
+
+  document.cookie = "enigma_sessao={{COOKIE}}; path=/; max-age=3600";
+
+    registarAjuda(function () {
+    console.log("%cAJUDA :: etapa 4", "color:#e63946;font-weight:bold");
+    console.log("  a casa deixou um rasto na memoria do browser.");
+    console.log("  o que parece aleatorio pode nao estar.");
+  });
+
+  var saida = document.getElementById('saida');
+
+  document.getElementById('ok').addEventListener('click', function () {
+    var v = document.getElementById('valor').value.trim();
+    if (!v) { saida.className = 'saida mau'; saida.textContent = 'a caixa está vazia.'; return; }
+
+    api('responder', { etapa: 4, valor: v }).then(function (d) {
+      if (d.ok && d.url) {
+        saida.className = 'saida bom';
+        saida.textContent = 'o cookie abriu.';
+        mostrarLink(d.url);
+      } else {
+        saida.className = 'saida mau';
+        saida.textContent = 'não é essa chave.';
+        tremer(document.querySelector('.folha'));
+      }
+    });
+  });
+
+  document.getElementById('valor').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok').click();
+  });
+</script>
+</body>
+</html>

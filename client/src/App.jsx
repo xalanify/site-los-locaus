@@ -8,9 +8,12 @@ import Mapa from './components/Mapa'
 import BetaBadge from './components/BetaBadge'
 import MercadoHome from './components/MercadoHome'
 import TorneiosHome from './components/TorneiosHome'
+import EnigmaHome from './components/EnigmaHome'
 import VideosModal from './components/VideosModal'
 import AvisosIniciais from './components/AvisosIniciais'
 import DesafioSabino from './components/DesafioSabino'
+import NovidadesEnigma from './components/NovidadesEnigma'
+import AvisoVitoriaEnigma from './components/AvisoVitoriaEnigma'
 import DiarioModal from './components/DiarioModal'
 import BonusBugModal from './components/BonusBugModal'
 import AdminPanel from './components/AdminPanel'
@@ -32,6 +35,7 @@ import { enviarSpecs } from './lib/specs'
 
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
+const EnigmasPage = lazy(() => import('./pages/EnigmasPage'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
@@ -72,7 +76,17 @@ function RotaPerfil({
 }
 
 function App() {
-  const [entered, setEntered] = useState(false)
+  const [entered, setEntered] = useState(() => {
+    try {
+      if (sessionStorage.getItem('locaus:skip-boot') === '1') {
+        sessionStorage.removeItem('locaus:skip-boot')
+        return true
+      }
+    } catch {
+      /* sem sessionStorage */
+    }
+    return false
+  })
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
   const [showVideos, setShowVideos] = useState(false) // janela flutuante dos vídeos
@@ -314,6 +328,7 @@ function App() {
                           <p className="home-beta-note">
                             <b>BETA</b> O design ainda está a evoluir — pode mudar.
                           </p>
+                          <EnigmaHome />
                           <MercadoHome isAdmin={isAdmin} />
                           <TorneiosHome />
                         </div>
@@ -321,6 +336,7 @@ function App() {
                     />
 {/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
+                    <Route path="/enigmas" element={<EnigmasPage />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     <Route
@@ -410,6 +426,8 @@ function App() {
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
                 <AvisosIniciais user={user} />
                 <DesafioSabino />
+                <NovidadesEnigma user={user} />
+                <AvisoVitoriaEnigma user={user} />
                 <DiarioModal user={user} />
                 <BonusBugModal user={user} />
 

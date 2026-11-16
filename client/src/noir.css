@@ -4154,3 +4154,225 @@ button:hover .moeda-locaus {
       #03060e !important;
   }
 }
+
+/* bloco do enigma ocupa a largura toda do dashboard da home */
+@media (min-width: 1280px) {
+  body.kova .home-dash > .enigma-home {
+    grid-column: 1 / -1;
+  }
+}
+
+/* dica por baixo do download (etapa 2) */
+.dica-download{
+  display:block;
+  margin-top:10px;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#93a0b6;
+}
+
+
+/* a home não pode tirar o padding ao cartão do enigma */
+body.kova .home-dash > .enigma-home {
+  padding: 18px 16px !important;
+}
+@media (min-width: 640px) {
+  body.kova .home-dash > .enigma-home {
+    padding: 26px 28px !important;
+  }
+}
+
+/* ============================================================
+   CARTA DO ENIGMA — cromado, 1/1
+   ============================================================ */
+.carta-enigma{
+  position:relative;
+  width:100%;
+  aspect-ratio:3/4.35;
+  border-radius:18px;
+  overflow:hidden;
+  background:#05080f;
+  border:1px solid rgba(190,205,225,.35);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.6),
+    0 0 0 1px rgba(255,255,255,.08) inset,
+    0 0 30px rgba(150,180,220,.12);
+  transition:box-shadow .28s ease, border-color .28s ease, transform .28s ease;
+  cursor:pointer;
+}
+.carta-enigma:hover{
+  border-color:#ffffff;
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.7),
+    0 0 0 1px #ffffff inset,
+    0 0 46px rgba(255,255,255,.4),
+    0 0 90px rgba(210,225,245,.25);
+  transform:translateY(-3px);
+}
+.carta-enigma-moldura{
+  position:absolute;
+  inset:7px;
+  z-index:2;
+  border-radius:13px;
+  border:1px solid rgba(220,232,245,.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    inset 0 0 26px rgba(120,150,190,.2);
+  pointer-events:none;
+  transition:border-color .28s ease, box-shadow .28s ease;
+}
+.carta-enigma:hover .carta-enigma-moldura{
+  border-color:#fff;
+  box-shadow:
+    inset 0 0 0 1px #fff,
+    inset 0 0 40px rgba(255,255,255,.22);
+}
+.carta-enigma-brilho{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:linear-gradient(115deg, transparent 38%, rgba(255,255,255,.42) 50%, transparent 62%);
+  transform:translateX(-130%);
+  transition:transform .8s ease;
+}
+.carta-enigma:hover .carta-enigma-brilho{ transform:translateX(130%); }
+.carta-enigma-arte{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(70% 50% at 50% 20%, #1a2740 0%, #0a101c 60%, #05080f 100%);
+}
+.carta-enigma-arte img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:saturate(.9) contrast(1.05);
+  transition:filter .28s ease;
+}
+.carta-enigma:hover .carta-enigma-arte img{ filter:saturate(1) contrast(1.08) brightness(1.05); }
+.carta-enigma-vazia{
+  display:block;width:100%;height:100%;
+  background:
+    radial-gradient(60% 40% at 50% 25%, rgba(200,220,245,.25), transparent 70%),
+    linear-gradient(180deg, #16202f, #070b13);
+}
+.carta-enigma-info{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  z-index:4;
+  padding:14px 16px 16px;
+  background:linear-gradient(0deg, rgba(3,6,12,.92) 0%, rgba(3,6,12,.55) 55%, transparent 100%);
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.carta-enigma-selo{
+  align-self:flex-start;
+  padding:3px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);
+  background:rgba(8,12,20,.65);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:8px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#e8eef8;
+}
+.carta-enigma-nome{
+  margin-top:2px;
+  font-family:'Inter Tight',sans-serif;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  color:rgba(255,255,255,.62);
+  transition:color .28s ease, text-shadow .28s ease;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.carta-enigma:hover .carta-enigma-nome{
+  color:#fff;
+  text-shadow:0 0 18px rgba(255,255,255,.85);
+}
+.carta-enigma-info em{
+  font-style:normal;
+  font-size:10px;
+  letter-spacing:.06em;
+  color:rgba(220,230,245,.6);
+  text-transform:uppercase;
+}
+.carta-enigma--ampla{
+  max-width:380px;
+  margin:0 auto;
+  cursor:default;
+}
+.carta-enigma--ampla .carta-enigma-nome{ font-size:26px; color:#fff; }
+.carta-enigma--ampla .carta-enigma-info{ padding:18px 20px 20px; }
+
+
+/* aviso flutuante de vitória (enigma) */
+.aviso-vitoria{
+  position:fixed;
+  right:16px;
+  bottom:calc(1rem + env(safe-area-inset-bottom));
+  z-index:97;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  width:min(330px,calc(100vw - 2rem));
+  padding:13px 14px;
+  border-radius:18px;
+  border:1px solid rgba(245,197,66,.35);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01) 48%),
+    rgba(12,10,6,.95);
+  box-shadow:0 20px 48px rgba(0,0,0,.65), 0 0 28px rgba(245,197,66,.12), inset 0 1px 0 rgba(255,255,255,.1);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  animation:avisoVitoriaEntra .5s cubic-bezier(.22,1,.36,1) both;
+}
+.aviso-vitoria-ico{
+  display:grid;place-items:center;
+  width:36px;height:36px;flex:0 0 36px;
+  border-radius:12px;
+  border:1px solid rgba(245,197,66,.4);
+  background:rgba(245,197,66,.12);
+  color:#f5c542;
+}
+.aviso-vitoria-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.aviso-vitoria-kicker{
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#f5c542;
+}
+.aviso-vitoria-txt b{color:#fff;font-size:14px;font-weight:800}
+.aviso-vitoria-txt em{font-style:normal;font-size:11.5px;color:#d9cdb4;display:flex;align-items:center;gap:4px}
+.aviso-vitoria > button{
+  margin-left:auto;display:grid;place-items:center;
+  width:22px;height:22px;flex:0 0 22px;border:0;border-radius:999px;
+  background:rgba(255,255,255,.06);color:#c9c1ad;cursor:pointer;
+}
+.aviso-vitoria > button:hover{background:rgba(255,255,255,.14);color:#fff}
+@keyframes avisoVitoriaEntra{
+  from{opacity:0;transform:translateY(14px) scale(.98)}
+  to{opacity:1;transform:none}
+}
+@media (max-width:1023px){
+  .aviso-vitoria{
+    right:10px;left:10px;width:auto;
+    bottom:calc(0.9rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* luz que segue o rato */
+.carta-enigma-luz{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:radial-gradient(240px 200px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.22), transparent 65%);
+  mix-blend-mode:screen;
+  opacity:0;
+  transition:opacity .25s ease;
+}
+.carta-enigma:hover .carta-enigma-luz{opacity:1;}

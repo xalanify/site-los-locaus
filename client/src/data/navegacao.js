@@ -15,6 +15,7 @@ import {
   CircuitBoard,
   UsersRound,
   Gamepad2,
+  Puzzle,
 } from 'lucide-react'
 
 /* ============================================================
@@ -48,6 +49,7 @@ export const MODES = [
     links: [
       { nome: 'Previsões', path: '/previsoes', Icon: Swords, desc: 'Vota e sobe na tabela.' },
       { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3, desc: 'Números por jogo.' },
+      { nome: 'Enigmas', path: '/enigmas', Icon: Puzzle, desc: 'Segredos escondidos no site.' },
       { nome: 'Distinções', path: '/distincoes', Icon: Award, desc: 'As insígnias da casa.' },
       { nome: 'Notícias', path: '/noticias', Icon: Newspaper, desc: 'Novidades dos jogos e da comunidade.', soSabino: true },
     ],

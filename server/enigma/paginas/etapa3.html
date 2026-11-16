@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>enigma 1 semana · etapa 3</title>
+<link rel="stylesheet" href="/e/assets/estilo.css">
+</head>
+<body>
+<header><span class="marca">locaus.fun</span><span>etapa 3 &nbsp;/&nbsp; 6</span></header>
+<main>
+  <h1>AS COORDENADAS</h1>
+  <p class="sub">a fotografia responde. os cabeçalhos também.</p>
+
+  <div class="retrato">
+    <div class="moldura" id="moldura" title="toca na fotografia">
+      <img id="foto" src="/e/img/mapa.jpg" alt="fotografia">
+      <div class="veu"></div>
+    </div>
+    <div class="legenda">toca para a fazeres responder</div>
+  </div>
+
+  <section class="folha">
+    <p>A fotografia não tem nada escrito. Tem <b>algo a mais</b> quando a pedes
+       outra vez &mdash; e esse algo não está na imagem.</p>
+    <div class="nota">em dúvida? escreve <code>ajuda</code> na consola (F12).</div>
+  </section>
+
+  <div class="linha">
+    <input class="campo" id="coord" autocomplete="off" spellcheck="false" placeholder="coordenadas">
+    <button class="botao brasa" id="ok">confirmar</button>
+  </div>
+
+  <div class="linha escondido" id="passo2">
+    <input class="campo" id="lugar" autocomplete="off" spellcheck="false" placeholder="nome da ilha">
+    <button class="botao brasa" id="ok2">confirmar</button>
+  </div>
+
+  <div class="saida" id="saida"></div>
+  <div class="chapa" id="chapa"></div>
+</main>
+<footer><span>etapa 3</span><span>locaus.fun</span></footer>
+<div class="toast" id="toast"></div>
+
+<script src="/e/assets/enigma.js"></script>
+<script>
+  progresso(3);
+
+  var moldura = document.getElementById('moldura');
+  var foto = document.getElementById('foto');
+
+  moldura.addEventListener('click', function () {
+    foto.src = '/e/img/mapa.jpg?t=' + Date.now();
+    aviso('olha para a aba Network.');
+  });
+
+    registarAjuda(function () {
+    console.log("%cAJUDA :: etapa 3", "color:#e63946;font-weight:bold");
+    console.log("  a fotografia responde quando a pedes outra vez.");
+    console.log("  e o que vem com ela que importa.");
+  });
+
+  var saida = document.getElementById('saida');
+
+  function enviar(valor, alvo) {
+    api('responder', { etapa: 3, valor: valor }).then(function (d) {
+      if (d.ok && d.passo === 2) {
+        saida.className = 'saida bom';
+        saida.textContent = 'as coordenadas estão certas. agora o nome.';
+        document.getElementById('passo2').classList.remove('escondido');
+        document.getElementById('lugar').focus();
+      } else if (d.ok && d.url) {
+        saida.className = 'saida bom';
+        saida.textContent = 'é isso. a etapa 4 abriu.';
+        mostrarLink(d.url);
+      } else {
+        saida.className = 'saida mau';
+        saida.textContent = 'não é isso.';
+        tremer(alvo);
+      }
+    });
+  }
+
+  document.getElementById('ok').addEventListener('click', function () {
+    var v = document.getElementById('coord').value.trim();
+    if (!v) { saida.className = 'saida mau'; saida.textContent = 'escreve as coordenadas.'; return; }
+    enviar(v, moldura);
+  });
+
+  document.getElementById('ok2').addEventListener('click', function () {
+    var v = document.getElementById('lugar').value.trim();
+    if (!v) { saida.className = 'saida mau'; saida.textContent = 'um sítio tem nome.'; return; }
+    enviar(v, document.getElementById('passo2'));
+  });
+
+  document.getElementById('coord').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok').click();
+  });
+  document.getElementById('lugar').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok2').click();
+  });
+</script>
+</body>
+</html>

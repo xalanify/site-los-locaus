@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>enigma 1 semana · etapa 2</title>
+<link rel="stylesheet" href="/e/assets/estilo.css">
+</head>
+<body>
+<header><span class="marca">locaus.fun</span><span>etapa 2 &nbsp;/&nbsp; 6</span></header>
+<main>
+  <div id="fase1">
+    <h1>O QR</h1>
+    <p class="sub">lê o código. depois lê a imagem.</p>
+
+    <div class="cartao-qr">
+      <div class="interior" id="interior">
+        <img src="/e/img/qr.png" alt="código qr">
+      </div>
+      <div class="legenda">lê o código</div>
+    </div>
+
+    <div class="linha">
+      <a class="baixar" href="/e/img/qr.png" download="qr.png">descarregar</a>
+    </div>
+
+    <div class="linha">
+      <input class="campo" id="valor" autocomplete="off" spellcheck="false">
+      <button class="botao brasa" id="ok">confirmar</button>
+    </div>
+
+    <div class="saida" id="saida1"></div>
+  </div>
+
+  <div id="fase2" class="escondido">
+    <h1>A IMAGEM</h1>
+    <p class="sub">descarrega e abre as propriedades</p>
+
+    <div class="linha">
+      <a class="baixar" href="/e/img/segunda.jpg" download="segunda.jpg">descarregar a imagem</a>
+      <span class="dica-download">nas propriedades desta imagem está a chave</span>
+    </div>
+
+    <div class="linha">
+      <input class="campo" id="chave" autocomplete="off" spellcheck="false">
+      <button class="botao brasa" id="ok2">confirmar</button>
+    </div>
+
+    <div class="saida" id="saida2"></div>
+    <div class="chapa" id="chapa"></div>
+  </div>
+</main>
+<footer><span>etapa 2</span><span>locaus.fun</span></footer>
+<div class="toast" id="toast"></div>
+
+<script src="/e/assets/enigma.js"></script>
+<script>
+  progresso(2);
+
+    registarAjuda(function () {
+    console.log("%cAJUDA :: etapa 2", "color:#e63946;font-weight:bold");
+    console.log("  o quadrado e uma porta. a imagem tambem guarda segredos.");
+    console.log("  olha para a imagem depois de a teres.");
+  });
+
+  var s1 = document.getElementById('saida1');
+  var s2 = document.getElementById('saida2');
+
+  function responder(etapaValor, caixa, alvoSaida) {
+    api('responder', { etapa: 2, valor: etapaValor }).then(function (d) {
+      if (d.ok && d.passo === 2) {
+        document.getElementById('fase1').classList.add('escondido');
+        document.getElementById('fase2').classList.remove('escondido');
+      } else if (d.ok && d.url) {
+        alvoSaida.className = 'saida bom';
+        alvoSaida.textContent = 'a chave rodou.';
+        mostrarLink(d.url);
+      } else {
+        alvoSaida.className = 'saida mau';
+        alvoSaida.textContent = 'não é isso.';
+        tremer(caixa);
+      }
+    });
+  }
+
+  document.getElementById('ok').addEventListener('click', function () {
+    var v = document.getElementById('valor').value.trim();
+    if (!v) { s1.className = 'saida mau'; s1.textContent = 'a caixa está vazia.'; return; }
+    responder(v, document.querySelector('.cartao-qr'), s1);
+  });
+
+  document.getElementById('ok2').addEventListener('click', function () {
+    var v = document.getElementById('chave').value.trim();
+    if (!v) { s2.className = 'saida mau'; s2.textContent = 'a caixa está vazia.'; return; }
+    responder(v, document.querySelector('.linha'), s2);
+  });
+
+  document.getElementById('valor').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok').click();
+  });
+  document.getElementById('chave').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok2').click();
+  });
+</script>
+</body>
+</html>

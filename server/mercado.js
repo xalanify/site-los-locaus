@@ -544,7 +544,7 @@ async function listar(uid) {
 
   const saldo = await cosmeticos.saldo(uid);
 
-  const itens = CATALOGO.map((item) => {
+  const itens = CATALOGO.filter((x) => !x.exclusivo).map((item) => {
     const p = mapaPrecos.get(item.id) || { base: item.custo, preco: item.custo };
     const base = Math.round(Number(p.base) || Number(item.custo) || 10);
     const preco = Math.round(Number(p.preco) || 0);
@@ -647,6 +647,7 @@ async function comprar(uid, itemId) {
   await talvezTick();
   const item = POR_ID.get(String(itemId || ''));
   if (!item) throw new Error('Item inválido.');
+  if (item.exclusivo) throw new Error('A carta do enigma só se compra ao vencedor.');
   if (item.emBreve) throw new Error('Este estilo de perfil chega em breve.');
 
   const db = getDb();

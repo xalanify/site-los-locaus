@@ -199,10 +199,22 @@ const profileOf = async (userId) => {
 
 const badgesOf = async (userId) => {
   try {
-    const rows = await getDb()
+    const db = getDb();
+    const rows = await db
       .prepare('SELECT badge FROM user_badges WHERE user_id = ?')
       .all(userId);
-    return rows.map((r) => r.badge);
+    const lista = rows.map((r) => r.badge);
+    /* Distinção secreta do Enigma: 1 por cada semana ganha. */
+    try {
+      const v = await db
+        .prepare('SELECT count(*)::int AS n FROM public.enigma_vencedores WHERE user_id = ?')
+        .get(userId);
+      const n = Number(v && v.n) || 0;
+      if (n > 0) lista.push(`enigma-${n}`);
+    } catch {
+      /* tabela ainda não existe */
+    }
+    return lista;
   } catch {
     return [];
   }
@@ -1282,6 +1294,21 @@ router.get('/list', attachAuth, async (req, res) => {
     const badges = await db.prepare('SELECT user_id, badge FROM user_badges').all();
     const byUser = {};
     for (const b of badges) (byUser[b.user_id] = byUser[b.user_id] || []).push(b.badge);
+    /* Distinção secreta do Enigma (contagem de semanas ganhas) */
+    try {
+      const venc = await db
+        .prepare('SELECT user_id, count(*)::int AS n FROM public.enigma_vencedores GROUP BY user_id')
+        .all();
+      for (const v of venc) {
+        if (Number(v.n) > 0) {
+          const uid = Number(v.user_id);
+          byUser[uid] = byUser[uid] || [];
+          byUser[uid].push(`enigma-${Number(v.n)}`);
+        }
+      }
+    } catch {
+      /* tabela ainda não existe */
+    }
     // distinções de overclock (leitura real do PC) — para os membros
     const dists = await Promise.all(rows.map((r) => distincoesOverclock(r.id)));
     const ranks = await Promise.all(rows.map((r) => gameRanksOf(r.id)));

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>enigma 1 semana · etapa 1</title>
+<link rel="stylesheet" href="/e/assets/estilo.css">
+</head>
+<body>
+<header><span class="marca">locaus.fun</span><span>etapa 1 &nbsp;/&nbsp; 6</span></header>
+<main>
+  <h1>O CÓDIGO</h1>
+  <p class="sub">está escrito na casa</p>
+
+  <div class="cena"><div class="roda" data-roda></div></div>
+
+  <section class="folha">
+    <p>Há um código nesta página. Não está à vista &mdash; está no
+       <b>código-fonte</b>.</p>
+    <p>Está em <b>base64</b>: não é para ler, é para descodificar. Quando o
+       virares para texto, ele diz-te a chave (é só um número).</p>
+    <div class="nota">em dúvida? escreve <code>ajuda</code> na consola (F12).</div>
+  </section>
+
+  <div class="linha">
+    <input class="campo" id="valor" autocomplete="off" spellcheck="false">
+    <button class="botao brasa" id="ok">confirmar</button>
+  </div>
+
+  <div class="saida" id="saida"></div>
+  <div class="chapa" id="chapa"></div>
+</main>
+<footer><span>etapa 1</span><span>locaus.fun</span></footer>
+<div class="toast" id="toast"></div>
+
+<!-- codigo: {{B64}} (base64. descodifica para texto.) -->
+
+<script src="/e/assets/enigma.js"></script>
+<script>
+  progresso(1);
+
+    registarAjuda(function () {
+    console.log("%cAJUDA :: etapa 1", "color:#e63946;font-weight:bold");
+    console.log("  ha uma frase escondida nesta pagina.");
+    console.log("  nao esta a vista: procura onde o texto costuma viver.");
+  });
+
+  var saida = document.getElementById('saida');
+
+  document.getElementById('ok').addEventListener('click', function () {
+    var v = document.getElementById('valor').value.trim();
+    if (!v) { saida.className = 'saida mau'; saida.textContent = 'a caixa está vazia.'; return; }
+
+    api('responder', { etapa: 1, valor: v }).then(function (d) {
+      if (d.ok && d.url) {
+        saida.className = 'saida bom';
+        saida.textContent = 'certo. a etapa 2 abriu.';
+        mostrarLink(d.url);
+      } else {
+        saida.className = 'saida mau';
+        saida.textContent = 'não é essa chave.';
+        tremer(document.querySelector('.folha'));
+      }
+    });
+  });
+
+  document.getElementById('valor').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok').click();
+  });
+</script>
+</body>
+</html>

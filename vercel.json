@@ -1,40 +1,50 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-
   "framework": null,
-
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
-
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/e/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ],
-
   "functions": {
     "api/index.js": {
       "maxDuration": 60,
-      "includeFiles": "{historico-*.html,server/data/*.json,server/agente.ps1,server/scripts/*.ps1,server/LOCAUS-PC.exe}",
+      "includeFiles": "{historico-*.html,server/data/*.json,server/agente.ps1,server/scripts/*.ps1,server/LOCAUS-PC.exe,server/enigma/**,server/data/enigma.json}",
       "excludeFiles": "client/dist/**"
     }
   },
-
   "headers": [
     {
       "source": "/sw.js",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ],
-
   "cleanUrls": true,
   "trailingSlash": false
 }

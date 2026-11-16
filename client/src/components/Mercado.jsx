@@ -18,6 +18,7 @@ import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
 import ItemMini from './ItemMini'
+import CartaEnigmaMercado from './CartaEnigmaMercado'
 import CartaLimitada from './CartaLimitada'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
@@ -413,6 +414,7 @@ export default function Mercado({ onSaldo }) {
 
   return (
     <div>
+      <CartaEnigmaMercado />
       <div className="mercado-grid">
       <aside className="mercado-lado">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

@@ -237,6 +237,11 @@ app.use('/api/itad', itadRouter);
 const { componentesRouter } = require('./routes/componentes');
 app.use('/api/componentes', componentesRouter);
 
+// Enigma 1 Semana (páginas em /e/<slug> + API em /api/enigma)
+const { enigmaRouter, enigmaPaginas } = require('./routes/enigma');
+app.use('/api/enigma', enigmaRouter);
+app.use('/e', enigmaPaginas);
+
 app.use('/api', (req, res) => res.status(404).json({ error: 'Não encontrado' }));
 
 // Em produção os ficheiros ficam no Supabase Storage; mantemos um

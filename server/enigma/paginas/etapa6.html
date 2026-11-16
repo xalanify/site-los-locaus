@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>enigma 1 semana · etapa 6</title>
+<link rel="stylesheet" href="/e/assets/estilo.css">
+</head>
+<body>
+<header><span class="marca">locaus.fun</span><span>etapa 6 &nbsp;/&nbsp; 6</span></header>
+<main>
+  <h1>O BINÁRIO</h1>
+  <p class="sub">três linhas &middot; um texto</p>
+
+  <div class="cifra" id="bloco">{{BINARIO}}</div>
+
+  <section class="folha">
+    <p>Isto é binário. Não é para ler: é para <b>traduzir</b>.</p>
+    <div class="nota">em dúvida? escreve <code>ajuda</code> na consola (F12).</div>
+  </section>
+
+  <div class="linha">
+    <input class="campo" id="valor" autocomplete="off" spellcheck="false">
+    <button class="botao brasa" id="ok">confirmar</button>
+  </div>
+
+  <div class="saida" id="saida"></div>
+  <div class="chapa" id="chapa"></div>
+</main>
+<footer><span>etapa 6</span><span>locaus.fun</span></footer>
+<div class="toast" id="toast"></div>
+
+<script src="/e/assets/enigma.js"></script>
+<script>
+  progresso(6);
+
+  /* escrever "xalana" (ou "xalana()") na consola diz a chave */
+  var ultima = 0;
+  function dizerChave() {
+    var agora = Date.now();
+    if (agora - ultima < 500) return;
+    ultima = agora;
+    api('xalana', {}).then(function (d) {
+      if (!d || !d.chave) return;
+      console.log("%c esta e a sua chave: " + d.chave,
+                  "color:#ffb199;font:600 13px Consolas,monospace");
+      console.log("%cescreve-a na caixa da pagina.", "color:#9b8683");
+    }).catch(function () {});
+  }
+  var xalanaFn = function () { dizerChave(); return "a chave esta a caminho."; };
+  try {
+    Object.defineProperty(window, "xalana", {
+      configurable: true,
+      get: function () { dizerChave(); return xalanaFn; }
+    });
+  } catch (e) { window.xalana = xalanaFn; }
+
+    registarAjuda(function () {
+    console.log("%cAJUDA :: etapa 6", "color:#e63946;font-weight:bold");
+    console.log("  isto nao e para ler.");
+    console.log("  traduz. e depois ouve o que o site te pede.");
+  });
+
+  var saida = document.getElementById('saida');
+
+  document.getElementById('ok').addEventListener('click', function () {
+    var v = document.getElementById('valor').value.trim();
+    if (!v) { saida.className = 'saida mau'; saida.textContent = 'a chave não está vazia.'; return; }
+
+    api('responder', { etapa: 6, valor: v }).then(function (d) {
+      if (d.ok && d.url) {
+        saida.className = 'saida bom';
+        saida.textContent = 'a chave rodou. chegaste ao fim.';
+        mostrarLink(d.url);
+      } else {
+        saida.className = 'saida mau';
+        saida.textContent = 'não é essa chave.';
+        tremer(document.getElementById('bloco'));
+      }
+    });
+  });
+
+  document.getElementById('valor').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('ok').click();
+  });
+</script>
+</body>
+</html>

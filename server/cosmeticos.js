@@ -158,6 +158,16 @@ const CARTAS_TODAS = [
   { id: 'carta-arte-teia', nome: 'Carta Teia', valor: 'arte-teia', custo: 235, cor: '#cbd5e1' },
   { id: 'carta-arte-suspenso', nome: 'Carta Suspenso', valor: 'arte-suspenso', custo: 240, cor: '#e5e7eb' },
   { id: 'carta-arte-prisma', nome: 'Carta Prisma', valor: 'arte-prisma', custo: 245, cor: '#e0f2fe' },
+  /* Carta exclusiva do Enigma — 1/1, não é vendida na loja nem no mercado.
+     Só o vencedor a recebe; se a vender, passa a ser do comprador. */
+  {
+    id: 'carta-enigma-cromada',
+    nome: 'Carta do Enigma',
+    valor: 'cromada',
+    custo: 100,
+    cor: '#dbe3ee',
+    exclusivo: true,
+  },
 ];
 
 /* Cartas retiradas por pedido do admin. */
@@ -167,8 +177,9 @@ const CARTAS_REMOVER = new Set([
   'rubra', 'sleepin', 'topografica', 'violet', 'river', 'cosmic', 'kova', 'felony',
   'blood', 'cismon', 'crimson', 'aimer license', 'mercurio', 'eter', 'marmore', 'neon', 'tinta',
   'arte-neon', 'neon flux', 'operador', 'teia',
-  /* carta retirada a pedido */
+  /* cartas retiradas a pedido */
   'filigrana',
+  'malaquite',
 ]);
 
 /* Cartas novas com foto — design TCG inspirado nas cartas de Pokémon.
@@ -485,6 +496,7 @@ async function comprar(uid, itemId) {
   await garantirTabela();
   const item = POR_ID.get(String(itemId || ''));
   if (!item) throw new Error('Item inválido.');
+  if (item.exclusivo) throw new Error('Este item é exclusivo do vencedor do enigma.');
   if (item.emBreve) throw new Error('Este estilo de perfil chega em breve.');
 
   const db = getDb();
