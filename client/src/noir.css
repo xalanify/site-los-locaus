@@ -4376,3 +4376,27 @@ body.kova .home-dash > .enigma-home {
   transition:opacity .25s ease;
 }
 .carta-enigma:hover .carta-enigma-luz{opacity:1;}
+
+
+/* Carta do enigma dentro do cartão do perfil: sem moldura dupla */
+.profile-card--cromada {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  aspect-ratio: 3 / 4.35;
+  min-height: 420px;
+}
+.profile-card--cromada .pc-watermark,
+.profile-card--cromada .pc-glow,
+.profile-card--cromada .pc-ripple {
+  display: none !important;
+}
+.profile-card--cromada .pc-body {
+  height: 100%;
+}
+.profile-card--cromada .carta-enigma {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 20px;
+}

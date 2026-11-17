@@ -30,8 +30,8 @@ const COORD = '39.69762892600141, -31.107149522910337'
 const COORD_DIG = COORD.replace(/[^0-9]/g, '')
 const LUGAR = 'corvo'
 
-/* O enigma fecha a 23 deste mês à meia-noite (hora de Lisboa). */
-const FIM = new Date('2026-11-24T00:00:00+00:00')
+/* O enigma fecha a 19 deste mês à meia-noite (hora de Lisboa). */
+const FIM = new Date('2026-11-20T00:00:00+00:00')
 const encerrado = () => Date.now() >= FIM.getTime()
 
 const rand = (n) => crypto.randomBytes(n).toString('hex')

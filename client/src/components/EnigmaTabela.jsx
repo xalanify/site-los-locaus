@@ -74,7 +74,7 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
                   ? 'border-white/10 bg-white/5 text-zinc-500'
                   : 'border-[#ff7a94]/30 bg-[#c50337]/10 text-[#ffb3c1]'
               }`}
-              title="Fim do enigma: 23 deste mês, à meia-noite"
+              title="Fim do enigma: 19 deste mês, à meia-noite"
             >
               <Timer className="h-3 w-3" />
               {contagem.fim

@@ -66,7 +66,7 @@ export default function EnigmaHome() {
                 o 2.º <b className="text-zinc-200">30</b>, e por aí abaixo.
               </p>
               <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
-                Termina a 23 deste mês, à meia-noite
+                Termina a 19 deste mês, à meia-noite
               </p>
             </>
           )}

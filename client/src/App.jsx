@@ -12,7 +12,6 @@ import EnigmaHome from './components/EnigmaHome'
 import VideosModal from './components/VideosModal'
 import AvisosIniciais from './components/AvisosIniciais'
 import DesafioSabino from './components/DesafioSabino'
-import NovidadesEnigma from './components/NovidadesEnigma'
 import AvisoVitoriaEnigma from './components/AvisoVitoriaEnigma'
 import DiarioModal from './components/DiarioModal'
 import BonusBugModal from './components/BonusBugModal'
@@ -426,7 +425,6 @@ function App() {
                 <VideosModal open={showVideos} onClose={() => setShowVideos(false)} />
                 <AvisosIniciais user={user} />
                 <DesafioSabino />
-                <NovidadesEnigma user={user} />
                 <AvisoVitoriaEnigma user={user} />
                 <DiarioModal user={user} />
                 <BonusBugModal user={user} />

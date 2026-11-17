@@ -302,8 +302,7 @@ export default function MembrosPage({ onProfile }) {
           onClick={() => setCartaZoom(null)}
         >
           <div
-            className="relative w-full max-w-[560px]"
-            style={{ maxWidth: 'min(560px, calc((100dvh - 12rem) * 5 / 7))' }}
+            className="relative w-full max-w-[310px]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -314,7 +313,7 @@ export default function MembrosPage({ onProfile }) {
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="origin-center scale-[0.92] sm:scale-100">
+            <div className="origin-center">
               <ProfileCard
                 perfil={cartaZoom}
                 variant={cartaZoom.card_style || 'padrao'}
