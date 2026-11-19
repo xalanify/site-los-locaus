@@ -1,0 +1,28 @@
+node_modules
+client/node_modules
+client/dist
+.git
+.gitignore
+.vercel
+.vscode
+.idea
+
+# segredos
+.env
+.env.*
+server/.env
+render-env.txt
+koyeb-env.txt
+
+# ficheiros locais / pesados que não fazem parte do site
+imagens
+perfilpersonalizado
+loja-jogos
+*_files
+*.html
+tmp-*
+cookies.txt
+codes.txt
+
+# docs
+*.md
