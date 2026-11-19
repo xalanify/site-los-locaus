@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: locaus
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: SITE_URL
+        value: https://www.locaus.fun
