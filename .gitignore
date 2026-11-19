@@ -64,3 +64,4 @@ scripts/dist/agente.ps1
 .env*
 render-env.txt
 koyeb-env.txt
+railway-env.txt
