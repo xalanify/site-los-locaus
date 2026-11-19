@@ -62,3 +62,4 @@ scripts/dist/build/
 scripts/dist/spec/
 scripts/dist/agente.ps1
 .env*
+render-env.txt

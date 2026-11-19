@@ -19,7 +19,7 @@ function run(args, cwd) {
   }
 }
 
-run(['install'], CLIENT);
+run(['install', '--include=dev'], CLIENT);
 run(['run', 'build'], CLIENT);
 
 console.log('Build concluído: site real em client/dist.');
