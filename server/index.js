@@ -120,7 +120,10 @@ const ORIGENS_PERMITIDAS = new Set(
     .map((o) => String(o).replace(/\/+$/, ''))
 );
 
+/* Só a API precisa de CORS. Os ficheiros estáticos (JS/CSS/imagens)
+   são servidos no mesmo domínio e não podem ser bloqueados por origem. */
 app.use(
+  '/api',
   cors({
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
@@ -135,6 +138,14 @@ app.use(
           limpo
         )
       ) {
+        return cb(null, true);
+      }
+      // Railway (serviço de produção e pré-visualizações)
+      if (/^https:\/\/[a-z0-9-]+\.up\.railway\.app$/i.test(limpo)) {
+        return cb(null, true);
+      }
+      // Koyeb (caso volte a ser usado)
+      if (/^https:\/\/[a-z0-9-]+\.koyeb\.app$/i.test(limpo)) {
         return cb(null, true);
       }
       cb(new Error('Origem não permitida'));
