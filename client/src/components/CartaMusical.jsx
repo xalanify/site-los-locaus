@@ -272,7 +272,7 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
       onPointerMove={aoMover}
       onPointerLeave={aoSair}
       onClick={() => {
-        if (usaYt && !aTocar) tocar()
+        if (usaYt) tocar()
       }}
     >
       {!semImg && (
