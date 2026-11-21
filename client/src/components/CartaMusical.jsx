@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Music2, Pause, Play } from 'lucide-react'
+import { tocarYoutube, pararYoutube } from '../lib/youtubeAudio'
 
 /* ============================================================
    CARTAS COM MÚSICA — Supra / Underground / Niko
@@ -122,13 +123,15 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  const srcFinal = localForcado ? cfg.musica : urlDe(meta.url, cfg.musica)
+  const ytId = (/^yt:([A-Za-z0-9_-]{11})$/.exec(String(meta.url || '')) || [])[1] || null
+  const usaYt = Boolean(ytId) && !localForcado
+  const srcFinal = usaYt ? '' : localForcado ? cfg.musica : urlDe(meta.url, cfg.musica)
   const inicioEf = localForcado ? 0 : meta.inicio
   const fimEf = localForcado ? 9999 : meta.fim
-  const temMusica = Boolean(srcFinal) && meta.titulo !== 'Sem música'
+  const temMusica = (usaYt || Boolean(srcFinal)) && meta.titulo !== 'Sem música'
 
   useEffect(() => {
-    if (!srcFinal) {
+    if (usaYt || !srcFinal) {
       audioRef.current = null
       return undefined
     }
@@ -153,7 +156,7 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
       a.pause()
       if (audioAtual === a) audioAtual = null
     }
-  }, [srcFinal, inicioEf, fimEf, localForcado, cfg.musica])
+  }, [usaYt, srcFinal, inicioEf, fimEf, localForcado, cfg.musica])
 
   /* posição da legenda/botão por baixo da carta */
   const atualizarPosicoes = () => {
@@ -195,6 +198,14 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
   }
 
   const tocar = () => {
+    if (usaYt) {
+      tocarYoutube(ytId, { inicio: meta.inicio, fim: meta.fim, volume: 0.12 }).then((ok) => {
+        if (!ok) return
+        setATocar(true)
+        atualizarPosicoes()
+      })
+      return
+    }
     const a = audioRef.current
     if (!a) return
     if (audioAtual && audioAtual !== a) {
@@ -216,6 +227,12 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
   }
 
   const parar = () => {
+    if (usaYt) {
+      pararYoutube()
+      setATocar(false)
+      setLegenda(null)
+      return
+    }
     const a = audioRef.current
     if (a) {
       a.pause()
@@ -254,6 +271,9 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
       onPointerEnter={aoEntrar}
       onPointerMove={aoMover}
       onPointerLeave={aoSair}
+      onClick={() => {
+        if (usaYt && !aTocar) tocar()
+      }}
     >
       {!semImg && (
         <img

@@ -3,6 +3,7 @@ import { Loader2, Music2, Play, Save, Search, Square, Trash2 } from 'lucide-reac
 import ProfileCard from './ProfileCard'
 import { MUSICAS_CARTAS } from './CartaMusical'
 import { authHeaders } from '../lib/auth'
+import { tocarYoutube, pararYoutube } from '../lib/youtubeAudio'
 
 /* ============================================================
    ADMIN — cartas no mercado + música por carta (pesquisa YouTube)
@@ -110,7 +111,13 @@ function EditorMusica({ variante, meta, onGuardado }) {
       return
     }
     const id = sel?.id || (/^yt:([A-Za-z0-9_-]{11})$/.exec(meta?.url || '') || [])[1]
-    const src = id ? `/api/musica/stream/${id}` : meta?.url || def?.musica
+    if (id) {
+      tocarYoutube(id, { inicio: Number(meta?.inicio) || 0, fim: Number(meta?.fim) || 0, volume: 0.4 })
+        .then((ok) => setATocar(ok))
+        .catch(() => setATocar(false))
+      return
+    }
+    const src = meta?.url || def?.musica
     if (!src) return
     const a = new Audio(src)
     a.volume = 0.12
