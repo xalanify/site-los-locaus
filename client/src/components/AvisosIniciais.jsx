@@ -186,19 +186,20 @@ export default function AvisosIniciais({ user }) {
                 <h3 className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">
                   <Sparkles className="h-3 w-3" /> Novas cartas
                 </h3>
-                <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                <div className="mt-2 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible">
                   {[
                     { v: 'supra', nome: 'Supra' },
                     { v: 'nfs', nome: 'Underground' },
                     { v: 'niko', nome: 'Niko' },
                   ].map((c) => (
-                    <div key={c.v} className="mx-auto w-full max-w-[210px]">
+                    <div key={c.v} className="w-[148px] shrink-0 sm:mx-auto sm:w-full sm:max-w-[210px]">
                       <div className="relative aspect-[5/7] overflow-hidden rounded-2xl">
                         <CartaMusical
                           variant={c.v}
                           perfil={perfil || user || {}}
                           username={perfil?.username || user.username}
                           id={perfil?.display_id ?? user.id ?? '—'}
+                          semPlayFixo
                         />
                         <span className="pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-[#2dd4bf]/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-[#04211f]">
                           Novo
@@ -211,6 +212,9 @@ export default function AvisosIniciais({ user }) {
                     </div>
                   ))}
                 </div>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-zinc-600 lg:hidden">
+                  Toca na carta para ouvir
+                </p>
               </section>
 
               <section>

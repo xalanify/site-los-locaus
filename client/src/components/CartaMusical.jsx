@@ -67,7 +67,7 @@ const urlDe = (u, fallback) => {
 
 const clamp = (n, a, b) => Math.min(b, Math.max(a, n))
 
-export default function CartaMusical({ variant = 'supra', perfil = {}, username = 'Membro', id = '—' }) {
+export default function CartaMusical({ variant = 'supra', perfil = {}, username = 'Membro', id = '—', semPlayFixo = false }) {
   const cfg = MUSICAS_CARTAS[variant] || MUSICAS_CARTAS.supra
   const accent = { supra: '#ff6a00', nfs: '#a855f7', niko: '#e5e7eb' }[variant] || '#ffffff'
   const [semImg, setSemImg] = useState(false)
@@ -322,7 +322,7 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
           document.body,
         )}
 
-      {movel && botao && temMusica &&
+      {movel && !semPlayFixo && botao && temMusica &&
         createPortal(
           <button
             type="button"

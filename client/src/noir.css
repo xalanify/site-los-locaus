@@ -5181,3 +5181,10 @@ body.kova .liquid-chat .flex-row-reverse [class*="text-"]{
 
 /* mais cobertura da marca de água na carta do enigma */
 .ce2-watermark{ inset:-40% !important; }
+
+
+/* menu aberto: nada do site aparece por trás (nem a carta do enigma) */
+body.menu-aberto .lv-main,
+body.menu-aberto .home-dash {
+  visibility: hidden !important;
+}

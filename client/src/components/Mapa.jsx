@@ -17,8 +17,10 @@ export default function Mapa({ open, onClose, user, isAdmin = false, onLogout })
     if (!open) return undefined
     const anterior = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    document.body.classList.add('menu-aberto')
     return () => {
       document.body.style.overflow = anterior
+      document.body.classList.remove('menu-aberto')
     }
   }, [open])
 
