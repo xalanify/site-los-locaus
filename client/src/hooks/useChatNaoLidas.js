@@ -50,7 +50,7 @@ export default function useChatNaoLidas(ativo = true) {
     }
 
     carregar()
-    const t = setInterval(carregar, 15000)
+    const t = setInterval(carregar, 30000)
     const aoLido = () => setCount(0)
     const aoVisivel = () => {
       if (!document.hidden) carregar()

@@ -35,6 +35,7 @@ import { enviarSpecs } from './lib/specs'
 // Páginas pesadas entram em separado (lazy) — a home abre mais rápido
 const GamesPage = lazy(() => import('./pages/GamesPage'))
 const EnigmasPage = lazy(() => import('./pages/EnigmasPage'))
+const Enigma2Page = lazy(() => import('./pages/Enigma2Page'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
@@ -45,7 +46,6 @@ const InfoAoVivoPage = lazy(() => import('./pages/InfoAoVivoPage'))
 const ChatPage = lazy(() => import('./pages/ChatPage'))
 const PrevisoesPage = lazy(() => import('./pages/PrevisoesPage'))
 const RecuperarPage = lazy(() => import('./pages/RecuperarPage'))
-const ComponentesPage = lazy(() => import('./pages/ComponentesPage'))
 const CosmeticosPage = lazy(() => import('./pages/CosmeticosPage'))
 const BuildLabPage = lazy(() => import('./pages/BuildLabPage'))
 const NoticiasBugPage = lazy(() => import('./pages/NoticiasBugPage'))
@@ -171,7 +171,7 @@ function App() {
     window.addEventListener('pointerdown', ativo)
     window.addEventListener('keydown', ativo)
     ping()
-    const t = setInterval(ping, 30000)
+    const t = setInterval(ping, 60000)
     return () => {
       clearInterval(t)
       window.removeEventListener('pointerdown', ativo)
@@ -336,18 +336,12 @@ function App() {
 {/* Contas de jogo — aberto a todos os membros */}
                     <Route path="/jogos" element={<GamesPage />} />
                     <Route path="/enigmas" element={<EnigmasPage />} />
+                    <Route path="/enigma2" element={<Enigma2Page />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     <Route
                       path="/builds"
                       element={isAdmin ? <BuildLabPage /> : <Navigate to="/" replace />}
-                    />
-                    {/* Componentes e Periféricos — só admin (em testes) */}
-                    <Route
-                      path="/componentes"
-                      element={
-                        isAdmin ? <ComponentesPage user={user} /> : <Navigate to="/" replace />
-                      }
                     />
                     {/* PCs dos membros: agora dentro de Ferramentas Windows */}
                     <Route path="/pcs" element={<Navigate to="/ferramentas?aba=pcs" replace />} />

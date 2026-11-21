@@ -153,6 +153,33 @@ app.use(
   })
 );
 
+// ---------- CACHE DE CDN nos GET públicos ----------
+// Na Vercel isto evita executar a função quando a resposta está em cache
+// (um dos maiores gastos de CPU). Sem sessão (Authorization), dados públicos.
+const CACHE_PUBLICO = [
+  [/^\/api\/cartas$/, 60],
+  [/^\/api\/mercado(\/|$)/, 30],
+  [/^\/api\/enigma\/(tabela|estado|arquivo)(\/|$)/, 30],
+  [/^\/api\/cosmeticos(\/|$)/, 120],
+  [/^\/api\/previsoes(\/|$)/, 30],
+  [/^\/api\/live(\/|$)/, 20],
+  [/^\/api\/news(\/|$)/, 120],
+  [/^\/api\/stats(\/|$)/, 60],
+];
+
+app.use('/api', (req, res, next) => {
+  if (req.method !== 'GET' || req.headers.authorization) return next();
+  const caminho = String(req.originalUrl || req.url).split('?')[0];
+  const regra = CACHE_PUBLICO.find(([re]) => re.test(caminho));
+  if (!regra) return next();
+  const ttl = regra[1];
+  res.set(
+    'Cache-Control',
+    `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`
+  );
+  next();
+});
+
 // ---------- RATE LIMIT simples ----------
 function makeRateLimit({ windowMs, max }) {
   const hits = new Map();
@@ -249,9 +276,21 @@ const { componentesRouter } = require('./routes/componentes');
 app.use('/api/componentes', componentesRouter);
 
 // Enigma 1 Semana (páginas em /e/<slug> + API em /api/enigma)
-const { enigmaRouter, enigmaPaginas } = require('./routes/enigma');
+const { enigmaRouter } = require('./routes/enigma');
+const { cartasRouter } = require('./routes/cartas');
 app.use('/api/enigma', enigmaRouter);
-app.use('/e', enigmaPaginas);
+
+// Enigma 2 — Protocolo Orion (chaves únicas por jogador)
+const { enigma2Router } = require('./routes/enigma2');
+app.use('/api/enigma2', enigma2Router);
+app.use('/api/cartas', cartasRouter);
+// As etapas do Enigma 1 terminaram; o Enigma 2 chega em breve.
+app.use('/e', (req, res) =>
+  res
+    .status(410)
+    .type('text/plain')
+    .send('As etapas do Enigma 1 já terminaram. O Enigma 2 chega em breve.'),
+);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Não encontrado' }));
 

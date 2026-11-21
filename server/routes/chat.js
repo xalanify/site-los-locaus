@@ -110,7 +110,7 @@ function podeEnviar(uid) {
 const SELECT_MSG = `
   SELECT m.id, m.user_id, m.body, m.kind, m.media_url, m.media_type,
          m.clip_id, m.created_at, m.reply_to,
-         u.username, up.avatar_url,
+         u.username, up.avatar_url, up.name_color, up.name_effect,
          c.title AS clip_title, c.thumb AS clip_thumb, c.file AS clip_file,
          c.youtube_id AS clip_youtube, c.visibility AS clip_visibility,
          c.user_id AS clip_user_id, cu.username AS clip_author,
@@ -196,6 +196,8 @@ function decorar(r, reacoes, pin) {
       id: Number(r.user_id),
       username: r.username || '???',
       avatar_url: r.avatar_url || null,
+      name_color: r.name_color || '',
+      name_effect: r.name_effect || '',
     },
     created_at: r.created_at,
   };

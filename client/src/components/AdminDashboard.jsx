@@ -283,7 +283,7 @@ export default function AdminDashboard({ onTab, onLimparChat, chatLimparBusy, ch
 
   useEffect(() => {
     carregar()
-    const iv = setInterval(() => carregar(), 10000)
+    const iv = setInterval(() => carregar(), 30000)
     return () => clearInterval(iv)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

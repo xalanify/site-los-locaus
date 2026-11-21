@@ -12,7 +12,6 @@ import {
   Newspaper,
   Wrench,
   Cpu,
-  CircuitBoard,
   UsersRound,
   Gamepad2,
   Puzzle,
@@ -50,6 +49,7 @@ export const MODES = [
       { nome: 'Previsões', path: '/previsoes', Icon: Swords, desc: 'Vota e sobe na tabela.' },
       { nome: 'Estatísticas', path: '/jogos', Icon: BarChart3, desc: 'Números por jogo.' },
       { nome: 'Enigmas', path: '/enigmas', Icon: Puzzle, desc: 'Segredos escondidos no site.' },
+      { nome: 'Enigma 2', path: '/enigma2', Icon: Puzzle, desc: 'Protocolo Orion: 5 etapas.' },
       { nome: 'Distinções', path: '/distincoes', Icon: Award, desc: 'As insígnias da casa.' },
       { nome: 'Notícias', path: '/noticias', Icon: Newspaper, desc: 'Novidades dos jogos e da comunidade.', soSabino: true },
     ],
@@ -71,16 +71,9 @@ export const MODES = [
     Icon: Wrench,
     accent: '#ff2e5b',
     path: '/ferramentas',
-    desc: 'Ferramentas, PCs e periféricos.',
+    desc: 'Ferramentas, PCs e otimizações.',
     links: [
       { nome: 'Ferramentas', path: '/ferramentas', Icon: Wrench, desc: 'Otimização, manutenção e PCs.' },
-      {
-        nome: 'Periféricos',
-        path: '/componentes',
-        Icon: CircuitBoard,
-        desc: 'Ratos, teclados e mais.',
-        admin: true,
-      },
     ],
   },
 ]

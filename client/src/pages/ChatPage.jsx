@@ -34,6 +34,8 @@ import { vistoPorUltimo } from '../lib/tempo'
 import PageShell from '../components/PageShell'
 import { confirmar, toast } from '../components/Feedback'
 import { subscribe, ligado } from '../lib/sse'
+import { classesNome } from '../data/nomeEfeitos'
+import { nomeDesafio } from '../lib/desafioSabino'
 /* Temas do chat — só o admin muda; aplica a todos.
    Cada tema = cor principal + fundo do chat. */
 const TEMAS = {
@@ -390,7 +392,7 @@ export default function ChatPage({ user }) {
       }).catch(() => {})
     const marcar = () => enviar(!document.hidden)
     marcar()
-    const iv = setInterval(marcar, 10000)
+    const iv = setInterval(marcar, 30000)
     const vis = () => enviar(!document.hidden)
     document.addEventListener('visibilitychange', vis)
     return () => {
@@ -415,7 +417,7 @@ export default function ChatPage({ user }) {
       } catch {}
     }
     fetchOnline()
-    const t = setInterval(fetchOnline, 30000)
+    const t = setInterval(fetchOnline, 60000)
     return () => clearInterval(t)
   }, [])
 
@@ -432,7 +434,7 @@ export default function ChatPage({ user }) {
       } catch {}
     }
     carregar()
-    const t = setInterval(carregar, 15000)
+    const t = setInterval(carregar, 30000)
     return () => {
       vivo = false
       clearInterval(t)
@@ -886,7 +888,12 @@ export default function ChatPage({ user }) {
                     </span>
                     <div className={`relative min-w-0 max-w-[84%] sm:max-w-[70%] ${minha ? 'items-end' : 'items-start'} flex flex-col`}>
                       {!seguida && (
-                        <span className={`mb-1 px-1 text-[11px] font-bold ${minha ? t.cor : 'text-gray-400'}`}>
+                        <span
+                          className={`mb-1 px-1 text-[11px] font-bold ${minha ? t.cor : 'text-gray-400'} ${nomeDesafio(
+                            m.user.username,
+                            classesNome(m.user.name_color, m.user.name_effect),
+                          )}`}
+                        >
                           {minha ? 'Tu' : m.user.username} · {hora(m.created_at)}
                           <LiveBadge username={m.user.username} className="ml-1.5" />
                         </span>
@@ -894,7 +901,14 @@ export default function ChatPage({ user }) {
                       {m.reply && (
                         <div className={`mb-1 flex items-center gap-1.5 rounded-lg border-l-2 px-2 py-1 text-[11px] ${t.borda} bg-white/[0.04]`}>
                           <CornerUpLeft className="h-3 w-3 shrink-0 text-gray-500" />
-                          <span className="font-bold text-gray-300">{m.reply.username}</span>
+                          <span
+                            className={`font-bold text-gray-300 ${nomeDesafio(
+                              m.reply.username,
+                              classesNome(m.reply.name_color, m.reply.name_effect),
+                            )}`}
+                          >
+                            {m.reply.username}
+                          </span>
                           <span className="truncate text-gray-500">{m.reply.body}</span>
                         </div>
                       )}

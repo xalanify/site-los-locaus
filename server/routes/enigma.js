@@ -379,6 +379,59 @@ router.get('/estado', (req, res) => {
   res.json({ ok: true, fim: FIM.toISOString(), encerrado: encerrado() })
 })
 
+/* Arquivo de vencedores (semanas anteriores) */
+router.get('/arquivo', async (req, res) => {
+  try {
+    const estado = await lerEstado()
+    let venc = []
+    try {
+      venc = await getDb()
+        .prepare('SELECT user_id, semana FROM public.enigma_vencedores ORDER BY semana')
+        .all()
+    } catch {
+      /* tabela ainda não existe */
+    }
+
+    const lista = venc.map((v) => {
+      const j = Object.values(estado.jogadores || {}).find(
+        (x) => Number(x.uid) === Number(v.user_id),
+      )
+      return {
+        semana: v.semana,
+        nome: (j && j.nome) || 'membro',
+        moedas: (j && j.moedas) || 0,
+        posicao: (j && j.posicao) || 1,
+        uid: v.user_id,
+      }
+    })
+
+    let carta = null
+    try {
+      await garantirCarta()
+      const c = await getDb().prepare('SELECT * FROM public.enigma_carta WHERE id = 1').get()
+      if (c && c.owner_id) {
+        const u = await getDb()
+          .prepare('SELECT username FROM users WHERE id = ?')
+          .get(Number(c.owner_id))
+          .catch(() => null)
+        carta = {
+          owner: (u && u.username) || 'membro',
+          numero: '1/1',
+          em_venda: !!c.em_venda,
+          preco: Number(c.preco) || 100,
+        }
+      }
+    } catch {
+      /* sem carta */
+    }
+
+    res.json({ ok: true, vencedores: lista, carta })
+  } catch (e) {
+    console.error('[enigma] arquivo:', e.message)
+    res.status(500).json({ ok: false })
+  }
+})
+
 /* Carta exclusiva do vencedor (1/1) */
 router.get('/carta', attachAuth, async (req, res) => {
   try {

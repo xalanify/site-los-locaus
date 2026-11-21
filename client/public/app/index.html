@@ -113,7 +113,7 @@
   setInterval(async () => {
     if (!ligado) return;
     try {
-      const r = await fetch('https://locaus.vercel.app/api/agente/ping');
+      const r = await fetch('/api/agente/ping');
       const d = await r.json();
       if (d.online) status.innerHTML = '<span class="dot dot-on"></span> [LIGADO] Site conectado — tudo ativo';
     } catch(e) {}

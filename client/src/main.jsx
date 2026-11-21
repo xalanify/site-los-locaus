@@ -16,6 +16,20 @@ instalarLiquid()
 // PWA: regista o service worker (cache do site + notificações push)
 registarSW()
 
+/* ------------------------------------------------------------
+   Poupança de CPU/pedidos: nenhum setInterval dispara com o
+   separador escondido. Quando o utilizador volta, os ciclos
+   retomam no tick seguinte (as páginas já recarregam ao focar).
+   ------------------------------------------------------------ */
+const intervaloOriginal = window.setInterval.bind(window)
+window.setInterval = (fn, ms, ...args) => {
+  if (typeof fn !== 'function') return intervaloOriginal(fn, ms, ...args)
+  const seguro = () => {
+    if (!document.hidden) fn(...args)
+  }
+  return intervaloOriginal(seguro, ms)
+}
+
 // Guarda o evento beforeinstallprompt assim que dispara (antes mesmo do React)
 // para o botão "Instalar app" conseguir abrir o prompt nativo num clique direto.
 window.addEventListener('beforeinstallprompt', (e) => {

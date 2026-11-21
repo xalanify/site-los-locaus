@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Loader2, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Loader2, Sparkles, Music2 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import MoedaLocaus from './MoedaLocaus'
 import ProfileCard from './ProfileCard'
+import { CARTAS_NOVAS, MUSICAS_CARTAS, carregarMusicas } from './CartaMusical'
 import { classesNome } from '../data/nomeEfeitos'
 
 /* ============================================================
@@ -51,6 +52,7 @@ function MiniGrafico({ serie, cor }) {
 
 export default function MercadoHome() {
   const [dados, setDados] = useState(null)
+  const [musicas, setMusicas] = useState({})
 
   useEffect(() => {
     let vivo = true
@@ -63,10 +65,14 @@ export default function MercadoHome() {
         .catch(() => {})
     }
     carregar()
+    carregarMusicas().then((m) => vivo && setMusicas(m || {}))
+    const aoMudar = () => carregarMusicas(true).then((m) => vivo && setMusicas(m || {}))
+    window.addEventListener('locaus:cartas-musica', aoMudar)
     const t = setInterval(carregar, 60000)
     return () => {
       vivo = false
       clearInterval(t)
+      window.removeEventListener('locaus:cartas-musica', aoMudar)
     }
   }, [])
 
@@ -98,7 +104,8 @@ export default function MercadoHome() {
               </span>
               <h2 className="mt-2 font-display text-2xl font-black leading-tight text-white sm:text-3xl">
                 Os cosméticos mais caros agora
-              </h2>
+              </h2>
+
             </div>
             <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#ff7a94]/10 text-[#ff7a94] ring-1 ring-[#ff7a94]/20 sm:grid">
               <Sparkles className="h-5 w-5" />
@@ -153,8 +160,15 @@ export default function MercadoHome() {
                           </span>
                         ) : null}
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-bold text-white">
-                            {item.nome}
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate text-sm font-bold text-white">{item.nome}</span>
+                            {MUSICAS_CARTAS[item.valor] && (
+                              <Music2
+                                className="h-3.5 w-3.5 shrink-0 text-[#ff9db0]"
+                                title={musicas[item.valor]?.titulo || MUSICAS_CARTAS[item.valor].cancao}
+                              />
+                            )}
+                            {CARTAS_NOVAS.has(item.valor) && <span className="novo-tag">Novo</span>}
                           </span>
                           <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                             {item.tipo === 'cor' ? 'cor de nome' : item.tipo}

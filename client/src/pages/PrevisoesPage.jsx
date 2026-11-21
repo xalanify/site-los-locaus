@@ -1039,7 +1039,7 @@ function CS2PrevisoesTab({ user }) {
       .then((r) => r.json())
       .then((d) => vivo && setProx(d && d.jogo ? d.jogo : null))
       .catch(() => {})
-    const t = setInterval(() => vivo && carregar(), 30000)
+    const t = setInterval(() => vivo && carregar(), 60000)
     return () => {
       vivo = false
       clearInterval(t)

@@ -3467,7 +3467,7 @@ body.kova .mode-menu::before {
 }
 
 /* ============================================================
-   CARTA OLHAR — borda preta; ao passar o rato só vermelho/roxo
+   CARTA OLHAR — fundo preto, moldura branca sempre, sem cores
    ============================================================ */
 body.kova .olhos-front {
   background: #000 !important;
@@ -3476,20 +3476,15 @@ body.kova .olhos-card:hover .olhos-front,
 body.kova .olhos-card--ativa .olhos-front {
   background: #000 !important;
 }
+/* sem holo colorido (era o rosa/roxo no hover) */
 body.kova .olhos-card .tcg-holo {
-  background:
-    radial-gradient(
-      circle 24cqw at var(--mx, 50%) var(--my, 50%),
-      rgba(255, 31, 61, 0.3),
-      transparent 70%
-    ),
-    linear-gradient(
-      115deg,
-      transparent 20%,
-      rgba(255, 31, 61, 0.2) 38%,
-      rgba(124, 58, 237, 0.24) 55%,
-      transparent 80%
-    ) !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+/* moldura sempre branca, com ou sem rato */
+body.kova .olhos-card .olhos-frame {
+  border-color: rgba(255, 255, 255, 0.62) !important;
+  box-shadow: inset 0 0 3cqw rgba(0, 0, 0, 0.9) !important;
 }
 
 /* ============================================================
@@ -4400,3 +4395,789 @@ body.kova .home-dash > .enigma-home {
   aspect-ratio: auto;
   border-radius: 20px;
 }
+
+/* ============================================================
+   CARTAS COM MÚSICA — foto + tipografia + som no hover
+   ============================================================ */
+.cm{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  container-type:inline-size;
+  background:#080a10;
+  color:#fff;
+  font-family:'Inter Tight','Inter',sans-serif;
+  touch-action:none;
+}
+.cm-img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  filter:saturate(1.05) contrast(1.03);
+  transform:scale(1.02);
+  transition:transform .8s cubic-bezier(.22,1,.36,1), filter .4s ease;
+}
+.cm:hover .cm-img{ transform:scale(1.07); }
+.cm-veu{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(3,5,10,.18) 0%, rgba(3,5,10,.05) 38%, rgba(3,5,10,.72) 78%, rgba(3,5,10,.94) 100%);
+}
+.cm-titulo{
+  position:absolute;
+  left:-2%;
+  top:52%;
+  width:104%;
+  text-align:center;
+  font-family:'Anton','Archivo Black','Bebas Neue',sans-serif;
+  font-size:26cqw;
+  line-height:.82;
+  letter-spacing:-.03em;
+  color:rgba(255,255,255,.92);
+  text-transform:uppercase;
+  text-shadow:0 6px 30px rgba(0,0,0,.45);
+  pointer-events:none;
+  opacity:.9;
+}
+.cm-kicker{
+  position:absolute;
+  left:6%; top:5%;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:2.6cqw;
+  letter-spacing:.32em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.82);
+  text-shadow:0 1px 8px rgba(0,0,0,.6);
+}
+.cm-info{
+  position:absolute; left:0; right:0; bottom:0;
+  padding:4cqw 5cqw 4.5cqw;
+  display:flex; flex-direction:column; gap:.6cqw;
+  background:linear-gradient(0deg, rgba(2,4,8,.92), rgba(2,4,8,.45) 60%, transparent);
+}
+.cm-nome-linha{ display:flex; align-items:center; gap:1.4cqw; min-width:0; }
+.cm-nome{
+  min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-size:5.4cqw; font-weight:800; letter-spacing:-.02em; color:#fff;
+}
+.cm-musica{
+  display:grid; place-items:center;
+  width:5.4cqw; height:5.4cqw; flex:0 0 5.4cqw;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.4);
+  background:rgba(0,0,0,.45);
+  color:#fff;
+  backdrop-filter:blur(6px);
+}
+.cm-musica svg{ width:55%; height:55%; }
+.cm-sub{ font-size:2.5cqw; color:rgba(255,255,255,.62); }
+.cm-rodape{
+  margin-top:.8cqw;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:3.2cqw; letter-spacing:.18em; text-transform:uppercase;
+  color:rgba(255,255,255,.42);
+}
+
+/* barras de som quando está a tocar */
+.cm-som{
+  position:absolute; right:5cqw; top:5cqw;
+  display:flex; align-items:flex-end; gap:.7cqw;
+  height:4cqw; opacity:0; transition:opacity .2s ease;
+}
+.cm--a-tocar .cm-som{ opacity:1; }
+.cm-som i{
+  display:block; width:.8cqw; border-radius:999px;
+  background:#fff; height:30%;
+  animation:cmSom 1s ease-in-out infinite;
+}
+.cm-som i:nth-child(2){ animation-delay:.15s; }
+.cm-som i:nth-child(3){ animation-delay:.3s; }
+.cm-som i:nth-child(4){ animation-delay:.45s; }
+@keyframes cmSom{
+  0%,100%{ height:25%; }
+  50%{ height:100%; }
+}
+
+/* variações de cada carta */
+.cm--supra .cm-veu{
+  background:
+    linear-gradient(160deg, rgba(255,106,0,.18) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(3,5,10,.2), rgba(3,5,10,.05) 40%, rgba(10,4,2,.82) 82%, rgba(8,3,2,.96));
+}
+.cm--supra .cm-titulo{
+  color:rgba(255,255,255,.94);
+  text-shadow:0 .02em 0 #ff6a00, 0 .04em 0.02em rgba(0,0,0,.55);
+}
+
+.cm--nfs .cm-titulo{
+  font-family:'Orbitron','Michroma','Anton',sans-serif;
+  font-weight:800;
+  letter-spacing:-.06em;
+  color:rgba(235,240,255,.95);
+  text-shadow:0 0 2cqw rgba(160,120,255,.55), 0 .1cqw 0 rgba(0,0,0,.6);
+}
+.cm--nfs .cm-veu{
+  background:
+    linear-gradient(180deg, rgba(20,10,40,.35), transparent 40%, rgba(6,4,14,.86) 82%, rgba(4,3,10,.96));
+}
+
+.cm--subaru .cm-titulo{
+  top:36%;
+  font-size:30cqw;
+  color:rgba(255,255,255,.96);
+  letter-spacing:-.05em;
+  text-shadow:0 .02em .01em rgba(0,0,0,.5);
+}
+.cm--subaru .cm-kicker{ color:#9ff0b5; }
+.cm--subaru .cm-veu{
+  background:
+    linear-gradient(180deg, rgba(6,18,12,.2), transparent 45%, rgba(4,10,8,.85) 82%, rgba(3,8,6,.96));
+}
+.cm--subaru .cm-rodape{ color:#9ff0b5; }
+
+/* ============================================================
+   BOTÕES iOS — vidro transparente, mesma paleta carmim
+   ============================================================ */
+body.kova .ui-btn,
+.ui-btn {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  color: #eef2f8 !important;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 6px 18px rgba(0, 0, 0, 0.28) !important;
+}
+body.kova .ui-btn:hover,
+.ui-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+body.kova .ui-btn-primary,
+.ui-btn-primary {
+  background: linear-gradient(180deg, rgba(255, 90, 125, 0.34), rgba(197, 3, 55, 0.3)) !important;
+  border-color: rgba(255, 130, 160, 0.45) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 10px 26px rgba(197, 3, 55, 0.28) !important;
+}
+body.kova .ui-btn-primary:hover,
+.ui-btn-primary:hover {
+  background: linear-gradient(180deg, rgba(255, 110, 140, 0.42), rgba(197, 3, 55, 0.4)) !important;
+  border-color: rgba(255, 160, 185, 0.6) !important;
+}
+body.kova .ui-btn-ghost,
+.ui-btn-ghost {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #dfe5ef !important;
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+body.kova .ui-btn-danger,
+.ui-btn-danger {
+  background: rgba(197, 3, 55, 0.16) !important;
+  border-color: rgba(255, 110, 140, 0.35) !important;
+  color: #ffd1da !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ============================================================
+   CARTA DO ENIGMA POR REVELAR
+   ============================================================ */
+.enigma-carta-bloqueada{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  aspect-ratio:3/4.35;
+  width:100%;
+  border-radius:18px;
+  border:1px dashed rgba(255,255,255,.22);
+  background:
+    radial-gradient(60% 40% at 50% 20%, rgba(197,3,55,.16), transparent 70%),
+    linear-gradient(180deg, rgba(20,16,28,.75), rgba(5,7,12,.95));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06), 0 20px 46px rgba(0,0,0,.45);
+  color:rgba(255,255,255,.8);
+  text-align:center;
+  padding:16px;
+}
+.enigma-carta-bloqueada-ico{
+  display:grid;place-items:center;
+  width:52px;height:52px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.05);
+  color:#ff9db0;
+  margin-bottom:6px;
+}
+.enigma-carta-bloqueada b{
+  font-family:'Inter Tight',sans-serif;
+  font-size:17px;font-weight:800;color:#fff;
+}
+.enigma-carta-bloqueada em{
+  font-style:normal;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#7c8496;
+}
+
+/* ============================================================
+   SPLASH GTA — azul, Pricedown, barra neon rosa
+   ============================================================ */
+body.kova .boot-screen.boot-liquid {
+  background:
+    radial-gradient(60% 42% at 50% 12%, rgba(255, 46, 145, 0.22), transparent 64%),
+    radial-gradient(52% 40% at 12% 92%, rgba(56, 232, 208, 0.16), transparent 70%),
+    radial-gradient(46% 36% at 92% 88%, rgba(255, 170, 60, 0.14), transparent 72%),
+    linear-gradient(180deg, #070310 0%, #04040c 55%, #0a0410 100%) !important;
+}
+body.kova .boot-liquid::after {
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(4,4,10,.35) 60%, rgba(4,4,10,.92) 100%),
+    repeating-linear-gradient(180deg, transparent 0 3px, rgba(255,255,255,.018) 3px 4px) !important;
+}
+body.kova .boot-logo-wrap::after {
+  background: linear-gradient(90deg, transparent, rgba(255,80,150,.75), rgba(56,232,208,.75), transparent) !important;
+}
+body.kova .boot-logo.boot-logo--sega {
+  font-family:'Pricedown Bl','Pricedown','Anton','Archivo Black',sans-serif !important;
+  font-weight:400 !important;
+  font-style:normal !important;
+  font-stretch:100% !important;
+  font-variation-settings:normal !important;
+  text-transform:uppercase;
+  letter-spacing:.01em;
+  transform:skewX(-4deg);
+  background:none !important;
+  -webkit-background-clip:border-box;
+  background-clip:border-box;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff;
+  -webkit-text-stroke:0.022em rgba(18,8,20,.85);
+  paint-order:stroke fill;
+  filter:
+    drop-shadow(0 0.05em 0.02em rgba(0,0,0,.85))
+    drop-shadow(0 0 0.26em rgba(255,255,255,.35))
+    drop-shadow(0 0 0.65em rgba(255,46,145,.45));
+  animation:none !important;
+  padding:0 0.05em 0.06em;
+}
+body.kova .boot-progress {
+  gap:14px;
+}
+body.kova .boot-progress-bar {
+  height:12px !important;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.07) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.12),
+    0 0 22px rgba(255,46,145,.18) !important;
+  overflow:hidden;
+}
+body.kova .boot-progress-fill {
+  background:linear-gradient(90deg,#ff9dc4 0%,#ff4d94 40%,#ff2e8b 70%,#ff77b0 100%) !important;
+  box-shadow:0 0 22px rgba(255,46,139,.7), 0 0 40px rgba(255,120,170,.35) !important;
+}
+body.kova .boot-progress-pct {
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:11px;
+  letter-spacing:.22em;
+  color:#ff9dc4 !important;
+  text-shadow:0 0 14px rgba(255,46,139,.6);
+}
+body.kova .boot-beta {
+  color:#9ff0e4 !important;
+  letter-spacing:.4em;
+  text-shadow:0 0 12px rgba(56,232,208,.5);
+}
+
+/* as cartas com música precisam de altura definida (conteúdo absoluto) */
+.profile-card--supra,
+.profile-card--nfs,
+.profile-card--subaru {
+  aspect-ratio: 3 / 4.35;
+  min-height: 0;
+}
+.profile-card--supra .pc-body,
+.profile-card--nfs .pc-body,
+.profile-card--subaru .pc-body {
+  height: 100% !important;
+}
+
+/* marca de água do nome (aparece no hover) */
+.cm-watermark{
+  position:absolute;
+  inset:-24%;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:1.6cqw;
+  transform:rotate(-18deg);
+  opacity:0;
+  transition:opacity .35s ease;
+  pointer-events:none;
+}
+.cm:hover .cm-watermark{ opacity:.15; }
+.cm-watermark-row{
+  display:flex;
+  gap:2.4cqw;
+  white-space:nowrap;
+}
+.cm-watermark-row span{
+  font-family:'Inter Tight',sans-serif;
+  font-weight:800;
+  font-size:1.5cqw;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:#fff;
+}
+
+/* legenda por baixo da carta (só enquanto toca) */
+.cm-legenda{
+  position:fixed;
+  z-index:140;
+  transform:translateX(-50%);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 11px;
+  border-radius:999px;
+  background:rgba(3,6,12,.94);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:10px;
+  letter-spacing:.08em;
+  box-shadow:0 12px 28px rgba(0,0,0,.6), 0 0 18px rgba(197,3,55,.18);
+  pointer-events:none;
+  white-space:nowrap;
+  animation:cmLegendaIn .18s ease both;
+}
+@keyframes cmLegendaIn{
+  from{opacity:0; transform:translate(-50%,4px)}
+  to{opacity:1; transform:translate(-50%,0)}
+}
+
+/* carta do enigma 2 (arte real) */
+.enigma-carta2{
+  position:relative;
+  aspect-ratio:3/4.35;
+  width:100%;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.18);
+  background:#060a12;
+  box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.enigma-carta2 img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .6s cubic-bezier(.22,1,.36,1), filter .3s ease;
+}
+.enigma-carta2:hover img{ transform:scale(1.04); filter:brightness(1.06); }
+.enigma-carta2-selo{
+  position:absolute;
+  top:12px;right:12px;
+  padding:4px 9px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);
+  background:rgba(4,6,12,.72);
+  backdrop-filter:blur(8px);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#fff;
+}
+.enigma-carta2-info{
+  position:absolute;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;gap:2px;
+  padding:14px 16px 16px;
+  background:linear-gradient(0deg, rgba(3,5,10,.94), rgba(3,5,10,.4) 60%, transparent);
+}
+.enigma-carta2-info b{ color:#fff;font-size:16px;font-weight:800; }
+.enigma-carta2-info em{
+  font-style:normal;font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#9aa3b5;
+}
+
+/* ============================================================
+   SPLASH "AFTER HOURS" — branco sobre preto, órbita e estrela
+   ============================================================ */
+body.kova .boot-screen.boot-liquid {
+  background:#030304 !important;
+}
+body.kova .boot-liquid::before {
+  opacity:.25;
+  background-image:
+    radial-gradient(60% 50% at 50% 46%, rgba(255,255,255,.06), transparent 70%),
+    linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size:auto, 80px 80px, 80px 80px;
+}
+body.kova .boot-liquid::after {
+  background:radial-gradient(70% 60% at 50% 46%, transparent 0%, rgba(2,2,4,.5) 66%, rgba(2,2,4,.96) 100%) !important;
+}
+body.kova .boot-logo-wrap {
+  padding:10px 0 16px;
+}
+body.kova .boot-logo-wrap::after {
+  width:44%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent) !important;
+}
+body.kova .boot-logo.boot-logo--ah {
+  position:relative;
+  display:inline-block;
+  font-family:'Poppins','Inter Tight',sans-serif !important;
+  font-weight:800 !important;
+  font-style:italic !important;
+  text-transform:lowercase;
+  letter-spacing:-.03em;
+  font-size:clamp(2.6rem,9vw,4.7rem);
+  line-height:1;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff;
+  -webkit-text-stroke:0;
+  background:none !important;
+  transform:skewX(-5deg);
+  padding:0 .12em;
+  text-shadow:
+    0 0 .02em rgba(255,255,255,.9),
+    0 0 .35em rgba(255,255,255,.28);
+  filter:drop-shadow(0 0 .5em rgba(255,255,255,.18));
+  animation:none !important;
+}
+body.kova .boot-orbit{
+  position:absolute;
+  left:50%;
+  top:48%;
+  width:min(560px,118%);
+  height:clamp(74px,16vw,120px);
+  transform:translate(-50%,-50%) rotate(-7deg);
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:50%;
+  opacity:.55;
+  pointer-events:none;
+  mask-image:linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+}
+body.kova .boot-star{
+  position:absolute;
+  right:-.42em;
+  top:-.34em;
+  width:.52em;
+  height:.52em;
+  background:#fff;
+  clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  filter:drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,255,255,.35));
+  animation:bootStar 3.4s ease-in-out infinite;
+}
+@keyframes bootStar{
+  0%,100%{ transform:scale(.86) rotate(0deg); opacity:.85; }
+  50%{ transform:scale(1.05) rotate(45deg); opacity:1; }
+}
+body.kova .boot-progress-bar{
+  height:4px !important;
+  background:rgba(255,255,255,.1) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}
+body.kova .boot-progress-fill{
+  background:linear-gradient(90deg,#8f8f95,#ffffff 45%,#d9d9df 70%,#ffffff) !important;
+  box-shadow:0 0 16px rgba(255,255,255,.55), 0 0 34px rgba(255,255,255,.2) !important;
+}
+body.kova .boot-progress-pct{
+  color:#e8e8ec !important;
+  text-shadow:0 0 12px rgba(255,255,255,.25);
+}
+body.kova .boot-beta{
+  color:#b9b9c1 !important;
+  text-shadow:none;
+}
+
+/* ============================================================
+   POLIMENTO GERAL — detalhes, foco e micro-interações
+   ============================================================ */
+body.kova .page-title {
+  position: relative;
+}
+body.kova .page-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 44px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff2e5b, rgba(255,46,91,0));
+  opacity: .85;
+}
+body.kova .mode-link {
+  transition: color .18s ease, transform .18s ease;
+}
+body.kova .mode-link:hover {
+  transform: translateY(-1px);
+}
+body.kova .mode-menu-item {
+  transition: background .16s ease, color .16s ease, padding-left .16s ease;
+}
+body.kova .mode-menu-item:hover {
+  padding-left: 4px;
+}
+body.kova .mercado-linha {
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+body.kova .mercado-linha:hover {
+  transform: translateX(2px);
+}
+body.kova :focus-visible {
+  outline: 2px solid rgba(255, 46, 91, .65);
+  outline-offset: 2px;
+}
+body.kova .glass-chip:hover {
+  border-color: rgba(255, 46, 91, .3);
+}
+body.kova .page-header {
+  margin-bottom: 18px;
+}
+
+/* marca de água só na zona do rato + cor da carta */
+.cm-watermark{
+  inset:-32%;
+  justify-content:space-between;
+  gap:2.2cqw;
+  mask-image:radial-gradient(circle 200px at var(--mx,50%) var(--my,50%), #000 0%, rgba(0,0,0,.62) 46%, transparent 82%);
+  -webkit-mask-image:radial-gradient(circle 200px at var(--mx,50%) var(--my,50%), #000 0%, rgba(0,0,0,.62) 46%, transparent 82%);
+  opacity:0;
+}
+.cm:hover .cm-watermark{ opacity:.5; }
+.cm-watermark-row{ gap:3cqw; }
+.cm-watermark-row span{
+  font-size:4cqw;
+  letter-spacing:.1em;
+  color:transparent;
+  background-image:linear-gradient(115deg, var(--cm-accent,#fff), #ffffff 38%, var(--cm-accent,#fff) 62%, #ffffff 100%);
+  background-size:220% 100%;
+  background-position:var(--mx,50%) 50%;
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+
+/* Niko também precisa de altura definida */
+.profile-card--niko{
+  aspect-ratio:3 / 4.35;
+  min-height:0;
+}
+.profile-card--niko .pc-body{ height:100% !important; }
+
+/* etiqueta NOVO nas cartas novas */
+.novo-tag{
+  display:inline-flex;
+  align-items:center;
+  padding:1px 5px;
+  border-radius:999px;
+  border:1px solid rgba(124,245,196,.4);
+  background:rgba(124,245,196,.12);
+  color:#7cf5c4;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:7.5px;
+  font-weight:700;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  flex-shrink:0;
+}
+
+/* ============================================================
+   CARTA DO ENIGMA 2 — dourado e preto
+   ============================================================ */
+.ce2{
+  position:relative;
+  aspect-ratio:3/4.35;
+  width:100%;
+  border-radius:18px;
+  overflow:hidden;
+  background:#05060a;
+  border:1px solid rgba(245,197,66,.45);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.6),
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    0 0 34px rgba(245,197,66,.12);
+  transition:box-shadow .3s ease, border-color .3s ease;
+  will-change:transform;
+}
+.ce2--clicavel{ cursor:pointer; }
+.ce2:hover{
+  border-color:#f5c542;
+  box-shadow:
+    0 28px 70px rgba(0,0,0,.7),
+    inset 0 0 0 1px rgba(255,236,170,.25),
+    0 0 48px rgba(245,197,66,.35);
+}
+.ce2-img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transform:scale(1.02);
+  transition:transform .7s cubic-bezier(.22,1,.36,1), filter .3s ease;
+}
+.ce2:hover .ce2-img{ transform:scale(1.06); filter:brightness(1.05); }
+.ce2-veu{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(4,4,8,.35) 0%, rgba(4,4,8,.05) 38%, rgba(4,4,8,.55) 72%, rgba(3,3,6,.95) 100%);
+}
+.ce2-brilho{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(115deg, transparent 38%, rgba(255,241,186,.35) 50%, transparent 62%);
+  transform:translateX(-130%);
+  transition:transform .9s ease;
+}
+.ce2:hover .ce2-brilho{ transform:translateX(130%); }
+.ce2-watermark{
+  position:absolute;inset:-28%;z-index:2;
+  display:flex;flex-direction:column;justify-content:space-between;gap:1.8cqw;
+  transform:rotate(-18deg);
+  opacity:0;
+  transition:opacity .3s ease;
+  pointer-events:none;
+  mask-image:radial-gradient(circle 210px at var(--mx,50%) var(--my,50%), #000 0%, rgba(0,0,0,.62) 46%, transparent 82%);
+  -webkit-mask-image:radial-gradient(circle 210px at var(--mx,50%) var(--my,50%), #000 0%, rgba(0,0,0,.62) 46%, transparent 82%);
+}
+.ce2:hover .ce2-watermark{ opacity:.48; }
+.ce2-watermark-row{ display:flex; gap:3cqw; white-space:nowrap; }
+.ce2-watermark-row span{
+  font-family:'Inter Tight',sans-serif;
+  font-weight:900;
+  font-size:3.2cqw;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:transparent;
+  background-image:linear-gradient(115deg, #f5c542, #fff8d8 38%, #d9a441 62%, #fff8d8 100%);
+  background-size:220% 100%;
+  background-position:var(--mx,50%) 50%;
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.ce2-topo{
+  position:absolute;left:0;right:0;top:0;z-index:4;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;
+}
+.ce2-selo{
+  padding:4px 9px;border-radius:999px;
+  border:1px solid rgba(245,197,66,.6);
+  background:rgba(8,6,2,.65);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#ffe9a8;
+}
+.ce2-num{
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:9px;letter-spacing:.12em;color:rgba(255,240,190,.75);
+}
+.ce2-info{
+  position:absolute;left:0;right:0;bottom:0;z-index:4;
+  display:flex;flex-direction:column;gap:2px;
+  padding:14px 16px 16px;
+  background:linear-gradient(0deg, rgba(3,3,7,.96), rgba(3,3,7,.35) 60%, transparent);
+}
+.ce2-info b{ color:#fff;font-size:17px;font-weight:800; }
+.ce2-info em{
+  font-style:normal;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#c9b57a;
+}
+.ce2--ampla{ max-width:380px;margin:0 auto; }
+.ce2--ampla .ce2-info b{ font-size:20px; }
+
+/* chat geral — vidro mais trabalhado */
+body.kova .liquid-chat{
+  background:linear-gradient(180deg, rgba(10,14,24,.88), rgba(4,7,13,.94)) !important;
+  border-color:rgba(255,255,255,.1) !important;
+  box-shadow:0 28px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+}
+body.kova .liquid-chat [class*="overflow-y-auto"]{
+  background:radial-gradient(70% 50% at 50% 0%, rgba(255,46,91,.05), transparent 70%);
+}
+body.kova .liquid-chat [class*="px-4"][class*="py-2.5"]{
+  border-radius:18px;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+body.kova .liquid-chat [class*="px-4"][class*="py-2.5"]:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 26px rgba(0,0,0,.35);
+}
+body.kova .liquid-chat input,
+body.kova .liquid-chat textarea{
+  background:rgba(255,255,255,.05) !important;
+  border-radius:14px !important;
+}
+body.kova .liquid-chat input:focus,
+body.kova .liquid-chat textarea:focus{
+  box-shadow:0 0 0 2px rgba(255,46,91,.35) !important;
+}
+.ce2{ container-type:inline-size; }
+
+/* chat — bolhas e área de mensagens mais ricas */
+body.kova .liquid-chat [class*="overflow-y-auto"]{
+  background:
+    radial-gradient(70% 42% at 50% 0%, rgba(255,46,91,.06), transparent 70%),
+    radial-gradient(60% 40% at 100% 100%, rgba(70,120,255,.05), transparent 72%) !important;
+}
+body.kova .liquid-chat [class*="rounded-2xl"][class*="px-4"]{
+  border:1px solid rgba(255,255,255,.09);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+}
+body.kova .liquid-chat .flex-row-reverse [class*="rounded-2xl"]{
+  background:linear-gradient(135deg, rgba(197,3,55,.34), rgba(96,2,26,.3)) !important;
+  border-color:rgba(255,46,91,.38) !important;
+  box-shadow:0 10px 24px rgba(197,3,55,.2);
+}
+body.kova .liquid-chat img[class*="rounded-full"]{
+  box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 4px 12px rgba(0,0,0,.35);
+}
+body.kova .liquid-chat [class*="border-t"]{
+  border-color:rgba(255,255,255,.08) !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12));
+}
+body.kova .liquid-chat .flex-row-reverse [class*="text-"]{
+  text-shadow:none;
+}
+
+/* ============================================================
+   Botão de play das cartas com música (telemóvel)
+   ============================================================ */
+
+.cm-play{
+  position:fixed;
+  z-index:146;
+  transform:translateX(-50%);
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  max-width:min(320px,calc(100vw - 40px));
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(4,7,13,.95);
+  color:#fff;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:10px;
+  letter-spacing:.06em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  box-shadow:0 14px 30px rgba(0,0,0,.6), 0 0 20px rgba(197,3,55,.2);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  cursor:pointer;
+}
+.cm-play:active{ transform:translateX(-50%) scale(.97); }
+.cm-play svg{ flex-shrink:0; color:#ff9db0; }
+
+/* mais cobertura da marca de água na carta do enigma */
+.ce2-watermark{ inset:-40% !important; }

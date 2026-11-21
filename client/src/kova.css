@@ -5233,7 +5233,51 @@ body.kova .boot-meio {
 }
 .olhos-card:hover .tcg-watermark,
 .olhos-card--ativa .tcg-watermark {
-  opacity: 0.6;
+  opacity: 0.5;
+}
+
+/* marca de água do Olhar no mesmo estilo das cartas novas (halo no rato) */
+.olhos-card .tcg-watermark {
+  inset: -32%;
+  justify-content: space-between;
+  gap: 2.2cqw;
+  -webkit-mask-image: radial-gradient(
+    circle 200px at var(--mx, 50%) var(--my, 50%),
+    #000 0%,
+    rgba(0, 0, 0, 0.62) 46%,
+    transparent 82%
+  );
+  mask-image: radial-gradient(
+    circle 200px at var(--mx, 50%) var(--my, 50%),
+    #000 0%,
+    rgba(0, 0, 0, 0.62) 46%,
+    transparent 82%
+  );
+}
+.olhos-card .tcg-watermark-row {
+  gap: 3cqw;
+}
+.olhos-card .tcg-watermark-word {
+  font-size: 4cqw;
+  letter-spacing: 0.1em;
+  background-image: linear-gradient(
+    115deg,
+    var(--tcg-accent),
+    #ffffff 34%,
+    var(--tcg-accent2, #67e8f9) 58%,
+    #ffffff 82%,
+    var(--tcg-accent)
+  );
+  opacity: 0.9;
+}
+
+/* moldura branca (com ou sem rato) — sem cor rosa/roxa */
+.olhos-card .olhos-frame {
+  border-color: rgba(255, 255, 255, 0.62);
+}
+.olhos-card:hover .olhos-frame,
+.olhos-card--ativa .olhos-frame {
+  border-color: rgba(255, 255, 255, 0.78);
 }
 .olhos-card:hover .tcg-holo,
 .olhos-card--ativa .tcg-holo {

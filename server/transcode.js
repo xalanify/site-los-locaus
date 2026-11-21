@@ -27,6 +27,22 @@ try {
   FFMPEG = null;
 }
 
+// Alternativa: ffmpeg do sistema (apt install ffmpeg), útil na Oracle/VPS
+// quando o binário do ffmpeg-static não existe para a arquitetura (ARM).
+if (!FFMPEG) {
+  try {
+    if (process.env.FFMPEG_PATH && fs.existsSync(process.env.FFMPEG_PATH)) {
+      FFMPEG = process.env.FFMPEG_PATH;
+    } else {
+      const { execFileSync } = require('child_process');
+      const caminho = String(execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }) || '').trim();
+      if (caminho && fs.existsSync(caminho)) FFMPEG = caminho;
+    }
+  } catch {
+    FFMPEG = null;
+  }
+}
+
 const disponivel = () => Boolean(FFMPEG);
 
 /** Corre o ffmpeg e resolve quando terminar (rejeita com o fim do log). */

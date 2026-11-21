@@ -13,6 +13,11 @@ const sse = require('../sse');
 const router = express.Router();
 
 router.get('/stream', (req, res) => {
+  // Na Vercel (serverless) uma ligação aberta mantém a função viva e gasta
+  // CPU a cada reconexão. O cliente tem polling de recurso: devolvemos 204
+  // para ele parar de tentar.
+  if (process.env.VERCEL) return res.status(204).end();
+
   const token = String(req.query.token || '');
   let uid = null;
   try {

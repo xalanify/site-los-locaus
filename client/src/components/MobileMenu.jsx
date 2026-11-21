@@ -13,7 +13,6 @@ import {
   CreditCard,
   Wrench,
   Cpu,
-  CircuitBoard,
 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
@@ -59,16 +58,17 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
     },
     {
       titulo: 'Competir',
-      itens: [{ name: 'Previsões', icon: Swords, path: '/previsoes' }],
+      itens: [
+        { name: 'Enigmas', icon: Trophy, path: '/enigmas' },
+        { name: 'Enigma 2 · Orion', icon: Sparkles, path: '/enigma2' },
+        { name: 'Previsões', icon: Swords, path: '/previsoes' },
+      ],
     },
     {
       titulo: 'Ferramentas',
       itens: [
         { name: 'Ferramentas Windows', icon: Wrench, path: '/ferramentas' },
         { name: 'PCs / Specs', icon: Cpu, path: '/pcs' },
-        ...(isAdmin
-          ? [{ name: 'Componentes e periféricos', icon: CircuitBoard, path: '/componentes' }]
-          : []),
       ],
     },
   ]

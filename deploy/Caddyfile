@@ -1,0 +1,28 @@
+# ============================================================
+#  Caddy — HTTPS automático para o Locaus (Oracle Cloud)
+#  O script deploy/oracle-setup.sh escreve este ficheiro em
+#  /etc/caddy/Caddyfile. Isto é só a referência.
+# ============================================================
+
+{
+	email contacto@locaus.fun
+}
+
+# www -> domínio principal
+www.locaus.fun {
+	redir https://locaus.fun{uri} permanent
+}
+
+locaus.fun {
+	encode zstd gzip
+
+	# O React gera ficheiros com hash no nome: cache longa
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	# Service worker e manifest: nunca em cache
+	@sw path /sw.js /manifest.webmanifest
+	header @sw Cache-Control "no-cache"
+
+	reverse_proxy 127.0.0.1:3001
+}

@@ -13,12 +13,14 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ArrowUpDown,
+  Music2,
 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
 import { confirmar, toast } from './Feedback'
 import MoedaLocaus from './MoedaLocaus'
 import ItemMini from './ItemMini'
 import CartaEnigmaMercado from './CartaEnigmaMercado'
+import { CARTAS_NOVAS, MUSICAS_CARTAS } from './CartaMusical'
 import CartaLimitada from './CartaLimitada'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
@@ -148,6 +150,7 @@ export default function Mercado({ onSaldo }) {
   const [flash, setFlash] = useState({})
   const precosRef = useRef({})
   const [searchParams, setSearchParams] = useSearchParams()
+  const [musicasCartas, setMusicasCartas] = useState({})
 
   const carregar = async () => {
     try {
@@ -164,6 +167,10 @@ export default function Mercado({ onSaldo }) {
 
   useEffect(() => {
     carregar()
+    fetch('/api/cartas', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setMusicasCartas((d && d.itens) || {}))
+      .catch(() => {})
     fetch('/api/users/me', { headers: authHeaders(), cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setMe(d))
@@ -533,14 +540,23 @@ export default function Mercado({ onSaldo }) {
                   />
                 )}
                 <span className="min-w-0 flex-1">
-                  <span
-                    className={`block truncate text-sm font-bold ${
-                      item.tipo === 'cor'
-                        ? classesNome(item.valor) || 'text-white'
-                        : 'text-white'
-                    }`}
-                  >
-                    {item.nome}
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span
+                      className={`truncate text-sm font-bold ${
+                        item.tipo === 'cor'
+                          ? classesNome(item.valor) || 'text-white'
+                          : 'text-white'
+                      }`}
+                    >
+                      {item.nome}
+                    </span>
+                    {MUSICAS_CARTAS[item.valor] && (
+                      <Music2
+                        className="h-3.5 w-3.5 shrink-0 text-[#ff9db0]"
+                        title={musicasCartas[item.valor]?.titulo || MUSICAS_CARTAS[item.valor].cancao}
+                      />
+                    )}
+                    {CARTAS_NOVAS.has(item.valor) && <span className="novo-tag">Novo</span>}
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                     {item.tipo === 'edicao' ? (
@@ -649,7 +665,16 @@ export default function Mercado({ onSaldo }) {
             >
               <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-base font-black text-white">{detalhe.nome}</p>
+                  <p className="flex items-center gap-1.5 truncate text-base font-black text-white">
+                    {detalhe.nome}
+                    {MUSICAS_CARTAS[detalhe.valor] && (
+                      <Music2
+                        className="h-4 w-4 shrink-0 text-[#ff9db0]"
+                        title={musicasCartas[detalhe.valor]?.titulo || MUSICAS_CARTAS[detalhe.valor].cancao}
+                      />
+                    )}
+                    {CARTAS_NOVAS.has(detalhe.valor) && <span className="novo-tag">Novo</span>}
+                  </p>
                   <p className="text-[11px] font-semibold text-zinc-500">
                     Limitado · {detalhe.disponiveis} de {detalhe.total} disponíveis
                   </p>
@@ -752,7 +777,16 @@ export default function Mercado({ onSaldo }) {
           >
             <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/10 px-4 py-3">
               <div className="min-w-0">
-                <p className="truncate text-base font-black text-white">{detalhe.nome}</p>
+                <p className="flex items-center gap-1.5 truncate text-base font-black text-white">
+                  {detalhe.nome}
+                  {MUSICAS_CARTAS[detalhe.valor] && (
+                    <Music2
+                      className="h-4 w-4 shrink-0 text-[#ff9db0]"
+                      title={musicasCartas[detalhe.valor]?.titulo || MUSICAS_CARTAS[detalhe.valor].cancao}
+                    />
+                  )}
+                  {CARTAS_NOVAS.has(detalhe.valor) && <span className="novo-tag">Novo</span>}
+                </p>
                 <p className="text-[11px] font-semibold text-zinc-500">
                   {NOME_RARIDADE[detalhe.raridade]} ·{' '}
                   {detalhe.tipo === 'cor' ? 'cor de nome' : detalhe.tipo}

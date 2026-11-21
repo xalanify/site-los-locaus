@@ -158,6 +158,11 @@ const CARTAS_TODAS = [
   { id: 'carta-arte-teia', nome: 'Carta Teia', valor: 'arte-teia', custo: 235, cor: '#cbd5e1' },
   { id: 'carta-arte-suspenso', nome: 'Carta Suspenso', valor: 'arte-suspenso', custo: 240, cor: '#e5e7eb' },
   { id: 'carta-arte-prisma', nome: 'Carta Prisma', valor: 'arte-prisma', custo: 245, cor: '#e0f2fe' },
+  /* Cartas com música (hover) — fotografias + tema sonoro */
+  { id: 'carta-supra', nome: 'Carta Supra', valor: 'supra', custo: 330, cor: '#ff6a00' },
+  { id: 'carta-nfs', nome: 'Carta Underground', valor: 'nfs', custo: 345, cor: '#a855f7' },
+  { id: 'carta-niko', nome: 'Carta Niko', valor: 'niko', custo: 355, cor: '#e5e7eb' },
+
   /* Carta exclusiva do Enigma — 1/1, não é vendida na loja nem no mercado.
      Só o vencedor a recebe; se a vender, passa a ser do comprador. */
   {
@@ -166,6 +171,14 @@ const CARTAS_TODAS = [
     valor: 'cromada',
     custo: 100,
     cor: '#dbe3ee',
+    exclusivo: true,
+  },
+  {
+    id: 'carta-enigma2',
+    nome: 'Carta do Enigma 2',
+    valor: 'enigma2',
+    custo: 0,
+    cor: '#f5c542',
     exclusivo: true,
   },
 ];
@@ -185,13 +198,6 @@ const CARTAS_REMOVER = new Set([
 /* Cartas novas com foto — design TCG inspirado nas cartas de Pokémon.
    As imagens estão em client/public/cartas/. */
 const CARTAS_FOTO = [
-  {
-    id: 'carta-foto-underground2',
-    nome: 'Carta Underground 2',
-    valor: 'foto-nfsu2',
-    custo: 122,
-    cor: '#fb923c',
-  },
   {
     id: 'carta-foto-worldatwar',
     nome: 'Carta World at War',
@@ -323,9 +329,11 @@ const escalaPreco = (c) => {
 };
 
 const PRECOS_FOTO = {
-  'carta-foto-underground2': 122,
   'carta-foto-worldatwar': 126,
   'carta-foto-olhos': 130,
+  'carta-supra': 96,
+  'carta-nfs': 98,
+  'carta-niko': 99,
 };
 
 

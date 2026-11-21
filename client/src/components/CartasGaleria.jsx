@@ -37,9 +37,9 @@ export default function CartasGaleria({ membros = [], onVer }) {
       </div>
 
       {/* PC */}
-      <div className="hidden columns-1 gap-4 sm:columns-2 xl:columns-3 2xl:columns-4 md:block">
+      <div className="hidden grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 md:grid">
         {membros.map((m) => (
-          <div key={m.id} className="mb-4 break-inside-avoid">
+          <div key={m.id} className="min-w-0">
             <button type="button" onClick={() => onVer?.(m)} className="block w-full text-left">
               <ProfileCard
                 perfil={m}

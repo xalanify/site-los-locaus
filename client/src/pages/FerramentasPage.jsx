@@ -561,7 +561,7 @@ export default function FerramentasPage({ isAdmin = false }) {
       } catch { /* sem rede */ }
     }
     atualizar()
-    const iv = setInterval(atualizar, 2000)
+    const iv = setInterval(atualizar, 5000)
     return () => {
       vivo = false
       clearInterval(iv)

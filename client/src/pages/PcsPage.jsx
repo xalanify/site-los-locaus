@@ -357,7 +357,7 @@ export default function PcsPage({ isAdmin = false, embedded = false }) {
         .catch(() => {})
     }
     ver()
-    const iv = setInterval(ver, 2000)
+    const iv = setInterval(ver, 5000)
     return () => {
       vivo = false
       clearInterval(iv)

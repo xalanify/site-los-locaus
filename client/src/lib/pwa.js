@@ -25,7 +25,23 @@ const bytes = (b64) => {
 export async function registarSW() {
   if (!temPWA()) return null
   try {
-    return await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    // se já havia um SW a controlar a página, quando chegar uma versão nova
+    // recarrega uma única vez (evita ficar preso a uma build antiga)
+    const tinhaControlo = Boolean(navigator.serviceWorker.controller)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!tinhaControlo || window.__locausSWReload) return
+      window.__locausSWReload = true
+      window.location.reload()
+    })
+
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    // procura já uma versão nova (o PWA instalado atualiza mais depressa)
+    try {
+      reg.update()
+    } catch {
+      /* sem update imediato */
+    }
+    return reg
   } catch {
     return null
   }

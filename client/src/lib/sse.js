@@ -9,6 +9,8 @@
 let es = null
 let tokenAtual = ''
 let tentativa = null
+let falhas = 0
+let desativado = false
 const ouvintes = new Set()
 
 const TIPOS = [
@@ -42,6 +44,7 @@ function fecharLigacao() {
 }
 
 function ligar() {
+  if (desativado) return
   if (typeof window === 'undefined' || !('EventSource' in window)) return
   const token = localStorage.getItem('userToken') || ''
   if (!token) return
@@ -54,6 +57,10 @@ function ligar() {
   } catch {
     es = null
     return
+  }
+
+  es.onopen = () => {
+    falhas = 0
   }
 
   for (const tipo of TIPOS) {
@@ -72,6 +79,12 @@ function ligar() {
     // o EventSource já tenta sozinho; aqui só tratamos do caso "fechado"
     if (es && es.readyState === EventSource.CLOSED) {
       fecharLigacao()
+      falhas += 1
+      // Servidor sem suporte (ex.: Vercel devolve 204): não insistir.
+      if (falhas >= 2) {
+        desativado = true
+        return
+      }
       clearTimeout(tentativa)
       tentativa = setTimeout(() => {
         tentativa = null
@@ -99,6 +112,7 @@ export function ligado() {
 export function fechar() {
   clearTimeout(tentativa)
   tentativa = null
+  falhas = 0
   tokenAtual = ''
   fecharLigacao()
 }

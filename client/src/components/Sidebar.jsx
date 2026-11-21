@@ -11,7 +11,6 @@ import {
   Sparkles,
   MessageCircle,
   Swords,
-  CircuitBoard,
   CreditCard,
 } from 'lucide-react'
 import useChatNaoLidas from '../hooks/useChatNaoLidas'
@@ -47,7 +46,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
   const isFerramentas = location.pathname === '/ferramentas'
   const isChat = location.pathname === '/chat'
   const isPrevisoes = location.pathname === '/previsoes'
-  const isComponentes = location.pathname === '/componentes'
   const isCosmeticos = location.pathname === '/cosmeticos'
   const naoLidas = useChatNaoLidas(Boolean(user))
 
@@ -75,18 +73,6 @@ export default function Sidebar({ user = null, isAdmin = false }) {
       active: isCosmeticos,
       badge: 'Novo',
     },
-    // Componentes e Periféricos: só o admin vê no sidebar
-    ...(isAdmin
-      ? [
-          {
-            name: 'Componentes e Periféricos',
-            icon: CircuitBoard,
-            action: () => navigate('/componentes'),
-            active: isComponentes,
-            badge: 'Admin',
-          },
-        ]
-      : []),
     {
       name: 'Ferramentas Windows',
       icon: Wrench,

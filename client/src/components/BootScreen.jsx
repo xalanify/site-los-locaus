@@ -57,7 +57,11 @@ export default function BootScreen({ visible, onEnter }) {
     >
       <div className="boot-liquid-inner">
         <div className="boot-logo-wrap">
-          <span className="boot-logo boot-logo--sega">LOCAUS.FUN</span>
+          <span className="boot-orbit" aria-hidden="true" />
+          <span className="boot-logo boot-logo--ah">
+            locaus.fun
+            <span className="boot-star" aria-hidden="true" />
+          </span>
         </div>
 
         <div

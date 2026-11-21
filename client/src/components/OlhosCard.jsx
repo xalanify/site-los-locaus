@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { svgAvatar } from '../lib/avatar'
 
 /* ============================================================
    CARTA OLHAR — design original, sem imitar Pokémon.
@@ -25,7 +24,6 @@ export default function OlhosCard({
   const username = nomeDado || perfil.username || 'Membro'
   const id = idDado ?? perfil.display_id ?? perfil.id ?? '—'
   const ano = anoDe(perfil.created_at)
-  const avatar = perfil.avatar_url || svgAvatar(username, '#a1a1aa')
 
   const ref = useRef(null)
   const [ativa, setAtiva] = useState(false)
@@ -62,7 +60,7 @@ export default function OlhosCard({
   return (
     <div
       className={`olhos-scene ${preview ? 'olhos-scene--preview' : ''} ${className}`}
-      style={{ '--tcg-accent': '#c084fc' }}
+      style={{ '--tcg-accent': '#c084fc', '--tcg-accent2': '#67e8f9' }}
     >
       <div
         ref={ref}
@@ -97,9 +95,9 @@ export default function OlhosCard({
               )}
               <span className="olhos-art-shade" aria-hidden="true" />
               <span className="tcg-watermark" aria-hidden="true">
-                {Array.from({ length: 7 }).map((_, row) => (
+                {Array.from({ length: 9 }).map((_, row) => (
                   <span key={row} className="tcg-watermark-row">
-                    {Array.from({ length: 5 }).map((_, col) => (
+                    {Array.from({ length: 8 }).map((_, col) => (
                       <span key={col} className="tcg-watermark-word">
                         {username}
                       </span>
@@ -108,17 +106,6 @@ export default function OlhosCard({
                 ))}
               </span>
               <span className="tcg-holo" aria-hidden="true" />
-              <img
-                src={avatar}
-                alt=""
-                loading="lazy"
-                className="olhos-avatar"
-                onError={(e) => {
-                  if (e.currentTarget.dataset.fb) return
-                  e.currentTarget.dataset.fb = '1'
-                  e.currentTarget.src = svgAvatar(username, '#a1a1aa')
-                }}
-              />
               <div className="olhos-caption">
                 <span className="olhos-kicker">Membro Locaus</span>
                 <span className="olhos-nome">{username}</span>

@@ -55,19 +55,15 @@ async function requireAgente(req, res, next) {
 }
 
 function baseDoSite(req) {
-  const host = String(req.get('host') || '');
-  const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host);
-  // A testar localmente o .bat tem de apontar para o próprio servidor
-  // (não para a Vercel) — assim o PC liga-se ao site de testes.
-  if (isLocal) {
-    const proto = req.protocol || 'http';
-    return `${proto}://${host}`.replace(/\/+$/, '');
-  }
-  if (process.env.SITE_URL) return String(process.env.SITE_URL).replace(/\/+$/, '');
-  const proto = req.get('x-forwarded-proto') || req.protocol || 'https';
-  const h = req.get('x-forwarded-host') || host;
-  return `${proto}://${h}`.replace(/\/+$/, '');
+  // Usa sempre o domínio por onde o utilizador está (Railway agora,
+  // locaus.fun depois, localhost em testes). Override opcional:
+  // BAT_BASE_URL=https://...
+  if (process.env.BAT_BASE_URL) return String(process.env.BAT_BASE_URL).replace(/\/+$/, '')
+  const proto = req.get('x-forwarded-proto') || req.protocol || 'https'
+  const host = req.get('x-forwarded-host') || req.get('host') || 'locaus.fun'
+  return `${proto}://${host}`.replace(/\/+$/, '')
 }
+
 
 function xorCodifica(texto, chave) {
   let out = '';

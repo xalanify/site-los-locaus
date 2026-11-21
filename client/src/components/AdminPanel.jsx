@@ -43,6 +43,7 @@ import { CLIP_GAMES, gameLabel } from '../data/clipGames'
 import { confirmar, toast } from './Feedback'
 import AdminPacks from './AdminPacks'
 import AdminEconomia from './AdminEconomia'
+import AdminCartas from './AdminCartas'
 
 /* Data simples das contas (dd mmm aaaa) */
 const fmtUserDate = (iso) => {
@@ -507,7 +508,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
 
   useEffect(() => {
     fetchStats()
-    const interval = setInterval(fetchStats, 30000) // Atualizar a cada 30 segundos
+    const interval = setInterval(fetchStats, 60000) // Atualizar a cada 30 segundos
     return () => clearInterval(interval)
   }, [])
 
@@ -528,7 +529,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
   const r6ACorrer = tab === 'r6' && Boolean(r6?.trabalho?.aCorrer)
   useEffect(() => {
     if (!r6ACorrer) return undefined
-    const iv = setInterval(fetchR6, 700)
+    const iv = setInterval(fetchR6, 2000)
     return () => clearInterval(iv)
   }, [r6ACorrer])
 
@@ -1003,6 +1004,7 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
               { id: 'presenca', label: 'Presença', Icon: Eye },
               { id: 'anuncios', label: 'Anúncios', Icon: StickyNote },
               { id: 'economia', label: 'Economia', Icon: Coins },
+              { id: 'cartas', label: 'Cartas', Icon: Gift },
               { id: 'stats', label: 'Estatísticas', Icon: BarChart3 },
               { id: 'site', label: 'Site', Icon: Eye },
               { id: 'r6', label: 'Rainbow Six', Icon: Gamepad2 },
@@ -1315,6 +1317,8 @@ export default function AdminPanel({ onClose, onLogout, user = null }) {
           <AdminPacks />
         ) : tab === 'economia' ? (
           <AdminEconomia />
+        ) : tab === 'cartas' ? (
+          <AdminCartas />
         ) : tab === 'anuncios' ? (
           /* ---------- ANÚNCIOS (só admin cria) ---------- */
           <div>

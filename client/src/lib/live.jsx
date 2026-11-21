@@ -26,7 +26,7 @@ export function LiveProvider({ children }) {
 
   useEffect(() => {
     carregar()
-    const iv = setInterval(carregar, 60000)
+    const iv = setInterval(carregar, 120000)
     const aoVoltar = () => {
       if (!document.hidden) carregar()
     }
