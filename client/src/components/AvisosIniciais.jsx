@@ -9,7 +9,7 @@ import { BADGES, badgeDe, BadgeGem } from './BadgeGem'
 import CartaMusical from './CartaMusical'
 import CartaEnigma2 from './CartaEnigma2'
 
-const CHAVE = 'locaus:novidades:2026-11-21-cartas-musica-enigma2-v1'
+const CHAVE = 'locaus:novidades:2026-11-21-cartas-musica-enigma2-v2'
 
 const NOMES_BANNER = {
   g02: 'Banner 02',
@@ -83,11 +83,13 @@ export default function AvisosIniciais({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carregado, user?.id])
 
-  const fecharNovidades = () => {
-    try {
-      localStorage.setItem(`${CHAVE}:${user.id}`, '1')
-    } catch {
-      /* nada */
+  const fecharNovidades = (naoMostrar = false) => {
+    if (naoMostrar === true) {
+      try {
+        localStorage.setItem(`${CHAVE}:${user.id}`, '1')
+      } catch {
+        /* nada */
+      }
     }
     setNovidades(false)
     if (temRemovido) {
@@ -160,7 +162,7 @@ export default function AvisosIniciais({ user }) {
               </div>
               <button
                 type="button"
-                onClick={fecharNovidades}
+                onClick={() => fecharNovidades(false)}
                 className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-zinc-300 hover:bg-white/10"
                 aria-label="Fechar"
               >
@@ -231,7 +233,7 @@ export default function AvisosIniciais({ user }) {
                     <button
                       type="button"
                       onClick={() => {
-                        fecharNovidades()
+                        fecharNovidades(false)
                         navigate('/enigma2')
                       }}
                       className="ui-btn ui-btn-primary ui-btn-sm mt-3 inline-flex items-center gap-2"
@@ -249,15 +251,15 @@ export default function AvisosIniciais({ user }) {
             </div>
 
             <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-white/10 px-5 py-3.5">
-              <button type="button" onClick={fecharNovidades} className="ui-btn ui-btn-ghost ui-btn-sm">
+              <button type="button" onClick={() => fecharNovidades(false)} className="ui-btn ui-btn-ghost ui-btn-sm">
                 OK
               </button>
-              <button type="button" onClick={fecharNovidades} className="ui-btn ui-btn-primary ui-btn-sm">
+              <button type="button" onClick={() => fecharNovidades(true)} className="ui-btn ui-btn-primary ui-btn-sm">
                 Não mostrar novamente
               </button>
             </footer>
           </>,
-          fecharNovidades,
+          () => fecharNovidades(false),
         )}
 
       {situacao &&
