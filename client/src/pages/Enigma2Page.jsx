@@ -490,7 +490,7 @@ function PainelEtapa({ etapa, payload, valor, setValor, aoSubmeter, erro, troll,
   )
 }
 
-function Resultado({ posicao, moedas, voltar }) {
+function Resultado({ posicao, moedas, voltar, admin }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
@@ -508,6 +508,11 @@ function Resultado({ posicao, moedas, voltar }) {
         <h2 className="mt-1 font-['Inter_Tight',sans-serif] text-[clamp(24px,4vw,40px)] font-black uppercase leading-none tracking-tight text-white">
           Sinal concluído
         </h2>
+        {admin && (
+          <p className="mx-auto mt-2 max-w-sm rounded-lg border border-amber-400/25 bg-amber-500/[0.08] px-3 py-2 text-[11px] font-semibold text-amber-200">
+            Conta de admin/dev — não entras na classificação e não recebes moedas nem carta.
+          </p>
+        )}
 
         <div className="mx-auto mt-5 grid max-w-sm grid-cols-2 gap-2">
           <div className="rounded-xl border border-white/8 bg-black/30 p-3">

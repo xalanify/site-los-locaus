@@ -108,7 +108,9 @@ export default function EnigmasPage() {
             const rotulo = !progresso
               ? 'Entrar no Enigma 2'
               : progresso.concluido
-                ? `Ver resultado · ${progresso.posicao || '—'}.º`
+                ? progresso.admin
+                  ? 'Ver resultado · dev'
+                  : `Ver resultado · ${progresso.posicao || '—'}.º`
                 : progresso.iniciado
                   ? `Continuar · etapa ${progresso.etapa}`
                   : 'Entrar no Enigma 2'
@@ -133,7 +135,9 @@ export default function EnigmasPage() {
           )}
           {progresso && progresso.concluido && (
             <p className="mt-2 text-[11px] text-zinc-500">
-              Terminaste em {progresso.posicao || '—'}.º com +{progresso.moedas || 0} moedas.
+              {progresso.admin
+                ? 'Conta de admin/dev — o resultado não conta para a classificação.'
+                : `Terminaste em ${progresso.posicao || '—'}.º com +${progresso.moedas || 0} moedas.`}
             </p>
           )}
           {movel && (
@@ -205,7 +209,9 @@ export default function EnigmasPage() {
                     return (
                       <tr key={`${j.username}-${i}`} className="border-b border-white/5 last:border-0">
                         <td className="px-4 py-3 font-mono text-[12px] text-zinc-500">
-                          {j.concluido ? (
+                          {j.admin ? (
+                            <span className="text-amber-300/80">dev</span>
+                          ) : j.concluido ? (
                             <span className={posicao === 1 ? 'text-[#f5c542]' : 'text-zinc-300'}>
                               {posicao}.º
                             </span>
@@ -213,10 +219,23 @@ export default function EnigmasPage() {
                             `—`
                           )}
                         </td>
-                        <td className="px-4 py-3 font-semibold text-zinc-200">{j.username}</td>
+                        <td className="px-4 py-3 font-semibold text-zinc-200">
+                          {j.username}
+                          {j.admin && (
+                            <span className="ml-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-amber-300">
+                              não conta
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           {j.concluido ? (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-[#f5c542]/30 bg-[#f5c542]/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-[#f5c542]">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] ${
+                                j.admin
+                                  ? 'border-white/15 bg-white/[0.04] text-zinc-400'
+                                  : 'border-[#f5c542]/30 bg-[#f5c542]/10 text-[#f5c542]'
+                              }`}
+                            >
                               <Trophy className="h-3 w-3" /> Concluído
                             </span>
                           ) : (
@@ -227,7 +246,7 @@ export default function EnigmasPage() {
                           {mm ? `${mm}:${ss}` : '—'}
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-[12px] text-zinc-400">
-                          {j.moedas ? `+${j.moedas}` : '—'}
+                          {j.admin ? '—' : j.moedas ? `+${j.moedas}` : '—'}
                         </td>
                       </tr>
                     )

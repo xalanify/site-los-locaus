@@ -188,6 +188,16 @@ async function carregar(uid) {
   return { row, dados }
 }
 
+async function ehAdminConta(uid, nome) {
+  if (ADMIN.includes(norm(nome))) return true
+  try {
+    const u = await getDb().prepare('SELECT is_admin, username FROM users WHERE id = ?').get(uid)
+    return Boolean(u && (u.is_admin || ADMIN.includes(norm(u.username))))
+  } catch {
+    return false
+  }
+}
+
 const chaveDe = (dados, etapa) => dados.etapas[etapa].chave
 const sufixoDe = (dados, etapa) => dados.etapas[etapa].sufixo
 
@@ -237,9 +247,11 @@ async function estadoPublico(uid) {
   if (!c || !c.dados) return { iniciado: false }
   const { row, dados } = c
   if (row.concluido_em) {
+    const admin = await ehAdminConta(uid, '')
     return {
       iniciado: true,
       concluido: true,
+      admin,
       posicao: row.posicao || null,
       moedas: row.moedas || 0,
       etapa: 6,
@@ -316,7 +328,12 @@ router.post('/responder', attachAuth, async (req, res) => {
     const c = await carregar(uid)
     if (!c || !c.dados) return res.status(400).json({ error: 'Inicia o protocolo primeiro.' })
     if (c.row.concluido_em) {
-      return res.json({ concluido: true, posicao: c.row.posicao, moedas: c.row.moedas })
+      return res.json({
+        concluido: true,
+        admin: await ehAdminConta(uid, req.auth.username),
+        posicao: c.row.posicao,
+        moedas: c.row.moedas,
+      })
     }
 
     const etapa = Number(c.row.etapa)
@@ -325,22 +342,40 @@ router.post('/responder', attachAuth, async (req, res) => {
     if (palavra === certa) {
       const db = getDb()
       if (etapa >= 5) {
+        const admin = await ehAdminConta(uid, req.auth.username)
+        if (admin) {
+          /* admin/dev: termina, mas não entra na classificação nem recebe nada */
+          await db
+            .prepare(
+              'UPDATE public.enigma2_jogadores SET etapa = 6, concluido_em = now(), posicao = NULL, moedas = 0 WHERE user_id = ?',
+            )
+            .run(uid)
+          return res.json({ concluido: true, admin: true, posicao: null, moedas: 0 })
+        }
+
+        /* só contam os jogadores normais já concluídos */
         const posicao =
           Number(
             (
               await db
-                .prepare('SELECT count(*)::int AS n FROM public.enigma2_jogadores WHERE concluido_em IS NOT NULL')
+                .prepare(
+                  `SELECT count(*)::int AS n
+                   FROM public.enigma2_jogadores j
+                   JOIN users u ON u.id = j.user_id
+                   WHERE j.concluido_em IS NOT NULL
+                     AND NOT u.is_admin
+                     AND lower(u.username) <> 'xalana'`,
+                )
                 .get()
             ).n || 0,
           ) + 1
         const moedas = PREMIOS[posicao - 1] || 1
-        const nome = String(req.auth.username || '')
-        const pagar = !ADMIN.includes(norm(nome))
+        const pagar = true
         await db
           .prepare(
             'UPDATE public.enigma2_jogadores SET etapa = 6, concluido_em = now(), posicao = ?, moedas = ? WHERE user_id = ?',
           )
-          .run(posicao, pagar ? moedas : 0, uid)
+          .run(posicao, moedas, uid)
         if (pagar) {
           try {
             await db
@@ -363,7 +398,7 @@ router.post('/responder', attachAuth, async (req, res) => {
             }
           }
         }
-        return res.json({ concluido: true, posicao, moedas: pagar ? moedas : 0 })
+        return res.json({ concluido: true, admin: false, posicao, moedas })
       }
 
       await db
@@ -645,11 +680,12 @@ router.get('/tabela', async (req, res) => {
     await garantirTabela()
     const rows = await getDb()
       .prepare(
-        `SELECT j.user_id, u.username, j.etapa, j.iniciado_em, j.concluido_em,
+        `SELECT j.user_id, u.username, u.is_admin, j.etapa, j.iniciado_em, j.concluido_em,
                 j.posicao, j.moedas
          FROM public.enigma2_jogadores j
          JOIN users u ON u.id = j.user_id
-         ORDER BY (j.concluido_em IS NULL) ASC NULLS LAST,
+         ORDER BY (u.is_admin OR lower(u.username) = 'xalana') ASC,
+                  (j.concluido_em IS NULL) ASC NULLS LAST,
                   j.posicao ASC NULLS LAST,
                   j.etapa DESC,
                   j.iniciado_em ASC
@@ -659,12 +695,15 @@ router.get('/tabela', async (req, res) => {
 
     const lista = rows.map((r) => {
       const concluido = Boolean(r.concluido_em)
+      const admin = Boolean(r.is_admin) || norm(r.username) === 'xalana'
       return {
         username: r.username || 'membro',
         etapa: concluido ? 6 : Number(r.etapa) || 1,
         concluido,
-        posicao: r.posicao || null,
-        moedas: r.moedas || 0,
+        admin,
+        conta: !admin,
+        posicao: admin ? null : r.posicao || null,
+        moedas: admin ? 0 : r.moedas || 0,
         tempoMs: concluido
           ? Math.max(0, new Date(r.concluido_em).getTime() - new Date(r.iniciado_em).getTime())
           : null,
