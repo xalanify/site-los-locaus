@@ -30,8 +30,8 @@ export const MUSICAS_CARTAS = {
   },
   niko: {
     imagem: '/cartas/Niko.jpg',
-    musica: '',
-    cancao: 'Sem música',
+    musica: '/cartas/musica-niko.mp3',
+    cancao: 'Soviet Connection',
     titulo: 'NIKO',
     kicker: 'AFTER HOURS',
     rodape: 'AFTER HOURS',
@@ -70,6 +70,11 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
   const cfg = MUSICAS_CARTAS[variant] || MUSICAS_CARTAS.supra
   const accent = { supra: '#ff6a00', nfs: '#a855f7', niko: '#e5e7eb' }[variant] || '#ffffff'
   const [semImg, setSemImg] = useState(false)
+  const [localForcado, setLocalForcado] = useState(false)
+
+  useEffect(() => {
+    setLocalForcado(false)
+  }, [variant])
   const [movel, setMovel] = useState(false)
   const audioRef = useRef(null)
   const raizRef = useRef(null)
@@ -117,7 +122,9 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant])
 
-  const srcFinal = urlDe(meta.url, cfg.musica)
+  const srcFinal = localForcado ? cfg.musica : urlDe(meta.url, cfg.musica)
+  const inicioEf = localForcado ? 0 : meta.inicio
+  const fimEf = localForcado ? 9999 : meta.fim
   const temMusica = Boolean(srcFinal) && meta.titulo !== 'Sem música'
 
   useEffect(() => {
@@ -131,16 +138,22 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
     audioRef.current = a
 
     const manterTrecho = () => {
-      if (a.currentTime >= meta.fim) a.currentTime = meta.inicio
-      if (a.currentTime < meta.inicio - 0.4) a.currentTime = meta.inicio
+      if (a.currentTime >= fimEf) a.currentTime = inicioEf
+      if (a.currentTime < inicioEf - 0.4) a.currentTime = inicioEf
+    }
+    /* se o stream do YouTube falhar (ex.: Railway sem yt-dlp), usa o MP3 local */
+    const aoFalhar = () => {
+      if (!localForcado && cfg.musica) setLocalForcado(true)
     }
     a.addEventListener('timeupdate', manterTrecho)
+    a.addEventListener('error', aoFalhar)
     return () => {
       a.removeEventListener('timeupdate', manterTrecho)
+      a.removeEventListener('error', aoFalhar)
       a.pause()
       if (audioAtual === a) audioAtual = null
     }
-  }, [srcFinal, meta.inicio, meta.fim])
+  }, [srcFinal, inicioEf, fimEf, localForcado, cfg.musica])
 
   /* posição da legenda/botão por baixo da carta */
   const atualizarPosicoes = () => {
@@ -190,7 +203,7 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
     }
     audioAtual = a
     try {
-      a.currentTime = meta.inicio
+      a.currentTime = inicioEf
     } catch {
       /* sem metadata */
     }
@@ -206,7 +219,7 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
     const a = audioRef.current
     if (a) {
       a.pause()
-      a.currentTime = meta.inicio
+      a.currentTime = inicioEf
     }
     setATocar(false)
     setLegenda(null)

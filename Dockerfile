@@ -2,6 +2,13 @@
 FROM node:20-bookworm-slim
 
 WORKDIR /app
+
+# Música das cartas: yt-dlp (stream do YouTube) + ffmpeg
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl ffmpeg python3 \
+ && curl -fsSL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+ && chmod +x /usr/local/bin/yt-dlp \
+ && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV PORT=8000
 
