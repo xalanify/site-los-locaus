@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowLeft,
+  Check,
+  Copy,
   Download,
   Headphones,
   HelpCircle,
@@ -97,10 +99,10 @@ const DICAS = {
     'O nome do ficheiro guarda a segunda metade.',
     'Junta as duas com um hífen.',
   ],
-  eco: [
-    'O eco fala em pontos e traços.',
-    'Há uma palavra que te leva mais longe.',
-    'Junta as duas metades.',
+  binario: [
+    'Isto é binário: cada grupo de 8 bits é uma letra.',
+    'Converte para texto (ASCII) e lê a mensagem do meio.',
+    'A chave completa está escrita na mensagem.',
   ],
   horizonte: [
     'O fim está escondido no princípio.',
@@ -233,6 +235,7 @@ function Constelacao({ etapa }) {
    ------------------------------------------------------------ */
 function Desafio({ payload, troll, aoPedirAjuda, setTabelaMorseAberta }) {
   const [zoom, setZoom] = useState(null)
+  const [copiado, setCopiado] = useState(false)
   if (!payload) return null
 
   let corpo = null
@@ -294,30 +297,33 @@ function Desafio({ payload, troll, aoPedirAjuda, setTabelaMorseAberta }) {
         </p>
       </div>
     )
-  } else if (payload.tipo === 'eco') {
+  } else if (payload.tipo === 'binario') {
     corpo = (
       <div className="space-y-2">
-        <audio controls src={payload.audio} className="w-full max-w-md" preload="none" />
-        <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-[0.16em]">
-          <a
-            href={payload.pagina}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[#ff8fa3] underline decoration-[#ff2d55]/40 underline-offset-4 hover:text-white"
-          >
-            memória ↗
-          </a>
+        <div className="max-h-[26vh] overflow-hidden break-all rounded-lg border border-white/8 bg-black/45 p-3 font-mono text-[8.5px] leading-[1.7] tracking-[0.06em] text-[#ffd1da]">
+          {payload.binario}
+        </div>
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => setTabelaMorseAberta(true)}
-            className="inline-flex items-center gap-1.5 text-white/40 hover:text-white/70"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(payload.binario)
+                setCopiado(true)
+                setTimeout(() => setCopiado(false), 1500)
+              } catch {
+                /* sem clipboard */
+              }
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white/60 hover:bg-white/[0.07]"
           >
-            <Headphones className="h-3 w-3" /> tabela morse
+            {copiado ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            {copiado ? 'copiado' : 'copiar código'}
           </button>
         </div>
       </div>
     )
-  } else if (payload.tipo === 'horizonte') {
+    } else if (payload.tipo === 'horizonte') {
     corpo = (
       <div className="space-y-2">
         <a

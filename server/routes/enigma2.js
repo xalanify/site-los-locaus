@@ -126,6 +126,13 @@ function novoEstado(uid, usadas = new Set()) {
   const desloc = 3 + Math.floor(Math.random() * 10)
   const s3 = gerarChave(p3, usadas).split('-')[1]
   const s4 = gerarChave(p4, usadas).split('-')[1]
+
+  /* etapa 4: mensagem em binário com a chave completa no meio */
+  const chave4 = `${p4}-${s4}`
+  const mensagem4 = `PROTOCOLO ORION // SINAL RECEBIDO // A CHAVE DESTA ETAPA E ${chave4} // REPETE O SINAL PARA CONFIRMAR // FIM`
+  const binario4 = Array.from(Buffer.from(mensagem4, 'utf8'))
+    .map((b) => b.toString(2).padStart(8, '0'))
+    .join(' ')
   const s5 = gerarChave(p5, usadas).split('-')[1]
 
   return {
@@ -141,7 +148,7 @@ function novoEstado(uid, usadas = new Set()) {
       1: { b64: b64(p1) },
       2: { lat: lugar.lat, lon: lugar.lon },
       3: { deslocamento: desloc, cifra: caesar(p3, desloc) },
-      4: { morse: p4 },
+      4: { binario: binario4 },
       5: { numero },
     },
     tokens: {
@@ -227,9 +234,8 @@ function payloadEtapa(dados, etapa) {
   }
   if (etapa === 4) {
     return {
-      tipo: 'eco',
-      audio: `/api/enigma2/audio/${dados.tokens[4]}`,
-      pagina: `/api/enigma2/pagina/${dados.tokens[4]}`,
+      tipo: 'binario',
+      binario: dados.puzzles[4].binario,
     }
   }
   if (etapa === 5) {

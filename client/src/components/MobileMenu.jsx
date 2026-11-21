@@ -60,7 +60,6 @@ export default function MobileMenu({ open, onClose, user, isAdmin, onLogout }) {
       titulo: 'Competir',
       itens: [
         { name: 'Enigmas', icon: Trophy, path: '/enigmas' },
-        { name: 'Enigma 2 · Orion', icon: Sparkles, path: '/enigma2' },
         { name: 'Previsões', icon: Swords, path: '/previsoes' },
       ],
     },

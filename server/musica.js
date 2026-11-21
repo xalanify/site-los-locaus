@@ -125,25 +125,42 @@ async function resolverAudio(id) {
       erro.codigo = 'SEM_YTDLP';
       throw erro;
     }
-    const { stdout } = await execFileAsync(
-      bin,
-      [
-        '-f',
-        'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',
-        '-g',
-        '--no-playlist',
-        '--no-warnings',
-        '--socket-timeout',
-        '15',
-        `https://www.youtube.com/watch?v=${vid}`,
-      ],
-      { timeout: 40000, maxBuffer: 8 * 1024 * 1024, windowsHide: true },
-    );
-    const url = String(stdout || '')
-      .split(/\r?\n/)
-      .map((s) => s.trim())
-      .find((s) => /^https?:\/\//.test(s));
-    if (!url) throw new Error('O YouTube não devolveu áudio para esta música.');
+    /* O YouTube bloqueia IPs de datacenter com o cliente "web". Tentamos
+       clientes alternativos (android/tv) antes de desistir. */
+    const clientes = ['android', 'tv', 'web_safari', 'web'];
+    let url = '';
+    let ultimoErro = null;
+    for (const cliente of clientes) {
+      try {
+        const { stdout } = await execFileAsync(
+          bin,
+          [
+            '-f',
+            'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',
+            '-g',
+            '--no-playlist',
+            '--no-warnings',
+            '--socket-timeout',
+            '15',
+            '--extractor-args',
+            `youtube:player_client=${cliente}`,
+            `https://www.youtube.com/watch?v=${vid}`,
+          ],
+          { timeout: 45000, maxBuffer: 8 * 1024 * 1024, windowsHide: true },
+        );
+        url =
+          String(stdout || '')
+            .split(/\r?\n/)
+            .map((s) => s.trim())
+            .find((s) => /^https?:\/\//.test(s)) || '';
+        if (url) break;
+      } catch (e) {
+        ultimoErro = e;
+      }
+    }
+    if (!url) {
+      throw ultimoErro || new Error('O YouTube não devolveu áudio para esta música.');
+    }
     const item = { t: Date.now(), url };
     cacheAudio.set(vid, item);
     return item;

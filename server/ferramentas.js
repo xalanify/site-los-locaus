@@ -2363,11 +2363,15 @@ function estadoPublico() {
 
 /* soAdmin: true -> só o admin vê a ferramenta no catálogo e só
    ele a pode correr (Otimização Xalana, por agora em teste). */
+const CATS_REMOVIDAS = new Set(['Otimizador by Xalana', 'Arranque e drivers'])
+
 function listar(soAdmin) {
-  return FERRAMENTAS.filter((f) => !f.soAdmin || soAdmin).map(({ cmd, ...f }) => ({
+  return FERRAMENTAS.filter((f) => !f.soAdmin || soAdmin)
+    .filter((f) => !CATS_REMOVIDAS.has(f.cat))
+    .map(({ cmd, ...f }) => ({
     ...f,
-    comando: f.livre || f.disco || f.normal ? null : cmd.split('\n')[0],
-  }));
+      comando: f.livre || f.disco || f.normal ? null : cmd.split('\n')[0],
+    }))
 }
 
 /* Discos fixos do PC — serve o seletor da ferramenta de vírus.

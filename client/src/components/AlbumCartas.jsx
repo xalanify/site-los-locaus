@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Lock } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Lock, X } from 'lucide-react'
 import ProfileCard from './ProfileCard'
 import MoedaLocaus from './MoedaLocaus'
 
@@ -9,6 +10,7 @@ import MoedaLocaus from './MoedaLocaus'
 
 export default function AlbumCartas({ username, inventario = 0 }) {
   const [dados, setDados] = useState(null)
+  const [zoom, setZoom] = useState(null)
 
   useEffect(() => {
     if (!username) return undefined
@@ -60,10 +62,12 @@ export default function AlbumCartas({ username, inventario = 0 }) {
 
       <div className="mt-4 flex flex-wrap gap-2.5">
         {cartas.map((c) => (
-          <div
+          <button
             key={c.valor}
-            className="relative h-[172px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/30"
-            title={c.nome}
+            type="button"
+            onClick={() => setZoom(c)}
+            className="relative h-[172px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/30 text-left transition hover:border-white/30"
+            title={`Ampliar ${c.nome}`}
           >
             <span className="pointer-events-none absolute left-1/2 top-1/2 block origin-center scale-[0.32] -translate-x-1/2 -translate-y-1/2">
               <ProfileCard perfil={{ username }} variant={c.valor} jogos={[]} className="w-[380px]" />
@@ -71,7 +75,7 @@ export default function AlbumCartas({ username, inventario = 0 }) {
             <span className="absolute bottom-1 left-1/2 max-w-[110px] -translate-x-1/2 truncate rounded-full bg-black/70 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-zinc-300">
               {c.nome}
             </span>
-          </div>
+          </button>
         ))}
 
         {Array.from({ length: slots }).map((_, i) => (
@@ -89,6 +93,37 @@ export default function AlbumCartas({ username, inventario = 0 }) {
           </div>
         )}
       </div>
+
+      {zoom &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[130] grid place-items-center bg-black/85 p-4 backdrop-blur-sm"
+            onClick={() => setZoom(null)}
+            role="dialog"
+            aria-label={`Carta ${zoom.nome}`}
+          >
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setZoom(null)}
+                className="absolute -right-2 -top-2 z-10 grid h-8 w-8 place-items-center rounded-full border border-white/20 bg-black/80 text-white/70 hover:text-white"
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <ProfileCard
+                perfil={{ username }}
+                variant={zoom.valor}
+                jogos={[]}
+                className="w-[min(78vw,360px)]"
+              />
+              <p className="mt-3 text-center text-[12px] font-black uppercase tracking-[0.16em] text-white/70">
+                {zoom.nome}
+              </p>
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   )
 }

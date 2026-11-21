@@ -110,14 +110,13 @@ const ICON_MAP = {
    logs aparecem a andar aqui em baixo.
    ============================================================ */
 
-const CATS = ['Otimizador by Xalana', 'Programas', 'Limpeza', 'Arranque e drivers']
+const CATS = ['Otimizador Xalana', 'Programas', 'Limpeza']
 
 /* icone pequeno ao lado do nome de cada categoria */
 const CAT_ICONES = {
-  'Otimizador by Xalana': Gauge,
+  'Otimizador Xalana': Gauge,
   Programas: Package,
   Limpeza: Eraser,
-  'Arranque e drivers': Cpu,
 }
 
 /* ações individuais do Otimizador by Xalana (mesmo mapa do servidor) */
@@ -179,7 +178,7 @@ export default function FerramentasPage({ isAdmin = false }) {
   const [abaFerr, setAbaFerr] = useState('ferramentas')
   const [dados, setDados] = useState(null)
   const [estado, setEstado] = useState(null)
-  const [cat, setCat] = useState('Programas')
+  const [cat, setCat] = useState('Otimizador Xalana')
   const [subCat, setSubCat] = useState('Todas')
   const [busca, setBusca] = useState('')
   const [idLivre, setIdLivre] = useState('')
@@ -627,10 +626,8 @@ export default function FerramentasPage({ isAdmin = false }) {
 
   const cats = useMemo(() => {
     const usadas = new Set(ferramentas.map((f) => f.cat))
-    return CATS.filter(
-      (c) => usadas.has(c) && (c !== 'Otimizador by Xalana' || isAdmin),
-    )
-  }, [ferramentas, isAdmin])
+    return CATS.filter((c) => c === 'Otimizador Xalana' || usadas.has(c))
+  }, [ferramentas])
 
   /* Se a categoria atual não estiver disponível (ex.: Otimizações
      escondidas para não-admin), salta para a primeira que exista. */
@@ -1072,6 +1069,18 @@ export default function FerramentasPage({ isAdmin = false }) {
           )}
         </div>
 
+        {cat === 'Otimizador Xalana' && (
+          <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-7 text-center sm:p-10">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-[#ff2e5b]/25 bg-[#ff2e5b]/10">
+              <Gauge className="h-6 w-6 text-[#ff8fa3]" />
+            </span>
+            <h3 className="mt-4 font-display text-xl font-black text-white">Otimizador Xalana</h3>
+            <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-zinc-400">
+              Este otimizador está a ser feito. Será lançado em breve — fica atento às novidades.
+            </p>
+          </div>
+        )}
+
         {/* sub-filtros (só aparecem se a categoria tiver subcategorias) */}
         {subCats.length > 1 && (
           <div className="mb-5 flex flex-wrap gap-1.5">
@@ -1286,7 +1295,7 @@ export default function FerramentasPage({ isAdmin = false }) {
           <div className="flex items-center justify-center gap-3 py-10 text-sm text-gray-400">
             <RefreshCcw className="h-4 w-4 animate-spin text-zinc-400" /> A carregar ferramentas…
           </div>
-        ) : visiveis.length === 0 ? (
+        ) : visiveis.length === 0 && cat !== 'Otimizador Xalana' ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
             <Search className="h-7 w-7 text-gray-400" />
             <p className="text-sm text-gray-400">
