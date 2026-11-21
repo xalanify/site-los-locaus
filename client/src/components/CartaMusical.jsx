@@ -80,6 +80,23 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
   const audioRef = useRef(null)
   const raizRef = useRef(null)
   const [aTocar, setATocar] = useState(false)
+  const aTocarRef = useRef(false)
+
+  useEffect(() => {
+    aTocarRef.current = aTocar
+  }, [aTocar])
+
+  /* sair da pré-visualização/página: corta o som */
+  useEffect(
+    () => () => {
+      if (!aTocarRef.current) return
+      pararYoutube()
+      const a = audioRef.current
+      if (a) a.pause()
+      if (a && audioAtual === a) audioAtual = null
+    },
+    [],
+  )
   const [legenda, setLegenda] = useState(null)
   const [botao, setBotao] = useState(null)
   const [meta, setMeta] = useState(() => ({
@@ -272,7 +289,7 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
       onPointerMove={aoMover}
       onPointerLeave={aoSair}
       onClick={() => {
-        if (usaYt) tocar()
+        if (!movel && usaYt) tocar()
       }}
     >
       {!semImg && (
@@ -321,6 +338,22 @@ export default function CartaMusical({ variant = 'supra', perfil = {}, username 
           </span>,
           document.body,
         )}
+
+      {movel && semPlayFixo && temMusica && (
+        <button
+          type="button"
+          className="cm-play-inline"
+          onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            if (aTocar) parar()
+            else tocar()
+          }}
+        >
+          {aTocar ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+          {aTocar ? 'parar' : 'ouvir'}
+        </button>
+      )}
 
       {movel && !semPlayFixo && botao && temMusica &&
         createPortal(

@@ -5188,3 +5188,27 @@ body.menu-aberto .lv-main,
 body.menu-aberto .home-dash {
   visibility: hidden !important;
 }
+
+
+/* botão de ouvir dentro da própria carta (modais no telemóvel) */
+.cm-play-inline{
+  position:absolute;
+  right:4%;
+  bottom:23%;
+  z-index:6;
+  display:inline-flex;
+  align-items:center;
+  gap:.9cqw;
+  padding:1.2cqw 2.4cqw;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(3,5,10,.78);
+  color:#fff;
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:2.1cqw;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.cm-play-inline:active{ transform:scale(.96); }
