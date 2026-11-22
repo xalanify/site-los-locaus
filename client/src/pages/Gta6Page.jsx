@@ -40,11 +40,11 @@ export default function Gta6Page() {
         color: TEXTO,
       }}
     >
-      <div className="mx-auto flex h-full w-full max-w-4xl flex-col px-4 pb-3 sm:px-6 sm:pb-4" style={{ paddingTop: 'calc(var(--nv-header, 64px) + 10px)' }}>
+      <div className="gta6-inner mx-auto flex h-full w-full max-w-5xl flex-col px-4 pb-3 sm:px-6 sm:pb-4" style={{ paddingTop: 'calc(var(--nv-header, 64px) + 10px)' }}>
         <nav className="flex flex-wrap gap-2">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition hover:brightness-125"
+            className="inline-flex items-center gap-2 border px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition hover:brightness-125"
             style={{ borderColor: BORDA, color: '#6f9fd8', background: 'rgba(30,58,138,.12)' }}
           >
             <ArrowLeft className="h-3 w-3" /> início
@@ -53,7 +53,7 @@ export default function Gta6Page() {
 
         <header className="mt-3 text-center">
           <div
-            className="mx-auto grid h-[74px] w-[74px] place-items-center overflow-hidden rounded-full border"
+            className="mx-auto grid h-[88px] w-[88px] place-items-center overflow-hidden rounded-full border"
             style={{
               borderColor: AZUL,
               boxShadow: '0 0 34px rgba(77,141,255,.4)',
@@ -64,49 +64,49 @@ export default function Gta6Page() {
           </div>
 
           <h1
-            className="mt-3 text-[clamp(30px,6vw,54px)] font-bold uppercase leading-none tracking-[0.3em]"
+            className="mt-4 text-[clamp(34px,6.4vw,62px)] font-bold uppercase leading-none tracking-[0.3em]"
             style={{ color: AZUL, textShadow: '0 0 24px rgba(77,141,255,.5)' }}
           >
             GTA6
           </h1>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.26em] text-[#6f9fd8]">
+          <p className="mt-3 text-[12px] uppercase tracking-[0.24em] text-[#6f9fd8]">
             xbox build 1.0.2.1 · recompilação para pc _
           </p>
-          <p className="mt-1 text-[9px] uppercase tracking-[0.24em]" style={{ color: VERMELHO }}>
+          <p className="mt-1.5 text-[10.5px] uppercase tracking-[0.22em]" style={{ color: VERMELHO }}>
             em desenvolvimento · muito em breve
           </p>
         </header>
 
         <section
-          className="mt-4 border p-3 text-center sm:p-4"
+          className="mt-5 border p-4 text-center sm:p-5"
           style={{ borderColor: 'rgba(255,59,87,.7)', background: 'rgba(12,6,24,.8)' }}
         >
           <p
-            className="flex items-center justify-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em]"
+            className="flex items-center justify-center gap-2 text-[15px] font-bold uppercase tracking-[0.14em]"
             style={{ color: VERMELHO }}
           >
             <AlertTriangle className="h-3.5 w-3.5" /> gta6 build para pc em breve
           </p>
-          <p className="mx-auto mt-2 max-w-2xl text-[11.5px] leading-relaxed">
+          <p className="mx-auto mt-2.5 max-w-2xl text-[14px] leading-relaxed">
             Está a ser feita uma <b style={{ color: CLARO }}>recompilação de uma build de Xbox (1.0.2.1)</b>{' '}
             para PC. Quando estiver pronta, publico aqui o tutorial completo — requisitos, ferramentas,
             passo a passo e como testar.
           </p>
-          <p className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-[#5f7fae]">
+          <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-[#5f7fae]">
             ensino tudo · nos próximos dias
           </p>
         </section>
 
-        <section className="mt-3 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
-          <div className="flex items-center justify-between border-b px-3 py-1.5" style={{ borderColor: 'rgba(47,91,208,.35)' }}>
-            <span className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: '#9fc3ff' }}>
+        <section className="mt-4 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
+          <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'rgba(47,91,208,.35)' }}>
+            <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: '#9fc3ff' }}>
               <span className="inline-block h-1.5 w-1.5" style={{ background: VERDE }} /> o que vai sair
             </span>
-            <span className="text-[8px] uppercase tracking-[0.2em]" style={{ color: VERDE }}>
+            <span className="text-[9.5px] uppercase tracking-[0.18em]" style={{ color: VERDE }}>
               em preparação
             </span>
           </div>
-          <ul className="space-y-0.5 px-3 py-2 text-[11px] leading-relaxed">
+          <ul className="space-y-1 px-4 py-3 text-[13.5px] leading-relaxed">
             <li>▸ tutorial de recompilação da build de Xbox para PC;</li>
             <li>▸ requisitos do PC e ferramentas necessárias;</li>
             <li>▸ como aplicar os ficheiros e corrigir erros comuns;</li>
@@ -114,26 +114,26 @@ export default function Gta6Page() {
           </ul>
         </section>
 
-        <section className="mt-3 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
-          <div className="flex items-center justify-between border-b px-3 py-1.5" style={{ borderColor: 'rgba(47,91,208,.35)' }}>
-            <span className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: '#9fc3ff' }}>
+        <section className="mt-4 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
+          <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'rgba(47,91,208,.35)' }}>
+            <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: '#9fc3ff' }}>
               <span className="inline-block h-1.5 w-1.5" style={{ background: VERDE }} /> download
             </span>
             <span className="text-[8px] uppercase tracking-[0.2em] text-[#5f7fae]">magnet / torrent</span>
           </div>
 
-          <div className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-[13.5px] leading-relaxed">
                 Já existe um torrent, mas por questões de segurança ainda não o vou publicar.
               </p>
-              <p className="mt-1 text-[9px] uppercase tracking-[0.18em]" style={{ color: VERDE }}>
+              <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em]" style={{ color: VERDE }}>
                 torrent do jogo em breve
               </p>
             </div>
 
             <span
-              className="inline-flex cursor-not-allowed items-center gap-2 border px-4 py-2 text-[9px] font-bold uppercase tracking-[0.18em] opacity-80"
+              className="inline-flex cursor-not-allowed items-center gap-2 border px-5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.16em] opacity-80"
               style={{ borderColor: '#2fbf71', background: VERDE_ESCURO, color: '#7dffb0' }}
               title="Ainda não disponível"
             >
@@ -142,7 +142,7 @@ export default function Gta6Page() {
           </div>
         </section>
 
-        <p className="mt-auto pt-2 text-center text-[8px] uppercase tracking-[0.28em] text-[#3d5d8a]">
+        <p className="mt-auto pt-3 text-center text-[9.5px] uppercase tracking-[0.24em] text-[#3d5d8a]">
           locaus.fun // gta6 // 2026
         </p>
       </div>
