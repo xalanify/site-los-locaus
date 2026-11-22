@@ -92,26 +92,12 @@ export default function Gta6Page() {
             para PC. Quando estiver pronta, publico aqui o tutorial completo — requisitos, ferramentas,
             passo a passo e como testar.
           </p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-[#5f7fae]">
+          <p className="mt-2.5 text-[13px] font-bold uppercase tracking-[0.14em]" style={{ color: VERDE }}>
+            ⚑ isto não será a pagar — vai ser tudo grátis
+          </p>
+          <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#5f7fae]">
             ensino tudo · nos próximos dias
           </p>
-        </section>
-
-        <section className="mt-4 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
-          <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'rgba(47,91,208,.35)' }}>
-            <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: '#9fc3ff' }}>
-              <span className="inline-block h-1.5 w-1.5" style={{ background: VERDE }} /> o que vai sair
-            </span>
-            <span className="text-[9.5px] uppercase tracking-[0.18em]" style={{ color: VERDE }}>
-              em preparação
-            </span>
-          </div>
-          <ul className="space-y-1 px-4 py-3 text-[13.5px] leading-relaxed">
-            <li>▸ tutorial de recompilação da build de Xbox para PC;</li>
-            <li>▸ requisitos do PC e ferramentas necessárias;</li>
-            <li>▸ como aplicar os ficheiros e corrigir erros comuns;</li>
-            <li>▸ notas de desempenho e o que ainda não funciona.</li>
-          </ul>
         </section>
 
         <section className="mt-4 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
