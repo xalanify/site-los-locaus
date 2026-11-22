@@ -109,7 +109,25 @@ export default function Gta6Page() {
           </div>
 
           <div className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
+            <a
+              href="/gta6-ficheiros.png"
+              target="_blank"
+              rel="noreferrer"
+              className="group flex shrink-0 items-center gap-3"
+              title="Ver a lista de ficheiros do torrent"
+            >
+              <img
+                src="/gta6-ficheiros.png"
+                alt="Lista de ficheiros do torrent"
+                className="h-[96px] w-[76px] border object-cover object-top transition group-hover:brightness-125"
+                style={{ borderColor: BORDA, background: '#03081c' }}
+              />
+              <span className="text-[9px] uppercase tracking-[0.16em]" style={{ color: '#7ea6d6' }}>
+                lista de<br />ficheiros ↗
+              </span>
+            </a>
+
+            <div className="min-w-0 flex-1">
               <p className="text-[13.5px] leading-relaxed">
                 Já existe um torrent, mas por questões de segurança ainda não o vou publicar.
               </p>
