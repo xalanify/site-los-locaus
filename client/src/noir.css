@@ -5240,3 +5240,27 @@ body.kova .home-dash > .gta6-banner > div {
 @media (max-height: 700px) {
   .gta6-inner { zoom: 0.72; }
 }
+
+
+/* GTA6 / aviso: força a fonte de máquina de escrever em TODOS os elementos
+   (o tema do site define fontes próprias para h1/h2/p e estava a ganhar) */
+body.kova .gta6-cyber,
+body.kova .gta6-cyber *,
+body.kova .gta6-cyber *::before,
+body.kova .gta6-cyber *::after,
+body.kova .gta6-cyber h1,
+body.kova .gta6-cyber h2,
+body.kova .gta6-cyber h3,
+body.kova .gta6-cyber p,
+body.kova .gta6-cyber span,
+body.kova .gta6-cyber a,
+body.kova .gta6-cyber li,
+body.kova .gta6-cyber div {
+  font-family: 'Courier New', Courier, 'Lucida Console', monospace !important;
+}
+.gta6-cyber h1,
+.gta6-cyber h2,
+.gta6-cyber h3 {
+  font-weight: 700 !important;
+  letter-spacing: 0.18em;
+}

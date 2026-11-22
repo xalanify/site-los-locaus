@@ -29,7 +29,7 @@ export default function Gta6Page() {
 
   return (
     <div
-      className="relative overflow-hidden"
+      className="gta6-cyber relative overflow-hidden"
       style={{
         height: '100dvh',
         marginTop: 'calc(-1 * (var(--nv-header, 64px) + 6px))',

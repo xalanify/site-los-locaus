@@ -16,7 +16,7 @@ const VERMELHO = '#ff3b57'
 export default function Gta6Banner() {
   return (
     <section
-      className="gta6-banner relative overflow-hidden border"
+      className="gta6-banner gta6-cyber relative overflow-hidden border"
       style={{
         borderColor: BORDA,
         background:
