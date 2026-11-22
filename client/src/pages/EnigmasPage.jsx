@@ -81,10 +81,10 @@ export default function EnigmasPage() {
       <PageHeader
         eyebrow="Jogar"
         title="Enigmas"
-        subtitle="Protocolo Orion: cinco etapas para chegar à carta exclusiva."
+        subtitle="O Enigma 2 está a ser preparado."
       >
         <span className="glass-chip inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-300">
-          <Sparkles className="h-3 w-3 text-[#ff7a94]" /> Enigma 2 aberto
+          <Sparkles className="h-3 w-3 text-[#ff7a94]" /> Semana 2 em breve
         </span>
       </PageHeader>
 
@@ -97,49 +97,26 @@ export default function EnigmasPage() {
           </span>
 
           <h2 className="mt-3 font-display text-3xl font-black leading-tight text-white">
-            Enigma 2 <span className="text-[#ff7a94]">aberto</span>
+            Enigma 2 <span className="text-[#ff7a94]">em breve</span>
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
-            O Enigma 2 já está aberto: cinco etapas no Protocolo Orion, com uma carta exclusiva para o 1.º a terminar.
-            Fica atento — os prémios voltam a ser moedas e uma carta exclusiva.
+            O Enigma 2 está a ser feito e abre em breve. Vai ter cinco etapas, uma carta dourada
+            exclusiva e prémios para os mais rápidos — fica atento.
           </p>
 
-          {(() => {
-            const rotulo = !progresso
-              ? 'Entrar no Enigma 2'
-              : progresso.concluido
-                ? progresso.admin
-                  ? 'Ver resultado · dev'
-                  : `Ver resultado · ${progresso.posicao || '—'}.º`
-                : progresso.iniciado
-                  ? `Continuar · etapa ${progresso.etapa}`
-                  : 'Entrar no Enigma 2'
-            return movel ? (
-              <div className="mt-5 inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white/40">
-                {rotulo} · só no PC
-              </div>
-            ) : (
-              <Link
-                to="/enigma2"
-                className="ui-btn ui-btn-primary mt-5 inline-flex items-center gap-2"
-              >
-                {rotulo}
-              </Link>
-            )
-          })()}
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled
+              className="ui-btn ui-btn-primary cursor-not-allowed opacity-50"
+            >
+              Abre em breve
+            </button>
+            <span className="text-[11px] text-zinc-500">
+              O Enigma 2 está a ser feito. Ainda não é possível entrar.
+            </span>
+          </div>
 
-          {progresso && progresso.iniciado && !progresso.concluido && (
-            <p className="mt-2 text-[11px] text-zinc-500">
-              Estás na etapa {progresso.etapa} de 5 — as tuas chaves ficam guardadas.
-            </p>
-          )}
-          {progresso && progresso.concluido && (
-            <p className="mt-2 text-[11px] text-zinc-500">
-              {progresso.admin
-                ? 'Conta de admin/dev — o resultado não conta para a classificação.'
-                : `Terminaste em ${progresso.posicao || '—'}.º com +${progresso.moedas || 0} moedas.`}
-            </p>
-          )}
           {movel && (
             <p className="mt-2 text-[10px] uppercase tracking-[0.14em] text-zinc-600">
               O Protocolo Orion precisa de teclado, consola (F12) e imagens grandes.
@@ -175,9 +152,6 @@ export default function EnigmasPage() {
               Quem chegou mais longe e quem terminou primeiro
             </p>
           </div>
-          <Link to="/enigma2" className="ui-btn ui-btn-ghost text-[11px]">
-            Entrar
-          </Link>
         </div>
 
         <div className="glass overflow-hidden rounded-3xl">

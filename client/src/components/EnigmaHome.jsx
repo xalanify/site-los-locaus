@@ -21,22 +21,26 @@ export default function EnigmaHome() {
       <div className="relative grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="min-w-0">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ff7a94]/30 bg-[#ff7a94]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-[#ff9db0]">
-            <Trophy className="h-3 w-3" /> Enigma 2 · aberto
+            <Trophy className="h-3 w-3" /> Enigma 2 · em breve
           </span>
 
           <h2 className="mt-3 font-display text-3xl font-black leading-[1.03] tracking-tight text-white sm:text-4xl">
-            Enigma 2 <span className="text-[#ff7a94]">aberto</span>
+            Enigma 2 <span className="text-[#ff7a94]">em breve</span>
           </h2>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-zinc-400">
-            Cinco etapas no Protocolo Orion, com imagens, códigos e pistas espalhadas pelo site.
-            Cada jogador recebe chaves diferentes — e o 1.º leva a carta dourada 1/1 e 40 moedas.
+            O Enigma 2 está a ser feito. Abre em breve, com cinco etapas, uma carta dourada
+            exclusiva e prémios para os mais rápidos.
           </p>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Link to="/enigma2" className="ui-btn ui-btn-primary">
-              Ir para o Enigma 2
+            <button
+              type="button"
+              disabled
+              className="ui-btn ui-btn-primary cursor-not-allowed opacity-50"
+            >
+              Em breve
               <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+            </button>
             <Link to="/enigmas#arquivo" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 transition hover:text-zinc-300">
               Vencedores anteriores
             </Link>
@@ -44,9 +48,9 @@ export default function EnigmaHome() {
         </div>
 
         <div className="relative mx-auto w-full max-w-[220px]">
-          <Link to="/enigma2" className="block" aria-label="Entrar no Enigma 2">
+          <div className="block">
             <CartaEnigma2 nome={nomeConta} />
-          </Link>
+          </div>
         </div>
       </div>
     </section>

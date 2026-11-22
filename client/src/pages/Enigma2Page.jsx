@@ -43,6 +43,7 @@ const gravarCache = (d) => {
   }
 }
 
+const ENIGMA_FECHADO = true
 const VERMELHO = '#ff2d55'
 const ROSA = '#ff8fa3'
 
@@ -690,6 +691,37 @@ export default function Enigma2Page() {
     } finally {
       setCarregando(false)
     }
+  }
+
+  if (ENIGMA_FECHADO) {
+    return (
+      <div
+        className="relative grid place-items-center overflow-hidden px-5 text-white"
+        style={{
+          height: 'calc(100dvh - var(--nv-header, 72px) - 22px)',
+          marginBottom: '-32px',
+          background: '#070406',
+        }}
+      >
+        <Starfield />
+        <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-7 text-center">
+          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/35">Protocolo Orion</p>
+          <h2 className="mt-2 font-['Inter_Tight',sans-serif] text-2xl font-black uppercase leading-none tracking-tight">
+            Enigma 2 em breve
+          </h2>
+          <p className="mt-3 text-[12.5px] leading-relaxed text-white/50">
+            Este enigma está a ser feito. Volta à página dos enigmas para saberes quando abre.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/enigmas')}
+            className="mt-5 rounded-full bg-[#ff2d55] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-black"
+          >
+            voltar aos enigmas
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const concluido = Boolean(estado && estado.concluido)

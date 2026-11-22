@@ -7,9 +7,8 @@ import BannerMedia from './BannerMedia'
 import { BANNERS, BANNERS_REMOVIDOS, FUNDOS_REMOVIDOS } from '../data/temasPerfil'
 import { BADGES, badgeDe, BadgeGem } from './BadgeGem'
 import CartaMusical from './CartaMusical'
-import CartaEnigma2 from './CartaEnigma2'
 
-const CHAVE = 'locaus:novidades:2026-11-21-cartas-musica-enigma2-v2'
+const CHAVE = 'locaus:novidades:2026-11-22-cartas-musica-v3'
 
 const NOMES_BANNER = {
   g02: 'Banner 02',
@@ -157,7 +156,7 @@ export default function AvisosIniciais({ user }) {
                   Novidades
                 </h2>
                 <p className="mt-1 text-[12px] text-zinc-400">
-                  Cartas com música e o Enigma 2 já estão abertos.
+                  As cartas com música já estão disponíveis.
                 </p>
               </div>
               <button
@@ -217,37 +216,6 @@ export default function AvisosIniciais({ user }) {
                 </p>
               </section>
 
-              <section>
-                <h3 className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">
-                  <Trophy className="h-3 w-3" /> Enigma 2 · Protocolo Orion
-                </h3>
-                <div className="mt-2 flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-3 sm:flex-row sm:items-center">
-                  <div className="mx-auto w-[120px] shrink-0 sm:mx-0">
-                    <CartaEnigma2 nome={perfil?.username || user.username} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-black text-white">O novo enigma já está aberto</p>
-                    <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">
-                      Cinco etapas, duas pistas em cada uma e chaves únicas por jogador. O 1.º leva a{' '}
-                      <b className="text-white">carta dourada 1/1</b> e <b className="text-white">40 moedas</b>.
-                    </p>
-                    <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-zinc-600">
-                      No telemóvel o enigma só abre no computador.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        fecharNovidades(false)
-                        navigate('/enigma2')
-                      }}
-                      className="ui-btn ui-btn-primary ui-btn-sm mt-3 inline-flex items-center gap-2"
-                    >
-                      Entrar no Enigma 2
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </section>
 
               <p className="text-[11px] leading-relaxed text-zinc-500">
                 As cartas novas já estão no mercado e em <b className="text-zinc-300">/cartas</b>.
