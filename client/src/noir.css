@@ -5212,3 +5212,19 @@ body.menu-aberto .home-dash {
   -webkit-backdrop-filter:blur(8px);
 }
 .cm-play-inline:active{ transform:scale(.96); }
+
+
+/* aviso GTA6 na home: manter padding e espaço */
+body.kova .home-dash > .gta6-banner {
+  margin-bottom: 16px !important;
+}
+body.kova .home-dash > .gta6-banner > div {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+@media (min-width: 640px) {
+  body.kova .home-dash > .gta6-banner > div {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}

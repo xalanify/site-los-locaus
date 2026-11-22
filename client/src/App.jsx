@@ -11,6 +11,7 @@ import TorneiosHome from './components/TorneiosHome'
 import EnigmaHome from './components/EnigmaHome'
 import VideosModal from './components/VideosModal'
 import AvisosIniciais from './components/AvisosIniciais'
+import Gta6Banner from './components/Gta6Banner'
 import DesafioSabino from './components/DesafioSabino'
 import AvisoVitoriaEnigma from './components/AvisoVitoriaEnigma'
 import DiarioModal from './components/DiarioModal'
@@ -36,6 +37,7 @@ import { enviarSpecs } from './lib/specs'
 const GamesPage = lazy(() => import('./pages/GamesPage'))
 const EnigmasPage = lazy(() => import('./pages/EnigmasPage'))
 const Enigma2Page = lazy(() => import('./pages/Enigma2Page'))
+const Gta6Page = lazy(() => import('./pages/Gta6Page'))
 const FerramentasPage = lazy(() => import('./pages/FerramentasPage'))
 const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const ClipsPage = lazy(() => import('./pages/ClipsPage'))
@@ -327,6 +329,7 @@ function App() {
                           <p className="home-beta-note">
                             <b>BETA</b> O design ainda está a evoluir — pode mudar.
                           </p>
+                          <Gta6Banner />
                           <EnigmaHome />
                           <MercadoHome isAdmin={isAdmin} />
                           <TorneiosHome />
@@ -337,6 +340,7 @@ function App() {
                     <Route path="/jogos" element={<GamesPage />} />
                     <Route path="/enigmas" element={<EnigmasPage />} />
                     <Route path="/enigma2" element={<Enigma2Page />} />
+                    <Route path="/gta6" element={<Gta6Page />} />
                     <Route path="/chat" element={<ChatPage user={user} />} />
                     <Route path="/previsoes" element={<PrevisoesPage user={user} />} />
                     <Route
