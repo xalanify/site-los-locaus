@@ -983,7 +983,7 @@ export default function ChatPage({ user }) {
                               key={g.emoji}
                               onClick={() => reagir(m, g.emoji)}
                               title={g.users.map((u) => u.username).join(', ')}
-                              className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] transition ${
+                              className={`chat-reacao flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] transition ${
                                 g.mine ? t.borda + ' ' + t.chip : 'border-white/10 bg-white/5 hover:bg-white/10'
                               }`}
                             >
@@ -994,7 +994,7 @@ export default function ChatPage({ user }) {
                           <button
                             onClick={() => setReactAberto(reactAberto === m.id ? null : m.id)}
                             title="Reagir"
-                            className={`flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white ${
+                            className={`chat-reagir flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white ${
                               reactAberto === m.id ? t.borda : ''
                             }`}
                           >
@@ -1004,7 +1004,7 @@ export default function ChatPage({ user }) {
                       ) : null}
                       {/* ações (no telemóvel ficam por baixo; no PC ao passar o rato) */}
                       <div
-                        className={`mt-1 flex items-center gap-0.5 opacity-100 transition-opacity sm:absolute sm:bottom-2 sm:mt-0 sm:opacity-0 sm:group-hover:opacity-100 ${
+                        className={`chat-acoes mt-1 flex items-center gap-0.5 opacity-100 transition-opacity sm:absolute sm:bottom-2 sm:mt-0 sm:opacity-0 sm:group-hover:opacity-100 ${
                           minha ? 'sm:-left-11' : 'sm:-right-11'
                         }`}
                       >

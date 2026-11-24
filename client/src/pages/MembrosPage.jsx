@@ -286,7 +286,7 @@ export default function MembrosPage({ onProfile }) {
                 <button
                   type="button"
                   onClick={() => setCartaZoom(m)}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500 transition-colors hover:text-white"
+                  className="mt-2 flex min-h-[34px] w-full items-center justify-center gap-1.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500 transition-colors hover:text-white"
                 >
                   <CreditCard className="h-3 w-3" /> Ver carta
                 </button>

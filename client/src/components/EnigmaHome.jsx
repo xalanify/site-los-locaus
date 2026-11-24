@@ -41,7 +41,7 @@ export default function EnigmaHome() {
               Em breve
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
-            <Link to="/enigmas#arquivo" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 transition hover:text-zinc-300">
+            <Link to="/enigmas#arquivo" className="inline-flex min-h-[34px] items-center px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 transition hover:text-zinc-300">
               Vencedores anteriores
             </Link>
           </div>

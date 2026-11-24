@@ -22,6 +22,7 @@ import ItemMini from './ItemMini'
 import CartaEnigmaMercado from './CartaEnigmaMercado'
 import { CARTAS_NOVAS, MUSICAS_CARTAS } from './CartaMusical'
 import CartaLimitada from './CartaLimitada'
+import MercadoVitrine from './MercadoVitrine'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
 import { classesNome } from '../data/nomeEfeitos'
@@ -36,6 +37,16 @@ const hora = (iso) => {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   return d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+}
+
+/* Nomes antigos que já não existem no catálogo chegam como id
+   (ex.: "carta-arte-galaxia") — aqui ficam legíveis. */
+const nomeDaVenda = (nome) => {
+  if (!nome || !/-/.test(nome)) return nome || 'Item'
+  return nome
+    .replace(/^(carta-arte-|cor-arte-|carta-|cor-|camo-|roupa-|estilo-)/, '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (m) => m.toUpperCase())
 }
 
 const CORES_RARIDADE = {
@@ -137,6 +148,93 @@ function Previsao({ item, me }) {
     )
   }
   return <ProfileStylePreview style={item.valor} nome={me?.username || 'O teu nome'} />
+}
+
+/* Cartão da grelha — inclinação 3D suave a acompanhar o rato. */
+function CartaoMercado({ item, me, flash, musicasCartas, onAbrir }) {
+  const sobe = item.variacao >= 0
+  const cor = CORES_RARIDADE[item.raridade] || '#a1a1aa'
+  const musica = MUSICAS_CARTAS[item.valor]
+
+  const aoMover = (e) => {
+    if (e.pointerType !== 'mouse') return
+    const el = e.currentTarget
+    const r = el.getBoundingClientRect()
+    if (!r.width || !r.height) return
+    const px = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width))
+    const py = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))
+    el.style.setProperty('--mk-rx', `${((0.5 - py) * 8).toFixed(2)}deg`)
+    el.style.setProperty('--mk-ry', `${((px - 0.5) * 10).toFixed(2)}deg`)
+    el.style.setProperty('--mk-mx', `${(px * 100).toFixed(1)}%`)
+    el.style.setProperty('--mk-my', `${(py * 100).toFixed(1)}%`)
+  }
+
+  const aoSair = (e) => {
+    const el = e.currentTarget
+    el.style.setProperty('--mk-rx', '0deg')
+    el.style.setProperty('--mk-ry', '0deg')
+    el.style.setProperty('--mk-mx', '50%')
+    el.style.setProperty('--mk-my', '50%')
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => onAbrir(item)}
+      onPointerMove={aoMover}
+      onPointerLeave={aoSair}
+      className="mk-item"
+      style={{ '--mk-cor': cor }}
+      title={item.nome}
+    >
+      <span className="mk-item-luz" aria-hidden="true" />
+
+      <span className="mk-item-topo">
+        <span className="mk-item-rar">{NOME_RARIDADE[item.raridade] || 'Raro'}</span>
+        {item.comprado ? (
+          <span className="mk-item-tag">tens</span>
+        ) : CARTAS_NOVAS.has(item.valor) ? (
+          <span className="mk-item-tag mk-item-tag--novo">novo</span>
+        ) : null}
+      </span>
+
+      <span className="mk-item-arte">
+        {item.tipo === 'cor' ? (
+          <span className="mk-cor-tile">
+            <span className={classesNome(item.valor)}>{me?.username || 'Nome'}</span>
+          </span>
+        ) : (
+          <ItemMini item={item} me={me} className="mk-mini-grelha" />
+        )}
+      </span>
+
+      <span className="mk-item-nome">
+        <span className="mk-item-nome-txt">{item.nome}</span>
+        {musica && (
+          <Music2
+            className="h-3 w-3 shrink-0 text-[#ff9db0]"
+            title={musicasCartas[item.valor]?.titulo || musica.cancao}
+          />
+        )}
+      </span>
+
+      <span className="mk-item-pe">
+        <span className={`mk-item-preco${flash ? ` preco--${flash}` : ''}`}>
+          {fmt(item.comprado ? item.preco_venda : item.preco_compra)}
+          <MoedaLocaus size={12} />
+        </span>
+        <span className={`mk-item-var ${sobe ? 'is-sobe' : 'is-desce'}`}>
+          {sobe ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+          {sobe ? '+' : ''}
+          {Number(item.variacao || 0).toFixed(1)}%
+        </span>
+      </span>
+
+      <span className="mk-item-spark">
+        <Linha serie={item.historico} cor={sobe ? '#34d399' : '#f87171'} w={92} h={24} />
+      </span>
+    </button>
+  )
 }
 
 export default function Mercado({ onSaldo }) {
@@ -419,61 +517,53 @@ export default function Mercado({ onSaldo }) {
     .filter((x) => !x.emBreve)
     .reduce((melhor, x) => (!melhor || x.variacao > melhor.variacao ? x : melhor), null)
 
+  // Vitrine 3D: primeiro as cartas, depois as cores de nome
+  const vitrine = (() => {
+    const cartas = todos.filter((x) => x.tipo === 'carta' && !x.emBreve)
+    const cores = todos.filter((x) => x.tipo === 'cor' && !x.emBreve)
+    const base = [...cartas, ...cores]
+    return (base.length ? base : todos).slice(0, 10)
+  })()
+
   return (
-    <div>
+    <div className="mk">
       <CartaEnigmaMercado />
-      <div className="mercado-grid">
-      <aside className="mercado-lado">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-400/[0.06] px-3 py-1.5 text-xs font-bold text-amber-100">
-            <MoedaLocaus size={14} /> {Number(saldo.disponiveis || 0).toLocaleString('pt-PT')} disponíveis
+
+      {/* estado do mercado */}
+      <div className="mk-hud">
+        <span className="mk-chip mk-chip--saldo">
+          <MoedaLocaus size={14} /> {Number(saldo.disponiveis || 0).toLocaleString('pt-PT')}
+          <span className="mk-chip-dim">disponíveis</span>
+        </span>
+        <span className="mk-chip">
+          <span className="mk-live">
+            <span className="mk-live-ping" />
+            <span className="mk-live-dot" />
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-semibold text-zinc-400">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            ao vivo · {hora(dados.atualizado_em)}
-          </span>
-        </div>
-        <button type="button" onClick={carregar} className="ui-btn ui-btn-ghost ui-btn-sm">
-          <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+          ao vivo <span className="mk-chip-dim">· {hora(dados.atualizado_em)}</span>
+        </span>
+
+        {destaque && (
+          <button type="button" className="mk-alta" onClick={() => setDetalhe(destaque)}>
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span className="mk-alta-tag">maior subida</span>
+            <span className="mk-alta-nome">{destaque.nome}</span>
+            <span className="mk-alta-var">+{destaque.variacao.toFixed(1)}%</span>
+          </button>
+        )}
+
+        <button type="button" onClick={carregar} className="mk-refresh" aria-label="Atualizar o mercado">
+          <RefreshCw className="h-3.5 w-3.5" /> <span className="mk-refresh-txt">atualizar</span>
         </button>
       </div>
 
-      {/* maior subida */}
-      {destaque && (
-        <button
-          type="button"
-          onClick={() => setDetalhe(destaque)}
-          className="mercado-destaque"
-        >
-          <span className="mercado-destaque-icone">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          <span className="min-w-0 flex-1 text-left">
-            <span className="mercado-destaque-tag">Maior subida agora</span>
-            <span className="mercado-destaque-nome">{destaque.nome}</span>
-            <span className="mercado-destaque-sub">
-              {NOME_RARIDADE[destaque.raridade]} · base {fmt(destaque.base)}
-            </span>
-          </span>
-          <span className="text-right">
-            <span className="mercado-destaque-preco inline-flex items-center justify-end gap-1">
-              {fmt(destaque.preco_compra)} <MoedaLocaus size={13} />
-            </span>
-            <span className="mercado-destaque-var">
-              <TrendingUp className="h-3 w-3" /> +{destaque.variacao.toFixed(1)}%
-            </span>
-          </span>
-        </button>
-      )}
+      <MercadoVitrine itens={vitrine} me={me} onAbrir={setDetalhe} />
 
-      <div className="toolbar mb-4">
-        <div className="ui-tabs toolbar-tabs max-w-md">
+      {/* filtros */}
+      <div className="mk-barra">
+        <div className="ui-tabs mk-tabs">
           {[
-            { id: 'todos', nome: 'Todos' },
+            { id: 'todos', nome: 'Tudo' },
             { id: 'cor', nome: 'Cores' },
             { id: 'carta', nome: 'Cartas' },
           ].map((f) => (
@@ -488,169 +578,64 @@ export default function Mercado({ onSaldo }) {
             </button>
           ))}
         </div>
-        <div className="toolbar-acoes">
-          <label className="select-regiao">
-            <ArrowUpDown className="h-3.5 w-3.5" />
-            <select
-              value={ordem}
-              onChange={(e) => setOrdem(e.target.value)}
-              aria-label="Ordenar o mercado"
-            >
-              <option value="relevancia">Ordem do mercado</option>
-              <option value="preco-desc">Preço: maior primeiro</option>
-              <option value="preco-asc">Preço: menor primeiro</option>
-              <option value="subida">Maior subida</option>
-              <option value="descida">Maior descida</option>
-              <option value="nome">Nome (A–Z)</option>
-            </select>
-          </label>
-        </div>
+
+        <span className="mk-total">{itens.length} itens</span>
+
+        <label className="mk-ordem">
+          <ArrowUpDown className="h-3.5 w-3.5" />
+          <select value={ordem} onChange={(e) => setOrdem(e.target.value)} aria-label="Ordenar o mercado">
+            <option value="relevancia">ordem do mercado</option>
+            <option value="preco-desc">preço: maior primeiro</option>
+            <option value="preco-asc">preço: menor primeiro</option>
+            <option value="subida">maior subida</option>
+            <option value="descida">maior descida</option>
+            <option value="nome">nome (a–z)</option>
+          </select>
+        </label>
       </div>
-      </aside>
-      <div className="mercado-lista">
 
-      <ul className="space-y-1.5">
-        {itens.map((item) => {
-          const sobe = item.variacao >= 0
-          const cor = sobe ? '#34d399' : '#f87171'
-          return (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => setDetalhe(item)}
-                className="mercado-linha flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-[#101012]/80 px-3 py-2.5 text-left transition-colors hover:border-white/15 hover:bg-[#151518]"
-              >
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ background: CORES_RARIDADE[item.raridade] }}
-                  title={NOME_RARIDADE[item.raridade]}
-                />
-                {item.tipo === 'carta' && (
-                  <ItemMini item={item} me={me} className="mini-carta--lista" />
-                )}
-                {item.tipo === 'edicao' && (
-                  <img
-                    src={item.imagem}
-                    alt=""
-                    loading="lazy"
-                    className="mini-edicao"
-                    onError={(ev) => {
-                      ev.currentTarget.style.display = 'none'
-                    }}
-                  />
-                )}
-                <span className="min-w-0 flex-1">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <span
-                      className={`truncate text-sm font-bold ${
-                        item.tipo === 'cor'
-                          ? classesNome(item.valor) || 'text-white'
-                          : 'text-white'
-                      }`}
-                    >
-                      {item.nome}
-                    </span>
-                    {MUSICAS_CARTAS[item.valor] && (
-                      <Music2
-                        className="h-3.5 w-3.5 shrink-0 text-[#ff9db0]"
-                        title={musicasCartas[item.valor]?.titulo || MUSICAS_CARTAS[item.valor].cancao}
-                      />
-                    )}
-                    {CARTAS_NOVAS.has(item.valor) && <span className="novo-tag">Novo</span>}
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
-                    {item.tipo === 'edicao' ? (
-                      <>
-                        <span className="text-[#ff7a94]">limitado</span> ·{' '}
-                        {item.disponiveis} de {item.total}
-                      </>
-                    ) : (
-                      <>
-                        {NOME_RARIDADE[item.raridade]} ·{' '}
-                        {item.tipo === 'cor' ? 'cor de nome' : item.tipo}
-                        <span className="hidden text-zinc-600 sm:inline"> · base {fmt(item.base)}</span>
-                      </>
-                    )}
-                  </span>
-                </span>
+      {/* grelha */}
+      {itens.length === 0 ? (
+        <p className="mk-vazio">Nada nesta categoria por agora.</p>
+      ) : (
+        <div className="mk-grelha">
+          {itens.map((item) => (
+            <CartaoMercado
+              key={item.id}
+              item={item}
+              me={me}
+              flash={flash[item.id]}
+              musicasCartas={musicasCartas}
+              onAbrir={setDetalhe}
+            />
+          ))}
+        </div>
+      )}
 
-                <span className="hidden sm:block">
-                  {item.tipo === 'edicao' ? null : (
-                    <Linha serie={item.historico} cor={cor} />
-                  )}
-                </span>
-
-                <span className="w-[104px] shrink-0 text-right">
-                  <span
-                    className={`preco flex items-center justify-end gap-1 font-display text-sm font-black tabular-nums text-white ${
-                      flash[item.id] ? `preco--${flash[item.id]}` : ''
-                    }`}
-                  >
-                    {fmt(item.comprado ? item.preco_venda : item.preco_compra)}
-                    <MoedaLocaus size={12} />
-                  </span>
-                  {item.tipo === 'edicao' ? (
-                    <span className="flex items-center justify-end text-[10px] font-bold text-zinc-500">
-                      {item.disponiveis > 0 ? `${item.disponiveis} restantes` : 'esgotada'}
-                    </span>
-                  ) : (
-                    <span
-                      className={`flex items-center justify-end gap-0.5 text-[10px] font-bold ${
-                        sobe ? 'text-emerald-400' : 'text-red-400'
-                      }`}
-                    >
-                      {sobe ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {sobe ? '+' : ''}
-                      {item.variacao.toFixed(1)}%
-                    </span>
-                  )}
-                </span>
-
-                <span className="mercado-seta hidden shrink-0 items-center gap-1 text-[10px] font-bold text-zinc-500 md:flex">
-                  {item.tipo === 'edicao'
-                    ? item.disponiveis > 0
-                      ? 'comprar'
-                      : 'esgotada'
-                    : item.emBreve
-                      ? 'em breve'
-                      : item.comprado
-                        ? 'tens'
-                        : 'comprar'}
-                  <ArrowUpRight className="h-3 w-3" />
-                </span>
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-
+      {/* últimas vendas */}
       {dados.ultimasVendas.length > 0 && (
-        <div className="mt-5 rounded-xl border border-white/[0.06] bg-[#0f0f11]/80 p-3">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-zinc-500">
-            Últimas vendas
-          </p>
-          <ul className="space-y-1">
+        <div className="mk-vendas">
+          <p className="mk-vendas-titulo">Últimas negociações</p>
+          <ul>
             {dados.ultimasVendas.slice(0, 8).map((v, i) => (
-              <li key={`${v.item_id}-${i}`} className="flex items-center gap-2 text-[11px] text-zinc-400">
-                <span className="w-12 shrink-0 text-zinc-600">{hora(v.em)}</span>
-                <span className="min-w-0 flex-1 truncate">
-                  {v.nome}
-                  <span className="ml-1 text-zinc-500">
-                    · {v.tipo === 'venda' ? 'vendido por' : 'comprado por'} {v.username}
+              <li key={`${v.item_id}-${i}`}>
+                <span className="mk-vendas-hora">{hora(v.em)}</span>
+                <span className="mk-vendas-nome">
+                  {nomeDaVenda(v.nome)}
+                  <em>
+                    {` ${v.tipo === 'venda' ? 'vendido por' : 'comprado por'} ${v.username}`}
                     {v.contraparte ? ` → ${v.contraparte}` : ''}
-                  </span>
+                  </em>
                 </span>
-                <span className="w-16 shrink-0 text-right font-bold tabular-nums text-white">
+                <span className="mk-vendas-preco">
                   {fmt(v.preco)}
+                  <MoedaLocaus size={11} />
                 </span>
               </li>
             ))}
           </ul>
         </div>
       )}
-
-      </div>
-      </div>
 
       {/* Detalhe — edição limitada */}
       {detalhe &&

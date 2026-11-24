@@ -223,7 +223,7 @@ function CartaoJogo({ id, info }) {
           <Users className="h-3.5 w-3.5" />
           {aberto ? 'Esconder equipas' : `Ver equipas${temEquipas ? ` (${equipas.length})` : ''}`}
         </button>
-        <Link to="/previsoes" className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-gray-400 hover:text-white">
+        <Link to="/previsoes" className="ml-auto inline-flex min-h-[34px] items-center gap-1 px-1 text-[11px] font-bold text-gray-400 hover:text-white">
           Prever resultado <ArrowRight className="h-3 w-3" />
         </Link>
       </div>

@@ -1,24 +1,20 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Magnet } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Info } from 'lucide-react'
 
 /* ============================================================
-   GTA6 — build Xbox 1.0.2.1 → PC (em preparação)
-   Estilo terminal: Courier, azul, verde e vermelho.
+   GTA6 — painéis de terminal (visual tipo Cyberleek)
+   Azul forte, quadrados verdes, tudo monoespaçado.
+   A página encaixa sempre no ecrã (sem scroll).
    ============================================================ */
 
 const MONO = "'Courier New', Courier, 'Lucida Console', monospace"
-const AZUL = '#4d8dff'
-const AZUL_ESCURO = '#1e3a8a'
-const BORDA = 'rgba(47,91,208,.55)'
-const TEXTO = '#8ea6d6'
-const CLARO = '#cfe0ff'
-const VERDE = '#39ff88'
-const VERDE_ESCURO = '#0d3a24'
-const VERMELHO = '#ff3b57'
 
 export default function Gta6Page() {
-  /* página fixa: sem scroll e sem faixa preta em baixo */
+  const wrapRef = useRef(null)
+  const fitRef = useRef(null)
+
+  // sem scroll: trava a página e ajusta a escala do conteúdo ao ecrã
   useEffect(() => {
     const anterior = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -27,128 +23,145 @@ export default function Gta6Page() {
     }
   }, [])
 
+  useEffect(() => {
+    const wrap = wrapRef.current
+    const fit = fitRef.current
+    if (!wrap || !fit) return undefined
+
+    let frame = 0
+    let ultimo = 0
+
+    const ajustar = () => {
+      const cs = getComputedStyle(wrap)
+      const pt = parseFloat(cs.paddingTop) || 0
+      const pb = parseFloat(cs.paddingBottom) || 0
+      const disponivel = wrap.clientHeight - pt - pb
+      const altura = fit.offsetHeight
+      if (!disponivel || !altura) return
+      const z = Math.min(1, Math.max(0.5, (disponivel - 4) / altura))
+      if (Math.abs(z - ultimo) < 0.004) return
+      ultimo = z
+      fit.style.zoom = z.toFixed(4)
+    }
+
+    const agendar = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(ajustar)
+    }
+
+    agendar()
+    const t1 = setTimeout(ajustar, 150)
+    const t2 = setTimeout(ajustar, 700)
+    const t3 = setTimeout(ajustar, 1600)
+    window.addEventListener('resize', agendar)
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(agendar).catch(() => {})
+
+    let ro = null
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(agendar)
+      ro.observe(wrap)
+      ro.observe(fit)
+    }
+
+    return () => {
+      window.removeEventListener('resize', agendar)
+      if (ro) ro.disconnect()
+      cancelAnimationFrame(frame)
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+    }
+  }, [])
+
   return (
     <div
-      className="gta6-cyber relative overflow-hidden"
+      className="gta6-cyber gta6-page relative overflow-hidden"
       style={{
-        height: '100dvh',
-        marginTop: 'calc(-1 * (var(--nv-header, 64px) + 6px))',
-        background:
-          'linear-gradient(rgba(70,120,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(70,120,255,.05) 1px, transparent 1px), #02040e',
-        backgroundSize: '60px 60px, 60px 60px, auto',
         fontFamily: MONO,
-        color: TEXTO,
       }}
     >
-      <div className="gta6-inner mx-auto flex h-full w-full max-w-5xl flex-col px-4 pb-3 sm:px-6 sm:pb-4" style={{ paddingTop: 'calc(var(--nv-header, 64px) + 10px)' }}>
-        <nav className="flex flex-wrap gap-2">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 border px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition hover:brightness-125"
-            style={{ borderColor: BORDA, color: '#6f9fd8', background: 'rgba(30,58,138,.12)' }}
-          >
-            <ArrowLeft className="h-3 w-3" /> início
-          </Link>
-        </nav>
+      <span className="gta6-fundo-linhas" aria-hidden="true" />
 
-        <header className="mt-3 text-center">
-          <div
-            className="mx-auto grid h-[88px] w-[88px] place-items-center overflow-hidden rounded-full border"
-            style={{
-              borderColor: AZUL,
-              boxShadow: '0 0 34px rgba(77,141,255,.4)',
-              background: '#03081c',
-            }}
-          >
-            <img src="/gta6.png" alt="GTA VI" className="h-full w-full object-cover" />
-          </div>
+      <div
+        ref={wrapRef}
+        className="gta6-wrap"
+        style={{ paddingTop: 'calc(var(--nv-header, 64px) + 16px)' }}
+      >
+        <div ref={fitRef} className="gta6-fit">
+          <nav className="gta6-rise" style={{ animationDelay: '0ms' }}>
+            <Link to="/" className="gta6-btn">
+              <ArrowLeft className="h-3 w-3" /> início
+            </Link>
+          </nav>
 
-          <h1
-            className="mt-4 text-[clamp(34px,6.4vw,62px)] font-bold uppercase leading-none tracking-[0.3em]"
-            style={{ color: AZUL, textShadow: '0 0 24px rgba(77,141,255,.5)' }}
-          >
-            GTA6
-          </h1>
-          <p className="mt-3 text-[12px] uppercase tracking-[0.24em] text-[#6f9fd8]">
-            xbox build 1.0.2.1 · recompilação para pc _
-          </p>
-          <p className="mt-1.5 text-[10.5px] uppercase tracking-[0.22em]" style={{ color: VERMELHO }}>
-            em desenvolvimento · muito em breve
-          </p>
-        </header>
+          <header className="gta6-rise gta6-cabeca" style={{ animationDelay: '70ms' }}>
+            <div className="gta6-logo mx-auto">
+              <img src="/gta6.png" alt="GTA VI" loading="lazy" />
+            </div>
+            <h1 className="gta6-titulo mt-4">GTA6</h1>
+            <p className="gta6-sub">xbox build 1.0.2.1 · recompilação para pc</p>
+            <p className="gta6-erro">em desenvolvimento · muito em breve</p>
+          </header>
 
-        <section
-          className="mt-5 border p-4 text-center sm:p-5"
-          style={{ borderColor: 'rgba(255,59,87,.7)', background: 'rgba(12,6,24,.8)' }}
-        >
-          <p
-            className="flex items-center justify-center gap-2 text-[15px] font-bold uppercase tracking-[0.14em]"
-            style={{ color: VERMELHO }}
-          >
-            <AlertTriangle className="h-3.5 w-3.5" /> gta6 build para pc em breve
-          </p>
-          <p className="mx-auto mt-2.5 max-w-2xl text-[14px] leading-relaxed">
-            Está a ser feita uma <b style={{ color: CLARO }}>recompilação de uma build de Xbox (1.0.2.1)</b>{' '}
-            para PC. Quando estiver pronta, publico aqui o tutorial completo — requisitos, ferramentas,
-            passo a passo e como testar.
-          </p>
-          <p className="mt-2.5 text-[13px] font-bold uppercase tracking-[0.14em]" style={{ color: VERDE }}>
-            ⚑ isto não será a pagar — vai ser tudo grátis
-          </p>
-          <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#5f7fae]">
-            ensino tudo · nos próximos dias
-          </p>
-        </section>
-
-        <section className="mt-4 border" style={{ borderColor: BORDA, background: 'rgba(3,8,27,.78)' }}>
-          <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'rgba(47,91,208,.35)' }}>
-            <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: '#9fc3ff' }}>
-              <span className="inline-block h-1.5 w-1.5" style={{ background: VERDE }} /> download
-            </span>
-            <span className="text-[8px] uppercase tracking-[0.2em] text-[#5f7fae]">magnet / torrent</span>
-          </div>
-
-          <div className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-            <a
-              href="/gta6-ficheiros.png"
-              target="_blank"
-              rel="noreferrer"
-              className="group flex shrink-0 items-center gap-3"
-              title="Ver a lista de ficheiros do torrent"
-            >
-              <img
-                src="/gta6-ficheiros.png"
-                alt="Lista de ficheiros do torrent"
-                className="h-[96px] w-[76px] border object-cover object-top transition group-hover:brightness-125"
-                style={{ borderColor: BORDA, background: '#03081c' }}
-              />
-              <span className="text-[9px] uppercase tracking-[0.16em]" style={{ color: '#7ea6d6' }}>
-                lista de<br />ficheiros ↗
+          {/* caixa principal */}
+          <section className="gta6-rise cy-painel" style={{ animationDelay: '140ms' }}>
+            <div className="cy-topo">
+              <span className="cy-titulo">
+                <i className="cy-quad" /> gta6 build para pc
               </span>
-            </a>
+              <span className="cy-seta">▾</span>
+            </div>
+            <div className="cy-corpo cy-corpo--centro">
+              <p className="cy-alerta">
+                <AlertTriangle className="h-4 w-4" /> gta6 build para pc em breve
+              </p>
+              <p className="cy-texto">
+                Está a ser feita uma <b>recompilação de uma build de Xbox (1.0.2.1)</b> para PC.
+              </p>
+              <p className="cy-verde">⚑ isto não será a pagar — vai ser tudo grátis</p>
+            </div>
+          </section>
 
-            <div className="min-w-0 flex-1">
-              <p className="text-[13.5px] leading-relaxed">
-                Já existe um torrent, mas por questões de segurança ainda não o vou publicar.
-              </p>
-              <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em]" style={{ color: VERDE }}>
-                torrent do jogo em breve
-              </p>
+          {/* avisos */}
+          <section className="gta6-rise cy-painel cy-painel--avisos" style={{ animationDelay: '210ms' }}>
+            <div className="cy-topo">
+              <span className="cy-titulo">
+                <i className="cy-quad cy-quad--vermelho" /> avisos importantes
+              </span>
+              <span className="cy-seta">▾</span>
             </div>
 
-            <span
-              className="inline-flex cursor-not-allowed items-center gap-2 border px-5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.16em] opacity-80"
-              style={{ borderColor: '#2fbf71', background: VERDE_ESCURO, color: '#7dffb0' }}
-              title="Ainda não disponível"
-            >
-              <Magnet className="h-3 w-3" /> torrent
-            </span>
-          </div>
-        </section>
+            <div className="cy-corpo">
+              <ul className="cy-lista">
+                <li>
+                  Não descarregues nem instales ficheiros de links falsos ou desconhecidos. Podem conter{' '}
+                  <b style={{ color: '#ff8b9c' }}>vírus ou malware</b> no teu PC.
+                </li>
+                <li>
+                  Tem cuidado ao descarregar ficheiros <i>supostamente funcionais</i> de sites desconhecidos.
+                </li>
+                <li>
+                  Os ficheiros do <b>GTA6 1.0.2.1 (208 GB)</b> são obtidos de forma ilegal — não devo
+                  informar nem ensinar ninguém a como os obter.
+                </li>
+                <li>
+                  Quando a build/port para PC ficar <b style={{ color: '#2bff88' }}>funcional e estável</b>,
+                  poderei fornecer os ficheiros para tal funcionar.
+                </li>
+                <li>
+                  Eu (<b>xalana</b>) já tenho os <b>ficheiros completos do GTA 6</b>, porém ainda não os
+                  irei fornecer.
+                </li>
+              </ul>
 
-        <p className="mt-auto pt-3 text-center text-[9.5px] uppercase tracking-[0.24em] text-[#3d5d8a]">
-          locaus.fun // gta6 // 2026
-        </p>
+              <p className="cy-assinatura">
+                <Info className="h-3 w-3" /> xalana <span>—</span> locaus
+              </p>
+            </div>
+          </section>
+
+          <p className="gta6-rodape">locaus.fun // gta6 // 2026</p>
+        </div>
       </div>
     </div>
   )

@@ -696,26 +696,37 @@ export default function Enigma2Page() {
   if (ENIGMA_FECHADO) {
     return (
       <div
-        className="relative grid place-items-center overflow-hidden px-5 text-white"
+        className="relative grid place-items-center overflow-hidden px-5 font-mono text-[#b9d4ff]"
         style={{
           height: 'calc(100dvh - var(--nv-header, 72px) - 22px)',
           marginBottom: '-32px',
-          background: '#070406',
+          background:
+            'linear-gradient(rgba(70,130,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(70,130,255,.045) 1px, transparent 1px), #02040c',
+          backgroundSize: '56px 56px, 56px 56px, auto',
         }}
       >
-        <Starfield />
-        <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-7 text-center">
-          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/35">Protocolo Orion</p>
-          <h2 className="mt-2 font-['Inter_Tight',sans-serif] text-2xl font-black uppercase leading-none tracking-tight">
-            Enigma 2 em breve
+        <div
+          className="w-full max-w-md border bg-[#05091a]/85 p-7 text-center"
+          style={{ borderColor: 'rgba(47,107,255,.5)', boxShadow: '0 0 50px rgba(47,107,255,.18)' }}
+        >
+          <p className="text-[9px] uppercase tracking-[0.34em] text-[#5f7fae]">protocolo orion</p>
+          <h2
+            className="mt-3 text-[clamp(22px,4vw,34px)] font-black uppercase leading-none tracking-[0.18em] text-[#5b9dff]"
+            style={{ textShadow: '0 0 24px rgba(47,107,255,.5)' }}
+          >
+            enigma 2 em breve
           </h2>
-          <p className="mt-3 text-[12.5px] leading-relaxed text-white/50">
+          <p className="mx-auto mt-4 max-w-xs text-[12px] leading-relaxed text-[#8fb3e6]">
             Este enigma está a ser feito. Volta à página dos enigmas para saberes quando abre.
           </p>
           <button
             type="button"
             onClick={() => navigate('/enigmas')}
-            className="mt-5 rounded-full bg-[#ff2d55] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-black"
+            className="mt-6 w-full border px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#cfe2ff]"
+            style={{
+              borderColor: 'rgba(47,107,255,.6)',
+              background: 'linear-gradient(180deg, rgba(91,157,255,.28), rgba(47,107,255,.16))',
+            }}
           >
             voltar aos enigmas
           </button>

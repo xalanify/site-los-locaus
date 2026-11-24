@@ -5264,3 +5264,1479 @@ body.kova .gta6-cyber div {
   font-weight: 700 !important;
   letter-spacing: 0.18em;
 }
+
+
+/* ============================================================
+   MERCADO 2.0 — vitrine 3D + grelha de cartas
+   ------------------------------------------------------------
+   Carrossel em perspetiva com as cartas, ficha do destaque e
+   uma grelha limpa com inclinação 3D ao passar o rato.
+   ============================================================ */
+
+body.kova .mk {
+  position: relative;
+}
+
+/* ---------- barra de estado ---------- */
+body.kova .mk-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+body.kova .mk-chip,
+body.kova .mk-refresh,
+body.kova .mk-alta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.025);
+  color: #cfd6e4;
+  font-family: var(--nv-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.kova .mk-chip--saldo {
+  border-color: rgba(245, 197, 66, 0.32);
+  background: rgba(245, 197, 66, 0.07);
+  color: #ffe9a8;
+}
+
+body.kova .mk-chip-dim {
+  color: #6f7789;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+body.kova .mk-live {
+  position: relative;
+  display: inline-flex;
+  width: 6px;
+  height: 6px;
+}
+
+body.kova .mk-live-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #34d399;
+}
+
+body.kova .mk-live-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #34d399;
+  opacity: 0.6;
+  animation: mkPing 1.9s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes mkPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  75%,
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+body.kova .mk-alta {
+  cursor: pointer;
+  border-color: rgba(52, 211, 153, 0.26);
+  background: linear-gradient(180deg, rgba(52, 211, 153, 0.12), rgba(52, 211, 153, 0.03));
+  color: #b9f5d8;
+  transition: border-color 0.2s var(--nv-ease), transform 0.2s var(--nv-ease);
+}
+
+body.kova .mk-alta:hover {
+  border-color: rgba(52, 211, 153, 0.5);
+  transform: translateY(-1px);
+}
+
+body.kova .mk-alta-tag {
+  color: #6f7789;
+}
+
+body.kova .mk-alta-nome {
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+body.kova .mk-alta-var {
+  color: #34d399;
+  font-weight: 800;
+}
+
+body.kova .mk-refresh {
+  margin-left: auto;
+  cursor: pointer;
+  transition: border-color 0.2s var(--nv-ease), background 0.2s var(--nv-ease);
+}
+
+body.kova .mk-refresh:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- vitrine 3D ---------- */
+body.kova .mk-vitrine {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+  padding: 12px 14px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 100% at 50% -12%, rgba(255, 46, 91, 0.13), transparent 58%),
+    radial-gradient(80% 70% at 94% 112%, rgba(96, 165, 250, 0.1), transparent 62%),
+    linear-gradient(180deg, #0a0b11, #06070b);
+
+  --mk-w: 232px;
+  --mk-h: 306px;
+  --mk-escala: 0.6;
+}
+
+body.kova .mk-vitrine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 42%, #000 28%, transparent 100%);
+  mask-image: radial-gradient(72% 62% at 50% 42%, #000 28%, transparent 100%);
+  opacity: 0.55;
+}
+
+body.kova .mk-vitrine-topo {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 2px 4px;
+  font-family: var(--nv-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8b93a7;
+}
+
+body.kova .mk-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ff8fa4;
+  font-weight: 800;
+}
+
+body.kova .mk-kicker-dim {
+  color: #5d6577;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+body.kova .mk-contador {
+  color: #e7ecf7;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+body.kova .mk-contador-dim {
+  margin-left: 4px;
+  color: #5d6577;
+  font-weight: 600;
+}
+
+body.kova .mk-vitrine-corpo {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 248px;
+  align-items: center;
+  gap: 10px;
+}
+
+body.kova .mk-palco {
+  position: relative;
+  height: calc(var(--mk-h) + 46px);
+  outline: none;
+  overflow: hidden;
+  perspective: 1350px;
+  perspective-origin: 50% 46%;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+body.kova .mk-palco:active {
+  cursor: grabbing;
+}
+
+body.kova .mk-palco-luz {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 440px;
+  height: 320px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 46, 91, 0.1) 46%,
+    transparent 76%
+  );
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+body.kova .mk-palco-chao {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: 340px;
+  height: 46px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.1), transparent 76%);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+body.kova .mk-slide {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--mk-w);
+  height: var(--mk-h);
+  border-radius: 16px;
+  transform-style: preserve-3d;
+  transition: transform 0.66s var(--nv-ease), opacity 0.5s var(--nv-ease), filter 0.5s var(--nv-ease);
+  will-change: transform;
+  cursor: pointer;
+}
+
+body.kova .mk-slide.is-ativo {
+  cursor: pointer;
+}
+
+body.kova .mk-slide-brilho {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  right: -16px;
+  height: 60%;
+  opacity: 0;
+  background: radial-gradient(
+    60% 100% at 50% 0%,
+    color-mix(in srgb, var(--mk-cor) 32%, transparent),
+    transparent 76%
+  );
+  pointer-events: none;
+  transition: opacity 0.4s var(--nv-ease);
+}
+
+body.kova .mk-slide.is-ativo .mk-slide-brilho {
+  opacity: 0.85;
+}
+
+body.kova .mk-mini-vitrine {
+  position: relative;
+  display: block;
+  width: var(--mk-w);
+  height: var(--mk-h);
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow:
+    0 34px 64px -26px rgba(0, 0, 0, 0.9),
+    0 0 0 1px color-mix(in srgb, var(--mk-cor) 26%, transparent);
+}
+
+body.kova .mk-mini-vitrine > * {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 380px !important;
+  transform: translate(-50%, -50%) scale(var(--mk-escala)) !important;
+  transform-origin: center center !important;
+  pointer-events: none;
+}
+
+body.kova .mk-mini-vitrine > .profile-card--tcg {
+  width: 320px !important;
+  transform: translate(-50%, -50%) scale(calc(var(--mk-escala) * 1.12)) !important;
+}
+
+body.kova .mk-slide-cor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mk-w);
+  height: var(--mk-h);
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--mk-cor) 38%, transparent);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      76% 62% at 50% 20%,
+      color-mix(in srgb, var(--mk-cor) 40%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, #0d0f16, #07080c);
+  box-shadow: 0 34px 64px -26px rgba(0, 0, 0, 0.9);
+  text-align: center;
+}
+
+body.kova .mk-slide-cor > span {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+/* ficha do destaque */
+body.kova .mk-ficha {
+  position: relative;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+body.kova .mk-ficha-raridade {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--mk-cor) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mk-cor) 12%, transparent);
+  color: var(--mk-cor);
+  font-family: var(--nv-mono);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.kova .mk-ficha-nome {
+  margin-top: 10px;
+  color: #ffffff;
+  font-family: var(--nv-display);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+body.kova .mk-ficha-meta {
+  margin-top: 4px;
+  color: #6f7789;
+  font-family: var(--nv-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+body.kova .mk-ficha-preco {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 12px;
+  color: #ffffff;
+}
+
+body.kova .mk-ficha-preco b {
+  font-family: var(--nv-mono);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+body.kova .mk-var {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  font-family: var(--nv-mono);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+body.kova .mk-var.is-sobe,
+body.kova .mk-item-var.is-sobe {
+  color: #34d399;
+}
+
+body.kova .mk-var.is-desce,
+body.kova .mk-item-var.is-desce {
+  color: #f87171;
+}
+
+body.kova .mk-ficha-btn {
+  width: 100%;
+  height: 38px;
+  margin-top: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #d9dbe2);
+  color: #08090d;
+  font-family: var(--nv-mono);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: transform 0.2s var(--nv-ease), filter 0.2s var(--nv-ease);
+  cursor: pointer;
+}
+
+body.kova .mk-ficha-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+body.kova .mk-pontos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 14px;
+}
+
+body.kova .mk-ponto {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+body.kova .mk-ponto::before {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: width 0.25s var(--nv-ease), background 0.25s var(--nv-ease);
+}
+
+body.kova .mk-ponto.is-ativo::before {
+  width: 22px;
+  background: #ffffff;
+}
+
+body.kova .mk-seta {
+  position: absolute;
+  top: 50%;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 11, 17, 0.74);
+  color: #cfd6e4;
+  transition: background 0.2s var(--nv-ease), color 0.2s var(--nv-ease), border-color 0.2s var(--nv-ease);
+  cursor: pointer;
+}
+
+body.kova .mk-seta:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+body.kova .mk-seta--esq {
+  left: 2px;
+}
+
+body.kova .mk-seta--dir {
+  right: 2px;
+}
+
+/* ---------- filtros ---------- */
+body.kova .mk-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+body.kova .mk-tabs {
+  gap: 16px;
+}
+
+body.kova .mk-total {
+  color: #5d6577;
+  font-family: var(--nv-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.kova .mk-ordem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-left: auto;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.025);
+  color: #8b93a7;
+}
+
+body.kova .mk-ordem select {
+  max-width: 190px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #cfd6e4;
+  font-family: var(--nv-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+body.kova .mk-ordem select option {
+  background: #0b0e15;
+  color: #e7ecf7;
+}
+
+/* ---------- grelha ---------- */
+body.kova .mk-grelha {
+  --mk-gw: 132px;
+  --mk-gh: 168px;
+  --mk-gs: 0.325;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+  perspective: 1000px;
+}
+
+body.kova .mk-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 10px 9px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+  text-align: left;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--mk-rx, 0deg)) rotateY(var(--mk-ry, 0deg));
+  transition: transform 0.28s var(--nv-ease), border-color 0.28s var(--nv-ease),
+    box-shadow 0.28s var(--nv-ease), background 0.28s var(--nv-ease);
+  cursor: pointer;
+}
+
+body.kova .mk-item:hover {
+  border-color: color-mix(in srgb, var(--mk-cor) 40%, transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
+  box-shadow:
+    0 18px 36px -18px rgba(0, 0, 0, 0.9),
+    0 0 22px color-mix(in srgb, var(--mk-cor) 12%, transparent);
+}
+
+body.kova .mk-item-luz {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    circle 130px at var(--mk-mx, 50%) var(--mk-my, 50%),
+    color-mix(in srgb, var(--mk-cor) 15%, transparent),
+    transparent 72%
+  );
+  pointer-events: none;
+  transition: opacity 0.28s var(--nv-ease);
+}
+
+body.kova .mk-item:hover .mk-item-luz {
+  opacity: 1;
+}
+
+body.kova .mk-item-topo {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+body.kova .mk-item-rar {
+  overflow: hidden;
+  color: var(--mk-cor);
+  font-family: var(--nv-mono);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.kova .mk-item-tag {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #b9c2d4;
+  font-family: var(--nv-mono);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+body.kova .mk-item-tag--novo {
+  border-color: rgba(255, 122, 148, 0.45);
+  background: rgba(255, 46, 91, 0.12);
+  color: #ff9db0;
+}
+
+body.kova .mk-item-arte {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: calc(var(--mk-gh) + 6px);
+  border-radius: 10px;
+  background: radial-gradient(
+    70% 62% at 50% 24%,
+    color-mix(in srgb, var(--mk-cor) 12%, transparent),
+    transparent 76%
+  );
+  overflow: hidden;
+}
+
+body.kova .mk-mini-grelha {
+  width: var(--mk-gw);
+  height: var(--mk-gh);
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+}
+
+body.kova .mk-mini-grelha > * {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 380px !important;
+  transform: translate(-50%, -50%) scale(var(--mk-gs)) !important;
+  transform-origin: center center !important;
+  pointer-events: none;
+}
+
+body.kova .mk-mini-grelha > .profile-card--tcg {
+  width: 280px !important;
+  transform: translate(-50%, -50%) scale(calc(var(--mk-gs) * 1.24)) !important;
+}
+
+body.kova .mk-cor-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mk-gw);
+  height: var(--mk-gh);
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--mk-cor) 30%, transparent);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      85% 65% at 50% 24%,
+      color-mix(in srgb, var(--mk-cor) 52%, transparent),
+      transparent 76%
+    ),
+    radial-gradient(120% 100% at 50% 120%, rgba(255, 255, 255, 0.05), transparent 60%),
+    linear-gradient(180deg, #0e111a, #070810);
+  text-align: center;
+}
+
+body.kova .mk-cor-tile > span {
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+body.kova .mk-item-nome {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #eef2fa;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+body.kova .mk-item-nome-txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.kova .mk-item-pe {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+body.kova .mk-item-preco {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  font-family: var(--nv-mono);
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+body.kova .mk-item-var {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--nv-mono);
+  font-size: 9.5px;
+  font-weight: 800;
+}
+
+body.kova .mk-item-spark {
+  position: relative;
+  z-index: 2;
+  display: block;
+  height: 24px;
+  margin-top: 2px;
+  opacity: 0.45;
+  transition: opacity 0.28s var(--nv-ease);
+}
+
+body.kova .mk-item:hover .mk-item-spark {
+  opacity: 0.8;
+}
+
+body.kova .mk-item-spark svg {
+  width: 100%;
+  height: 100%;
+}
+
+body.kova .mk-vazio {
+  padding: 40px 0;
+  color: #6f7789;
+  font-family: var(--nv-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ---------- últimas negociações ---------- */
+body.kova .mk-vendas {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+body.kova .mk-vendas-titulo {
+  margin-bottom: 8px;
+  color: #5d6577;
+  font-family: var(--nv-mono);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+body.kova .mk-vendas ul {
+  display: grid;
+  gap: 4px;
+}
+
+@media (min-width: 1000px) {
+  body.kova .mk-vendas ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+}
+
+body.kova .mk-vendas li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #9aa3b5;
+  font-size: 11px;
+}
+
+body.kova .mk-vendas-hora {
+  width: 38px;
+  flex-shrink: 0;
+  color: #5d6577;
+  font-family: var(--nv-mono);
+  font-size: 10px;
+}
+
+body.kova .mk-vendas-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #cfd6e4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.kova .mk-vendas-nome em {
+  color: #6f7789;
+  font-style: normal;
+}
+
+body.kova .mk-vendas-preco {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  font-family: var(--nv-mono);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ---------- responsivo ---------- */
+@media (max-width: 900px) {
+  body.kova .mk-vitrine-corpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.kova .mk-ficha {
+    margin: 0 2px 6px;
+  }
+
+  body.kova .mk-ficha-nome {
+    font-size: 18px;
+  }
+
+  body.kova .mk-ficha-preco b {
+    font-size: 22px;
+  }
+
+  body.kova .mk-pontos {
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 720px) {
+  body.kova .mk-vitrine {
+    --mk-w: 182px;
+    --mk-h: 240px;
+    --mk-escala: 0.468;
+    padding: 10px 8px 4px;
+    border-radius: 16px;
+  }
+
+  body.kova .mk-palco {
+    height: calc(var(--mk-h) + 34px);
+  }
+
+  body.kova .mk-seta {
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+  }
+
+  body.kova .mk-grelha {
+    --mk-gw: 112px;
+    --mk-gh: 142px;
+    --mk-gs: 0.275;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 8px;
+  }
+
+  body.kova .mk-item {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  body.kova .mk-cor-tile {
+    padding: 8px;
+  }
+
+  body.kova .mk-cor-tile > span {
+    font-size: 14px;
+  }
+
+  body.kova .mk-item-nome {
+    font-size: 11px;
+  }
+
+  body.kova .mk-refresh {
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  body.kova .mk-refresh-txt {
+    display: none;
+  }
+
+  body.kova .mk-ordem {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.kova .mk-slide,
+  body.kova .mk-item,
+  body.kova .mk-seta,
+  body.kova .mk-ficha-btn {
+    transition: none;
+  }
+
+  body.kova .mk-live-ping,
+  body.kova .mk-slide.is-ativo .mk-mini-vitrine,
+  body.kova .mk-slide.is-ativo .mk-slide-cor,
+  body.kova .mk-slide.is-ativo .mk-mini-vitrine::after {
+    animation: none;
+  }
+}
+
+
+/* ============================================================
+   GTA6 — painéis de terminal (visual tipo Cyberleek)
+   ------------------------------------------------------------
+   Fundo quase preto com colunas azuis, painéis azuis fortes,
+   quadrado verde, tipografia mono e animações suaves.
+   ============================================================ */
+
+body.kova .gta6-page {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  isolation: isolate;
+  overflow: hidden;
+  color: #a9bde0;
+  background:
+    radial-gradient(70% 42% at 50% 0%, rgba(24, 58, 200, 0.22), transparent 72%),
+    linear-gradient(180deg, #03050f 0%, #01030a 55%, #01030a 100%);
+}
+
+body.kova .gta6-fundo-linhas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(90deg, rgba(120, 150, 255, 0.06) 1px, transparent 1px);
+  background-size: 62px 100%;
+  -webkit-mask-image: radial-gradient(95% 80% at 50% 30%, #000 38%, transparent 100%);
+  mask-image: radial-gradient(95% 80% at 50% 30%, #000 38%, transparent 100%);
+}
+
+body.kova .gta6-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 980px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 16px 12px;
+  overflow: hidden;
+}
+
+body.kova .gta6-fit {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  transform-origin: top center;
+}
+
+/* entradas */
+@keyframes gta6Sobe {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body.kova .gta6-rise {
+  animation: gta6Sobe 0.7s var(--nv-ease) both;
+}
+
+/* botão */
+body.kova .gta6-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #2a49ff;
+  border-radius: 0;
+  background: rgba(10, 25, 110, 0.32);
+  color: #9dbcff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition:
+    background 0.22s var(--nv-ease),
+    border-color 0.22s var(--nv-ease),
+    box-shadow 0.22s var(--nv-ease),
+    color 0.22s var(--nv-ease);
+}
+
+body.kova .gta6-btn:hover {
+  border-color: #4d7dff;
+  background: rgba(42, 73, 255, 0.26);
+  box-shadow: 0 0 20px rgba(42, 73, 255, 0.35);
+  color: #ffffff;
+}
+
+/* cabeça */
+body.kova .gta6-cabeca {
+  margin-top: 18px;
+  text-align: center;
+}
+
+body.kova .gta6-logo {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  overflow: hidden;
+  border: 1px solid #2a49ff;
+  border-radius: 999px;
+  background: #03081c;
+  box-shadow: 0 0 34px rgba(42, 73, 255, 0.5), inset 0 0 20px rgba(42, 73, 255, 0.18);
+  transition: transform 0.5s var(--nv-ease), box-shadow 0.5s var(--nv-ease);
+}
+
+body.kova .gta6-logo:hover {
+  transform: perspective(700px) rotateY(-12deg) rotateX(6deg) scale(1.04);
+  box-shadow: 0 0 46px rgba(77, 125, 255, 0.6), inset 0 0 24px rgba(42, 73, 255, 0.26);
+}
+
+body.kova .gta6-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.kova .gta6-titulo {
+  color: #3d6bff;
+  font-size: clamp(34px, 6.4vw, 60px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  text-shadow: 0 0 26px rgba(45, 90, 255, 0.7);
+}
+
+body.kova .gta6-sub {
+  margin-top: 14px;
+  color: #93a9c9;
+  font-size: 11.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+body.kova .gta6-erro {
+  margin-top: 6px;
+  color: #ff3b57;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* painéis */
+body.kova .cy-painel {
+  margin-top: 22px;
+  border: 1px solid #2a49ff;
+  background: linear-gradient(180deg, #0a1d8a 0%, #07124f 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(6, 12, 40, 0.55),
+    0 18px 48px -32px rgba(0, 0, 0, 0.95),
+    0 0 26px rgba(42, 73, 255, 0.12);
+  transition: box-shadow 0.25s var(--nv-ease), border-color 0.25s var(--nv-ease);
+}
+
+body.kova .cy-painel:hover {
+  box-shadow:
+    inset 0 0 0 1px rgba(6, 12, 40, 0.55),
+    0 22px 54px -30px rgba(0, 0, 0, 0.95),
+    0 0 32px rgba(42, 73, 255, 0.24);
+}
+
+body.kova .cy-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(42, 73, 255, 0.85);
+  background: linear-gradient(180deg, rgba(46, 88, 255, 0.2), rgba(8, 20, 90, 0.05));
+}
+
+body.kova .cy-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #8fb4ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+body.kova .cy-quad {
+  width: 8px;
+  height: 8px;
+  background: #2bff88;
+  box-shadow: 0 0 9px rgba(43, 255, 136, 0.85);
+}
+
+body.kova .cy-quad--vermelho {
+  background: #ff3b57;
+  box-shadow: 0 0 9px rgba(255, 59, 87, 0.85);
+}
+
+body.kova .cy-seta {
+  color: #6f8fd0;
+  font-size: 10px;
+  line-height: 1;
+}
+
+body.kova .cy-corpo {
+  padding: 16px;
+}
+
+body.kova .cy-corpo--centro {
+  text-align: center;
+}
+
+body.kova .cy-alerta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #9dc0ff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+body.kova .cy-texto {
+  max-width: 640px;
+  margin: 10px auto 0;
+  color: #e2ecff;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+body.kova .cy-texto b {
+  color: #ffffff;
+}
+
+body.kova .cy-verde {
+  margin-top: 12px;
+  color: #2bff88;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* avisos */
+body.kova .cy-painel--avisos {
+  border-color: rgba(255, 59, 87, 0.75);
+}
+
+body.kova .cy-painel--avisos .cy-topo {
+  border-bottom-color: rgba(255, 59, 87, 0.5);
+  background: linear-gradient(180deg, rgba(255, 59, 87, 0.12), rgba(8, 20, 90, 0.05));
+}
+
+body.kova .cy-painel--avisos .cy-titulo {
+  color: #ffb3c0;
+}
+
+body.kova .cy-lista {
+  display: grid;
+  gap: 8px;
+}
+
+body.kova .cy-lista li {
+  position: relative;
+  padding-left: 16px;
+  color: #a9bde0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+body.kova .cy-lista li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #2bff88;
+}
+
+body.kova .cy-lista b {
+  color: #eef4ff;
+  font-weight: 700;
+}
+
+body.kova .cy-lista i {
+  color: #cfe0ff;
+}
+
+body.kova .cy-assinatura {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 59, 87, 0.22);
+  color: #8fa4c8;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+body.kova .cy-assinatura span {
+  color: rgba(255, 59, 87, 0.75);
+}
+
+body.kova .gta6-rodape {
+  margin-top: 16px;
+  padding-top: 0;
+  color: #3d5d8a;
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* telemóvel */
+@media (max-width: 640px) {
+  body.kova .gta6-logo {
+    width: 76px;
+    height: 76px;
+  }
+
+  body.kova .gta6-titulo {
+    letter-spacing: 0.26em;
+  }
+
+  body.kova .gta6-sub {
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    line-height: 1.6;
+  }
+
+  body.kova .cy-painel {
+    margin-top: 18px;
+  }
+
+  body.kova .cy-corpo {
+    padding: 12px;
+  }
+
+  body.kova .cy-topo {
+    padding: 8px 11px;
+  }
+
+  body.kova .cy-titulo {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+  }
+
+  body.kova .cy-alerta {
+    font-size: 12.5px;
+    letter-spacing: 0.1em;
+  }
+
+  body.kova .cy-texto {
+    font-size: 13px;
+  }
+
+  body.kova .cy-verde {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  body.kova .cy-lista li {
+    font-size: 11px;
+    line-height: 1.65;
+  }
+
+  body.kova .gta6-btn {
+    padding: 8px 12px;
+    font-size: 10.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.kova .gta6-rise {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   POLIMENTO GLOBAL — toque, movimento e responsividade
+   ------------------------------------------------------------
+   Toques mais seguros no telemóvel, sem zoom acidental e com
+   botões maiores; elevação suave nos cartões no PC.
+   ============================================================ */
+
+body.kova {
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+
+body.kova button,
+body.kova a,
+body.kova [role='button'],
+body.kova .ui-tab {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* elevação suave dos cartões (só onde há rato) */
+@media (hover: hover) {
+  body.kova .ui-card {
+    transition:
+      transform 0.26s var(--nv-ease),
+      border-color 0.26s var(--nv-ease),
+      box-shadow 0.26s var(--nv-ease);
+  }
+
+  body.kova .ui-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 44px -26px rgba(0, 0, 0, 0.92);
+  }
+}
+
+/* no telemóvel os botões ficam mais fáceis de acertar */
+@media (max-width: 720px) {
+  body.kova .ui-btn {
+    height: 40px;
+    font-size: 13px !important;
+  }
+
+  body.kova .ui-btn-sm {
+    height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 11.5px !important;
+  }
+
+  body.kova .ui-btn-icon {
+    width: 40px;
+  }
+
+  body.kova .ui-btn-lg {
+    height: 46px !important;
+  }
+
+  body.kova .ui-tab {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  body.kova select {
+    min-height: 34px;
+  }
+
+  body.kova .chat-reacao {
+    min-height: 30px;
+    padding: 3px 9px;
+    font-size: 12px;
+  }
+
+  body.kova .chat-reagir {
+    width: 30px;
+    height: 30px;
+  }
+
+  body.kova .chat-acoes button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  /* nada de saltos ao tocar */
+  body.kova .ui-btn:active,
+  body.kova .ui-tab:active,
+  body.kova .lv-nav-link:active {
+    transform: scale(0.98);
+  }
+}
+
+/* nos ecrãs pequenos o conteúdo nunca fica escondido atrás das bordas */
+@media (max-width: 480px) {
+  body.kova .page-header-title,
+  body.kova h1 {
+    overflow-wrap: break-word;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.kova .ui-card {
+    transition: none;
+  }
+}

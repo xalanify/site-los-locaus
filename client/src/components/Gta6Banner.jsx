@@ -56,7 +56,7 @@ export default function Gta6Banner() {
           </h2>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] uppercase tracking-[0.13em]">
             <AlertTriangle className="h-3 w-3" style={{ color: VERMELHO }} />
-            gta6 xbox 1.0.2.1 build para pc — ensino tudo!
+            leia as novidades
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export default function Gta6Banner() {
           className="inline-flex shrink-0 items-center justify-center gap-2 border px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#cfe0ff] transition hover:brightness-125"
           style={{ borderColor: BORDA, background: 'linear-gradient(180deg, rgba(77,141,255,.24), rgba(30,58,138,.18))' }}
         >
-          ver a página
+          ler novidades
           <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
