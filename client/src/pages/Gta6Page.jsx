@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Info } from 'lucide-react'
+import { ArrowLeft, Info } from 'lucide-react'
 
 /* ============================================================
    GTA6 — painéis de terminal (visual tipo Cyberleek)
@@ -102,25 +102,6 @@ export default function Gta6Page() {
             <p className="gta6-sub">xbox build 1.0.2.1 · recompilação para pc</p>
             <p className="gta6-erro">em desenvolvimento · muito em breve</p>
           </header>
-
-          {/* caixa principal */}
-          <section className="gta6-rise cy-painel" style={{ animationDelay: '140ms' }}>
-            <div className="cy-topo">
-              <span className="cy-titulo">
-                <i className="cy-quad" /> gta6 build para pc
-              </span>
-              <span className="cy-seta">▾</span>
-            </div>
-            <div className="cy-corpo cy-corpo--centro">
-              <p className="cy-alerta">
-                <AlertTriangle className="h-4 w-4" /> gta6 build para pc em breve
-              </p>
-              <p className="cy-texto">
-                Está a ser feita uma <b>recompilação de uma build de Xbox (1.0.2.1)</b> para PC.
-              </p>
-              <p className="cy-verde">⚑ isto não será a pagar — vai ser tudo grátis</p>
-            </div>
-          </section>
 
           {/* avisos */}
           <section className="gta6-rise cy-painel cy-painel--avisos" style={{ animationDelay: '210ms' }}>

@@ -298,6 +298,117 @@ function GameChooser({ onPick }) {
 }
 
 /* ============================================================
+   Status das estatísticas — em baixo dos 4 quadrados.
+   Mostra online/offline de cada jogo + data da última
+   atualização (os manuais mudam quando o admin importa).
+   Fonte estilo GTA6 (mono, terminal).
+   ============================================================ */
+const MONO_GTA6 = "'Courier New', Courier, 'Lucida Console', monospace"
+const NOME_JOGO = { cs2: 'CS2', r6: 'Rainbow Six', fortnite: 'Fortnite', bf: 'Battlefield' }
+
+function fmtData(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleString('pt-PT', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
+function StatsStatus() {
+  const [jogos, setJogos] = useState(null)
+
+  useEffect(() => {
+    let vivo = true
+    fetch('/api/games/status', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => vivo && d && setJogos(d.jogos || {}))
+      .catch(() => {})
+    return () => { vivo = false }
+  }, [])
+
+  const ordem = ['cs2', 'r6', 'fortnite', 'bf']
+  const online = jogos ? ordem.filter((id) => jogos[id]?.online).length : null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.45 }}
+      className="mx-auto mt-8 max-w-3xl overflow-hidden border"
+      style={{
+        borderColor: 'rgba(47,91,208,.45)',
+        background:
+          'linear-gradient(rgba(70,120,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(70,120,255,.05) 1px, transparent 1px), #03081c',
+        backgroundSize: '46px 46px, 46px 46px, auto',
+        fontFamily: MONO_GTA6,
+      }}
+    >
+      {/* topo */}
+      <div
+        className="flex items-center justify-between border-b px-3 py-1.5"
+        style={{ borderColor: 'rgba(47,91,208,.3)' }}
+      >
+        <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#9fc3ff' }}>
+          <span className="inline-block h-1.5 w-1.5" style={{ background: '#39ff88' }} /> estado das estatísticas
+        </span>
+        <span className="text-[9px] uppercase tracking-[0.16em] text-[#5f7fae]">
+          {online === null ? 'a verificar…' : `${online}/4 online`}
+        </span>
+      </div>
+
+      {/* linhas */}
+      <div className="divide-y" style={{ borderColor: 'rgba(47,91,208,.18)' }}>
+        {ordem.map((id) => {
+          const j = jogos?.[id]
+          const online = j ? j.online : null
+          const data = fmtData(j?.atualizadoEm)
+          return (
+            <div
+              key={id}
+              className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2"
+              style={{ borderColor: 'rgba(47,91,208,.18)' }}
+            >
+              <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#cfe0ff]">
+                <span
+                  className="inline-block h-2 w-2 rounded-full"
+                  style={{
+                    background: online === null ? '#5f7fae' : online ? '#39ff88' : '#ff3b57',
+                    boxShadow: online ? '0 0 8px rgba(57,255,136,.7)' : 'none',
+                  }}
+                />
+                {NOME_JOGO[id]}
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.14em]">
+                {online === null ? (
+                  <span className="text-[#5f7fae]">a verificar…</span>
+                ) : online ? (
+                  <span style={{ color: '#39ff88' }}>online</span>
+                ) : (
+                  <span style={{ color: '#ff3b57' }}>offline</span>
+                )}
+                <span className="ml-3 text-[#5f7fae]">
+                  {j?.modo === 'automatico'
+                    ? 'atualização automática'
+                    : data
+                      ? `atualizado: ${data}`
+                      : 'sem dados ainda'}
+                </span>
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      <p className="px-3 py-1.5 text-[9px] uppercase tracking-[0.14em] text-[#3d5d8a]">
+        bf · fortnite · r6 — atualização manual no painel admin · cs2 — automático (steam)
+      </p>
+    </motion.div>
+  )
+}
+
+/* ============================================================
    Jogos por implementar — o mesmo aviso para todos
    ============================================================ */
 function EmBreve({ nome, sub, Icon, cor, bg, logo }) {
@@ -3461,7 +3572,10 @@ export default function GamesPage() {
         />
 
         {tab === null ? (
-          <GameChooser onPick={setTab} />
+          <>
+            <GameChooser onPick={setTab} />
+            <StatsStatus />
+          </>
         ) : (
           <>
             {/* Abas de jogo */}

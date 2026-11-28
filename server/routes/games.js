@@ -1091,4 +1091,47 @@ router.get('/cs2-inventario', async (req, res) => {
   }
 });
 
+// ============================================================
+// /status — estado das estatísticas por jogo (online/offline +
+// data da última atualização). Os jogos manuais (R6/BF/Fortnite)
+// guardam updated_at na BD quando o admin importa no painel; o
+// CS2 é automático (Steam) e fica sempre "online".
+// ============================================================
+const r6store = require('../r6store');
+const bfstore = require('../bfstore');
+const fnstore = require('../fortnitestore');
+
+router.get('/status', async (req, res) => {
+  const jogos = {};
+
+  // CS2 — histórico da Steam (automático, sempre online)
+  jogos.cs2 = { online: true, modo: 'automatico', fonte: 'Steam (automático)', atualizadoEm: null };
+
+  const r6 = await r6store.ler().catch(() => null);
+  jogos.r6 = {
+    online: !!r6,
+    modo: 'manual',
+    fonte: 'tracker.gg (manual)',
+    atualizadoEm: (r6 && (r6.updatedAt || r6.atualizadoEm)) || null,
+  };
+
+  const bf = await bfstore.ler().catch(() => null);
+  jogos.bf = {
+    online: !!bf,
+    modo: 'manual',
+    fonte: 'tracker.gg (manual)',
+    atualizadoEm: (bf && (bf.updatedAt || bf.atualizadoEm)) || null,
+  };
+
+  const fn = await fnstore.ler().catch(() => null);
+  jogos.fortnite = {
+    online: !!fn,
+    modo: 'manual',
+    fonte: 'tracker.gg / TRN (manual)',
+    atualizadoEm: (fn && (fn.updatedAt || fn.atualizadoEm)) || null,
+  };
+
+  return res.json({ ok: true, jogos });
+});
+
 module.exports = { gamesRouter: router, limparCacheBf: () => BF_LIVE_CACHE.clear() };

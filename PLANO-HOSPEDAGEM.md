@@ -14,6 +14,48 @@ Mudar de fase = mudar **um registo DNS**. Nada é apagado, a base de dados
 
 ---
 
+## ✅ Estado real (28 nov 2026) — já feito e a funcionar
+
+| Peça | Onde | Valor |
+|---|---|---|
+| DNS | Cloudflare (zona `locaus.fun`, plano Free) | nameservers da Cloudflare |
+| `www.locaus.fun` | CNAME → `yxfk4fkx.up.railway.app` (**proxied**) | **domínio principal** |
+| `locaus.fun` | CNAME → `www.locaus.fun` (proxied) + Redirect Rule `301` | só redireciona |
+| `_railway-verify.www` | TXT com o token do Railway | verificação de posse |
+| SSL Cloudflare | `Full` + Always Use HTTPS | — |
+| Regra extra | `X-Forwarded-Host: www.locaus.fun` | para a app gerar URLs certos |
+| Railway | 1 custom domain (`www.locaus.fun`), porta 8080 | plano Hobby |
+| `locaus-production.up.railway.app` | **removido** | já não é usado |
+
+### Porque o `www` é o principal (e não o apex)
+
+As PWAs já instaladas ficam **amarradas ao domínio de origem** (o manifesto usa
+`start_url: "/"` e `scope: "/"`). Como antes o site vivia em `www.locaus.fun`,
+manter o `www` como principal evita que a app caia num *Custom Tab* (barra preta
+com X e menu do Chrome em vez de ecrã inteiro). O apex faz `301` → www.
+
+### Certificado do Railway: o truque que resolveu o 404
+
+Sintoma: `404 Application not found` + `x-railway-fallback: true`, mesmo com o
+domínio "verificado" no painel. Causa: o certificado ficava preso em
+`VALIDATING_OWNERSHIP` porque o proxy laranja da Cloudflare impedia o desafio ACME.
+
+Receita (repetir se voltar a acontecer numa renovação):
+
+1. Cloudflare → pôr o CNAME em **DNS only** (nuvem cinzenta).
+2. Railway → `customDomainIssueCertificate` (ou o botão no painel).
+3. Esperar `certificateStatus = VALID` (~20 s).
+4. Cloudflare → voltar a ligar o proxy (laranja) e limpar a cache.
+
+### 18 dez — voltar à Vercel
+
+O plano é o da **FASE C** abaixo: frontend estático na Cloudflare Pages + só a API
+na Vercel, polling mais lento/parado com o separador escondido e cache de CDN nos
+GET públicos. Antes de migrar, medir o CPU por rota na Vercel (C7) para confirmar
+que fica bem abaixo do limite do Hobby.
+
+---
+
 # FASE A — `locaus.fun` no Railway (hoje)
 
 O Railway já serve o site em `locaus-production.up.railway.app`. Falta o domínio.
