@@ -42,7 +42,7 @@ const TEMAS = {
   violeta: { nome: 'Cinza', grad: 'from-zinc-600 to-zinc-600', cor: 'text-zinc-300', borda: 'border-zinc-400/40', bg: '#0d0d0f', chip: 'bg-zinc-500/15 text-zinc-300' },
   azul: { nome: 'Azul', grad: 'from-blue-600 to-cyan-500', cor: 'text-blue-300', borda: 'border-blue-400/40', bg: '#080d1a', chip: 'bg-blue-500/15 text-blue-300' },
   verde: { nome: 'Verde', grad: 'from-emerald-600 to-green-500', cor: 'text-emerald-300', borda: 'border-emerald-400/40', bg: '#08140d', chip: 'bg-emerald-500/15 text-emerald-300' },
-  rosa: { nome: 'Rosa', grad: 'from-pink-600 to-rose-500', cor: 'text-pink-300', borda: 'border-pink-400/40', bg: '#160a12', chip: 'bg-pink-500/15 text-pink-300' },
+  rosa: { nome: 'Champanhe', grad: 'from-[#c9a86a] to-[#e4cf9f]', cor: 'text-[#e4cf9f]', borda: 'border-[#c9a86a]/40', bg: '#14110c', chip: 'bg-[#c9a86a]/15 text-[#e4cf9f]' },
   laranja: { nome: 'Laranja', grad: 'from-orange-600 to-amber-500', cor: 'text-orange-300', borda: 'border-orange-400/40', bg: '#160f08', chip: 'bg-orange-500/15 text-orange-300' },
 }
 const TEMA_PADRAO = 'violeta'
@@ -740,7 +740,7 @@ export default function ChatPage({ user }) {
       <div className="mx-auto flex h-full w-full max-w-[1240px] flex-col overflow-x-hidden">
       <div className="liquid-chat flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40 lg:h-[min(78dvh,860px)] lg:min-h-[460px]" style={{ backgroundColor: t.bg + 'f2' }}>
         {/* cabeçalho */}
-        <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.07] to-transparent px-4 py-4 sm:px-5">
+        <div className="chat-topo flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.07] to-transparent px-4 py-4 sm:px-5">
           <span className={`hidden h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${t.grad} text-white shadow-lg sm:flex`}>
             <MessageCircle className="h-5 w-5" />
           </span>
@@ -1147,7 +1147,7 @@ export default function ChatPage({ user }) {
         )}
 
         {/* compositor */}
-        <div className="relative border-t border-white/10 bg-[#101012] p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-3">
+        <div className="chat-composer relative border-t border-white/10 bg-[#101012] p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-3">
           {resposta && (
             <div className={`mb-2 flex items-center gap-2 rounded-xl border-l-2 px-3 py-2 ${t.borda} bg-white/[0.04]`}>
               <CornerUpLeft className="h-3.5 w-3.5 shrink-0 text-gray-500" />

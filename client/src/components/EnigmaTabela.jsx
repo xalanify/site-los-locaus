@@ -65,14 +65,14 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
   return (
     <div className="glass relative overflow-hidden rounded-3xl">
       <div className="flex flex-wrap items-center justify-between gap-2 px-5 pb-3 pt-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ff7a94]">{titulo}</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8b98a]">{titulo}</h3>
         <div className="flex items-center gap-2">
           {contagem && (
             <span
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] tracking-[0.08em] ${
                 contagem.fim
                   ? 'border-white/10 bg-white/5 text-zinc-500'
-                  : 'border-[#ff7a94]/30 bg-[#c50337]/10 text-[#ffb3c1]'
+                  : 'border-[#d8b98a]/30 bg-[#8a6b3a]/10 text-[#e4cf9f]'
               }`}
               title="Fim do enigma: 19 deste mês, à meia-noite"
             >
@@ -109,7 +109,7 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
                 return (
                   <tr
                     key={j.nome + i}
-                    className={`border-t border-white/[0.06] text-sm ${meu ? 'bg-[#c50337]/10' : ''}`}
+                    className={`border-t border-white/[0.06] text-sm ${meu ? 'bg-[#8a6b3a]/10' : ''}`}
                   >
                     <td className="px-4 py-3">
                       <span className={`font-mono text-xs font-bold ${medalha(i + 1)}`}>
@@ -131,12 +131,12 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
                           {j.nome}
                         </span>
                         {j.admin && (
-                          <span className="shrink-0 rounded-full border border-[#ff7a94]/30 bg-[#c50337]/20 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-[#ffb3c1]">
+                          <span className="shrink-0 rounded-full border border-[#d8b98a]/30 bg-[#8a6b3a]/20 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-[#e4cf9f]">
                             DEV
                           </span>
                         )}
                         {meu && !j.admin && (
-                          <span className="shrink-0 rounded-full bg-[#c50337]/25 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-[#ff9db0]">
+                          <span className="shrink-0 rounded-full bg-[#8a6b3a]/25 px-1.5 py-0.5 text-[8px] font-black tracking-wider text-[#e4cf9f]">
                             TU
                           </span>
                         )}
@@ -155,7 +155,7 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
                     </td>
                     <td className="px-2 py-3">
                       <div className="flex flex-col items-center gap-1">
-                        <span className="font-mono text-[11px] text-[#ffb3c1]">
+                        <span className="font-mono text-[11px] text-[#e4cf9f]">
                           {j.etapa}
                           <span className="text-zinc-600">/6</span>
                         </span>
@@ -164,7 +164,7 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
                             <span
                               key={n}
                               className={`h-1 w-2 rounded-full ${
-                                n < j.etapa ? (j.terminou ? 'bg-emerald-400' : 'bg-[#ff2e5b]') : 'bg-white/10'
+                                n < j.etapa ? (j.terminou ? 'bg-emerald-400' : 'bg-[#c9a86a]') : 'bg-white/10'
                               }`}
                             />
                           ))}

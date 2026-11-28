@@ -162,6 +162,7 @@ const CARTAS_TODAS = [
   { id: 'carta-supra', nome: 'Carta Supra', valor: 'supra', custo: 330, cor: '#ff6a00' },
   { id: 'carta-nfs', nome: 'Carta Underground', valor: 'nfs', custo: 345, cor: '#a855f7' },
   { id: 'carta-niko', nome: 'Carta Niko', valor: 'niko', custo: 355, cor: '#e5e7eb' },
+  { id: 'carta-gta5g', nome: 'Carta GTA V', valor: 'gta5g', custo: 375, cor: '#e0b25a' },
 
   /* Carta exclusiva do Enigma — 1/1, não é vendida na loja nem no mercado.
      Só o vencedor a recebe; se a vender, passa a ser do comprador. */
@@ -334,6 +335,7 @@ const PRECOS_FOTO = {
   'carta-supra': 96,
   'carta-nfs': 98,
   'carta-niko': 99,
+  'carta-gta5g': 101,
 };
 
 

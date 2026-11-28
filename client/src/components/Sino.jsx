@@ -11,10 +11,10 @@ import Estado from './Estado'
 const TIPOS = {
   comment: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
   reply: { Icon: MessageSquare, cor: 'text-sky-300', fundo: 'bg-sky-400/15' },
-  chat_reply: { Icon: MessageSquare, cor: 'text-[#ff7a94]', fundo: 'bg-[#ff7a94]/15' },
-  clip: { Icon: Clapperboard, cor: 'text-[#ff7a94]', fundo: 'bg-[#ff7a94]/15' },
+  chat_reply: { Icon: MessageSquare, cor: 'text-[#d8b98a]', fundo: 'bg-[#d8b98a]/15' },
+  clip: { Icon: Clapperboard, cor: 'text-[#d8b98a]', fundo: 'bg-[#d8b98a]/15' },
   torneio: { Icon: Trophy, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },
-  like: { Icon: Heart, cor: 'text-rose-300', fundo: 'bg-rose-400/15' },
+  like: { Icon: Heart, cor: 'text-[#e4cf9f]', fundo: 'bg-[#c9a86a]/15' },
   save: { Icon: Sparkles, cor: 'text-amber-300', fundo: 'bg-amber-400/15' },
   badge: { Icon: Award, cor: 'text-zinc-300', fundo: 'bg-zinc-400/15' },
 }
@@ -209,7 +209,7 @@ export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
           <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-500/10 text-zinc-300 ring-1 ring-white/10">
             {nLidas ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
             {nLidas > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black leading-none text-white shadow">
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c9a86a] px-1 text-[10px] font-black leading-none text-[#0b0a08] shadow">
                 {nLidas > 9 ? '9+' : nLidas}
               </span>
             )}
@@ -233,7 +233,7 @@ export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
         >
           {nLidas ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
           {nLidas > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black leading-none text-white shadow">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c9a86a] px-1 text-[10px] font-black leading-none text-[#0b0a08] shadow">
               {nLidas > 9 ? '9+' : nLidas}
             </span>
           )}
@@ -264,7 +264,7 @@ export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
               {items.length > 0 && (
                 <button
                   onClick={limparHistorico}
-                  className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-rose-300"
+                  className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-[#e4cf9f]"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> limpar
                 </button>

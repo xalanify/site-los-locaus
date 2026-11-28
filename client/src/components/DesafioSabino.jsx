@@ -69,10 +69,10 @@ export default function DesafioSabino() {
             role="presentation"
           >
             <div
-              className="relative w-full max-w-sm rounded-3xl border border-[#c50337]/30 bg-[#141014] p-6 text-center shadow-2xl"
+              className="relative w-full max-w-sm rounded-3xl border border-[#8a6b3a]/30 bg-[#141014] p-6 text-center shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#c50337]/10 text-[#ff2e5b] ring-1 ring-[#c50337]/30">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#8a6b3a]/10 text-[#c9a86a] ring-1 ring-[#8a6b3a]/30">
                 <Bug className="h-7 w-7" />
               </span>
               <h2 className="mt-4 font-display text-xl font-black text-white">

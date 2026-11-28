@@ -192,7 +192,7 @@ export default function AuthScreen({ onAuthed, forceReset = false, forceUsername
     <div className="auth-screen fixed inset-0 z-[70] overflow-y-auto px-4 py-8">
       <div
         className="auth-fundo"
-        style={{ backgroundImage: "url('/boot/qwantani-2048.jpg')" }}
+        style={{ backgroundImage: "url('/loading.png')" }}
         aria-hidden="true"
       />
       <div className="auth-veu" aria-hidden="true" />

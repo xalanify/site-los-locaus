@@ -72,7 +72,7 @@ export default function Bonus5Modal({ user }) {
             <button
               type="button"
               onClick={fechar}
-              className="mt-5 w-full rounded-xl bg-[#c50337] px-5 py-2.5 text-sm font-bold text-white transition-[filter] hover:brightness-105"
+              className="mt-5 w-full rounded-xl bg-[#8a6b3a] px-5 py-2.5 text-sm font-bold text-white transition-[filter] hover:brightness-105"
             >
               Continuar
             </button>

@@ -27,7 +27,7 @@ export const MODES = [
     id: 'comunidade',
     nome: 'Comunidade',
     Icon: UsersRound,
-    accent: '#ff2e5b',
+    accent: '#c9a86a',
     path: '/',
     desc: 'O feed, os clips, o chat e as pessoas.',
     links: [
@@ -42,7 +42,7 @@ export const MODES = [
     id: 'jogar',
     nome: 'Jogar',
     Icon: Gamepad2,
-    accent: '#ff2e5b',
+    accent: '#c9a86a',
     path: '/previsoes',
     desc: 'Previsões, estatísticas e distinções.',
     links: [
@@ -57,7 +57,7 @@ export const MODES = [
     id: 'mercado',
     nome: 'Mercado',
     Icon: ShoppingBag,
-    accent: '#ff2e5b',
+    accent: '#c9a86a',
     path: '/cosmeticos',
     desc: 'Cartas, cores e o mercado ao vivo.',
     links: [
@@ -68,7 +68,7 @@ export const MODES = [
     id: 'sistema',
     nome: 'Sistema',
     Icon: Wrench,
-    accent: '#ff2e5b',
+    accent: '#c9a86a',
     path: '/ferramentas',
     desc: 'Ferramentas, PCs e otimizações.',
     links: [

@@ -247,7 +247,7 @@ function App() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.96, opacity: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="origin-center"
+            className="origin-center site-wrap"
           >
             <BetaBadge />
             {/* Etiqueta BETA — em todos os ecrãs */}
@@ -286,7 +286,7 @@ function App() {
             {authed && !needsRecovery && (
               <>
                 {/* Barra de topo (desktop) — tema experimental */}
-                <KovaTopbar user={user} isAdmin={isAdmin} />
+                <KovaTopbar user={user} isAdmin={isAdmin} onMenu={() => setMenuAberto(true)} />
                 <Navbar user={user} onMenu={() => setMenuAberto(true)} />
                 <Mapa
                   open={menuAberto}

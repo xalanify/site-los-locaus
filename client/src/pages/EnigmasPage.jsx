@@ -11,8 +11,8 @@ import { authHeaders } from '../lib/auth'
    bem no PC e no telemóvel. O fundo navy cobre o ecrã inteiro.
    ============================================================ */
 
-const CIANO = '#7ee7ff'
-const VERMELHO = '#ff4d6d'
+const CIANO = '#d8cbb2'
+const VERMELHO = '#c9a86a'
 
 export default function EnigmasPage() {
   const [arquivo, setArquivo] = useState(null)
@@ -70,7 +70,7 @@ export default function EnigmasPage() {
       {/* enigma 2 em breve — mensagem simples */}
       <section
         className="mt-5 border p-4 text-center sm:mt-6 sm:p-5"
-        style={{ borderColor: 'rgba(255,77,109,.65)', background: 'rgba(8,10,30,.72)' }}
+        style={{ borderColor: 'rgba(201,168,106,.5)', background: 'rgba(14,12,9,.85)' }}
       >
         <p className="text-[12px] font-black uppercase tracking-[0.16em] sm:text-[13px] sm:tracking-[0.2em]" style={{ color: VERMELHO }}>
           ⚠ enigma 2 em breve

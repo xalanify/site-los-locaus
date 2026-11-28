@@ -321,9 +321,23 @@ app.use('/uploads/avatars', (req, res) => {
 // Localmente servimos o build do React; na Vercel isso é tratado
 // pelo próprio Vercel (outputDirectory = client/dist).
 if (!IS_VERCEL) {
+  // O service worker e o HTML nunca ficam presos em cache: é isto que
+  // garante que uma build nova (cores, layout) aparece de imediato.
+  app.use((req, res, next) => {
+    if (
+      req.path === '/' ||
+      req.path === '/index.html' ||
+      req.path === '/sw.js' ||
+      req.path === '/manifest.webmanifest'
+    ) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+    next();
+  });
   app.use(express.static(path.join(__dirname, '../client/dist')));
   app.use(express.static(path.join(__dirname, 'public')));
   app.get('*', (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }

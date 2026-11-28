@@ -211,7 +211,7 @@ function CartaoMercado({ item, me, flash, musicasCartas, onAbrir }) {
         <span className="mk-item-nome-txt">{item.nome}</span>
         {musica && (
           <Music2
-            className="h-3 w-3 shrink-0 text-[#ff9db0]"
+            className="h-3 w-3 shrink-0 text-[#e4cf9f]"
             title={musicasCartas[item.valor]?.titulo || musica.cancao}
           />
         )}
@@ -643,7 +643,7 @@ export default function Mercado({ onSaldo }) {
                     {detalhe.nome}
                     {MUSICAS_CARTAS[detalhe.valor] && (
                       <Music2
-                        className="h-4 w-4 shrink-0 text-[#ff9db0]"
+                        className="h-4 w-4 shrink-0 text-[#e4cf9f]"
                         title={musicasCartas[detalhe.valor]?.titulo || MUSICAS_CARTAS[detalhe.valor].cancao}
                       />
                     )}
@@ -755,7 +755,7 @@ export default function Mercado({ onSaldo }) {
                   {detalhe.nome}
                   {MUSICAS_CARTAS[detalhe.valor] && (
                     <Music2
-                      className="h-4 w-4 shrink-0 text-[#ff9db0]"
+                      className="h-4 w-4 shrink-0 text-[#e4cf9f]"
                       title={musicasCartas[detalhe.valor]?.titulo || MUSICAS_CARTAS[detalhe.valor].cancao}
                     />
                   )}
@@ -807,7 +807,7 @@ export default function Mercado({ onSaldo }) {
                   {detalhe.anuncios.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-[#ff7a94]/25 bg-[#ff7a94]/[0.06] px-3 py-2"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-[#d8b98a]/25 bg-[#d8b98a]/[0.06] px-3 py-2"
                     >
                       <span className="min-w-0 truncate text-[11px] font-semibold text-zinc-300">
                         À venda por <b className="text-white">{fmt(a.preco)}</b> · @{a.username}
@@ -821,7 +821,7 @@ export default function Mercado({ onSaldo }) {
                           type="button"
                           onClick={() => comprarAnuncio(a)}
                           disabled={busy === detalhe.id}
-                          className="shrink-0 rounded-lg bg-[#ff7a94] px-2.5 py-1 text-[10px] font-black text-[#0a0a0b]"
+                          className="shrink-0 rounded-lg bg-[#d8b98a] px-2.5 py-1 text-[10px] font-black text-[#0a0a0b]"
                         >
                           Comprar
                         </button>

@@ -10,7 +10,7 @@ import { tocarYoutube, pararYoutube } from '../lib/youtubeAudio'
    · Marca de água do membro só num halo à volta do rato
    ============================================================ */
 
-export const CARTAS_NOVAS = new Set(['supra', 'nfs', 'niko'])
+export const CARTAS_NOVAS = new Set(['supra', 'nfs', 'niko', 'gta5g'])
 
 export const MUSICAS_CARTAS = {
   supra: {
@@ -36,6 +36,14 @@ export const MUSICAS_CARTAS = {
     titulo: 'NIKO',
     kicker: 'AFTER HOURS',
     rodape: 'AFTER HOURS',
+  },
+  gta5g: {
+    imagem: '/cartas/gta5g.jpg',
+    musica: '',
+    cancao: 'Sem música',
+    titulo: 'GTA V',
+    kicker: 'LOS SANTOS',
+    rodape: 'GTA V',
   },
 }
 
@@ -69,7 +77,8 @@ const clamp = (n, a, b) => Math.min(b, Math.max(a, n))
 
 export default function CartaMusical({ variant = 'supra', perfil = {}, username = 'Membro', id = '—', semPlayFixo = false }) {
   const cfg = MUSICAS_CARTAS[variant] || MUSICAS_CARTAS.supra
-  const accent = { supra: '#ff6a00', nfs: '#a855f7', niko: '#e5e7eb' }[variant] || '#ffffff'
+  const accent =
+    { supra: '#ff6a00', nfs: '#a855f7', niko: '#e5e7eb', gta5g: '#e0b25a' }[variant] || '#ffffff'
   const [semImg, setSemImg] = useState(false)
   const [localForcado, setLocalForcado] = useState(false)
 

@@ -11,11 +11,12 @@ import { MODES, linksDoModo, linkAtivo, modeDe } from '../data/navegacao'
    Sem segunda navbar, sem Mapa, sem pesquisa.
    ============================================================ */
 
-export default function KovaTopbar({ user, isAdmin = false }) {
+export default function KovaTopbar({ user, isAdmin = false, onMenu }) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const mode = modeDe(pathname)
   const [aberto, setAberto] = useState(null)
+  const [rolado, setRolado] = useState(false)
   const fecharRef = useRef(0)
 
   useEffect(() => {
@@ -23,6 +24,15 @@ export default function KovaTopbar({ user, isAdmin = false }) {
   }, [pathname])
 
   useEffect(() => () => window.clearTimeout(fecharRef.current), [])
+
+  /* Ao rolar, ganha um véu suave para o texto continuar legível.
+     No topo fica 100% transparente, como na referência. */
+  useEffect(() => {
+    const aoRolar = () => setRolado(window.scrollY > 24)
+    aoRolar()
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    return () => window.removeEventListener('scroll', aoRolar)
+  }, [])
 
   const abrir = (id) => {
     window.clearTimeout(fecharRef.current)
@@ -34,8 +44,20 @@ export default function KovaTopbar({ user, isAdmin = false }) {
   }
 
   return (
-    <header className="lv-bar hidden lg:block">
+    <header className={`lv-bar hidden lg:block ${rolado ? 'is-scrolled' : ''}`}>
       <div className="lv-bar-top">
+        <button
+          type="button"
+          className="lv-burger"
+          onClick={() => onMenu && onMenu()}
+          aria-label="Abrir menu"
+          title="Menu"
+        >
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+        </button>
+
         <Link to="/" className="lv-brand" aria-label="Locaus — início">
           locaus<span>.</span>
           <em>beta</em>

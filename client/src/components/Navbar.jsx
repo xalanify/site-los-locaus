@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { ChevronDown, Menu } from 'lucide-react'
 import Sino from './Sino'
@@ -14,9 +15,21 @@ export default function Navbar({ user = null, onMenu }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const mode = modeDe(pathname)
+  const [rolado, setRolado] = useState(false)
+
+  useEffect(() => {
+    const aoRolar = () => setRolado(window.scrollY > 24)
+    aoRolar()
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    return () => window.removeEventListener('scroll', aoRolar)
+  }, [])
 
   return (
-    <nav id="topbar" className="lv-mbar lg:hidden" aria-label="Barra de topo">
+    <nav
+      id="topbar"
+      className={`lv-mbar lg:hidden ${rolado ? 'is-scrolled' : ''}`}
+      aria-label="Barra de topo"
+    >
       <div className="lv-mbar-top">
         <Link to="/" className="lv-brand" aria-label="Locaus — início">
           locaus<span>.</span>

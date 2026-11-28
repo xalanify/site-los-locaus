@@ -6,11 +6,14 @@ import { LiveProvider } from './lib/live'
 import './index.css'
 import './kova.css'
 import './noir.css'
+import './editorial.css'
 import { registarSW } from './lib/pwa'
 import { instalarLiquid } from './lib/liquid'
 
-// Tema experimental (localhost) — tira a classe para voltar ao anterior.
+// Tema experimental (localhost) — tira as classes para voltar ao anterior.
 document.body.classList.add('kova')
+document.body.classList.add('editorial')
+document.documentElement.classList.add('editorial-scroll')
 instalarLiquid()
 
 // PWA: regista o service worker (cache do site + notificações push)

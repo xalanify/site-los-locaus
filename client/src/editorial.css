@@ -1,0 +1,951 @@
+/* ============================================================
+   TEMA "EDITORIAL" — localhost
+   ------------------------------------------------------------
+   Camada experimental por cima do kova/noir.
+   Preto quente + creme, serif elegante (Instrument Serif),
+   dourado champanhe, linhas finas e muito espaço.
+   Para desligar: tira `editorial` do <body> (main.jsx).
+   ============================================================ */
+
+body.kova.editorial {
+  /* ---- tokens do tema ---- */
+  --nv-bg: #0b0a08;
+  --nv-bg-2: #0f0d0a;
+  --nv-panel: #14110c;
+  --nv-panel-2: #1a1610;
+  --nv-panel-3: #221c14;
+  --nv-line: rgba(236, 229, 216, 0.1);
+  --nv-line-2: rgba(236, 229, 216, 0.19);
+  --nv-text: #ece5d8;
+  --nv-muted: #a89e8d;
+  --nv-dim: #7a7264;
+  --nv-faint: #4a453c;
+  --nv-accent: #c9a86a;
+  --nv-accent-2: #e4cf9f;
+  --nv-accent-3: #8a6b3a;
+  --nv-ok: #8fbf9f;
+  --nv-bad: #d99a86;
+  --nv-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --nv-body: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --nv-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --nv-r: 12px;
+  --nv-r-lg: 16px;
+
+  --k-bg: #0b0a08;
+  --k-bg-2: #0f0d0a;
+  --k-surface: #14110c;
+  --k-surface-2: #1a1610;
+  --k-line: rgba(236, 229, 216, 0.1);
+  --k-line-2: rgba(236, 229, 216, 0.19);
+  --k-text: #ece5d8;
+  --k-muted: #a89e8d;
+  --k-dim: #7a7264;
+  --k-accent: #c9a86a;
+  --k-accent-2: #e4cf9f;
+
+  /* acentos antigos (index.css) -> paleta nova */
+  --salmon: #c9a86a;
+  --salmon-strong: #e4cf9f;
+  --crimson: #8a6b3a;
+  --crimson-hi: #c9a86a;
+
+  background-color: var(--nv-bg) !important;
+  background-image:
+    radial-gradient(58rem 30rem at 50% -12rem, rgba(201, 168, 106, 0.11), transparent 70%),
+    radial-gradient(40rem 26rem at 94% 4rem, rgba(139, 92, 246, 0.045), transparent 72%) !important;
+  color: var(--nv-text);
+}
+
+body.kova.editorial ::selection {
+  background: rgba(201, 168, 106, 0.28);
+  color: #fff;
+}
+
+/* Barra de scroll — fina, quente (documento + conteúdo interno) */
+html.editorial-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3327 #0b0a08;
+}
+html.editorial-scroll::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+html.editorial-scroll::-webkit-scrollbar-track {
+  background: #0b0a08;
+}
+html.editorial-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3f3829, #241f18);
+  border: 3px solid #0b0a08;
+  border-radius: 999px;
+}
+html.editorial-scroll::-webkit-scrollbar-thumb:hover {
+  background: #4d4331;
+}
+body.kova.editorial ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body.kova.editorial ::-webkit-scrollbar-track {
+  background: #0b0a08;
+}
+body.kova.editorial ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3a3327, #221d16);
+  border: 3px solid #0b0a08;
+  border-radius: 999px;
+}
+body.kova.editorial ::-webkit-scrollbar-thumb:hover {
+  background: #4a4132;
+}
+
+/* Fundo animado: cinza/creme subtil em vez do rosa */
+body.kova.editorial .fundo-vivo {
+  background:
+    radial-gradient(900px 650px at 0% -8%, rgba(201, 168, 106, 0.12), transparent 58%),
+    radial-gradient(850px 650px at 100% -2%, rgba(120, 110, 90, 0.08), transparent 62%),
+    linear-gradient(165deg, #0b0a08 0%, #0b0a08 100%) !important;
+}
+body.kova.editorial .fundo-vivo span {
+  opacity: 0.12 !important;
+  filter: grayscale(1) !important;
+}
+
+/* ---------- Tipografia ---------- */
+body.kova.editorial h1,
+body.kova.editorial h2,
+body.kova.editorial h3,
+body.kova.editorial .font-display {
+  font-family: var(--nv-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.015em;
+}
+
+body.kova.editorial .gradient-text {
+  background: linear-gradient(94deg, #f4ecdd 0%, #d8c19a 55%, #b9985f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Barra de topo — transparente, só as opções ---------- */
+body.kova.editorial .lv-bar {
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  transform: none !important;
+  padding-top: env(safe-area-inset-top);
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: background 0.35s ease;
+}
+/* véu suave só depois de rolar (no topo fica limpo, como na referência) */
+body.kova.editorial .lv-bar.is-scrolled {
+  background: linear-gradient(
+    180deg,
+    rgba(11, 10, 8, 0.94) 0%,
+    rgba(11, 10, 8, 0.68) 58%,
+    rgba(11, 10, 8, 0) 100%
+  ) !important;
+}
+body.kova.editorial .lv-bar::after {
+  display: none !important;
+}
+body.kova.editorial .lv-bar-top {
+  height: 78px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 30px;
+  gap: 14px;
+}
+
+/* menu (três linhas) à esquerda */
+body.kova.editorial .lv-burger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+body.kova.editorial .lv-burger span {
+  display: block;
+  height: 1.5px;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--nv-text);
+  opacity: 0.82;
+  transition: opacity 0.2s ease;
+}
+body.kova.editorial .lv-burger span:nth-child(2) {
+  width: 78%;
+}
+body.kova.editorial .lv-burger:hover span {
+  opacity: 1;
+}
+
+body.kova.editorial .lv-brand {
+  font-family: var(--nv-display) !important;
+  font-style: italic;
+  font-weight: 400 !important;
+  font-size: 1.35rem !important;
+  letter-spacing: -0.02em !important;
+  color: var(--nv-text) !important;
+}
+body.kova.editorial .lv-brand span {
+  color: var(--nv-accent) !important;
+}
+body.kova.editorial .lv-brand em {
+  color: var(--nv-dim);
+  font-style: normal;
+  letter-spacing: 0.28em;
+  font-size: 8px;
+  margin-left: 8px;
+}
+
+/* as opções, à direita, em serif — sem ícones nem cápsulas */
+body.kova.editorial .mode-nav {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  margin-left: auto;
+}
+body.kova.editorial .mode-link {
+  position: relative;
+  font-family: var(--nv-display) !important;
+  font-size: 16.5px !important;
+  font-weight: 400 !important;
+  color: var(--nv-muted) !important;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  padding: 4px 1px;
+  transition: color 0.25s ease;
+}
+body.kova.editorial .mode-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: var(--nv-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: none !important;
+}
+body.kova.editorial .mode-link:hover,
+body.kova.editorial .mode-link[data-active='true'] {
+  color: var(--nv-text) !important;
+}
+body.kova.editorial .mode-link:hover::after,
+body.kova.editorial .mode-link[data-active='true']::after {
+  transform: scaleX(1);
+}
+body.kova.editorial .mode-ico,
+body.kova.editorial .mode-chev {
+  display: none !important;
+}
+body.kova.editorial .lv-actions {
+  gap: 10px;
+  margin-left: 22px;
+}
+body.kova.editorial .lv-user {
+  border: 0;
+  padding: 0;
+}
+body.kova.editorial .mode-menu {
+  background: rgba(15, 13, 10, 0.94) !important;
+  border: 1px solid var(--nv-line-2) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+body.kova.editorial .mode-menu-item {
+  color: var(--nv-muted);
+  border-radius: 10px;
+}
+body.kova.editorial .mode-menu-item:hover,
+body.kova.editorial .mode-menu-item[data-active='true'] {
+  background: rgba(201, 168, 106, 0.08);
+  color: var(--nv-text);
+}
+
+/* Barra do telemóvel — mantém o layout, agora em preto quente */
+body.kova.editorial .lv-mbar {
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: auto !important;
+  padding-top: env(safe-area-inset-top);
+  border: 0 !important;
+  border-bottom: 1px solid var(--nv-line) !important;
+  border-radius: 0 !important;
+  background: rgba(11, 10, 8, 0.88) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  transition: background 0.35s ease;
+}
+body.kova.editorial .lv-mbar.is-scrolled {
+  background: rgba(11, 10, 8, 0.96) !important;
+}
+body.kova.editorial .lv-mbar-top {
+  height: 62px;
+  padding: 0 16px;
+}
+@media (max-width: 1023px) {
+  body.kova.editorial main.lv-main {
+    padding-top: calc(78px + var(--nv-aviso) + env(safe-area-inset-top)) !important;
+  }
+}
+
+/* ---------- Superfícies / cartões ---------- */
+body.kova.editorial .glass,
+body.kova.editorial .right-card,
+body.kova.editorial .ui-card,
+body.kova.editorial .painel-fixo section {
+  background-color: var(--nv-panel) !important;
+  border-color: var(--nv-line) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.kova.editorial .glass:hover {
+  border-color: var(--nv-line-2) !important;
+  transform: none;
+}
+body.kova.editorial .painel-fixo {
+  background-color: transparent !important;
+  border-color: var(--nv-line) !important;
+}
+
+/* ---------- Botões ---------- */
+body.kova.editorial .ui-btn {
+  border-radius: 999px !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+body.kova.editorial .ui-btn:hover,
+body.kova.editorial .ui-btn:active {
+  border-radius: 999px !important;
+}
+body.kova.editorial .ui-btn-primary {
+  background: linear-gradient(180deg, #f6efe2, #ddcfb6) !important;
+  color: #12100b !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35) !important;
+}
+body.kova.editorial .ui-btn-primary:hover {
+  background: linear-gradient(180deg, #fffaf0, #e7dcc7) !important;
+}
+body.kova.editorial .ui-btn-ghost,
+body.kova.editorial .btn-glass {
+  background: transparent !important;
+  border: 1px solid var(--nv-line-2) !important;
+  color: var(--nv-text) !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+body.kova.editorial .ui-btn-ghost:hover,
+body.kova.editorial .btn-glass:hover {
+  background: rgba(236, 229, 216, 0.05) !important;
+}
+body.kova.editorial .ui-btn::after {
+  background: radial-gradient(circle 140px at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.16), transparent 70%);
+}
+
+/* ---------- Formulários ---------- */
+body.kova.editorial input:not([type='checkbox']):not([type='radio']),
+body.kova.editorial textarea,
+body.kova.editorial select {
+  background-color: rgba(236, 229, 216, 0.035) !important;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 10px !important;
+  color: var(--nv-text) !important;
+}
+body.kova.editorial input::placeholder,
+body.kova.editorial textarea::placeholder {
+  color: var(--nv-dim) !important;
+}
+body.kova.editorial input:focus,
+body.kova.editorial textarea:focus,
+body.kova.editorial select:focus {
+  border-color: var(--nv-accent) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px rgba(201, 168, 106, 0.5) !important;
+}
+
+/* ---------- Cabeçalho de página ---------- */
+body.kova.editorial .page-head {
+  border-color: var(--nv-line) !important;
+}
+body.kova.editorial .page-eyebrow {
+  font-family: var(--nv-body) !important;
+  letter-spacing: 0.34em;
+  color: var(--nv-dim) !important;
+}
+body.kova.editorial .page-eyebrow::before {
+  background: var(--nv-accent) !important;
+  box-shadow: none !important;
+}
+body.kova.editorial .page-eyebrow span {
+  color: var(--nv-dim) !important;
+}
+body.kova.editorial .page-title {
+  color: var(--nv-text) !important;
+  font-family: var(--nv-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+}
+body.kova.editorial .page-subtitle {
+  color: var(--nv-muted) !important;
+}
+body.kova.editorial .page-badge {
+  background: rgba(201, 168, 106, 0.1) !important;
+  border: 1px solid var(--nv-line-2) !important;
+  color: var(--nv-accent-2) !important;
+  border-radius: 999px !important;
+}
+
+/* ---------- Acentos vários ---------- */
+body.kova.editorial .novo-tag {
+  background: #c9a86a !important;
+  color: #12100b !important;
+}
+body.kova.editorial .nav-dot,
+body.kova.editorial .mk-live-ping,
+body.kova.editorial .mk-live-dot {
+  background: var(--nv-accent) !important;
+}
+
+/* ============================================================
+   HERO DA HOME — grande serif + escultura ao fundo
+   ============================================================ */
+.lv-hero {
+  position: relative;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto 26px;
+  padding: 34px 24px 30px;
+  border: 1px solid var(--nv-line);
+  border-radius: 20px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 150% at 82% 20%, rgba(201, 168, 106, 0.12), transparent 58%),
+    linear-gradient(120deg, #12100c 0%, #0b0a08 62%);
+  isolation: isolate;
+}
+.lv-hero-media {
+  position: absolute;
+  inset: -10% -4% -10% 42%;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.32;
+  filter: grayscale(1) contrast(1.05) brightness(0.9);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 38%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 38%, #000 100%);
+  pointer-events: none;
+}
+.lv-hero-veu {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(90% 120% at 50% 110%, rgba(11, 10, 8, 0.95), transparent 62%);
+  pointer-events: none;
+}
+.lv-hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+}
+.lv-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--nv-accent-2);
+}
+.lv-hero-kicker::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: var(--nv-accent);
+}
+.lv-hero-title {
+  margin: 18px 0 0;
+  font-family: var(--nv-display);
+  font-weight: 400;
+  font-size: clamp(3rem, 9vw, 6.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: #f1e9db;
+}
+.lv-hero-title em {
+  font-style: italic;
+  color: var(--nv-accent-2);
+}
+.lv-hero-title span {
+  color: var(--nv-accent);
+}
+.lv-hero-sub {
+  margin-top: 16px;
+  max-width: 440px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--nv-muted);
+}
+.lv-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+.lv-hero-meta {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  z-index: 2;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--nv-dim);
+}
+.lv-hero-arco {
+  position: absolute;
+  right: -70px;
+  top: -90px;
+  width: 340px;
+  height: 340px;
+  border: 1px solid rgba(201, 168, 106, 0.22);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.lv-hero-arco--2 {
+  right: 20px;
+  top: -150px;
+  width: 420px;
+  height: 420px;
+  border-color: rgba(201, 168, 106, 0.1);
+}
+
+/* ============================================================
+   AUTENTICAÇÃO — imagem de fundo (campo de ténis / pintura)
+   ============================================================ */
+body.kova.editorial .auth-fundo {
+  background-image:
+    linear-gradient(180deg, rgba(11, 10, 8, 0.3) 0%, rgba(11, 10, 8, 0.6) 60%, rgba(11, 10, 8, 0.92) 100%),
+    url('/loading.png'),
+    url('/camo/arte-anjo.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-color: #0b0a08 !important;
+  filter: blur(0.8px) saturate(0.98) brightness(0.78) !important;
+  opacity: 1 !important;
+}
+body.kova.editorial .auth-veu {
+  background:
+    radial-gradient(80% 70% at 50% 38%, rgba(11, 10, 8, 0.05) 0%, rgba(11, 10, 8, 0.5) 62%, rgba(11, 10, 8, 0.95) 100%) !important;
+}
+body.kova.editorial .auth-card {
+  background: rgba(14, 12, 9, 0.82) !important;
+  border: 1px solid var(--nv-line-2) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+}
+body.kova.editorial .auth-brand {
+  font-family: var(--nv-display) !important;
+  font-style: italic;
+  font-size: 3rem !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  color: #f1e9db !important;
+}
+body.kova.editorial .auth-brand span {
+  color: var(--nv-accent) !important;
+}
+body.kova.editorial .auth-brand-sub {
+  color: var(--nv-dim) !important;
+  letter-spacing: 0.34em;
+}
+body.kova.editorial .auth-tabs {
+  background: rgba(236, 229, 216, 0.03) !important;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 999px !important;
+}
+body.kova.editorial .auth-tabs .auth-tab {
+  border-radius: 999px !important;
+  color: var(--nv-muted) !important;
+}
+body.kova.editorial .auth-tabs .auth-tab[data-active='true'] {
+  background: rgba(236, 229, 216, 0.09) !important;
+  color: var(--nv-text) !important;
+}
+body.kova.editorial .auth-card input {
+  background-color: rgba(236, 229, 216, 0.04) !important;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 10px !important;
+}
+body.kova.editorial .auth-card input:focus {
+  border-color: var(--nv-accent) !important;
+  background-color: rgba(236, 229, 216, 0.06) !important;
+}
+
+/* ============================================================
+   LOADING (boot) — "locaus.fun" letra a letra
+   ============================================================ */
+.bootv2 {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: #0b0a08;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.62s ease;
+}
+.bootv2--sair {
+  opacity: 0;
+}
+.bootv2-fundo {
+  position: absolute;
+  inset: -2%;
+  background-image:
+    linear-gradient(180deg, rgba(11, 10, 8, 0.28) 0%, rgba(11, 10, 8, 0.5) 62%, rgba(11, 10, 8, 0.92) 100%),
+    url('/loading.png'),
+    url('/camo/arte-anjo.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(0.8px) brightness(0.78) saturate(0.98);
+}
+.bootv2-veu {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 60% at 50% 46%, rgba(11, 10, 8, 0.05) 0%, rgba(11, 10, 8, 0.5) 72%, rgba(11, 10, 8, 0.92) 100%);
+}
+.bootv2-centro {
+  position: relative;
+  z-index: 2;
+  padding: 0 24px;
+  text-align: center;
+}
+.bootv2-marca {
+  margin: 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.8rem, 10vw, 6rem);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  color: #f1e9db;
+  white-space: nowrap;
+  text-shadow: 0 2px 34px rgba(0, 0, 0, 0.6);
+}
+.bootv2-letra {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(9px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
+}
+.bootv2-letra.is-on {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.bootv2-linha {
+  display: block;
+  height: 1px;
+  width: 0;
+  margin: 24px auto 0;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 106, 0.9), transparent);
+  transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bootv2-linha.is-on {
+  width: min(300px, 62vw);
+}
+.bootv2-sub {
+  margin: 16px 0 0;
+  font-family: var(--nv-body);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.44em;
+  text-transform: uppercase;
+  color: rgba(236, 229, 216, 0.48);
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.bootv2-sub.is-on {
+  opacity: 1;
+}
+
+/* ============================================================
+   Exceções: páginas com identidade própria (GTA6 / Enigmas)
+   ============================================================ */
+body.kova.editorial .gta6-page,
+body.kova.editorial .gta6-page * {
+  font-family: 'Courier New', Courier, 'Lucida Console', monospace !important;
+}
+body.kova.editorial.in-enigma main h1 {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 720px) {
+  .lv-hero {
+    padding: 26px 18px 24px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+  }
+  .lv-hero-media {
+    inset: -6% -20% -6% 18%;
+    opacity: 0.22;
+  }
+  .lv-hero-sub {
+    font-size: 13px;
+  }
+  .lv-hero-meta {
+    display: none;
+  }
+  .lv-hero-arco,
+  .lv-hero-arco--2 {
+    opacity: 0.6;
+  }
+  .bootv2-marca {
+    font-size: clamp(2.4rem, 12vw, 4rem);
+  }
+}
+
+/* ============================================================
+   CHAT — moldura editorial (o tema das bolhas fica do utilizador)
+   ============================================================ */
+body.kova.editorial .liquid-chat {
+  background: linear-gradient(180deg, #14110c 0%, #0d0b08 100%) !important;
+  border-color: var(--nv-line-2) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.kova.editorial .liquid-chat > div:first-child,
+body.kova.editorial .chat-topo {
+  background: linear-gradient(90deg, rgba(236, 229, 216, 0.06), transparent) !important;
+  border-color: var(--nv-line) !important;
+}
+body.kova.editorial .liquid-chat .chat-scroll {
+  background: radial-gradient(70% 50% at 50% 0%, rgba(201, 168, 106, 0.05), transparent 70%) !important;
+}
+body.kova.editorial .liquid-chat .chat-composer {
+  background: #0e0c09 !important;
+  border-color: var(--nv-line) !important;
+}
+body.kova.editorial .liquid-chat input,
+body.kova.editorial .liquid-chat textarea {
+  background: rgba(236, 229, 216, 0.04) !important;
+  border: 1px solid var(--nv-line) !important;
+  border-radius: 12px !important;
+  color: var(--nv-text) !important;
+}
+body.kova.editorial .liquid-chat input:focus,
+body.kova.editorial .liquid-chat textarea:focus {
+  border-color: var(--nv-accent) !important;
+  outline: none !important;
+}
+
+/* A etiqueta BETA flutuante tapava a barra nova — a marca já diz "beta" */
+body.kova.editorial .beta-badge {
+  display: none !important;
+}
+
+/* Chat no telemóvel: a barra flutuante ocupa ~64px — dá espaço em cima */
+@media (max-width: 639px) {
+  body.kova.editorial .chat-fixo {
+    padding-top: calc(5.2rem + env(safe-area-inset-top)) !important;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  body.kova.editorial .chat-fixo {
+    padding-top: calc(5.6rem + env(safe-area-inset-top)) !important;
+  }
+}
+
+/* ============================================================
+   HOME — o hero começa no topo, por baixo da navbar transparente
+   (como na referência: a barra flutua sobre a imagem)
+   ============================================================ */
+@media (min-width: 1024px) {
+  body.kova.editorial .lv-hero {
+    margin-top: calc(-1 * (var(--nv-header) + 22px));
+    padding-top: calc(var(--nv-header) + 58px);
+  }
+}
+@media (max-width: 1023px) {
+  body.kova.editorial .lv-hero {
+    margin-top: calc(-1 * (78px + var(--nv-aviso) + env(safe-area-inset-top)));
+    padding-top: calc(78px + var(--nv-aviso) + env(safe-area-inset-top) + 26px);
+  }
+}
+
+/* O wrapper do site escala a partir do topo (não desloca o hero) */
+body.kova.editorial .site-wrap {
+  transform-origin: top center !important;
+}
+
+/* ============================================================
+   FUNDO DO SITE — arte do anjo/mármore (o antigo card da home)
+   ============================================================ */
+body.kova.editorial:not(.in-enigma) {
+  background-color: #0b0a08 !important;
+  background-image:
+    radial-gradient(70rem 36rem at 50% -14rem, rgba(201, 168, 106, 0.13), transparent 72%),
+    linear-gradient(180deg, #0e0c09 0%, #0b0a08 58%, #090807 100%) !important;
+  background-size: auto, auto !important;
+  background-position: center top !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+}
+/* A página dos Enigmas mantém o seu fundo navy/azul */
+body.kova.editorial.in-enigma {
+  background-color: #02040c !important;
+  background-image:
+    linear-gradient(rgba(70, 130, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 130, 255, 0.045) 1px, transparent 1px) !important;
+  background-size: 56px 56px, 56px 56px !important;
+  background-attachment: fixed !important;
+  background-repeat: repeat !important;
+}
+body.kova.editorial .fundo-vivo {
+  display: none !important;
+}
+
+/* ============================================================
+   MENU COMPLETO (Mapa) — paleta nova, telemóvel incluído
+   ============================================================ */
+body.kova.editorial .mapa {
+  background-color: #0b0a08 !important;
+  background-image: radial-gradient(
+    60rem 30rem at 50% -12rem,
+    rgba(201, 168, 106, 0.1),
+    transparent 70%
+  ) !important;
+  color: var(--nv-text);
+}
+body.kova.editorial .mapa::before {
+  background-image:
+    linear-gradient(rgba(236, 229, 216, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(236, 229, 216, 0.03) 1px, transparent 1px) !important;
+}
+body.kova.editorial .mapa-top {
+  border-color: var(--nv-line) !important;
+}
+body.kova.editorial .mapa-title {
+  color: var(--nv-dim) !important;
+}
+body.kova.editorial .mapa-close {
+  color: var(--nv-muted) !important;
+  border-color: var(--nv-line-2) !important;
+}
+body.kova.editorial .mapa-col-icon {
+  border-color: var(--nv-line-2) !important;
+  background: rgba(236, 229, 216, 0.04) !important;
+}
+body.kova.editorial .mapa-col.is-current {
+  background: rgba(201, 168, 106, 0.05) !important;
+  border-color: var(--nv-line-2) !important;
+}
+body.kova.editorial .mapa-col h2 {
+  color: var(--nv-text) !important;
+}
+body.kova.editorial .mapa-col-head p {
+  color: var(--nv-muted) !important;
+}
+body.kova.editorial .mapa-col li a {
+  color: var(--nv-muted) !important;
+}
+body.kova.editorial .mapa-col li a:hover,
+body.kova.editorial .mapa-col li a[data-active='true'] {
+  color: var(--nv-text) !important;
+  background: rgba(201, 168, 106, 0.06) !important;
+}
+
+/* Barra do telemóvel (#topbar) — mantém a forma, muda para a cor do site */
+body.kova.editorial #topbar {
+  background: linear-gradient(180deg, rgba(20, 17, 12, 0.94), rgba(11, 10, 8, 0.84)) !important;
+  border-color: var(--nv-line-2) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+}
+body.kova.editorial #topbar.is-scrolled {
+  background: linear-gradient(180deg, rgba(20, 17, 12, 0.98), rgba(11, 10, 8, 0.94)) !important;
+}
+
+/* Garante a paleta nova nos ícones do menu (mesmo com dados antigos) */
+body.kova.editorial .mapa-col-icon,
+body.kova.editorial .mapa-col-icon svg,
+body.kova.editorial .mapa-col li a svg {
+  color: var(--nv-accent) !important;
+}
+body.kova.editorial .mapa-col.is-current {
+  border-top-color: var(--nv-accent) !important;
+}
+body.kova.editorial .mapa-col li a:hover svg,
+body.kova.editorial .mapa-col li a[data-active='true'] svg {
+  color: var(--nv-accent-2) !important;
+}
+body.kova.editorial .mode-menu-ico {
+  color: var(--nv-accent) !important;
+}
+body.kova.editorial .lv-menu-btn,
+body.kova.editorial .lv-mbar-menu {
+  border-color: var(--nv-accent) !important;
+  color: var(--nv-accent) !important;
+}
+
+/* ============================================================
+   PERFIL — quem tem fundo escolhido volta a vê-lo (como antes)
+   ============================================================ */
+body.kova.editorial.profile-bg .perfil-fundo {
+  opacity: 0.5 !important;
+  filter: none !important;
+}
+body.kova.editorial.profile-bg .perfil-fundo::after {
+  background: linear-gradient(
+    180deg,
+    rgba(11, 10, 8, 0.28) 0%,
+    rgba(11, 10, 8, 0.72) 100%
+  ) !important;
+}
+body.kova.editorial.profile-bg .glass,
+body.kova.editorial.profile-bg .right-card,
+body.kova.editorial.profile-bg .ui-card,
+body.kova.editorial.profile-bg .profile-hero,
+body.kova.editorial.profile-bg .clip-card {
+  background-color: rgba(11, 10, 8, 0.42) !important;
+  backdrop-filter: blur(8px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+}

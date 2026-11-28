@@ -117,6 +117,9 @@ export function pararYoutube() {
   } catch {
     /* ignora */
   }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('locaus:yt-stop'))
+  }
 }
 
 /** O player do YouTube está pronto? */

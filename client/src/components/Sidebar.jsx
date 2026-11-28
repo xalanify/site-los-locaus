@@ -101,7 +101,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
                 title={link.name}
                 className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
                   link.active
-                    ? 'nav-ativo text-[#ff2e5b]'
+                    ? 'nav-ativo text-[#c9a86a]'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
@@ -132,7 +132,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
           title={user?.username || 'Conta'}
           className={`rail-account flex w-full items-center gap-3 rounded-full px-4 py-3 text-left transition-colors ${
             isProfile
-              ? 'nav-ativo text-[#ff2e5b]'
+              ? 'nav-ativo text-[#c9a86a]'
               : 'text-gray-400 hover:bg-white/5 hover:text-white'
           }`}
         >
@@ -144,7 +144,7 @@ export default function Sidebar({ user = null, isAdmin = false }) {
             />
           </span>
           <span className="min-w-0 flex-1">
-            <span className={`block truncate text-sm font-bold ${isProfile ? 'text-[#ff2e5b]' : 'text-white'}`}>
+            <span className={`block truncate text-sm font-bold ${isProfile ? 'text-[#c9a86a]' : 'text-white'}`}>
               {user?.username || 'Conta'}
             </span>
             <span className="block text-xs text-gray-500">

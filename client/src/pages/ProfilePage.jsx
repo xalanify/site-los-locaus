@@ -715,7 +715,7 @@ export default function ProfilePage({
                   </button>
                 </div>
                 {nomeMsg && (
-                  <p className={`mt-2 text-[11px] ${nomeMsg.startsWith('Nome alterado') ? 'text-emerald-400' : 'text-[#ff7a94]'}`}>
+                  <p className={`mt-2 text-[11px] ${nomeMsg.startsWith('Nome alterado') ? 'text-emerald-400' : 'text-[#d8b98a]'}`}>
                     {nomeMsg}
                   </p>
                 )}
@@ -1162,8 +1162,8 @@ export default function ProfilePage({
               </div>
               </section>
 
-              <div className={`rounded-xl border border-[#c50337]/20 bg-[#c50337]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
-                  <p className="text-xs font-black uppercase tracking-wider text-[#ff2e5b]">
+              <div className={`rounded-xl border border-[#8a6b3a]/20 bg-[#8a6b3a]/[0.03] p-3 ${secaoEdit === 'carta' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#c9a86a]">
                     Carta do perfil
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">
@@ -1177,7 +1177,7 @@ export default function ProfilePage({
                         onClick={() => setForm((f) => ({ ...f, card_style: c.id }))}
                         className={`rounded-xl border p-1.5 text-left transition-colors ${
                           form.card_style === c.id
-                            ? 'border-[#c50337]/60 bg-[#c50337]/5'
+                            ? 'border-[#8a6b3a]/60 bg-[#8a6b3a]/5'
                             : 'border-white/10 bg-black/20 hover:border-white/25'
                         }`}
                       >
@@ -1241,8 +1241,8 @@ export default function ProfilePage({
                 </div>
 
               {(isAdmin || me.is_admin) && (
-                <div className={`rounded-xl border border-[#c50337]/20 bg-[#c50337]/[0.03] p-3 ${secaoEdit === 'estiloPerfil' ? '' : 'hidden'}`}>
-                  <p className="text-xs font-black uppercase tracking-wider text-[#ff2e5b]">
+                <div className={`rounded-xl border border-[#8a6b3a]/20 bg-[#8a6b3a]/[0.03] p-3 ${secaoEdit === 'estiloPerfil' ? '' : 'hidden'}`}>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#c9a86a]">
                     Estilo de perfil (admin)
                   </p>
                   <p className="mt-0.5 text-[11px] text-gray-500">
@@ -1256,7 +1256,7 @@ export default function ProfilePage({
                         onClick={() => setForm((f) => ({ ...f, profile_style: s.id }))}
                         className={`rounded-xl border p-1.5 text-left transition-colors ${
                           form.profile_style === s.id
-                            ? 'border-[#c50337]/60 bg-[#c50337]/5'
+                            ? 'border-[#8a6b3a]/60 bg-[#8a6b3a]/5'
                             : 'border-white/10 bg-black/20 hover:border-white/25'
                         }`}
                       >

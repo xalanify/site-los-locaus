@@ -44,8 +44,8 @@ const gravarCache = (d) => {
 }
 
 const ENIGMA_FECHADO = true
-const VERMELHO = '#ff2d55'
-const ROSA = '#ff8fa3'
+const VERMELHO = '#c9a86a'
+const ROSA = '#e4cf9f'
 
 const ETAPAS = [
   {
@@ -217,9 +217,9 @@ function Constelacao({ etapa }) {
             key={n}
             className={`relative z-10 grid h-7 w-7 place-items-center rounded-full border text-[10px] font-black transition-all duration-500 sm:h-8 sm:w-8 ${
               atual
-                ? 'border-[#ff2d55] bg-[#ff2d55] text-black shadow-[0_0_22px_rgba(255,45,85,.55)]'
+                ? 'border-[#c9a86a] bg-[#c9a86a] text-black shadow-[0_0_22px_rgba(201, 168, 106,.55)]'
                 : feito
-                  ? 'border-[#ff2d55]/50 bg-[#ff2d55]/15 text-[#ff8fa3]'
+                  ? 'border-[#c9a86a]/50 bg-[#c9a86a]/15 text-[#e4cf9f]'
                   : 'border-white/10 bg-white/[0.02] text-white/25'
             }`}
           >
@@ -278,7 +278,7 @@ function Desafio({ payload, troll, aoPedirAjuda, setTabelaMorseAberta }) {
           <img src={payload.imagem} alt="Mapa orbital" className="mx-auto max-h-[24vh] w-full object-contain" />
         </button>
         <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-[0.16em]">
-          <a href={payload.imagem} target="_blank" rel="noreferrer" className="text-[#ff8fa3] hover:text-white">
+          <a href={payload.imagem} target="_blank" rel="noreferrer" className="text-[#e4cf9f] hover:text-white">
             abrir imagem ↗
           </a>
         </div>
@@ -289,7 +289,7 @@ function Desafio({ payload, troll, aoPedirAjuda, setTabelaMorseAberta }) {
       <div className="space-y-2">
         <a
           href={payload.download}
-          className="inline-flex items-center gap-2 rounded-full border border-[#ff2d55]/40 bg-[#ff2d55]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#ff8fa3] transition hover:bg-[#ff2d55]/20 hover:text-white"
+          className="inline-flex items-center gap-2 rounded-full border border-[#c9a86a]/40 bg-[#c9a86a]/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#e4cf9f] transition hover:bg-[#c9a86a]/20 hover:text-white"
         >
           <Download className="h-3.5 w-3.5" /> descarregar imagem
         </a>
@@ -331,7 +331,7 @@ function Desafio({ payload, troll, aoPedirAjuda, setTabelaMorseAberta }) {
           href={payload.pagina}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex text-[10px] font-bold uppercase tracking-[0.16em] text-[#ff8fa3] underline decoration-[#ff2d55]/40 underline-offset-4 hover:text-white"
+          className="inline-flex text-[10px] font-bold uppercase tracking-[0.16em] text-[#e4cf9f] underline decoration-[#c9a86a]/40 underline-offset-4 hover:text-white"
         >
           início ↗
         </a>
@@ -405,16 +405,16 @@ function PainelEtapa({ etapa, payload, valor, setValor, aoSubmeter, erro, troll,
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
       className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.025] p-4 sm:p-5"
-      style={{ boxShadow: '0 30px 90px -50px rgba(255,45,85,.55), inset 0 1px 0 rgba(255,255,255,.05)' }}
+      style={{ boxShadow: '0 30px 90px -50px rgba(201, 168, 106,.55), inset 0 1px 0 rgba(255,255,255,.05)' }}
     >
-      <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: 'radial-gradient(600px circle at 50% 0%, rgba(255,45,85,.12), transparent 60%)' }} />
+      <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: 'radial-gradient(600px circle at 50% 0%, rgba(201, 168, 106,.12), transparent 60%)' }} />
 
       <div className="relative">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full border border-white/10 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.24em] text-white/50">
             Etapa {etapa.n} / 5
           </span>
-          <span className="rounded-full bg-[#ff2d55]/15 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.24em] text-[#ff8fa3]">
+          <span className="rounded-full bg-[#c9a86a]/15 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.24em] text-[#e4cf9f]">
             {etapa.codigo}
           </span>
           <span className="ml-auto hidden font-mono text-[9px] uppercase tracking-[0.18em] text-white/25 sm:block">
@@ -444,12 +444,12 @@ function PainelEtapa({ etapa, payload, valor, setValor, aoSubmeter, erro, troll,
             placeholder="PALAVRA-SUFIXO"
             autoComplete="off"
             spellCheck={false}
-            className="w-full rounded-full border border-white/10 bg-black/50 px-4 py-2.5 font-mono text-[12px] uppercase tracking-[0.14em] text-white outline-none transition placeholder:text-white/20 focus:border-[#ff2d55]/60 focus:ring-2 focus:ring-[#ff2d55]/15 sm:max-w-[280px]"
+            className="w-full rounded-full border border-white/10 bg-black/50 px-4 py-2.5 font-mono text-[12px] uppercase tracking-[0.14em] text-white outline-none transition placeholder:text-white/20 focus:border-[#c9a86a]/60 focus:ring-2 focus:ring-[#c9a86a]/15 sm:max-w-[280px]"
           />
           <button
             type="submit"
             disabled={carregando}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#ff2d55] px-5 py-2.5 text-[12px] font-black uppercase tracking-[0.12em] text-black transition hover:bg-[#ff4a6b] active:scale-[.98] disabled:opacity-60"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#c9a86a] px-5 py-2.5 text-[12px] font-black uppercase tracking-[0.12em] text-black transition hover:bg-[#ff4a6b] active:scale-[.98] disabled:opacity-60"
           >
             <Sparkles className="h-3.5 w-3.5" />
             {carregando ? 'a validar…' : etapa.n === 5 ? 'concluir' : 'continuar'}
@@ -457,7 +457,7 @@ function PainelEtapa({ etapa, payload, valor, setValor, aoSubmeter, erro, troll,
         </form>
 
         {erro && (
-          <p className={`mt-2 text-[11px] ${troll ? 'text-amber-200' : 'text-[#ff8fa3]'}`}>
+          <p className={`mt-2 text-[11px] ${troll ? 'text-amber-200' : 'text-[#e4cf9f]'}`}>
             {troll ? '☠ ' : ''}
             {erro}
           </p>
@@ -472,11 +472,11 @@ function PainelEtapa({ etapa, payload, valor, setValor, aoSubmeter, erro, troll,
               aria-label="Pistas"
             >
               <div className="w-full max-w-sm rounded-xl border border-white/10 bg-[#0a0507] p-5">
-                <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[#ff8fa3]">pistas</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[#e4cf9f]">pistas</p>
                 <ul className="mt-3 space-y-1.5 text-[12.5px] leading-relaxed text-white/65">
                   {(DICAS[payload?.tipo] || ['Segue o rasto.']).map((d) => (
                     <li key={d} className="flex gap-2">
-                      <span className="text-[#ff2d55]">•</span>
+                      <span className="text-[#c9a86a]">•</span>
                       <span>{d}</span>
                     </li>
                   ))}
@@ -504,9 +504,9 @@ function Resultado({ posicao, moedas, voltar, admin }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
       className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-7 text-center sm:p-10"
-      style={{ boxShadow: '0 40px 120px -50px rgba(255,45,85,.5)' }}
+      style={{ boxShadow: '0 40px 120px -50px rgba(201, 168, 106,.5)' }}
     >
-      <div className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-56 w-56 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, rgba(255,45,85,.45), transparent 70%)' }} />
+      <div className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-56 w-56 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, rgba(201, 168, 106,.45), transparent 70%)' }} />
       <div className="relative">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-xl border border-white/10 bg-white/[0.04]">
           <Trophy className="h-6 w-6 text-amber-300" />
@@ -618,14 +618,14 @@ export default function Enigma2Page() {
     const mostrar = () => {
       const lista = DICAS[payload.tipo] || ['Segue o rasto.']
       /* eslint-disable no-console */
-      console.log('%cORION', 'color:#ff2d55;font-weight:900;letter-spacing:3px', '· pistas')
+      console.log('%cORION', 'color:#c9a86a;font-weight:900;letter-spacing:3px', '· pistas')
       for (const d of lista) {
-        console.log('%c• %c' + d, 'color:#ff2d55;font-weight:900', 'color:#e9e9ec;font-size:12px')
+        console.log('%c• %c' + d, 'color:#c9a86a;font-weight:900', 'color:#e9e9ec;font-size:12px')
       }
       console.log(
         '%c• %c' + 'a resposta é sempre PALAVRA-SUFIXO',
-        'color:#ff2d55;font-weight:900',
-        'color:#ff8fa3;font-size:12px',
+        'color:#c9a86a;font-weight:900',
+        'color:#e4cf9f;font-size:12px',
       )
       /* eslint-enable no-console */
       return 'pistas enviadas ↑'
@@ -753,12 +753,12 @@ export default function Enigma2Page() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(900px 500px at 50% -10%, rgba(255,45,85,.18), transparent 60%)',
+              'radial-gradient(900px 500px at 50% -10%, rgba(201, 168, 106,.18), transparent 60%)',
           }}
         />
         <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-[#ff2d55]/30 bg-[#ff2d55]/10">
-            <Monitor className="h-5 w-5 text-[#ff8fa3]" />
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-[#c9a86a]/30 bg-[#c9a86a]/10">
+            <Monitor className="h-5 w-5 text-[#e4cf9f]" />
           </span>
           <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.3em] text-white/35">
             protocolo orion
@@ -774,7 +774,7 @@ export default function Enigma2Page() {
             <button
               type="button"
               onClick={() => navigate('/enigmas')}
-              className="rounded-full bg-[#ff2d55] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-black transition hover:bg-[#ff4a6b]"
+              className="rounded-full bg-[#c9a86a] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-black transition hover:bg-[#ff4a6b]"
             >
               voltar aos enigmas
             </button>
@@ -805,7 +805,7 @@ export default function Enigma2Page() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(1100px 560px at 12% -12%, rgba(255,45,85,.16), transparent 60%), radial-gradient(900px 520px at 100% 110%, rgba(120,10,30,.22), transparent 60%)',
+            'radial-gradient(1100px 560px at 12% -12%, rgba(201, 168, 106,.16), transparent 60%), radial-gradient(900px 520px at 100% 110%, rgba(120,10,30,.22), transparent 60%)',
         }}
       />
 
@@ -853,11 +853,11 @@ export default function Enigma2Page() {
                     type="button"
                     onClick={iniciar}
                     disabled={carregando}
-                    className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#ff2d55] px-6 py-2.5 text-[12px] font-black uppercase tracking-[0.12em] text-black transition hover:bg-[#ff4a6b] active:scale-[.98] disabled:opacity-60"
+                    className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#c9a86a] px-6 py-2.5 text-[12px] font-black uppercase tracking-[0.12em] text-black transition hover:bg-[#ff4a6b] active:scale-[.98] disabled:opacity-60"
                   >
                     <Sparkles className="h-3.5 w-3.5" /> {carregando ? 'a abrir…' : 'Iniciar protocolo'}
                   </button>
-                  {erro && <p className="mt-2 text-[11px] text-[#ff8fa3]">{erro}</p>}
+                  {erro && <p className="mt-2 text-[11px] text-[#e4cf9f]">{erro}</p>}
                 </motion.div>
               ) : (
                 <PainelEtapa
@@ -892,7 +892,7 @@ export default function Enigma2Page() {
             aria-label="Tabela Morse"
           >
             <div className="max-w-2xl rounded-xl border border-white/10 bg-[#0a0507] p-5">
-              <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[#ff8fa3]">tabela morse</p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[#e4cf9f]">tabela morse</p>
               <p className="mt-3 font-mono text-[10.5px] leading-relaxed text-white/60">{MORSE_TABELA}</p>
               <button
                 type="button"

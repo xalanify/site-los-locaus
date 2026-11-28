@@ -4,7 +4,7 @@ import ProfileBanner from './ProfileBanner'
 import PokemonCard from './PokemonCard'
 import OlhosCard from './OlhosCard'
 import CartaEnigma from './CartaEnigma'
-import CartaMusical from './CartaMusical'
+import CartaMusical, { MUSICAS_CARTAS } from './CartaMusical'
 import { BadgeGem, badgesDe, distincoesOverclock } from './BadgeGem'
 import GameLogo from './GameLogo'
 import { classesNome } from '../data/nomeEfeitos'
@@ -110,6 +110,7 @@ const VARIANT_LABEL = {
   supra: 'SUPRA CARD',
   nfs: 'UNDERGROUND CARD',
   niko: 'NIKO CARD',
+  gta5g: 'GTA V CARD',
 }
 
 const VARIANT_ACCENT = {
@@ -167,6 +168,7 @@ const VARIANT_ACCENT = {
   supra: '#ff6a00',
   nfs: '#a855f7',
   niko: '#e5e7eb',
+  gta5g: '#e0b25a',
 }
 
 const ano = (iso) => {
@@ -309,12 +311,12 @@ export default function ProfileCard({
       <span className="pc-glow" aria-hidden="true" />
       <span className="pc-ripple" aria-hidden="true" />
 
-      <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v === 'cromada' || v === 'supra' || v === 'nfs' || v === 'niko' || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
+      <div className={`pc-body relative z-10 flex h-full flex-col ${v === 'sleepin' || v === 'dev' || v === 'river' || v === 'cromada' || MUSICAS_CARTAS[v] || v.startsWith('foto-') ? 'p-0' : 'p-4 sm:p-5'}`}>
         {OLHOS_CARDS.has(v) ? (
           <OlhosCard perfil={perfil} username={username} id={id} />
         ) : v === 'cromada' ? (
           <CartaEnigma nome={username} />
-        ) : v === 'supra' || v === 'nfs' || v === 'niko' ? (
+        ) : MUSICAS_CARTAS[v] ? (
           <CartaMusical variant={v} perfil={perfil} username={username} id={id} />
         ) : TCG_CARDS.has(v) ? (
           <PokemonCard variant={v} perfil={perfil} username={username} id={id} />

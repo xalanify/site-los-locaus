@@ -192,7 +192,7 @@ export default function MeusItens() {
                     Em breve — ainda não é possível vender
                   </span>
                 ) : anuncio ? (
-                  <div className="flex items-center justify-between gap-2 rounded-lg border border-[#ff7a94]/25 bg-[#ff7a94]/[0.06] px-2.5 py-1.5">
+                  <div className="flex items-center justify-between gap-2 rounded-lg border border-[#d8b98a]/25 bg-[#d8b98a]/[0.06] px-2.5 py-1.5">
                     <span className="min-w-0 truncate text-[11px] font-semibold text-zinc-300">
                       À venda por <b className="text-white">{fmt(anuncio.preco)}</b>
                     </span>
@@ -209,7 +209,7 @@ export default function MeusItens() {
                   <button
                     type="button"
                     onClick={() => abrirVenda(item)}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-bold text-zinc-200 hover:border-[#ff7a94]/40 hover:text-white"
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-bold text-zinc-200 hover:border-[#d8b98a]/40 hover:text-white"
                   >
                     <Tag className="h-3.5 w-3.5" /> Vender pelo meu preço
                   </button>

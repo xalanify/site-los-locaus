@@ -1071,8 +1071,8 @@ export default function FerramentasPage({ isAdmin = false }) {
 
         {cat === 'Otimizador Xalana' && (
           <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-7 text-center sm:p-10">
-            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-[#ff2e5b]/25 bg-[#ff2e5b]/10">
-              <Gauge className="h-6 w-6 text-[#ff8fa3]" />
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-[#c9a86a]/25 bg-[#c9a86a]/10">
+              <Gauge className="h-6 w-6 text-[#e4cf9f]" />
             </span>
             <h3 className="mt-4 font-display text-xl font-black text-white">Otimizador Xalana</h3>
             <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-zinc-400">

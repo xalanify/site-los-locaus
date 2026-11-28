@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Loader2, Sparkles, Music2 } from 'lucide-react'
 import { authHeaders } from '../lib/auth'
@@ -95,10 +95,10 @@ export default function MercadoHome() {
 
           <div className="flex items-start justify-between gap-3 p-5 sm:p-6">
             <div className="min-w-0">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ff7a94]/30 bg-[#ff7a94]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#ff7a94]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c9a86a]/30 bg-[#c9a86a]/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#c9a86a]">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff7a94] opacity-70" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ff7a94]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c9a86a] opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#c9a86a]" />
                 </span>
                 Mercado ao vivo
               </span>
@@ -107,7 +107,7 @@ export default function MercadoHome() {
               </h2>
 
             </div>
-            <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#ff7a94]/10 text-[#ff7a94] ring-1 ring-[#ff7a94]/20 sm:grid">
+            <span className="hidden h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#c9a86a]/10 text-[#c9a86a] ring-1 ring-[#c9a86a]/20 sm:grid">
               <Sparkles className="h-5 w-5" />
             </span>
           </div>
@@ -164,7 +164,7 @@ export default function MercadoHome() {
                             <span className="truncate text-sm font-bold text-white">{item.nome}</span>
                             {MUSICAS_CARTAS[item.valor] && (
                               <Music2
-                                className="h-3.5 w-3.5 shrink-0 text-[#ff9db0]"
+                                className="h-3.5 w-3.5 shrink-0 text-[#e4cf9f]"
                                 title={musicas[item.valor]?.titulo || MUSICAS_CARTAS[item.valor].cancao}
                               />
                             )}

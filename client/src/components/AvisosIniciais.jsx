@@ -8,7 +8,7 @@ import { BANNERS, BANNERS_REMOVIDOS, FUNDOS_REMOVIDOS } from '../data/temasPerfi
 import { BADGES, badgeDe, BadgeGem } from './BadgeGem'
 import CartaMusical from './CartaMusical'
 
-const CHAVE = 'locaus:novidades:2026-11-22-cartas-musica-v3'
+const CHAVE = 'locaus:novidades:2026-11-28-cartas-r34-gta5-v4'
 
 const NOMES_BANNER = {
   g02: 'Banner 02',
@@ -133,7 +133,7 @@ export default function AvisosIniciais({ user }) {
         role="presentation"
       >
         <div
-          className={`flex max-h-[92dvh] w-full ${largura} flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#111113] shadow-2xl`}
+          className={`flex max-h-[92dvh] w-full ${largura} flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#14110c] shadow-2xl`}
           onClick={(e) => e.stopPropagation()}
         >
           {conteudo}
@@ -149,7 +149,7 @@ export default function AvisosIniciais({ user }) {
           <>
             <header className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">
               <div>
-                <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#c4b5fd]">
+                <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#e4cf9f]">
                   <Sparkles className="h-3 w-3" /> Novidades
                 </p>
                 <h2 className="mt-1 font-display text-2xl font-black text-white">
@@ -170,13 +170,13 @@ export default function AvisosIniciais({ user }) {
             </header>
 
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
-              <div className="flex items-start gap-3 rounded-xl border border-[#ff2d55]/25 bg-[#ff2d55]/[0.07] px-4 py-3">
-                <Music2 className="mt-0.5 h-5 w-5 shrink-0 text-[#ff8fa3]" />
+              <div className="flex items-start gap-3 rounded-xl border border-[#c9a86a]/25 bg-[#c9a86a]/[0.07] px-4 py-3">
+                <Music2 className="mt-0.5 h-5 w-5 shrink-0 text-[#e4cf9f]" />
                 <div>
                   <p className="text-[13px] font-black text-white">Cartas com música</p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-[#ffd2d2]/75">
-                    Supra, Underground e Niko. No computador ouve o tema ao passar o rato; no telemóvel
-                    aparece um botão play por baixo da carta.
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-[#d8cbb2]/80">
+                    GTA V, Supra, Underground e Niko. No computador ouve o tema ao
+                    passar o rato; no telemóvel aparece um botão play por baixo da carta.
                   </p>
                 </div>
               </div>
@@ -187,6 +187,7 @@ export default function AvisosIniciais({ user }) {
                 </h3>
                 <div className="mt-2 flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible">
                   {[
+                    { v: 'gta5g', nome: 'GTA V' },
                     { v: 'supra', nome: 'Supra' },
                     { v: 'nfs', nome: 'Underground' },
                     { v: 'niko', nome: 'Niko' },
@@ -200,7 +201,7 @@ export default function AvisosIniciais({ user }) {
                           id={perfil?.display_id ?? user.id ?? '—'}
                           semPlayFixo
                         />
-                        <span className="pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-[#2dd4bf]/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-[#04211f]">
+                        <span className="pointer-events-none absolute left-2 top-2 z-20 rounded-full bg-[#c9a86a]/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-[#0b0a08]">
                           Novo
                         </span>
                       </div>

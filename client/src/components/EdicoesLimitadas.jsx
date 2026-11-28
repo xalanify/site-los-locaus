@@ -95,7 +95,7 @@ export default function EdicoesLimitadas() {
       <div className="mb-2 flex items-end justify-between gap-2">
         <div>
           <h2 className="flex items-center gap-1.5 text-sm font-black text-white">
-            <Sparkles className="h-4 w-4 text-[#ff7a94]" /> Edições limitadas
+            <Sparkles className="h-4 w-4 text-[#d8b98a]" /> Edições limitadas
           </h2>
           <p className="text-[11px] font-semibold text-zinc-500">
             Cartas numeradas. Cada compra recebe um número aleatório — o nº 1 é o mais raro.

@@ -34,7 +34,10 @@ export async function registarSW() {
       window.location.reload()
     })
 
-    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    const reg = await navigator.serviceWorker.register('/sw.js', {
+      scope: '/',
+      updateViaCache: 'none',
+    })
     // procura já uma versão nova (o PWA instalado atualiza mais depressa)
     try {
       reg.update()

@@ -9,7 +9,7 @@ import { tocarYoutube, pararYoutube } from '../lib/youtubeAudio'
    ADMIN — cartas no mercado + música por carta (pesquisa YouTube)
    ============================================================ */
 
-const MUSICAIS = ['supra', 'nfs', 'niko']
+const MUSICAIS = Object.keys(MUSICAS_CARTAS)
 
 const fmt = (s) => {
   const n = Math.max(0, Math.round(Number(s) || 0))
@@ -40,9 +40,31 @@ function EditorMusica({ variante, meta, onGuardado }) {
   useEffect(
     () => () => {
       if (audioRef.current) audioRef.current.pause()
+      // sair do painel não deixa música a tocar em segundo plano
+      pararYoutube()
     },
     [],
   )
+
+  /* Se outra carta/admin parar a música, este editor também "solta" o botão. */
+  useEffect(() => {
+    const aoParar = () => {
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause()
+        } catch {
+          /* ignora */
+        }
+      }
+      setATocar(false)
+    }
+    window.addEventListener('locaus:yt-stop', aoParar)
+    window.addEventListener('locaus:admin-audio-stop', aoParar)
+    return () => {
+      window.removeEventListener('locaus:yt-stop', aoParar)
+      window.removeEventListener('locaus:admin-audio-stop', aoParar)
+    }
+  }, [])
 
   const procurar = async (e) => {
     e?.preventDefault()
@@ -105,20 +127,41 @@ function EditorMusica({ variante, meta, onGuardado }) {
   }
 
   const ouvir = () => {
+    /* STOP — para o player do YouTube (global) E o áudio local */
     if (aTocar) {
-      audioRef.current?.pause()
+      pararYoutube()
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause()
+          audioRef.current.currentTime = 0
+        } catch {
+          /* ignora */
+        }
+      }
       setATocar(false)
       return
     }
+
+    /* Ao começar, cala tudo o que esteja a tocar noutra carta */
+    window.dispatchEvent(new Event('locaus:admin-audio-stop'))
+    pararYoutube()
+
     const id = sel?.id || (/^yt:([A-Za-z0-9_-]{11})$/.exec(meta?.url || '') || [])[1]
     if (id) {
-      tocarYoutube(id, { inicio: Number(meta?.inicio) || 0, fim: Number(meta?.fim) || 0, volume: 0.4 })
+      tocarYoutube(id, {
+        inicio: Number(inicio) || 0,
+        fim: Number(fim) || 0,
+        volume: 0.4,
+      })
         .then((ok) => setATocar(ok))
         .catch(() => setATocar(false))
       return
     }
     const src = meta?.url || def?.musica
-    if (!src) return
+    if (!src) {
+      setMsg('Escolhe primeiro uma música.')
+      return
+    }
     const a = new Audio(src)
     a.volume = 0.12
     const ini = Number(inicio) || 0
@@ -138,7 +181,7 @@ function EditorMusica({ variante, meta, onGuardado }) {
   return (
     <div className="glass rounded-2xl p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="w-full text-xs font-bold uppercase tracking-[0.14em] text-[#ff9db0] sm:w-28">
+        <span className="w-full text-xs font-bold uppercase tracking-[0.14em] text-[#e4cf9f] sm:w-28">
           {def?.titulo || variante}
         </span>
         <form onSubmit={procurar} className="flex min-w-[200px] flex-1 items-center gap-2">
@@ -165,10 +208,10 @@ function EditorMusica({ variante, meta, onGuardado }) {
               type="button"
               onClick={() => escolher(m)}
               className={`flex w-full items-center gap-2 border-b border-white/[0.06] px-3 py-2 text-left text-xs last:border-0 ${
-                sel?.id === m.id ? 'bg-[#c50337]/20 text-white' : 'text-zinc-300 hover:bg-white/5'
+                sel?.id === m.id ? 'bg-[#8a6b3a]/20 text-white' : 'text-zinc-300 hover:bg-white/5'
               }`}
             >
-              <Music2 className="h-3.5 w-3.5 shrink-0 text-[#ff9db0]" />
+              <Music2 className="h-3.5 w-3.5 shrink-0 text-[#e4cf9f]" />
               <span className="min-w-0 flex-1 truncate">{m.titulo}</span>
               <span className="font-mono text-[10px] text-zinc-500">{fmt(m.duracao)}</span>
             </button>
@@ -229,7 +272,7 @@ function EditorMusica({ variante, meta, onGuardado }) {
             ? `Atual: ${meta.titulo || 'música personalizada'} (${meta.inicio || 0}s–${meta.fim || 14}s)`
             : 'Sem música personalizada — usa a padrão'}
         </span>
-        {erro && <span className="text-[#ffb3c1]">{erro}</span>}
+        {erro && <span className="text-[#e4cf9f]">{erro}</span>}
         {msg && <span className="text-emerald-400">{msg}</span>}
       </div>
     </div>
@@ -273,7 +316,7 @@ export default function AdminCartas() {
 
       <section className="mb-6 space-y-3">
         <h3 className="flex items-center gap-2 text-sm font-bold text-white">
-          <Music2 className="h-4 w-4 text-[#ff7a94]" /> Música das cartas
+          <Music2 className="h-4 w-4 text-[#d8b98a]" /> Música das cartas
         </h3>
 
         {MUSICAIS.map((v) => (
@@ -309,7 +352,7 @@ export default function AdminCartas() {
                     {item.raridade} · base {item.base}
                   </p>
                   {MUSICAS_CARTAS[item.valor] && (
-                    <p className="mt-1 flex items-center gap-1 text-[10px] text-[#ffb3c1]">
+                    <p className="mt-1 flex items-center gap-1 text-[10px] text-[#e4cf9f]">
                       <Music2 className="h-3 w-3" />{' '}
                       {musicas[item.valor]?.titulo || MUSICAS_CARTAS[item.valor].cancao}
                     </p>
