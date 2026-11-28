@@ -155,28 +155,38 @@ app.use(
 
 // ---------- CACHE DE CDN nos GET públicos ----------
 // Na Vercel isto evita executar a função quando a resposta está em cache
-// (um dos maiores gastos de CPU). Sem sessão (Authorization), dados públicos.
+// (um dos maiores gastos de CPU). Só entram aqui respostas IGUAIS para
+// todos — nada que dependa do utilizador (saldo, /mercado/home, etc.),
+// senão o CDN podia servir a um utilizador a resposta de outro.
 const CACHE_PUBLICO = [
-  [/^\/api\/cartas$/, 60],
-  [/^\/api\/mercado(\/|$)/, 30],
-  [/^\/api\/enigma\/(tabela|estado|arquivo)(\/|$)/, 30],
-  [/^\/api\/cosmeticos(\/|$)/, 120],
-  [/^\/api\/previsoes(\/|$)/, 30],
+  [/^\/api\/cartas$/, 120],
+  [/^\/api\/mercado$/, 30],
+  [/^\/api\/enigma\/(tabela|estado|arquivo)$/, 30],
+  [/^\/api\/previsoes$/, 30],
+  [/^\/api\/previsoes\/(cs2|proximo-torneio|classificacao|cs2\/classificacao)$/, 60],
   [/^\/api\/live(\/|$)/, 20],
   [/^\/api\/news(\/|$)/, 120],
   [/^\/api\/stats(\/|$)/, 60],
+  [/^\/api\/users\/list$/, 60],
+  [/^\/api\/games\/status$/, 60],
 ];
 
 app.use('/api', (req, res, next) => {
-  if (req.method !== 'GET' || req.headers.authorization) return next();
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (req.headers.authorization) return next();
   const caminho = String(req.originalUrl || req.url).split('?')[0];
   const regra = CACHE_PUBLICO.find(([re]) => re.test(caminho));
   if (!regra) return next();
   const ttl = regra[1];
-  res.set(
-    'Cache-Control',
-    `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`
-  );
+  const valor = `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`;
+  res.set('Cache-Control', valor);
+  // Algumas rotas põem "no-store" por precaução no fim. Como só entram
+  // aqui caminhos públicos e pedidos sem sessão, deixamos a cache ganhar.
+  const setHeaderOriginal = res.setHeader.bind(res);
+  res.setHeader = (nome, v) => {
+    if (String(nome).toLowerCase() === 'cache-control') return setHeaderOriginal(nome, valor);
+    return setHeaderOriginal(nome, v);
+  };
   next();
 });
 
@@ -212,11 +222,13 @@ const apiLimiter = makeRateLimit({ windowMs: 60 * 1000, max: 300 });
 app.use('/api', trackVisitor);
 app.use('/api', apiLimiter);
 
-/* Mercado vivo: um tick leve por minuto, disparado por qualquer pedido
-   à API (funciona também na Vercel, sem cron). O próprio tick verifica
-   a base de dados antes de mexer nos preços. */
+/* Mercado vivo: um tick leve por minuto, mas só quando alguém está
+   mesmo a ver o mercado. Antes corria em qualquer pedido à API, o que
+   na Vercel era uma consulta à base de dados por instância por minuto. */
 let ultimoTickMercado = 0;
 app.use('/api', (req, res, next) => {
+  const p = req.path || '';
+  if (!p.startsWith('/mercado') && !p.startsWith('/cosmeticos')) return next();
   const agora = Date.now();
   if (agora - ultimoTickMercado > 60_000) {
     ultimoTickMercado = agora;

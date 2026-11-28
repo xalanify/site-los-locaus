@@ -83,7 +83,7 @@ export default function RightColumn() {
       .catch(() => {})
 
     carregarOnline()
-    const t = setInterval(carregarOnline, 30000)
+    const t = setInterval(carregarOnline, 60000)
     return () => clearInterval(t)
   }, [])
 

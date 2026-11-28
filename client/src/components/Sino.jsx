@@ -79,7 +79,7 @@ export default function Sino({ user, posicao = 'topo', variant = 'icone' }) {
       } catch {
         /* ignora */
       }
-    }, 30000)
+    }, 60000)
     return () => clearInterval(id)
   }, [user, carregar])
 

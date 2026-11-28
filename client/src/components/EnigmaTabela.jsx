@@ -34,7 +34,7 @@ export default function EnigmaTabela({ limite = 10, titulo = 'Classificação' }
         })
         .catch(() => {})
     carregar()
-    const t = setInterval(carregar, 15000)
+    const t = setInterval(carregar, 30000)
     return () => {
       vivo = false
       clearInterval(t)

@@ -22,7 +22,6 @@ import ItemMini from './ItemMini'
 import CartaEnigmaMercado from './CartaEnigmaMercado'
 import { CARTAS_NOVAS, MUSICAS_CARTAS } from './CartaMusical'
 import CartaLimitada from './CartaLimitada'
-import MercadoVitrine from './MercadoVitrine'
 import ProfileCard from './ProfileCard'
 import ProfileStylePreview from './ProfileStylePreview'
 import { classesNome } from '../data/nomeEfeitos'
@@ -517,14 +516,6 @@ export default function Mercado({ onSaldo }) {
     .filter((x) => !x.emBreve)
     .reduce((melhor, x) => (!melhor || x.variacao > melhor.variacao ? x : melhor), null)
 
-  // Vitrine 3D: primeiro as cartas, depois as cores de nome
-  const vitrine = (() => {
-    const cartas = todos.filter((x) => x.tipo === 'carta' && !x.emBreve)
-    const cores = todos.filter((x) => x.tipo === 'cor' && !x.emBreve)
-    const base = [...cartas, ...cores]
-    return (base.length ? base : todos).slice(0, 10)
-  })()
-
   return (
     <div className="mk">
       <CartaEnigmaMercado />
@@ -556,8 +547,6 @@ export default function Mercado({ onSaldo }) {
           <RefreshCw className="h-3.5 w-3.5" /> <span className="mk-refresh-txt">atualizar</span>
         </button>
       </div>
-
-      <MercadoVitrine itens={vitrine} me={me} onAbrir={setDetalhe} />
 
       {/* filtros */}
       <div className="mk-barra">

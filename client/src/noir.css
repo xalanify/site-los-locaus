@@ -4168,7 +4168,6 @@ button:hover .moeda-locaus {
   color:#93a0b6;
 }
 
-
 /* a home não pode tirar o padding ao cartão do enigma */
 body.kova .home-dash > .enigma-home {
   padding: 18px 16px !important;
@@ -4305,7 +4304,6 @@ body.kova .home-dash > .enigma-home {
 .carta-enigma--ampla .carta-enigma-nome{ font-size:26px; color:#fff; }
 .carta-enigma--ampla .carta-enigma-info{ padding:18px 20px 20px; }
 
-
 /* aviso flutuante de vitória (enigma) */
 .aviso-vitoria{
   position:fixed;
@@ -4371,7 +4369,6 @@ body.kova .home-dash > .enigma-home {
   transition:opacity .25s ease;
 }
 .carta-enigma:hover .carta-enigma-luz{opacity:1;}
-
 
 /* Carta do enigma dentro do cartão do perfil: sem moldura dupla */
 .profile-card--cromada {
@@ -5182,13 +5179,11 @@ body.kova .liquid-chat .flex-row-reverse [class*="text-"]{
 /* mais cobertura da marca de água na carta do enigma */
 .ce2-watermark{ inset:-40% !important; }
 
-
 /* menu aberto: nada do site aparece por trás (nem a carta do enigma) */
 body.menu-aberto .lv-main,
 body.menu-aberto .home-dash {
   visibility: hidden !important;
 }
-
 
 /* botão de ouvir dentro da própria carta (modais no telemóvel) */
 .cm-play-inline{
@@ -5213,7 +5208,6 @@ body.menu-aberto .home-dash {
 }
 .cm-play-inline:active{ transform:scale(.96); }
 
-
 /* aviso GTA6 na home: manter padding e espaço */
 body.kova .home-dash > .gta6-banner {
   margin-bottom: 16px !important;
@@ -5229,7 +5223,6 @@ body.kova .home-dash > .gta6-banner > div {
   }
 }
 
-
 /* GTA6: ecrãs mais baixos — encolhe para continuar sem scroll */
 @media (max-height: 860px) {
   .gta6-inner { zoom: 0.9; }
@@ -5240,7 +5233,6 @@ body.kova .home-dash > .gta6-banner > div {
 @media (max-height: 700px) {
   .gta6-inner { zoom: 0.72; }
 }
-
 
 /* GTA6 / aviso: força a fonte de máquina de escrever em TODOS os elementos
    (o tema do site define fontes próprias para h1/h2/p e estava a ganhar) */
@@ -5264,7 +5256,6 @@ body.kova .gta6-cyber div {
   font-weight: 700 !important;
   letter-spacing: 0.18em;
 }
-
 
 /* ============================================================
    MERCADO 2.0 — vitrine 3D + grelha de cartas
@@ -5395,288 +5386,6 @@ body.kova .mk-refresh:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* ---------- vitrine 3D ---------- */
-body.kova .mk-vitrine {
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 18px;
-  padding: 12px 14px 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  background:
-    radial-gradient(120% 100% at 50% -12%, rgba(255, 46, 91, 0.13), transparent 58%),
-    radial-gradient(80% 70% at 94% 112%, rgba(96, 165, 250, 0.1), transparent 62%),
-    linear-gradient(180deg, #0a0b11, #06070b);
-
-  --mk-w: 232px;
-  --mk-h: 306px;
-  --mk-escala: 0.6;
-}
-
-body.kova .mk-vitrine::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(72% 62% at 50% 42%, #000 28%, transparent 100%);
-  mask-image: radial-gradient(72% 62% at 50% 42%, #000 28%, transparent 100%);
-  opacity: 0.55;
-}
-
-body.kova .mk-vitrine-topo {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 2px 2px 4px;
-  font-family: var(--nv-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #8b93a7;
-}
-
-body.kova .mk-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #ff8fa4;
-  font-weight: 800;
-}
-
-body.kova .mk-kicker-dim {
-  color: #5d6577;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-}
-
-body.kova .mk-contador {
-  color: #e7ecf7;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-}
-
-body.kova .mk-contador-dim {
-  margin-left: 4px;
-  color: #5d6577;
-  font-weight: 600;
-}
-
-body.kova .mk-vitrine-corpo {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 248px;
-  align-items: center;
-  gap: 10px;
-}
-
-body.kova .mk-palco {
-  position: relative;
-  height: calc(var(--mk-h) + 46px);
-  outline: none;
-  overflow: hidden;
-  perspective: 1350px;
-  perspective-origin: 50% 46%;
-  touch-action: pan-y;
-  cursor: grab;
-}
-
-body.kova .mk-palco:active {
-  cursor: grabbing;
-}
-
-body.kova .mk-palco-luz {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 440px;
-  height: 320px;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 46, 91, 0.1) 46%,
-    transparent 76%
-  );
-  filter: blur(14px);
-  pointer-events: none;
-}
-
-body.kova .mk-palco-chao {
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  width: 340px;
-  height: 46px;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.1), transparent 76%);
-  filter: blur(12px);
-  pointer-events: none;
-}
-
-body.kova .mk-slide {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--mk-w);
-  height: var(--mk-h);
-  border-radius: 16px;
-  transform-style: preserve-3d;
-  transition: transform 0.66s var(--nv-ease), opacity 0.5s var(--nv-ease), filter 0.5s var(--nv-ease);
-  will-change: transform;
-  cursor: pointer;
-}
-
-body.kova .mk-slide.is-ativo {
-  cursor: pointer;
-}
-
-body.kova .mk-slide-brilho {
-  position: absolute;
-  top: -16px;
-  left: -16px;
-  right: -16px;
-  height: 60%;
-  opacity: 0;
-  background: radial-gradient(
-    60% 100% at 50% 0%,
-    color-mix(in srgb, var(--mk-cor) 32%, transparent),
-    transparent 76%
-  );
-  pointer-events: none;
-  transition: opacity 0.4s var(--nv-ease);
-}
-
-body.kova .mk-slide.is-ativo .mk-slide-brilho {
-  opacity: 0.85;
-}
-
-body.kova .mk-mini-vitrine {
-  position: relative;
-  display: block;
-  width: var(--mk-w);
-  height: var(--mk-h);
-  overflow: hidden;
-  border: 0;
-  border-radius: 16px;
-  background: transparent;
-  box-shadow:
-    0 34px 64px -26px rgba(0, 0, 0, 0.9),
-    0 0 0 1px color-mix(in srgb, var(--mk-cor) 26%, transparent);
-}
-
-body.kova .mk-mini-vitrine > * {
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: 380px !important;
-  transform: translate(-50%, -50%) scale(var(--mk-escala)) !important;
-  transform-origin: center center !important;
-  pointer-events: none;
-}
-
-body.kova .mk-mini-vitrine > .profile-card--tcg {
-  width: 320px !important;
-  transform: translate(-50%, -50%) scale(calc(var(--mk-escala) * 1.12)) !important;
-}
-
-body.kova .mk-slide-cor {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--mk-w);
-  height: var(--mk-h);
-  padding: 18px;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--mk-cor) 38%, transparent);
-  border-radius: 16px;
-  background:
-    radial-gradient(
-      76% 62% at 50% 20%,
-      color-mix(in srgb, var(--mk-cor) 40%, transparent),
-      transparent 72%
-    ),
-    linear-gradient(180deg, #0d0f16, #07080c);
-  box-shadow: 0 34px 64px -26px rgba(0, 0, 0, 0.9);
-  text-align: center;
-}
-
-body.kova .mk-slide-cor > span {
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1.1;
-  overflow-wrap: anywhere;
-}
-
-/* ficha do destaque */
-body.kova .mk-ficha {
-  position: relative;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-body.kova .mk-ficha-raridade {
-  display: inline-flex;
-  align-items: center;
-  height: 20px;
-  padding: 0 8px;
-  border: 1px solid color-mix(in srgb, var(--mk-cor) 45%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--mk-cor) 12%, transparent);
-  color: var(--mk-cor);
-  font-family: var(--nv-mono);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-body.kova .mk-ficha-nome {
-  margin-top: 10px;
-  color: #ffffff;
-  font-family: var(--nv-display);
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-}
-
-body.kova .mk-ficha-meta {
-  margin-top: 4px;
-  color: #6f7789;
-  font-family: var(--nv-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-body.kova .mk-ficha-preco {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 12px;
-  color: #ffffff;
-}
-
-body.kova .mk-ficha-preco b {
-  font-family: var(--nv-mono);
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
 body.kova .mk-var {
   display: inline-flex;
   align-items: center;
@@ -5695,92 +5404,6 @@ body.kova .mk-item-var.is-sobe {
 body.kova .mk-var.is-desce,
 body.kova .mk-item-var.is-desce {
   color: #f87171;
-}
-
-body.kova .mk-ficha-btn {
-  width: 100%;
-  height: 38px;
-  margin-top: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-  background: linear-gradient(180deg, #ffffff, #d9dbe2);
-  color: #08090d;
-  font-family: var(--nv-mono);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transition: transform 0.2s var(--nv-ease), filter 0.2s var(--nv-ease);
-  cursor: pointer;
-}
-
-body.kova .mk-ficha-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-}
-
-body.kova .mk-pontos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 14px;
-}
-
-body.kova .mk-ponto {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-body.kova .mk-ponto::before {
-  content: '';
-  display: block;
-  width: 16px;
-  height: 3px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.2);
-  transition: width 0.25s var(--nv-ease), background 0.25s var(--nv-ease);
-}
-
-body.kova .mk-ponto.is-ativo::before {
-  width: 22px;
-  background: #ffffff;
-}
-
-body.kova .mk-seta {
-  position: absolute;
-  top: 50%;
-  z-index: 45;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-top: -17px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  background: rgba(10, 11, 17, 0.74);
-  color: #cfd6e4;
-  transition: background 0.2s var(--nv-ease), color 0.2s var(--nv-ease), border-color 0.2s var(--nv-ease);
-  cursor: pointer;
-}
-
-body.kova .mk-seta:hover {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-body.kova .mk-seta--esq {
-  left: 2px;
-}
-
-body.kova .mk-seta--dir {
-  right: 2px;
 }
 
 /* ---------- filtros ---------- */
@@ -6147,47 +5770,7 @@ body.kova .mk-vendas-preco {
   font-weight: 800;
 }
 
-/* ---------- responsivo ---------- */
-@media (max-width: 900px) {
-  body.kova .mk-vitrine-corpo {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  body.kova .mk-ficha {
-    margin: 0 2px 6px;
-  }
-
-  body.kova .mk-ficha-nome {
-    font-size: 18px;
-  }
-
-  body.kova .mk-ficha-preco b {
-    font-size: 22px;
-  }
-
-  body.kova .mk-pontos {
-    margin-top: 12px;
-  }
-}
-
 @media (max-width: 720px) {
-  body.kova .mk-vitrine {
-    --mk-w: 182px;
-    --mk-h: 240px;
-    --mk-escala: 0.468;
-    padding: 10px 8px 4px;
-    border-radius: 16px;
-  }
-
-  body.kova .mk-palco {
-    height: calc(var(--mk-h) + 34px);
-  }
-
-  body.kova .mk-seta {
-    width: 30px;
-    height: 30px;
-    margin-top: -15px;
-  }
 
   body.kova .mk-grelha {
     --mk-gw: 112px;
@@ -6228,23 +5811,6 @@ body.kova .mk-vendas-preco {
     margin-left: 0;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  body.kova .mk-slide,
-  body.kova .mk-item,
-  body.kova .mk-seta,
-  body.kova .mk-ficha-btn {
-    transition: none;
-  }
-
-  body.kova .mk-live-ping,
-  body.kova .mk-slide.is-ativo .mk-mini-vitrine,
-  body.kova .mk-slide.is-ativo .mk-slide-cor,
-  body.kova .mk-slide.is-ativo .mk-mini-vitrine::after {
-    animation: none;
-  }
-}
-
 
 /* ============================================================
    GTA6 — painéis de terminal (visual tipo Cyberleek)
@@ -6739,4 +6305,21 @@ body.kova .ui-tab {
   body.kova .ui-card {
     transition: none;
   }
+}
+
+/* ============================================================
+   ENIGMAS — fundo navy próprio (sem o rosa animado do site)
+   Aplica-se só enquanto a página /enigmas está montada.
+   ============================================================ */
+body.kova.in-enigma {
+  background-color: #02040c !important;
+  background-image:
+    linear-gradient(rgba(70, 130, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 130, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px, 56px 56px;
+  background-attachment: fixed;
+}
+
+body.kova.in-enigma .fundo-vivo {
+  display: none !important;
 }
